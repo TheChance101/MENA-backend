@@ -1,4 +1,4 @@
-package net.thechance.mena
+package net.thechance.app
 
 import org.springframework.boot.autoconfigure.SpringBootApplication
 import org.springframework.boot.runApplication
@@ -15,8 +15,8 @@ fun main(args: Array<String>) {
 @RestController
 class HelloController {
 
-    @GetMapping("/hello")
+    @GetMapping("/app/hello")
     fun hello(): String {
-        return "Hello MENA World!"
+        return "Hello app World!"
     }
 }
