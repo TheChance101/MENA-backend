@@ -15,8 +15,8 @@ allprojects {
 }
 
 subprojects {
-    plugins.withId("java") {
-        extensions.configure<JavaPluginExtension>("java") {
+    plugins.withType<JavaPlugin> {
+        extensions.configure<JavaPluginExtension> {
             toolchain {
                 languageVersion = JavaLanguageVersion.of(17)
             }
