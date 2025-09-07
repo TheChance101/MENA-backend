@@ -7,7 +7,7 @@ import org.springframework.web.bind.annotation.GetMapping
 import org.springframework.web.bind.annotation.RestController
 
 @SpringBootApplication
-@ComponentScan(basePackages = ["net.thechance.app", "net.thechance.identity", "net.thechance.chat"])
+@ComponentScan(basePackages = ["net.thechance"])
 class MenaApplication
 
 fun main(args: Array<String>) {
