@@ -13,3 +13,13 @@ allprojects {
         mavenCentral()
     }
 }
+
+subprojects {
+    plugins.withId("java") {
+        extensions.configure<JavaPluginExtension>("java") {
+            toolchain {
+                languageVersion = JavaLanguageVersion.of(17)
+            }
+        }
+    }
+}

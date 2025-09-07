@@ -5,25 +5,7 @@ plugins {
     kotlin("plugin.spring")
 }
 
-group = "net.thechance"
-version = "0.0.1-SNAPSHOT"
-description = "wallet"
-
-java {
-    toolchain {
-        languageVersion = JavaLanguageVersion.of(17)
-    }
-}
-
-repositories {
-    mavenCentral()
-}
-
 dependencies {
     testImplementation(kotlin("test"))
     implementation("org.springframework.boot:spring-boot-starter-web")
-}
-
-tasks.test {
-    useJUnitPlatform()
 }
