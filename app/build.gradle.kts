@@ -23,6 +23,7 @@ dependencies {
     implementation(project(":identity"))
     implementation(project(":chat"))
     implementation(project(":dukan"))
+    implementation(project(":faith"))
 
     implementation("org.springframework.boot:spring-boot-starter-web")
     implementation("com.fasterxml.jackson.module:jackson-module-kotlin")
