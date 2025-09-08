@@ -1,13 +1,21 @@
 package net.thechance.identity
 
+import jakarta.validation.Valid
+import org.springframework.http.ResponseEntity
 import org.springframework.web.bind.annotation.GetMapping
+import org.springframework.web.bind.annotation.RequestBody
+import org.springframework.web.bind.annotation.RequestMapping
 import org.springframework.web.bind.annotation.RestController
 
 @RestController
-class IdentityController {
+@RequestMapping("/identity")
+class IdentityController(
+    val authenticationService: AuthenticationService
+) {
 
-    @GetMapping("/identity/hello")
-    fun identityHello(): String {
-        return "Hello identity World!"
+    @GetMapping("/login")
+    fun login(@RequestBody @Valid request: AuthRequest): ResponseEntity<AuthResponse> {
+        val authResponse = authenticationService.login(request.phoneNumber, request.password)
+        return ResponseEntity.ok(authResponse)
     }
 }
