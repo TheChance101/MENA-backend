@@ -1,5 +1,7 @@
-package net.thechance.identity
+package net.thechance.identity.service
 
+import net.thechance.identity.dto.AuthResponse
+import net.thechance.identity.entity.User
 import net.thechance.identity.security.JwtService
 import org.springframework.security.authentication.BadCredentialsException
 import org.springframework.security.crypto.password.PasswordEncoder

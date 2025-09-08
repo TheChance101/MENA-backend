@@ -1,4 +1,4 @@
-package net.thechance.identity
+package net.thechance.identity.entity
 
 import jakarta.persistence.Entity
 import jakarta.persistence.FetchType

@@ -1,5 +1,8 @@
-package net.thechance.identity
+package net.thechance.identity.service
 
+import net.thechance.identity.entity.RefreshToken
+import net.thechance.identity.repository.RefreshTokenRepository
+import net.thechance.identity.entity.User
 import org.springframework.stereotype.Service
 import java.time.Duration
 import java.time.Instant
