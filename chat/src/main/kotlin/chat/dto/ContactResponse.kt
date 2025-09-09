@@ -1,13 +1,10 @@
 package chat.dto
 
-
-import java.util.UUID
-
 class ContactResponse(
-    val id: UUID = UUID.randomUUID(),
+    val id: String,
     val name: String,
     val phoneNumber: String,
-    val userId: UUID,
+    val userId: String,
     val imageUrl: String,
     val isMenaMember: Boolean
 )
