@@ -17,6 +17,6 @@ data class Contact(
     @Column(nullable = false) val name: String,
     @Column(nullable = false) val phoneNumber: String,
     @Column(nullable = false) val userId: UUID,
-    @Column(nullable = false) val imageUrl: String,
+    @Transient var imageUrl: String? = null,
     @Transient var isMenaMember: Boolean = false
 )
