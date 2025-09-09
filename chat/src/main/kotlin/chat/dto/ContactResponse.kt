@@ -9,5 +9,5 @@ class ContactResponse(
     val phoneNumber: String,
     val userId: UUID,
     val imageUrl: String,
-    val isMENAMember: Boolean
+    val isMenaMember: Boolean
 )
