@@ -1,10 +1,9 @@
 package chat.dto
 
-class ContactResponse(
+data class ContactResponse(
     val id: String,
     val name: String,
     val phoneNumber: String,
-    val userId: String,
-    val imageUrl: String,
+    val imageUrl: String? = null,
     val isMenaMember: Boolean
 )
