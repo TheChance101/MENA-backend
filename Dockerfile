@@ -14,6 +14,9 @@ RUN ./gradlew build --no-daemon --stacktrace -x test || return 0
 # Copy the rest of the source code
 COPY . .
 
+# Ensure gradlew is executable
+RUN chmod +x gradlew
+
 # Build the application
 RUN ./gradlew bootJar --no-daemon
 
