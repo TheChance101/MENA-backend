@@ -18,7 +18,7 @@ COPY . .
 RUN chmod +x gradlew
 
 # Build the application
-RUN ./gradlew bootJar --no-daemon
+RUN ./gradlew :app:bootJar --no-daemon
 
 # ---- Stage 2: Run the application ----
 FROM eclipse-temurin:17-jre
@@ -26,7 +26,7 @@ FROM eclipse-temurin:17-jre
 WORKDIR /app
 
 # Copy the generated JAR from the builder image
-COPY --from=builder /app/build/libs/*.jar app.jar
+COPY --from=builder app/app/build/libs/*.jar app.jar
 
 # Expose Spring Boot default port
 EXPOSE 8080
