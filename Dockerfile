@@ -12,7 +12,7 @@ COPY settings.gradle.kts .
 RUN ./gradlew build --no-daemon --stacktrace -x test || return 0
 
 # Copy the rest of the source code
-COPY src src
+COPY . .
 
 # Build the application
 RUN ./gradlew bootJar --no-daemon
