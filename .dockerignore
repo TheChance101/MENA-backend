@@ -1,0 +1,33 @@
+# Build output folders
+build/
+target/
+
+# IDE and editor files
+.idea/
+.vscode/
+*.iml
+*.classpath
+*.project
+
+# System files
+.DS_Store
+Thumbs.db
+
+# Logs
+*.log
+
+# Git metadata
+.git/
+.gitignore
+
+# Gradle files that are downloaded or cached
+.gradle/
+out/
+
+# Maven local repository (if inside project)
+.mvn/wrapper/dists/
+
+# Dockerfile itself is usually copied, so not ignored
+
+# Environment files (if you want to keep secrets outside the image)
+.env
