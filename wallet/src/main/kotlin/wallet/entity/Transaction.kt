@@ -19,11 +19,11 @@ data class Transaction(
     @Column(nullable = false, updatable = false)
     val timestamp: LocalDateTime = LocalDateTime.now(),
 
-    @Column(name = "sender_id", columnDefinition = "uuid", nullable = false, updatable = false)
-    val senderId: UUID,
+    @Column(name = "sender__wallet_address", columnDefinition = "uuid", nullable = false, updatable = false)
+    val senderWalletAddress: UUID,
 
-    @Column(name = "receiver_id", columnDefinition = "uuid", nullable = false, updatable = false)
-    val receiverId: UUID,
+    @Column(name = "receiver_wallet_address", columnDefinition = "uuid", nullable = false, updatable = false)
+    val receiverWalletAddress: UUID,
 
     @Column(name = "sender_signature", columnDefinition = "TEXT", nullable = false, updatable = false)
     val senderSignature: String,
