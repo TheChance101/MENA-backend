@@ -6,28 +6,16 @@ import jakarta.persistence.Id
 import jakarta.persistence.Table
 import java.util.*
 
-@Table(name = "net/thechance/trends")
+@Table(name = "categories", schema = "trends")
 @Entity
 data class Category(
     @Id
-    @Column(
-        columnDefinition = "uuid",
-        nullable = false,
-        updatable = false
-    )
+    @Column(columnDefinition = "uuid", nullable = false, updatable = false)
     val id: UUID = UUID.randomUUID(),
 
-    @Column(
-        name = "name",
-        nullable = false,
-        unique = true
-    )
+    @Column(name = "name", nullable = false, unique = true)
     val name: String,
 
-    @Column(
-        name = "emoji",
-        nullable = false,
-        unique = false
-    )
+    @Column(name = "emoji", nullable = false, unique = false)
     val emoji: String,
 )
