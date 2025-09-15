@@ -3,7 +3,7 @@ package net.thechance.dukan.entity
 import jakarta.persistence.*
 import java.util.*
 
-@Table(name = "dukans")
+@Table(name = "dukans", schema = "dukan")
 @Entity
 data class Dukan(
     @Id

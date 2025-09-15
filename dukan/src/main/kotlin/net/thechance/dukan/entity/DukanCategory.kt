@@ -8,7 +8,7 @@ import jakarta.persistence.Id
 import jakarta.persistence.Table
 import java.util.UUID
 
-@Table(name = "dukan_categories")
+@Table(name = "dukan_categories", schema = "dukan")
 @Entity
 data class DukanCategory(
     @Id
