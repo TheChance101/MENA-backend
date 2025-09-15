@@ -19,7 +19,7 @@ data class Dukan(
         joinColumns = [JoinColumn(name = "dukan_id")],
         inverseJoinColumns = [JoinColumn(name = "category_id")]
     )
-    val categories: List<DukanCategory>,
+    val categories: Set<DukanCategory>,
     @Column(name = "image_url", nullable = false)
     val imageUrl: String,
     @Column(name = "address", nullable = false)
