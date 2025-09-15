@@ -5,15 +5,15 @@ import java.io.Serializable
 import java.util.*
 
 @Entity
-@Table(name = "transaction_block_cross_ref")
+@Table(name = "transaction_block_cross_ref", schema = "wallet")
 @IdClass(TransactionBlockId::class)
 data class TransactionBlockCrossRef(
     @Id
-    @Column(columnDefinition = "uuid", name = "transaction_id", nullable = false)
+    @Column(columnDefinition = "uuid", nullable = false)
     val transactionId: UUID,
 
     @Id
-    @Column(columnDefinition = "uuid", name = "block_id", nullable = false)
+    @Column(columnDefinition = "uuid", nullable = false)
     val blockId: UUID
 )
 

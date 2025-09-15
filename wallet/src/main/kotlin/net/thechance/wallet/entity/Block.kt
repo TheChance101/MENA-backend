@@ -5,13 +5,13 @@ import java.time.LocalDateTime
 import java.util.*
 
 @Entity
-@Table(name = "blocks")
+@Table(name = "blocks", schema = "wallet")
 data class Block(
     @Id
-    @Column(columnDefinition = "uuid", updatable = false, nullable = false)
-    val id: UUID = UUID.randomUUID(),
+    @GeneratedValue(strategy = GenerationType.UUID)
+    val id: UUID,
 
-    @Column(name = "previous_block_hash", nullable = false, updatable = false)
+    @Column(nullable = false, updatable = false)
     val previousBlockHash: String,
 
     @Column(nullable = false, updatable = false)
