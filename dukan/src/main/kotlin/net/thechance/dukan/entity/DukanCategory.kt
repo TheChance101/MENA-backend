@@ -8,9 +8,9 @@ import jakarta.persistence.Id
 import jakarta.persistence.Table
 import java.util.UUID
 
-@Table(name = "categories")
+@Table(name = "dukan_categories")
 @Entity
-data class Category(
+data class DukanCategory(
     @Id
     @GeneratedValue(strategy = GenerationType.UUID)
     val id: UUID = UUID.randomUUID(),

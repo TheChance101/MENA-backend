@@ -15,11 +15,11 @@ data class Dukan(
     val name: String,
     @ManyToMany
     @JoinTable(
-        name = "dukan_categories",
+        name = "dukan_categories_junction",
         joinColumns = [JoinColumn(name = "dukan_id")],
         inverseJoinColumns = [JoinColumn(name = "category_id")]
     )
-    val categories: List<Category>,
+    val categories: List<DukanCategory>,
     @Column(name = "image_url", nullable = false)
     val imageUrl: String,
     @Column(name = "address", nullable = false)
