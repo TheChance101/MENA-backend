@@ -1,4 +1,4 @@
-package wallet.entity
+package net.thechance.wallet.entity
 
 import jakarta.persistence.*
 import java.time.LocalDateTime
