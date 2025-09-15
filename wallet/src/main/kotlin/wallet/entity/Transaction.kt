@@ -1,4 +1,4 @@
-package wallet.entity
+package net.thechance.wallet.entity
 
 import jakarta.persistence.Column
 import jakarta.persistence.Entity
@@ -17,13 +17,13 @@ data class Transaction(
     val id: UUID = UUID.randomUUID(),
 
     @Column(nullable = false, updatable = false)
-    val timestamp: LocalDateTime = LocalDateTime.now(),
+    val createdAt: LocalDateTime = LocalDateTime.now(),
 
-    @Column(name = "sender_wallet_address", columnDefinition = "uuid", nullable = false, updatable = false)
-    val senderWalletAddress: UUID,
+    @Column(name = "sender_address", columnDefinition = "uuid", nullable = false, updatable = false)
+    val senderAddress: String,
 
-    @Column(name = "receiver_wallet_address", columnDefinition = "uuid", nullable = false, updatable = false)
-    val receiverWalletAddress: UUID,
+    @Column(name = "receiver_address", columnDefinition = "uuid", nullable = false, updatable = false)
+    val receiverAddress: String,
 
     @Column(name = "sender_signature", columnDefinition = "TEXT", nullable = false, updatable = false)
     val senderSignature: String,
