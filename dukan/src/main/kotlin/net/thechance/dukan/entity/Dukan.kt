@@ -10,14 +10,15 @@ data class Dukan(
     @GeneratedValue(strategy = GenerationType.UUID)
     val id: UUID = UUID.randomUUID(),
     @Column(name = "owner_id", nullable = false, unique = true)
-    val ownerId: String,
+    val ownerId: UUID,
     @Column(name = "name", nullable = false, unique = true)
     val name: String,
     @ManyToMany
     @JoinTable(
         name = "dukan_categories_junction",
         joinColumns = [JoinColumn(name = "dukan_id")],
-        inverseJoinColumns = [JoinColumn(name = "category_id")]
+        inverseJoinColumns = [JoinColumn(name = "category_id")],
+        schema = "dukan"
     )
     val categories: Set<DukanCategory>,
     @Column(name = "image_url", nullable = false)
