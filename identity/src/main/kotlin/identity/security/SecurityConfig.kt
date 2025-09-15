@@ -1,4 +1,4 @@
-package net.thechance.identity.security
+package identity.security
 
 import org.springframework.context.annotation.Bean
 import org.springframework.context.annotation.Configuration

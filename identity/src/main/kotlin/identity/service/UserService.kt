@@ -1,7 +1,7 @@
-package net.thechance.identity.service
+package identity.service
 
-import net.thechance.identity.entity.User
-import net.thechance.identity.repository.UserRepository
+import identity.entity.User
+import identity.repository.UserRepository
 import org.springframework.stereotype.Service
 import java.util.UUID
 

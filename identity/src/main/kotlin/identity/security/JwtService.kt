@@ -1,8 +1,8 @@
-package net.thechance.identity.security
+package identity.security
 
 import io.jsonwebtoken.Jwts
 import io.jsonwebtoken.security.Keys
-import net.thechance.identity.entity.User
+import identity.entity.User
 import org.springframework.beans.factory.annotation.Value
 import org.springframework.stereotype.Service
 import java.time.Duration

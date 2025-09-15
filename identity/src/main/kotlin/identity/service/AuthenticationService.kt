@@ -1,10 +1,10 @@
-package net.thechance.identity.service
+package identity.service
 
 import identity.config.exceptionHandling.InvalidRefreshTokenException
-import net.thechance.identity.dto.AuthResponse
-import net.thechance.identity.entity.User
-import net.thechance.identity.repository.RefreshTokenRepository
-import net.thechance.identity.security.JwtService
+import identity.dto.AuthResponse
+import identity.entity.User
+import identity.repository.RefreshTokenRepository
+import identity.security.JwtService
 import org.springframework.security.authentication.BadCredentialsException
 import org.springframework.security.crypto.password.PasswordEncoder
 import org.springframework.stereotype.Service
