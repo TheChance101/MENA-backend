@@ -5,9 +5,9 @@ import java.io.Serializable
 import java.util.*
 
 @Entity
-@Table(name = "transaction_block")
+@Table(name = "transaction_block_cross_ref")
 @IdClass(TransactionBlockId::class)
-data class TransactionBlock(
+data class TransactionBlockCrossRef(
     @Id
     @Column(columnDefinition = "uuid", name = "transaction_id", nullable = false)
     val transactionId: UUID,
