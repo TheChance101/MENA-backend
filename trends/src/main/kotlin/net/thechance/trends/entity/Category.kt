@@ -6,7 +6,7 @@ import jakarta.persistence.Id
 import jakarta.persistence.Table
 import java.util.*
 
-@Table(name = "trends")
+@Table(name = "net/thechance/trends")
 @Entity
 data class Category(
     @Id
