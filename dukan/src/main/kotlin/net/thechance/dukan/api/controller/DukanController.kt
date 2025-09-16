@@ -13,4 +13,7 @@ class DukanController(
     @GetMapping("/styles")
     fun getAllStyles () = dukanService.getAllStyles()
 
+    @GetMapping("/categories")
+    fun getAllCategories () = dukanService.getAllCategories()
+
 }
