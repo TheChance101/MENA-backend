@@ -1,4 +1,4 @@
-package net.thechance.chat.entity
+package chat.entity
 
 import jakarta.persistence.Column
 import jakarta.persistence.Entity
