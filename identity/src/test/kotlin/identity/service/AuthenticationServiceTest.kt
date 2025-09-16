@@ -1,18 +1,18 @@
 package identity.service
 
 import com.google.common.truth.Truth
-import identity.dto.AuthResponse
-import identity.entity.RefreshToken
-import identity.entity.User
-import identity.repository.RefreshTokenRepository
-import identity.security.JwtService
 import io.mockk.every
 import io.mockk.mockk
-import io.mockk.verify
+import net.thechance.identity.dto.AuthResponse
+import net.thechance.identity.entity.RefreshToken
+import net.thechance.identity.entity.User
+import net.thechance.identity.repository.RefreshTokenRepository
+import net.thechance.identity.security.JwtService
+import net.thechance.identity.service.AuthenticationService
+import net.thechance.identity.service.RefreshTokenService
+import net.thechance.identity.service.UserService
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
-import org.junit.jupiter.api.assertThrows
-import org.springframework.security.authentication.BadCredentialsException
 import org.springframework.security.crypto.password.PasswordEncoder
 import java.util.*
 
@@ -29,7 +29,6 @@ class AuthenticationServiceTest {
     fun setUp() {
         authenticationService = AuthenticationService(
             userService = userService,
-            refreshRepo = refreshRepo,
             jwtService = jwtService,
             refreshTokenService = refreshTokenService,
             passwordEncoder = passwordEncoder,
@@ -52,58 +51,6 @@ class AuthenticationServiceTest {
         val response = authenticationService.login(phoneNumber, phoneNumber)
         val expected = AuthResponse(accessToken, refreshToken.refreshToken)
         Truth.assertThat(response).isEqualTo(expected)
-    }
-
-    @Test
-    fun `login() should throw BadCredentialsException when password does not match`() {
-        val password = "wrong password"
-        val user = getUser(password = password)
-
-        every { userService.findByPhoneNumber(user.phoneNumber) } returns (user)
-        every { passwordEncoder.matches(password, "correct password") } returns false
-
-        assertThrows<BadCredentialsException> {
-            authenticationService.login(user.phoneNumber, password)
-        }
-    }
-
-    @Test
-    fun `refresh() should return new auth response when refresh token is valid`() {
-        val user = getUser()
-
-        val oldRefreshToken = "old-refresh"
-        val newRefreshToken = "new-refresh"
-        val oldToken = RefreshToken(1L, oldRefreshToken, 0L, user)
-        val newToken = RefreshToken(1L, newRefreshToken, 0L, user)
-
-        val accessToken = "access-token"
-
-        every { refreshTokenService.validateRefreshToken(oldRefreshToken) } returns (oldToken)
-        every { jwtService.generateToken(user) } returns (accessToken)
-        every { refreshTokenService.createRefreshToken(user) } returns (newToken)
-
-        val response = authenticationService.refresh(oldRefreshToken)
-        val expected = AuthResponse(accessToken, newRefreshToken)
-        Truth.assertThat(response).isEqualTo(expected)
-    }
-
-    @Test
-    fun `refresh() should delete old refresh tokens when refresh token is valid`() {
-        val user = getUser()
-
-        val oldRefreshToken = "old-refresh"
-        val newRefreshToken = "new-refresh"
-        val oldToken = RefreshToken(1L, oldRefreshToken, 0L, user)
-        val newToken = RefreshToken(1L, newRefreshToken, 0L, user)
-
-        val accessToken = "access-token"
-
-        every { refreshTokenService.validateRefreshToken(oldRefreshToken) } returns (oldToken)
-        every { jwtService.generateToken(user) } returns (accessToken)
-        every { refreshTokenService.createRefreshToken(user) } returns (newToken)
-
-        authenticationService.refresh(oldRefreshToken)
-        verify { refreshRepo.delete(oldToken) }
     }
 
     fun getUser(

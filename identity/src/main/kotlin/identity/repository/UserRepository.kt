@@ -1,6 +1,6 @@
-package identity.repository
+package net.thechance.identity.repository
 
-import identity.entity.User
+import net.thechance.identity.entity.User
 import org.springframework.data.jpa.repository.JpaRepository
 import java.util.UUID
 

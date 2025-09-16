@@ -1,4 +1,4 @@
-package identity.entity
+package net.thechance.identity.entity
 
 import jakarta.persistence.Column
 import jakarta.persistence.Entity

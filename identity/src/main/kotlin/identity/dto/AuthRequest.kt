@@ -1,4 +1,4 @@
-package identity.dto
+package net.thechance.identity.dto
 
 import jakarta.validation.constraints.NotBlank
 import org.hibernate.validator.constraints.Length

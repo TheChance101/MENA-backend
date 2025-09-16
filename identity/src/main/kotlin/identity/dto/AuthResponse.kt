@@ -1,4 +1,4 @@
-package identity.dto
+package net.thechance.identity.dto
 
 data class AuthResponse(
     val accessToken: String,
