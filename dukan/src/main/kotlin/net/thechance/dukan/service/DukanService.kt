@@ -14,6 +14,6 @@ class DukanService(
     private val dukanCategoryRepository: DukanCategoryRepository
 ) {
     fun getAllStyles() = Dukan.Style.entries
-
     fun getAllCategories(): List<DukanCategory> = dukanCategoryRepository.findAll()
+    fun isDukanNameAvailable(name: String): Boolean = dukanRepository.existsByName(name).not()
 }
