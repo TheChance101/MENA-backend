@@ -1,6 +1,6 @@
 package net.thechance.dukan.api.controller
 
-import net.thechance.dukan.api.dto.CategoryResponse
+import net.thechance.dukan.api.dto.DukanCategoryResponse
 import net.thechance.dukan.mapper.DukanLanguage
 import net.thechance.dukan.mapper.toDto
 import net.thechance.dukan.service.DukanService
@@ -18,11 +18,11 @@ class DukanController(
     fun getAllStyles() = dukanService.getAllStyles()
 
     @GetMapping("/categories")
-    fun getAllCategories(): ResponseEntity<CategoryResponse> {
+    fun getAllCategories(): ResponseEntity<DukanCategoryResponse> {
         val categories = dukanService.getAllCategories().let { categories ->
             // Todo replace default Arabic with the extracted language from the header
             categories.map { category -> category.toDto(DukanLanguage.ARABIC) }
         }
-        return ResponseEntity.ok(CategoryResponse(categories))
+        return ResponseEntity.ok(DukanCategoryResponse(categories))
     }
 }

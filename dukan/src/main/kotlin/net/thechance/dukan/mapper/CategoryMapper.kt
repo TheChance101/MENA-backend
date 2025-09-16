@@ -1,12 +1,10 @@
 package net.thechance.dukan.mapper
 
-import net.thechance.dukan.api.dto.CategoryDto
-import net.thechance.dukan.api.dto.CategoryResponse
+import net.thechance.dukan.api.dto.DukanCategoryDto
 import net.thechance.dukan.entity.DukanCategory
-import net.thechance.dukan.mapper.DukanLanguage
 
-fun DukanCategory.toDto(language: DukanLanguage): CategoryDto {
-    return CategoryDto(
+fun DukanCategory.toDto(language: DukanLanguage): DukanCategoryDto {
+    return DukanCategoryDto(
         id = id.toString(),
         icon = iconUrl,
         title = if (language == DukanLanguage.ARABIC) arabicTitle else englishTitle
