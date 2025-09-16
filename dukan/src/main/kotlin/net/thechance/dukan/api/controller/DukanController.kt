@@ -1,6 +1,8 @@
 package net.thechance.dukan.api.controller
 
+import net.thechance.dukan.api.dto.DukanStyleResponse
 import net.thechance.dukan.service.DukanService
+import org.springframework.http.ResponseEntity
 import org.springframework.web.bind.annotation.GetMapping
 import org.springframework.web.bind.annotation.RequestMapping
 import org.springframework.web.bind.annotation.RestController
@@ -11,6 +13,8 @@ class DukanController(
     private val dukanService: DukanService
 ) {
     @GetMapping("/styles")
-    fun getAllStyles () = dukanService.getAllStyles()
-
+    fun getAllStyles(): ResponseEntity<DukanStyleResponse> {
+        val styles = dukanService.getAllStyles()
+       return ResponseEntity.ok(styles)
+    }
 }
