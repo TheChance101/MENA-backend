@@ -1,13 +1,15 @@
 package net.thechance.dukan.api.controller
 
+import jakarta.validation.Valid
 import jakarta.validation.constraints.NotBlank
+import net.thechance.dukan.api.dto.DukanCreationRequest
 import net.thechance.dukan.api.dto.DukanNameAvailabilityResponse
+import net.thechance.dukan.entity.Dukan
 import net.thechance.dukan.service.DukanService
 import org.springframework.http.ResponseEntity
-import org.springframework.web.bind.annotation.GetMapping
-import org.springframework.web.bind.annotation.RequestMapping
-import org.springframework.web.bind.annotation.RequestParam
-import org.springframework.web.bind.annotation.RestController
+import org.springframework.security.core.annotation.AuthenticationPrincipal
+import org.springframework.web.bind.annotation.*
+import java.util.*
 
 @RestController
 @RequestMapping("/dukan")
@@ -21,5 +23,14 @@ class DukanController(
     ): ResponseEntity<DukanNameAvailabilityResponse> {
         val available = dukanService.isDukanNameAvailable(name)
         return ResponseEntity.ok(DukanNameAvailabilityResponse(available))
+    }
+
+    @PostMapping("/create")
+    fun createDukan(
+        @Valid @RequestBody requestBody: DukanCreationRequest,
+        @AuthenticationPrincipal ownerId: UUID,
+    ): ResponseEntity<Dukan> {
+        val dukan = dukanService.createDukan(requestBody, ownerId)
+        return ResponseEntity.ok(dukan)
     }
 }
