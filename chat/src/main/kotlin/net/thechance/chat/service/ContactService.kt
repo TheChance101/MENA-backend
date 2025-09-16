@@ -11,29 +11,21 @@ import java.util.UUID
 class ContactService(
     private val contactRepository: ContactRepository,
 ) {
-    fun syncContacts(ownerUserId: UUID, contactRequests: List<ContactRequest>) {
-        val requestedPhoneNumbers = contactRequests.map(ContactRequest::phoneNumber)
+    fun syncContacts(userId: UUID, contactRequests: List<ContactRequest>) {
+        val requestedPhoneNumbers = contactRequests.map { it.phoneNumber }
 
-        val existingContacts = contactRepository
-            .findAllByUserIdAndPhoneNumberIn(ownerUserId, requestedPhoneNumbers)
+        val existingContactsMap = contactRepository
+            .findAllByUserIdAndPhoneNumberIn(userId, requestedPhoneNumbers)
             .associateBy { it.phoneNumber }
 
         val contactsToSave = contactRequests.map { request ->
-            existingContacts[request.phoneNumber]?.copy(
+            existingContactsMap[request.phoneNumber]?.copy(
                 firstName = request.firstName,
                 lastName = request.lastName
-            ) ?: request.toContact(
-                ownerUserId
-            )
+            ) ?: request.toContact(userId)
         }
 
-        val contactsToDelete = contactRepository.findAllByUserIdAndPhoneNumberNotIn(
-            ownerUserId,
-            requestedPhoneNumbers
-        )
-
-        contactRepository.deleteAll(contactsToDelete)
+        contactRepository.deleteAllByUserIdAndPhoneNumberNotIn(userId, requestedPhoneNumbers)
         contactRepository.saveAll(contactsToSave)
-
     }
 }

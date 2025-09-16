@@ -6,5 +6,5 @@ import java.util.UUID
 
 interface ContactRepository : JpaRepository<Contact, UUID> {
     fun findAllByUserIdAndPhoneNumberIn(userId: UUID, phoneNumbers: List<String>): List<Contact>
-    fun findAllByUserIdAndPhoneNumberNotIn(userId: UUID, phoneNumbers: Collection<String>): List<Contact>
+    fun deleteAllByUserIdAndPhoneNumberNotIn(userId: UUID, requestedPhoneNumbers: List<String>)
 }
