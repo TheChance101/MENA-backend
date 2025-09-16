@@ -19,7 +19,7 @@ class DukanController(
     fun checkNameExists(
         @RequestParam(name = "name") @NotBlank name: String
     ): ResponseEntity<DukanNameExistenceResponse> {
-        val exists = dukanService.doesNameExist(name)
+        val exists = dukanService.isNameExist(name)
         return ResponseEntity.ok(DukanNameExistenceResponse(exists))
     }
 }
