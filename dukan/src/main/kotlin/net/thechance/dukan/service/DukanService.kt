@@ -7,6 +7,7 @@ import net.thechance.dukan.repository.DukanCategoryRepository
 import net.thechance.dukan.repository.DukanColorRepository
 import net.thechance.dukan.repository.DukanRepository
 import org.springframework.stereotype.Service
+import kotlin.enums.EnumEntries
 
 @Service
 class DukanService(
@@ -14,5 +15,5 @@ class DukanService(
     private val dukanColorRepository: DukanColorRepository,
     private val dukanCategoryRepository: DukanCategoryRepository
 ) {
-    fun getAllStyles(): DukanStyleResponse = Dukan.Style.entries.toDukanStyleResponse()
+    fun getAllStyles(): EnumEntries<Dukan.Style> = Dukan.Style.entries
 }
