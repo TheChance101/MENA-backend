@@ -7,5 +7,5 @@ import org.springframework.stereotype.Service
 class DukanService(
     private val dukanRepository: DukanRepository,
 ) {
-    fun isNameExist(name: String): Boolean = dukanRepository.existsByName(name)
+    fun isDukanNameAvailable(name: String): Boolean = dukanRepository.existsByName(name).not()
 }

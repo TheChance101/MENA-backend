@@ -1,7 +1,7 @@
 package net.thechance.dukan.api.controller
 
 import jakarta.validation.constraints.NotBlank
-import net.thechance.dukan.api.dto.DukanNameExistenceResponse
+import net.thechance.dukan.api.dto.DukanNameAvailabilityResponse
 import net.thechance.dukan.service.DukanService
 import org.springframework.http.ResponseEntity
 import org.springframework.web.bind.annotation.GetMapping
@@ -15,11 +15,11 @@ class DukanController(
     private val dukanService: DukanService,
 ) {
 
-    @GetMapping("/exists")
-    fun checkNameExists(
+    @GetMapping("/available")
+    fun checkNameAvailability(
         @RequestParam(name = "name") @NotBlank name: String
-    ): ResponseEntity<DukanNameExistenceResponse> {
-        val exists = dukanService.isNameExist(name)
-        return ResponseEntity.ok(DukanNameExistenceResponse(exists))
+    ): ResponseEntity<DukanNameAvailabilityResponse> {
+        val available = dukanService.isDukanNameAvailable(name)
+        return ResponseEntity.ok(DukanNameAvailabilityResponse(available))
     }
 }
