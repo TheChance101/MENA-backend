@@ -1,17 +1,10 @@
-package chat.repository
+package net.thechance.chat.repository
 
-import chat.entity.Contact
+import net.thechance.chat.entity.Contact
 import org.springframework.data.jpa.repository.JpaRepository
 import java.util.UUID
 
 interface ContactRepository : JpaRepository<Contact, UUID> {
-    fun findAllByOwnerUserAndPhoneNumberIn(
-        ownerUser: UUID,
-        phoneNumbers: List<String>
-    ): List<Contact>
-
-    fun findAllByOwnerUserAndPhoneNumberNotIn(
-        ownerUser: UUID,
-        phoneNumbers: Collection<String>
-    ): List<Contact>
+    fun findAllByUserIdAndPhoneNumberIn(userId: UUID, phoneNumbers: List<String>): List<Contact>
+    fun findAllByUserIdAndPhoneNumberNotIn(userId: UUID, phoneNumbers: Collection<String>): List<Contact>
 }

@@ -1,7 +1,8 @@
-package chat.api.controller
+package net.thechance.chat.api.controller
 
-import chat.api.dto.ContactRequest
-import chat.service.ContactService
+import jakarta.validation.Valid
+import net.thechance.chat.api.dto.ContactRequest
+import net.thechance.chat.service.ContactService
 import org.springframework.http.ResponseEntity
 import org.springframework.security.core.annotation.AuthenticationPrincipal
 import org.springframework.web.bind.annotation.PostMapping
@@ -18,11 +19,10 @@ class ContactController(
 
     @PostMapping("/sync")
     fun syncContacts(
-        @RequestBody contacts: List<ContactRequest>,
+        @RequestBody @Valid contacts: List<ContactRequest>,
         @AuthenticationPrincipal userId: UUID
-    ): ResponseEntity<Unit> {
-        return ResponseEntity.ok(
-            contactService.syncContacts(userId, contacts)
-        )
+    ): ResponseEntity<String> {
+        contactService.syncContacts(userId, contacts)
+        return ResponseEntity.ok("Contacts synced successfully")
     }
 }

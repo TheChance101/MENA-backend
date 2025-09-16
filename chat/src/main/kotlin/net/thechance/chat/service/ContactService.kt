@@ -1,9 +1,9 @@
-package chat.service
+package net.thechance.chat.service
 
 
-import chat.api.dto.ContactRequest
-import chat.mapper.toContact
-import chat.repository.ContactRepository
+import net.thechance.chat.api.dto.ContactRequest
+import net.thechance.chat.repository.ContactRepository
+import net.thechance.chat.api.dto.toContact
 import org.springframework.stereotype.Service
 import java.util.UUID
 
@@ -15,7 +15,7 @@ class ContactService(
         val requestedPhoneNumbers = contactRequests.map(ContactRequest::phoneNumber)
 
         val existingContacts = contactRepository
-            .findAllByOwnerUserAndPhoneNumberIn(ownerUserId, requestedPhoneNumbers)
+            .findAllByUserIdAndPhoneNumberIn(ownerUserId, requestedPhoneNumbers)
             .associateBy { it.phoneNumber }
 
         val contactsToSave = contactRequests.map { request ->
@@ -27,7 +27,7 @@ class ContactService(
             )
         }
 
-        val contactsToDelete = contactRepository.findAllByOwnerUserAndPhoneNumberNotIn(
+        val contactsToDelete = contactRepository.findAllByUserIdAndPhoneNumberNotIn(
             ownerUserId,
             requestedPhoneNumbers
         )
