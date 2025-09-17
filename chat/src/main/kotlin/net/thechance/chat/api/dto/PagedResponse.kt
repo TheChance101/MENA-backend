@@ -1,4 +1,4 @@
-package chat.api.dto
+package net.thechance.chat.api.dto
 
 import org.springframework.data.domain.Page
 

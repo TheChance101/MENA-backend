@@ -1,6 +1,6 @@
 package chat.service
 
-import chat.api.dto.ContactResponse
+import net.thechance.chat.api.dto.ContactResponse
 import net.thechance.chat.entity.Contact
 import java.util.UUID
 

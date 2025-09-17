@@ -6,13 +6,14 @@ import net.thechance.chat.repository.ContactRepository
 import org.springframework.data.domain.Page
 import org.springframework.data.domain.Pageable
 import org.springframework.stereotype.Service
+import java.util.UUID
 
 @Service
 class ContactService(
     private val contactRepository: ContactRepository
 ) {
-    fun getPagedContact(pageable: Pageable): Page<ContactModel> {
-        val pagedData = contactRepository.findAll(pageable)
+    fun getPagedContactByUserId(userId: UUID, pageable: Pageable): Page<ContactModel> {
+        val pagedData = contactRepository.findAllByUserId(userId, pageable)
         return pagedData.map { it.toModel(isMenaUser = false, imageUrl = "") }
     }
 
