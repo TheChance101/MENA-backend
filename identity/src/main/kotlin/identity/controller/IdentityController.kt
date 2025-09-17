@@ -1,5 +1,6 @@
 package net.thechance.identity.controller
 
+import identity.dto.RefreshTokenRequest
 import jakarta.validation.Valid
 import net.thechance.identity.dto.AuthRequest
 import net.thechance.identity.dto.AuthResponse
@@ -16,5 +17,10 @@ class IdentityController(
     fun login(@RequestBody @Valid request: AuthRequest): ResponseEntity<AuthResponse> {
         val authResponse = authenticationService.login(request.phoneNumber, request.password)
         return ResponseEntity.ok(authResponse)
+    }
+
+    @PostMapping("/refresh")
+    fun refresh(@RequestBody @Valid request: RefreshTokenRequest): ResponseEntity<AuthResponse> {
+        return ResponseEntity.ok(authenticationService.refreshToken(request.refreshToken))
     }
 }
