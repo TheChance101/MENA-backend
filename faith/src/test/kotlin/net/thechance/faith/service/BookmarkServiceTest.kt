@@ -22,7 +22,7 @@ class BookmarkServiceTest {
         assertThat(result).isEqualTo(bookmark)
     }
 
-    companion object {
+    private companion object {
         val bookmark = Bookmark(
             id = 1,
             userId = UUID.randomUUID(),

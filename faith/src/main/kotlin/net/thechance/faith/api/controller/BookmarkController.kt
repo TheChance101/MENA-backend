@@ -15,7 +15,7 @@ import org.springframework.web.bind.annotation.RestController
 import java.util.*
 
 @RestController
-@RequestMapping("/bookmark")
+@RequestMapping("faith/bookmark")
 class BookmarkController(
     private val bookmarkService: BookmarkService
 ) {
