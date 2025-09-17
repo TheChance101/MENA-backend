@@ -39,4 +39,4 @@ out/
 ### Kotlin ###
 .kotlin
 
-/.env
+.env
