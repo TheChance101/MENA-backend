@@ -28,9 +28,9 @@ class DukanController(
     @PostMapping("/create")
     fun createDukan(
         @Valid @RequestBody requestBody: DukanCreationRequest,
-        @AuthenticationPrincipal ownerId: UUID,
+        @AuthenticationPrincipal userId: UUID,
     ): ResponseEntity<Dukan> {
-        val dukan = dukanService.createDukan(requestBody, ownerId)
+        val dukan = dukanService.createDukan(requestBody, userId)
         return ResponseEntity.ok(dukan)
     }
 }
