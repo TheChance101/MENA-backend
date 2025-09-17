@@ -1,4 +1,4 @@
-package net.thechance.trends.api.controller.exception
+package net.thechance.trends.api.dto
 
 import com.fasterxml.jackson.annotation.JsonInclude
 

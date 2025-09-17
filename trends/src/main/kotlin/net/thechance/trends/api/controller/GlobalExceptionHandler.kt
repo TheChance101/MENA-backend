@@ -1,5 +1,7 @@
-package net.thechance.trends.api.controller.exception
+package net.thechance.trends.api.controller
 
+import net.thechance.trends.api.controller.exception.ReelNotFoundException
+import net.thechance.trends.api.dto.BaseErrorResponse
 import org.springframework.http.HttpStatus
 import org.springframework.web.bind.annotation.ExceptionHandler
 import org.springframework.web.bind.annotation.ResponseStatus
@@ -8,10 +10,10 @@ import org.springframework.web.bind.annotation.RestControllerAdvice
 @RestControllerAdvice
 class GlobalExceptionHandler {
 
-    @ExceptionHandler(NoSuchElementException::class)
+    @ExceptionHandler(ReelNotFoundException::class)
     @ResponseStatus(HttpStatus.NOT_FOUND)
-    fun handleNoSuchElementException(exception: NoSuchElementException): BaseErrorResponse {
-        val message = exception.message ?: "Resource not found!"
+    fun handleNoSuchElementException(exception: ReelNotFoundException): BaseErrorResponse {
+        val message = exception.localizedMessage
 
         return BaseErrorResponse(
             message = message,
@@ -22,7 +24,7 @@ class GlobalExceptionHandler {
     @ExceptionHandler(IllegalAccessException::class)
     @ResponseStatus(HttpStatus.UNAUTHORIZED)
     fun handleIllegalException(e: IllegalAccessException): BaseErrorResponse {
-        val message = e.message ?: "You can't access this resource!"
+        val message = e.localizedMessage
 
         return BaseErrorResponse(
             message = message,
