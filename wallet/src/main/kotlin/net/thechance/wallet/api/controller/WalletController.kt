@@ -6,7 +6,7 @@ import org.springframework.web.bind.annotation.RestController
 @RestController
 class WalletController {
 
-    @GetMapping("/net/thechance/wallet/hello")
+    @GetMapping("/wallet/hello")
     fun hello(): String {
         return "Hello wallet World!"
     }
