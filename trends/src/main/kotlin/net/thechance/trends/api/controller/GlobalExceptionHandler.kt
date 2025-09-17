@@ -1,5 +1,6 @@
-package net.thechance.trends.api.exception
+package net.thechance.trends.api.controller
 
+import net.thechance.trends.api.dto.BaseErrorResponse
 import org.springframework.http.HttpStatus
 import org.springframework.web.bind.annotation.ExceptionHandler
 import org.springframework.web.bind.annotation.ResponseStatus
