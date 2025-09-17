@@ -8,16 +8,16 @@ plugins {
 
 liquibase {
     activities {
-        register("main") {
+        register("mainConfig") {
             arguments = listOf(
-                "changeLogFile=src/main/resources/db/changelog/db.changelog-master.yaml",
+                "changeLogFile=${project.findProperty("spring.liquibase.change-log") as String}",
                 "url=${project.findProperty("spring.datasource.url") as String}",
                 "username=${project.findProperty("spring.datasource.username") as String}",
                 "password=${project.findProperty("spring.datasource.password") as String}",
             )
         }
     }
-    runList = "main"
+    runList = "mainConfig"
 }
 
 dependencies {

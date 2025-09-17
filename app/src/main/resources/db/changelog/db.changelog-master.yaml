@@ -1,19 +1,19 @@
 databaseChangeLog:
-#  - includeAll:
-#      path: changelogs-chat
-#      relativeToChangelogFile: true
-  - includeAll:
-      path: changelogs-dukan
-      relativeToChangelogFile: true
-#  - includeAll:
-#      path: changelogs-faith
-#      relativeToChangelogFile: true
-  - includeAll:
-      path: changelogs-identity
-      relativeToChangelogFile: true
-#  - includeAll:
-#      path: changelogs-trends
-#      relativeToChangelogFile: true
-#  - includeAll:
-#      path: changelogs-wallet
-#      relativeToChangelogFile: true
+
+  - include:
+      file: classpath:changelog-chat/db.changelog-master.yaml
+
+  - include:
+      file: classpath:changelog-dukan/db.changelog-master.yaml
+
+  - include:
+      file: classpath:changelog-faith/db.changelog-master.yaml
+
+  - include:
+      file: classpath:changelog-identity/db.changelog-master.yaml
+
+  - include:
+      file: classpath:changelog-trends/db.changelog-master.yaml
+
+  - include:
+      file: classpath:changelog-wallet/db.changelog-master.yaml

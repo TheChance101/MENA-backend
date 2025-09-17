@@ -1,4 +1,3 @@
-# Liquibase changelog file to create the dukan schema and its tables
 databaseChangeLog:
   - changeSet:
       id: 1-dukan
@@ -10,7 +9,8 @@ databaseChangeLog:
   - changeSet:
       id: 2-dukan
       author: alqassim
-      comment: Create the dukan_colors table in the dukan schema
+      comment:
+        Create the dukan_colors, dukan_categories, dukans, and dukan_categories_junction tables in the dukan schema
       changes:
         - sql:
               CREATE TABLE dukan.dukan_colors (
@@ -18,11 +18,6 @@ databaseChangeLog:
                 hex_code VARCHAR(255) NOT NULL
               );
 
-  - changeSet:
-      id: 3-dukan
-      author: alqassim
-      comment: Create the dukan_categories table in the dukan schema
-      changes:
         - sql:
               CREATE TABLE dukan.dukan_categories (
                 id UUID PRIMARY KEY,
@@ -31,11 +26,6 @@ databaseChangeLog:
                 english_title VARCHAR(255) NOT NULL
               );
 
-  - changeSet:
-      id: 4-dukan
-      author: alqassim
-      comment: Create the dukans table in the dukan schema
-      changes:
         - sql:
               CREATE TABLE dukan.dukans (
                 id UUID PRIMARY KEY,
@@ -51,11 +41,6 @@ databaseChangeLog:
                 CONSTRAINT fk_dukans_color_id FOREIGN KEY (color_id) REFERENCES dukan.dukan_colors(id)
               );
 
-  - changeSet:
-      id: 5-dukan
-      author: alqassim
-      comment: Create the dukan_categories_junction table for ManyToMany relationship
-      changes:
         - sql:
               CREATE TABLE dukan.dukan_categories_junction (
                 dukan_id UUID NOT NULL,
