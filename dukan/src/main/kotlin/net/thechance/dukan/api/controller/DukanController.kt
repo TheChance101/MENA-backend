@@ -6,10 +6,13 @@ import net.thechance.dukan.api.dto.DukanCreationRequest
 import net.thechance.dukan.api.dto.DukanNameAvailabilityResponse
 import net.thechance.dukan.entity.Dukan
 import net.thechance.dukan.service.DukanService
+import org.slf4j.LoggerFactory
 import org.springframework.http.ResponseEntity
 import org.springframework.security.core.annotation.AuthenticationPrincipal
 import org.springframework.web.bind.annotation.*
+import org.springframework.web.multipart.MultipartFile
 import java.util.*
+
 
 @RestController
 @RequestMapping("/dukan")
@@ -32,5 +35,14 @@ class DukanController(
     ): ResponseEntity<Dukan> {
         val dukan = dukanService.createDukan(requestBody, userId)
         return ResponseEntity.ok(dukan)
+    }
+
+    @PostMapping("/image")
+    fun uploadDukanImage(
+        @AuthenticationPrincipal ownerId: UUID,
+        @RequestParam("file") file: MultipartFile,
+    ): ResponseEntity<String> {
+        val imageUrl = dukanService.uploadDukanImage(ownerId, file)
+        return ResponseEntity.ok(imageUrl)
     }
 }

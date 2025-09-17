@@ -1,12 +1,15 @@
 package net.thechance.dukan.service
 
+import jakarta.transaction.Transactional
 import net.thechance.dukan.api.dto.DukanCreationRequest
 import net.thechance.dukan.entity.Dukan
 import net.thechance.dukan.exception.DukanCreationFailedException
+import net.thechance.dukan.exception.DukanNotFoundException
 import net.thechance.dukan.repository.DukanCategoryRepository
 import net.thechance.dukan.repository.DukanColorRepository
 import net.thechance.dukan.repository.DukanRepository
 import org.springframework.stereotype.Service
+import org.springframework.web.multipart.MultipartFile
 import java.util.*
 
 @Service
@@ -46,6 +49,18 @@ class DukanService(
             ownerId = ownerId,
         )
     }
+
+    @Transactional
+    fun uploadDukanImage(ownerId: UUID, file: MultipartFile): String {
+        val dukan = dukanRepository.findByOwnerId(ownerId)?: throw DukanNotFoundException()
+        val imageUrl = file.originalFilename.orEmpty() // TODO (Upload the image to real storage service)
+        dukan.imageUrl = imageUrl
+
+        return imageUrl
+    }
+
+
+
 
     private fun validateDukanCreation(request: DukanCreationRequest, ownerId: UUID) {
         if (dukanRepository.existsByOwnerId(ownerId)) {
