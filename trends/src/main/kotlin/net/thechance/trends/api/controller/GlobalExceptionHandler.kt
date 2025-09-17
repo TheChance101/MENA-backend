@@ -12,7 +12,7 @@ class GlobalExceptionHandler {
 
     @ExceptionHandler(ReelNotFoundException::class)
     @ResponseStatus(HttpStatus.NOT_FOUND)
-    fun handleNoSuchElementException(exception: ReelNotFoundException): BaseErrorResponse {
+    fun handleReelNotFoundException(exception: ReelNotFoundException): BaseErrorResponse {
         val message = exception.localizedMessage
 
         return BaseErrorResponse(
