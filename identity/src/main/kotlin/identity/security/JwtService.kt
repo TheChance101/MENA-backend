@@ -14,9 +14,10 @@ import javax.crypto.SecretKey
 
 @Service
 class JwtService(
-    @param:Value("\${jwt.secret-key}") val secret: String
+    @param:Value("\${jwt.secret-key}") val secret: String,
+    @param:Value("\${jwt.expiration}") val expiration: Long,
 ) {
-    private val accessExpiration = Duration.ofHours(1)
+    private val accessExpiration = Duration.ofHours(expiration)
 
     private val secretKey: SecretKey = Keys.hmacShaKeyFor(Base64.getDecoder().decode(secret))
 
