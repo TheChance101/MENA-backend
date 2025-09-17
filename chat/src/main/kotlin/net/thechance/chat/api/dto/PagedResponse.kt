@@ -14,7 +14,7 @@ data class PagedResponse<T>(
 fun <T> Page<T>.toResponse(): PagedResponse<T>{
     return PagedResponse(
         data = this.content,
-        pageNumber = this.number,
+        pageNumber = this.number + 1,
         pageSize = this.size,
         totalItems = this.totalElements,
         totalPages = this.totalPages
