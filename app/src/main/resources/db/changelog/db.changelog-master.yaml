@@ -1,0 +1,19 @@
+databaseChangeLog:
+#  - includeAll:
+#      path: changelogs-chat
+#      relativeToChangelogFile: true
+  - includeAll:
+      path: changelogs-dukan
+      relativeToChangelogFile: true
+#  - includeAll:
+#      path: changelogs-faith
+#      relativeToChangelogFile: true
+  - includeAll:
+      path: changelogs-identity
+      relativeToChangelogFile: true
+#  - includeAll:
+#      path: changelogs-trends
+#      relativeToChangelogFile: true
+#  - includeAll:
+#      path: changelogs-wallet
+#      relativeToChangelogFile: true
