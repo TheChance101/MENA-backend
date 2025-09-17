@@ -22,7 +22,7 @@ data class Dukan(
     )
     val categories: Set<DukanCategory>,
     @Column(name = "image_url", nullable = true)
-    var imageUrl: String? = null,
+    val imageUrl: String? = null,
     @Column(name = "address", nullable = false)
     val address: String,
     @Column(name = "latitude", nullable = false)

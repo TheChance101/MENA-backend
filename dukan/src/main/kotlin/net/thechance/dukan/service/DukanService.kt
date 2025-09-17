@@ -51,12 +51,11 @@ class DukanService(
     }
 
     @Transactional
-    fun uploadDukanImage(ownerId: UUID, file: MultipartFile): String {
-        val dukan = dukanRepository.findByOwnerId(ownerId)?: throw DukanNotFoundException()
+    fun uploadDukanImage(ownerId: UUID, file: MultipartFile): Dukan {
+        val dukan = dukanRepository.findByOwnerId(ownerId) ?: throw DukanNotFoundException()
         val imageUrl = file.originalFilename.orEmpty() // TODO (Upload the image to real storage service)
-        dukan.imageUrl = imageUrl
-
-        return imageUrl
+        val updatedDukan = dukan.copy(imageUrl = imageUrl)
+        return dukanRepository.save(updatedDukan)
     }
 
     private fun validateDukanCreation(request: DukanCreationRequest, ownerId: UUID) {
