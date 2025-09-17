@@ -15,7 +15,6 @@ class ContactService(
     private val contactRepository: ContactRepository
 ) {
     fun getPagedContactByUserId(userId: UUID, pageable: Pageable): Page<ContactModel> {
-
         val pagedData = if (pageable.pageNumber <= 0 || pageable.pageSize <= 0) {
             contactRepository.findAllByUserId(userId, Pageable.unpaged(Sort.by("firstName").ascending()))
         } else {
