@@ -1,9 +1,9 @@
 package net.thechance.chat.api.controller
 
+import chat.service.toResponse
 import net.thechance.chat.api.dto.ContactResponse
 import net.thechance.chat.api.dto.PagedResponse
 import net.thechance.chat.api.dto.toResponse
-import chat.service.toResponse
 import net.thechance.chat.service.ContactService
 import org.springframework.data.domain.Pageable
 import org.springframework.http.ResponseEntity
@@ -11,11 +11,10 @@ import org.springframework.security.core.annotation.AuthenticationPrincipal
 import org.springframework.web.bind.annotation.GetMapping
 import org.springframework.web.bind.annotation.RequestMapping
 import org.springframework.web.bind.annotation.RestController
-import java.security.Principal
-import java.util.UUID
+import java.util.*
 
 @RestController
-@RequestMapping("/contacts")
+@RequestMapping("/chat/contacts")
 class ContactController(
     private val contactService: ContactService
 ) {
