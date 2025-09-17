@@ -10,7 +10,6 @@ import org.springframework.web.bind.annotation.GetMapping
 import org.springframework.web.bind.annotation.RequestMapping
 import org.springframework.web.bind.annotation.RequestParam
 import org.springframework.web.bind.annotation.RestController
-import java.util.UUID
 
 @RestController
 @RequestMapping("/dukan")
@@ -28,9 +27,9 @@ class DukanController(
 
     @GetMapping("/statues")
     fun getDukanStatues(
-        @AuthenticationPrincipal ownerId: UUID,
+        @AuthenticationPrincipal ownerId: String,
     ): ResponseEntity<DukanStatuesResponse> {
-        val dukanStatues = dukanService.getDukanStatues(ownerId)
-        return ResponseEntity.ok(DukanStatuesResponse(dukanStatues))
+        val dukan = dukanService.getDukanByOwnerId(ownerId)
+        return ResponseEntity.ok(DukanStatuesResponse(dukan.name, dukan.status))
     }
 }
