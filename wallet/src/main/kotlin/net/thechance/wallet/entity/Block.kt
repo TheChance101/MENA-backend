@@ -9,7 +9,7 @@ import java.util.*
 data class Block(
     @Id
     @GeneratedValue(strategy = GenerationType.UUID)
-    val id: UUID,
+    val id: UUID = UUID.randomUUID(),
 
     @Column(nullable = false, updatable = false)
     val previousBlockHash: String,
