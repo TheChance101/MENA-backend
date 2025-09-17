@@ -13,9 +13,9 @@ data class Category(
     @Column(columnDefinition = "uuid", nullable = false, updatable = false)
     val id: UUID = UUID.randomUUID(),
 
-    @Column(name = "name", nullable = false, unique = true)
+    @Column(nullable = false, unique = true)
     val name: String,
 
-    @Column(name = "emoji", nullable = false, unique = false)
+    @Column(nullable = false, unique = false)
     val emoji: String,
 )
