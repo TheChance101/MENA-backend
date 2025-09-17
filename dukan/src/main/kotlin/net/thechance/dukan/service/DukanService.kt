@@ -23,23 +23,28 @@ class DukanService(
     ): Dukan {
         validateDukanCreation(dukanRequest, ownerId)
 
-        val categories = dukanCategoryRepository.findAllById(dukanRequest.categoryIds)
+        val dukan = dukanRequest.toDukan(ownerId = ownerId)
+        return dukanRepository.save(dukan)
+    }
+
+    fun DukanCreationRequest.toDukan(
+        ownerId: UUID
+    ): Dukan {
+        val categories = dukanCategoryRepository.findAllById(categoryIds)
             .toSet()
             .ifEmpty { throw DukanCreationFailedException() }
-        val color = dukanColorRepository.findById(dukanRequest.colorId)
+        val color = dukanColorRepository.findById(colorId)
             .orElseThrow { DukanCreationFailedException() }
-
-        val dukan = Dukan(
-            name = dukanRequest.name,
+        return Dukan(
+            name = name,
             categories = categories,
-            address = dukanRequest.address,
-            latitude = dukanRequest.latitude,
-            longitude = dukanRequest.longitude,
+            address = address,
+            latitude = latitude,
+            longitude = longitude,
             color = color,
-            style = dukanRequest.style,
+            style = style,
             ownerId = ownerId,
         )
-        return dukanRepository.save(dukan)
     }
 
     private fun validateDukanCreation(request: DukanCreationRequest, ownerId: UUID) {
