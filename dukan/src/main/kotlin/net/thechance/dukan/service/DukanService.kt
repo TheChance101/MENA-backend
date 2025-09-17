@@ -59,9 +59,6 @@ class DukanService(
         return imageUrl
     }
 
-
-
-
     private fun validateDukanCreation(request: DukanCreationRequest, ownerId: UUID) {
         if (dukanRepository.existsByOwnerId(ownerId)) {
             throw DukanCreationFailedException()
