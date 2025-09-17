@@ -20,16 +20,6 @@ class GlobalExceptionHandler {
         )
     }
 
-    @ExceptionHandler(IllegalAccessException::class)
-    @ResponseStatus(HttpStatus.UNAUTHORIZED)
-    fun handleIllegalException(e: IllegalAccessException): BaseErrorResponse {
-        val message = e.message ?: "You can't access this resource!"
-
-        return BaseErrorResponse(
-            message = message,
-            errors = null
-        )
-    }
 
     @ExceptionHandler(IllegalArgumentException::class)
     @ResponseStatus(HttpStatus.BAD_REQUEST)
