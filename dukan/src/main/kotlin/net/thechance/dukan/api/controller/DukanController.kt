@@ -40,7 +40,7 @@ class DukanController(
     fun uploadDukanImage(
         @AuthenticationPrincipal ownerId: UUID,
         @RequestParam("file") file: MultipartFile,
-    ): ResponseEntity<Dukan> {
+    ): ResponseEntity<String> {
         val imageUrl = dukanService.uploadDukanImage(ownerId, file)
         return ResponseEntity.ok(imageUrl)
     }
