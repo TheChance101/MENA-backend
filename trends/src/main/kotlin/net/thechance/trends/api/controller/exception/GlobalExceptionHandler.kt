@@ -1,4 +1,4 @@
-package net.thechance.trends.api.controller.expection
+package net.thechance.trends.api.controller.exception
 
 import org.springframework.http.HttpStatus
 import org.springframework.web.bind.annotation.ExceptionHandler
