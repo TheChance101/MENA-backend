@@ -10,8 +10,8 @@ data class Reel(
     @Id
     @GeneratedValue(strategy = GenerationType.UUID)
     val id: UUID = UUID.randomUUID(),
-    @Column(name = "user_id", nullable = false)
-    val userId: UUID,
+    @Column(name = "owner_id", nullable = false)
+    val ownerId: UUID,
     @Column(name = "thumbnail_url", nullable = false)
     val thumbnailUrl: String,
     @Column(name = "video_url", nullable = false)
@@ -31,6 +31,5 @@ data class Reel(
         inverseJoinColumns = [JoinColumn(name = "category_id")],
         schema = "trends"
     )
-    @Column(name = "categories", nullable = true)
     val categories: Set<Category> = emptySet()
 )

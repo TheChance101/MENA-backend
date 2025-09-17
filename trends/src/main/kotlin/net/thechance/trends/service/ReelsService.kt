@@ -22,7 +22,7 @@ class ReelsService(
             }
 
         val currentUser = SecurityContextHolder.getContext().authentication.principal as UUID
-        if (reel.userId != currentUser)
+        if (reel.ownerId != currentUser)
             throw ResponseStatusException(
                 HttpStatus.UNAUTHORIZED,
                 "You can only delete your own reels"

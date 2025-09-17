@@ -15,7 +15,7 @@ class ReelsController(
 ) {
 
     @DeleteMapping("/{id}")
-    fun deleteReelById(@PathVariable id: UUID): ResponseEntity<Void> {
+    fun deleteReelById(@PathVariable id: UUID): ResponseEntity<Unit> {
         reelsService.deleteReelById(id)
         return ResponseEntity.noContent().build()
     }
