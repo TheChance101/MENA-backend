@@ -21,7 +21,7 @@ class CategoryController(
 ) {
 
     @PostMapping
-    fun postUserCategories(
+    fun addUserCategories(
         @RequestBody @Valid userCategoriesRequest: SubmitUserCategoriesRequest,
         @AuthenticationPrincipal userId: UUID
     ): ResponseEntity<SubmitUserCategoriesResponse> {
