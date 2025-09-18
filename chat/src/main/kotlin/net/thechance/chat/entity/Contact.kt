@@ -11,8 +11,7 @@ import java.util.UUID
 @Entity
 @Table(
     name = "contacts", schema = "chat",
-    indexes = [Index(name = "idx_contacts_user_id", columnList = "userId")],
-    uniqueConstraints = [UniqueConstraint(columnNames = ["userId", "phoneNumber"])]
+    uniqueConstraints = [UniqueConstraint(columnNames = ["contactOwnerId", "phoneNumber"])]
 )
 data class Contact(
     @Id @Column(columnDefinition = "uuid", updatable = false, nullable = false)
@@ -20,5 +19,5 @@ data class Contact(
     @Column(nullable = false) val firstName: String,
     @Column(nullable = false) val lastName: String,
     @Column(nullable = false) val phoneNumber: String,
-    @Column(nullable = false) val userId: UUID
+    @Column(nullable = false) val contactOwnerId: UUID
 )

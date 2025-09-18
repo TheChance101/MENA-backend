@@ -9,11 +9,15 @@ data class ContactRequest(
     val phoneNumber: String
 )
 
+fun List<ContactRequest>.toContacts(ownerUserId: UUID): List<Contact> {
+    return this.map { it.toContact(ownerUserId) }
+}
+
 fun ContactRequest.toContact(ownerUserId: UUID): Contact {
     return Contact(
         firstName = this.firstName,
         lastName = this.lastName,
         phoneNumber = this.phoneNumber,
-        userId = ownerUserId,
+        contactOwnerId = ownerUserId,
     )
 }
