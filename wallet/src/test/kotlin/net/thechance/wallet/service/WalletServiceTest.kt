@@ -14,12 +14,12 @@ class WalletServiceTest {
 
     @Test
     fun `getUserBalance should total return user balance when it is called`() {
-        every { transactionRepository.sumAmountBySenderId(USER_ID) } returns DEBIT
-        every { transactionRepository.sumAmountByReceiverId(USER_ID) } returns CREDIT
+        every { transactionRepository.sumAmountBySenderId(USER_ID) } returns SENT
+        every { transactionRepository.sumAmountByReceiverId(USER_ID) } returns RECEIVED
 
         val result = walletService.getUserBalance(USER_ID)
 
-        assertThat(result).isEqualTo(CREDIT - DEBIT)
+        assertThat(result).isEqualTo(RECEIVED - SENT)
     }
 
     @Test
@@ -34,7 +34,7 @@ class WalletServiceTest {
 
     companion object {
         private val USER_ID = UUID.randomUUID()
-        private const val CREDIT = 32543.0
-        private const val DEBIT = 3236.0
+        private const val RECEIVED = 32543.0
+        private const val SENT = 3236.0
     }
 }
