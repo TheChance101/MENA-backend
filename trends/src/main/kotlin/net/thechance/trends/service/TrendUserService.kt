@@ -16,6 +16,7 @@ class TrendUserService(
         val existingCategoryIds = trendUser.categories.map { it.id }.toSet()
         val newCategories = categories.filterNot { it.id in existingCategoryIds }
 
+        trendUser.categories.clear()
         trendUser.categories.addAll(newCategories)
         trendUserRepository.save(trendUser)
     }
