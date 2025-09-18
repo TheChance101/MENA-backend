@@ -11,9 +11,9 @@ class WalletService(
 
     fun getUserBalance(userId: UUID): Double {
 
-        val totalCredits = transactionRepository.sumAmountByReceiverId(userId) ?:0.0
+        val totalCredits = transactionRepository.sumAmountByReceiverId(userId) ?: 0.0
 
-        val totalDebits = transactionRepository.sumAmountBySenderId(userId) ?:0.0
+        val totalDebits = transactionRepository.sumAmountBySenderId(userId) ?: 0.0
 
         return totalCredits - totalDebits
     }
