@@ -10,7 +10,7 @@ import org.springframework.web.bind.annotation.RequestMapping
 import org.springframework.web.bind.annotation.RestController
 
 @RestController
-@RequestMapping("${Constants.TRENDS_PATH}/category")
+@RequestMapping("/${Constants.TRENDS_PATH}/category")
 class CategoryController(
     private val categoryService: CategoryService
 ) {
