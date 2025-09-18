@@ -2,6 +2,10 @@ package net.thechance.dukan.repository
 
 import net.thechance.dukan.entity.Dukan
 import org.springframework.data.jpa.repository.JpaRepository
+import org.springframework.stereotype.Repository
 import java.util.UUID
 
-interface DukanRepository: JpaRepository<Dukan, UUID>
+@Repository
+interface DukanRepository : JpaRepository<Dukan, UUID> {
+    fun existsByName(name: String): Boolean
+}
