@@ -12,26 +12,6 @@ class GlobalExceptionHandler {
 
     private val logger = LoggerFactory.getLogger(GlobalExceptionHandler::class.java)
 
-    @ExceptionHandler(RefreshTokenExpiredException::class)
-    fun handleRefreshTokenExpired(ex: RefreshTokenExpiredException): ResponseEntity<ApiErrorResponse> {
-        return createErrorResponse(ex, ErrorCodes.INVALID_REFRESH_TOKEN, "Refresh Token Expired")
-    }
-
-    @ExceptionHandler(InvalidCredentialsException::class)
-    fun handleInvalidCredentials(ex: InvalidCredentialsException): ResponseEntity<ApiErrorResponse> {
-        return createErrorResponse(ex, ErrorCodes.INVALID_CREDENTIALS, "Invalid Credentials")
-    }
-
-    @ExceptionHandler(JwtTokenExpiredException::class)
-    fun handleJwtTokenExpired(ex: JwtTokenExpiredException): ResponseEntity<ApiErrorResponse> {
-        return createErrorResponse(ex, ErrorCodes.JWT_EXPIRED, "JWT Token Expired")
-    }
-
-    @ExceptionHandler(AuthenticationRequiredException::class)
-    fun handleAuthenticationRequired(ex: AuthenticationRequiredException): ResponseEntity<ApiErrorResponse> {
-        return createErrorResponse(ex, HttpStatus.UNAUTHORIZED.value(), "Authentication Required")
-    }
-
     @ExceptionHandler(ResourceNotFoundException::class)
     fun handleResourceNotFound(ex: ResourceNotFoundException): ResponseEntity<ApiErrorResponse> {
         return createErrorResponse(ex, HttpStatus.NOT_FOUND.value(), "Resource Not Found")
@@ -49,8 +29,7 @@ class GlobalExceptionHandler {
 
     @ExceptionHandler(RequestValidationException::class)
     fun handleRequestValidation(ex: RequestValidationException): ResponseEntity<ApiErrorResponse> {
-        val errors = ex.validationErrors ?: emptyList()
-        return createErrorResponse(ex, HttpStatus.BAD_REQUEST.value(), "Validation Failed", errors)
+        return createErrorResponse(ex, HttpStatus.BAD_REQUEST.value(), "Validation Failed")
     }
 
     @ExceptionHandler(MissingRequiredFieldException::class)
@@ -59,24 +38,21 @@ class GlobalExceptionHandler {
     }
 
     @ExceptionHandler(Exception::class)
-    fun handleGeneral(ex: Exception): ResponseEntity<ApiErrorResponse> {
+    fun handleGeneral(): ResponseEntity<ApiErrorResponse> {
         val apiError = ApiErrorResponse(
             status = HttpStatus.INTERNAL_SERVER_ERROR.value(),
-            exception = ex.javaClass.simpleName,
-            error = "Internal Server Error",
             message = "An unexpected error occurred while processing your request"
         )
-        logger.error("Unexpected error: {}", ex.message, ex)
         return ResponseEntity(apiError, HttpStatus.INTERNAL_SERVER_ERROR)
     }
 
     private fun createErrorResponse(
-        ex: Exception, status: Int, error: String, errors: List<String>? = null
+        ex: Exception, status: Int, message: String
     ): ResponseEntity<ApiErrorResponse> {
         val apiError = ApiErrorResponse(
-            status = status, exception = ex.javaClass.simpleName, error = error, message = ex.message, errors = errors
+            status = status, message = ex.message ?: ""
         )
-        logger.warn("{}: {}", error, ex.message)
+        logger.error("{}: {}", message, ex.message)
         return ResponseEntity(apiError, HttpStatus.valueOf(status))
     }
 }

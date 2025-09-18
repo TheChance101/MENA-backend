@@ -1,8 +1,7 @@
 package net.thechance.app.exception.exceptions
 
 class RequestValidationException(
-    message: String = "Request validation failed",
-    val validationErrors: List<String>? = null
+    message: String = "Request validation failed"
 ) : RuntimeException(message)
 
 class MissingRequiredFieldException(
