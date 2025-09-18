@@ -5,6 +5,7 @@ import jakarta.validation.constraints.NotBlank
 import net.thechance.dukan.api.dto.DukanCreationRequest
 import net.thechance.dukan.api.dto.DukanNameAvailabilityResponse
 import net.thechance.dukan.entity.Dukan
+import net.thechance.dukan.mapper.toDukanCreationParams
 import net.thechance.dukan.service.DukanService
 import org.springframework.http.ResponseEntity
 import org.springframework.security.core.annotation.AuthenticationPrincipal
@@ -32,7 +33,7 @@ class DukanController(
         @Valid @RequestBody requestBody: DukanCreationRequest,
         @AuthenticationPrincipal userId: UUID,
     ): ResponseEntity<Dukan> {
-        val dukan = dukanService.createDukan(requestBody, userId)
+        val dukan = dukanService.createDukan(requestBody.toDukanCreationParams(userId))
         return ResponseEntity.ok(dukan)
     }
 
