@@ -11,9 +11,7 @@ class DukanService(
     private val dukanRepository: DukanRepository,
 ) {
     fun isDukanNameAvailable(name: String): Boolean = dukanRepository.existsByName(name).not()
-    fun getDukanByOwnerId(ownerId: String): Dukan {
-       return  dukanRepository.findByOwnerId(
-            ownerId.let { UUID.fromString(it) }
-        ) ?: throw DukanNotFoundException()
+    fun getDukanByOwnerId(ownerId: UUID): Dukan {
+       return  dukanRepository.findByOwnerId(ownerId) ?: throw DukanNotFoundException()
     }
 }
