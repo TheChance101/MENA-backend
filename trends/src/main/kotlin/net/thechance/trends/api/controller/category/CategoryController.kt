@@ -18,13 +18,10 @@ class CategoryController(
     @GetMapping
     fun getAllCategories(): ResponseEntity<GetAllCategoriesResponse> {
         val categories = categoryService.getAllCategories()
-        return ResponseEntity.ok(
-            GetAllCategoriesResponse(
-                message = "Success",
-                data = categories.map {
-                    it.toCategoryResponse()
-                }
-            )
+        val response = GetAllCategoriesResponse(
+            message = "Success",
+            data = categories.map { it.toCategoryResponse() }
         )
+        return ResponseEntity.ok(response)
     }
 }
