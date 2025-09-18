@@ -1,5 +1,7 @@
 package net.thechance.dukan.api.controller
 
+import net.thechance.dukan.api.dto.DukanStyleResponse
+import net.thechance.dukan.mapper.toDukanStyleResponse
 import net.thechance.dukan.api.dto.DukanCategoryResponse
 import net.thechance.dukan.mapper.DukanLanguage
 import net.thechance.dukan.mapper.toDto
@@ -18,10 +20,13 @@ import java.util.UUID
 @RestController
 @RequestMapping("/dukan")
 class DukanController(
-    private val dukanService: DukanService,
+    private val dukanService: DukanService
 ) {
     @GetMapping("/styles")
-    fun getAllStyles() = dukanService.getAllStyles()
+    fun getAllStyles(): ResponseEntity<DukanStyleResponse> {
+        val styles = dukanService.getAllStyles().toDukanStyleResponse()
+       return ResponseEntity.ok(styles)
+    }
 
     @GetMapping("/categories")
     fun getAllCategories(): ResponseEntity<DukanCategoryResponse> {
