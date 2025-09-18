@@ -1,6 +1,6 @@
 package net.thechance.identity.security
 
-import net.thechance.app.exception.CustomAuthenticationEntryPoint
+import net.thechance.identity.security.handler.CustomAuthenticationEntryPoint
 import org.springframework.context.annotation.Bean
 import org.springframework.context.annotation.Configuration
 import org.springframework.security.config.annotation.web.builders.HttpSecurity

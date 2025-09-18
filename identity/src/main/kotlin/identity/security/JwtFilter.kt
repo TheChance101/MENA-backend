@@ -1,12 +1,11 @@
 package net.thechance.identity.security
 
-import com.fasterxml.jackson.databind.ObjectMapper
 import io.jsonwebtoken.ExpiredJwtException
 import io.jsonwebtoken.MalformedJwtException
 import jakarta.servlet.FilterChain
 import jakarta.servlet.http.HttpServletRequest
 import jakarta.servlet.http.HttpServletResponse
-import net.thechance.app.exception.ApiErrorResponse
+import net.thechance.identity.security.handler.AuthErrorResponder
 import net.thechance.identity.service.UserService
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken
 import org.springframework.security.core.context.SecurityContextHolder
@@ -19,7 +18,7 @@ import java.util.*
 class JwtFilter(
     private val jwtService: JwtService,
     private val userService: UserService,
-    private val objectMapper: ObjectMapper
+    private val authErrorResponder: AuthErrorResponder
 ) : OncePerRequestFilter() {
 
     override fun doFilterInternal(
@@ -46,52 +45,12 @@ class JwtFilter(
 
             filterChain.doFilter(request, response)
         } catch (_: ExpiredJwtException) {
-            handleJwtExpired(response)
+            authErrorResponder.handleJwtExpired(response)
         } catch (_: MalformedJwtException) {
-            handleInvalidToken(response)
+            authErrorResponder.handleInvalidToken(response)
         } catch (_: Exception) {
-            handleGeneralAuthError(response)
+            authErrorResponder.handleGeneralAuthError(response)
         }
-    }
-
-    private fun handleJwtExpired(
-        response: HttpServletResponse
-    ) {
-        val apiError = ApiErrorResponse(
-            status = 1001,
-            message = "JWT token has expired. Please login again."
-        )
-        sendErrorResponse(response, apiError)
-    }
-
-    private fun handleInvalidToken(
-        response: HttpServletResponse
-    ) {
-        val apiError = ApiErrorResponse(
-            status = 1002,
-            message = "Invalid JWT token format"
-        )
-        sendErrorResponse(response, apiError)
-    }
-
-    fun handleGeneralAuthError(
-        response: HttpServletResponse
-    ) {
-        val apiError = ApiErrorResponse(
-            status = HttpServletResponse.SC_UNAUTHORIZED,
-            message = "Access Denied"
-        )
-        sendErrorResponse(response, apiError)
-    }
-
-    private fun sendErrorResponse(
-        response: HttpServletResponse,
-        apiError: ApiErrorResponse
-    ) {
-        response.contentType = "application/json"
-        response.status = HttpServletResponse.SC_UNAUTHORIZED
-
-        response.writer.write(objectMapper.writeValueAsString(apiError))
     }
 
     companion object {
