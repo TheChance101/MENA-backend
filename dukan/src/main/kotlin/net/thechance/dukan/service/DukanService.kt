@@ -1,13 +1,13 @@
 package net.thechance.dukan.service
 
-import net.thechance.dukan.api.dto.DukanCreationRequest
 import net.thechance.dukan.entity.Dukan
 import net.thechance.dukan.exception.DukanCreationFailedException
+import net.thechance.dukan.mapper.toDukan
 import net.thechance.dukan.repository.DukanCategoryRepository
 import net.thechance.dukan.repository.DukanColorRepository
 import net.thechance.dukan.repository.DukanRepository
+import net.thechance.dukan.service.model.DukanCreationParams
 import org.springframework.stereotype.Service
-import java.util.*
 
 @Service
 class DukanService(
@@ -17,42 +17,28 @@ class DukanService(
 ) {
     fun isDukanNameAvailable(name: String): Boolean = dukanRepository.existsByName(name).not()
 
-    fun createDukan(
-        dukanRequest: DukanCreationRequest,
-        ownerId: UUID,
-    ): Dukan {
-        validateDukanCreation(dukanRequest, ownerId)
+    fun createDukan(params: DukanCreationParams): Dukan {
+        validateDukanCreation(params)
 
-        val dukan = dukanRequest.toDukan(ownerId = ownerId)
+        val categories = dukanCategoryRepository.findAllById(params.categoryIds)
+            .toSet()
+            .ifEmpty { throw DukanCreationFailedException() }
+        val color = dukanColorRepository.findById(params.colorId)
+            .orElseThrow { DukanCreationFailedException() }
+
+        val dukan = params.toDukan(
+            color = color,
+            categories = categories
+        )
         return dukanRepository.save(dukan)
     }
 
-    fun DukanCreationRequest.toDukan(
-        ownerId: UUID
-    ): Dukan {
-        val categories = dukanCategoryRepository.findAllById(categoryIds)
-            .toSet()
-            .ifEmpty { throw DukanCreationFailedException() }
-        val color = dukanColorRepository.findById(colorId)
-            .orElseThrow { DukanCreationFailedException() }
-        return Dukan(
-            name = name,
-            categories = categories,
-            address = address,
-            latitude = latitude,
-            longitude = longitude,
-            color = color,
-            style = style,
-            ownerId = ownerId,
-        )
-    }
-
-    private fun validateDukanCreation(request: DukanCreationRequest, ownerId: UUID) {
-        if (dukanRepository.existsByOwnerId(ownerId)) {
+    private fun validateDukanCreation(params: DukanCreationParams) {
+        if (dukanRepository.existsByOwnerId(params.ownerId)) {
             throw DukanCreationFailedException()
         }
 
-        if (dukanRepository.existsByName(request.name)) {
+        if (dukanRepository.existsByName(params.name)) {
             throw DukanCreationFailedException()
         }
     }
