@@ -28,9 +28,9 @@ class DukanController(
 
     @GetMapping("/statues")
     fun getDukanStatues(
-        @AuthenticationPrincipal ownerId: UUID,
+        @AuthenticationPrincipal userId: UUID,
     ): ResponseEntity<DukanStatuesResponse> {
-        val dukan = dukanService.getDukanByOwnerId(ownerId)
+        val dukan = dukanService.getDukanByOwnerId(userId)
         return ResponseEntity.ok(DukanStatuesResponse(dukan.name, dukan.status))
     }
 }
