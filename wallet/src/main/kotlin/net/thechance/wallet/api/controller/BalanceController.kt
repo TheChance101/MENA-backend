@@ -1,6 +1,6 @@
 package net.thechance.wallet.api.controller
 
-import net.thechance.wallet.api.dto.BalanceDto
+import net.thechance.wallet.api.dto.BalanceResponse
 import net.thechance.wallet.service.WalletService
 import org.springframework.http.ResponseEntity
 import org.springframework.security.core.annotation.AuthenticationPrincipal
@@ -16,11 +16,11 @@ class BalanceController(
 ) {
 
     @GetMapping("/balance")
-    fun getUserBalance(@AuthenticationPrincipal userId: UUID): ResponseEntity<BalanceDto> {
+    fun getUserBalance(@AuthenticationPrincipal userId: UUID): ResponseEntity<BalanceResponse> {
 
         val balance = walletService.getUserBalance(userId)
 
-        val response = BalanceDto(userId = userId, balance = balance)
+        val response = BalanceResponse(balance = balance)
 
         return ResponseEntity.ok(response)
     }
