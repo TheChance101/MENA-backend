@@ -12,7 +12,10 @@ import net.thechance.identity.exception.UserIsBlockedException
 import net.thechance.identity.service.AuthenticationService
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
+import org.springframework.http.HttpStatus
 import org.springframework.http.ResponseEntity
+import org.springframework.security.authentication.BadCredentialsException
+import org.springframework.security.authentication.BadCredentialsException
 import org.springframework.web.bind.annotation.*
 
 @RestController
@@ -29,6 +32,11 @@ class IdentityController(
         val ipAddress = httpRequest.remoteAddr ?: throw InvalidIpException("Invalid IP")
         val authResponse = authenticationService.login(request.phoneNumber, request.password, ipAddress)
         return ResponseEntity.ok(authResponse)
+    }
+
+    @PostMapping("/refresh")
+    fun refresh(@RequestBody @Valid request: RefreshTokenRequest): ResponseEntity<AuthResponse> {
+        return ResponseEntity.ok(authenticationService.refreshToken(request.refreshToken))
     }
 
     @ExceptionHandler(AuthenticationException::class)
@@ -51,6 +59,11 @@ class IdentityController(
                 ResponseEntity.internalServerError().body(ErrorResponse("unknown error happened"))
             }
         }
+    }
+
+    @ExceptionHandler(BadCredentialsException::class)
+    fun handleBadCredentialsException(): ResponseEntity<String> {
+        return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("Invalid phone number or password")
     }
 
     @ExceptionHandler(Exception::class)
