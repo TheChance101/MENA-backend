@@ -10,8 +10,7 @@ import java.util.UUID
 
 @Entity
 @Table(
-    name = "contacts",
-    schema = "chat",
+    name = "contacts", schema = "chat",
     indexes = [Index(name = "idx_contacts_user_id", columnList = "userId")],
     uniqueConstraints = [UniqueConstraint(columnNames = ["userId", "phoneNumber"])]
 )
