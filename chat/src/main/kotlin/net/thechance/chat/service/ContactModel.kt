@@ -31,7 +31,6 @@ fun ContactModel.toResponse() : ContactResponse{
         firstName = this.firstName,
         lastName = this.lastName,
         phoneNumber = this.phoneNumber,
-        userId = this.userId,
         isMenaUser = this.isMenaUser,
         imageUrl = this.imageUrl
     )
