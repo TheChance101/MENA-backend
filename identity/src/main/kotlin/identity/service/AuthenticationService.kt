@@ -1,10 +1,10 @@
 package net.thechance.identity.service
 
-import identity.service.exception.InvalidRefreshTokenException
 import net.thechance.identity.api.dto.AuthResponse
 import net.thechance.identity.entity.LoginLog
 import net.thechance.identity.entity.User
 import net.thechance.identity.exception.InvalidCredentialsException
+import net.thechance.identity.exception.InvalidRefreshTokenException
 import net.thechance.identity.exception.UserIsBlockedException
 import net.thechance.identity.repository.RefreshTokenRepository
 import net.thechance.identity.security.JwtService
