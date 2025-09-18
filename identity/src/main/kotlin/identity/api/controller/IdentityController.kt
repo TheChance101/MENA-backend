@@ -1,21 +1,17 @@
 package net.thechance.identity.api.controller
 
+import identity.api.dto.RefreshTokenRequest
 import jakarta.servlet.http.HttpServletRequest
 import jakarta.validation.Valid
 import net.thechance.identity.api.dto.AuthRequest
 import net.thechance.identity.api.dto.AuthResponse
 import net.thechance.identity.api.dto.ErrorResponse
-import net.thechance.identity.exception.AuthenticationException
-import net.thechance.identity.exception.InvalidCredentialsException
-import net.thechance.identity.exception.InvalidIpException
-import net.thechance.identity.exception.UserIsBlockedException
+import net.thechance.identity.exception.*
 import net.thechance.identity.service.AuthenticationService
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
 import org.springframework.http.HttpStatus
 import org.springframework.http.ResponseEntity
-import org.springframework.security.authentication.BadCredentialsException
-import org.springframework.security.authentication.BadCredentialsException
 import org.springframework.web.bind.annotation.*
 
 @RestController
@@ -44,31 +40,42 @@ class IdentityController(
         logger.error("Authentication failed: ${exception.message}", exception)
         return when (exception) {
             is UserIsBlockedException -> {
-                ResponseEntity.status(403).body(ErrorResponse("User is blocked"))
+                ResponseEntity
+                    .status(HttpStatus.FORBIDDEN)
+                    .body(ErrorResponse("User is blocked"))
             }
 
             is InvalidCredentialsException -> {
-                ResponseEntity.status(401).body(ErrorResponse("Invalid credentials"))
+                ResponseEntity
+                    .status(HttpStatus.UNAUTHORIZED)
+                    .body(ErrorResponse("Invalid credentials"))
             }
 
             is InvalidIpException -> {
-                ResponseEntity.badRequest().body(ErrorResponse("Invalid IP"))
+                ResponseEntity
+                    .status(HttpStatus.BAD_REQUEST)
+                    .body(ErrorResponse("Invalid IP"))
+            }
+
+            is InvalidRefreshTokenException -> {
+                ResponseEntity
+                    .status(HttpStatus.UNAUTHORIZED)
+                    .body(ErrorResponse("Invalid refresh token"))
             }
 
             else -> {
-                ResponseEntity.internalServerError().body(ErrorResponse("unknown error happened"))
+                ResponseEntity
+                    .status(HttpStatus.INTERNAL_SERVER_ERROR)
+                    .body(ErrorResponse("unknown error happened"))
             }
         }
-    }
-
-    @ExceptionHandler(BadCredentialsException::class)
-    fun handleBadCredentialsException(): ResponseEntity<String> {
-        return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("Invalid phone number or password")
     }
 
     @ExceptionHandler(Exception::class)
     fun handleException(exception: Exception): ResponseEntity<ErrorResponse?> {
         logger.error("Unknown error happened: ${exception.message}", exception)
-        return ResponseEntity.internalServerError().body(ErrorResponse("unknown error happened"))
+        return ResponseEntity
+            .status(HttpStatus.INTERNAL_SERVER_ERROR)
+            .body(ErrorResponse("unknown error happened"))
     }
 }
