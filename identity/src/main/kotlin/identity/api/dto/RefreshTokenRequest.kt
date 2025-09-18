@@ -1,4 +1,4 @@
-package identity.dto
+package identity.api.dto
 
 import jakarta.validation.constraints.NotBlank
 
