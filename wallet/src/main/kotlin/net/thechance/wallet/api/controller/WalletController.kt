@@ -1,13 +1,13 @@
-package net.thechance.trends
+package net.thechance.wallet.api.controller
 
 import org.springframework.web.bind.annotation.GetMapping
 import org.springframework.web.bind.annotation.RestController
 
 @RestController
-class TrendsController {
+class WalletController {
 
-    @GetMapping("/trends/hello")
+    @GetMapping("/wallet/hello")
     fun hello(): String {
-        return "Hello trends World!"
+        return "Hello wallet World!"
     }
 }
