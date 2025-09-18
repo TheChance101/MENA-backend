@@ -1,4 +1,4 @@
-package net.thechance.trends.api.controller
+package net.thechance.trends.api.controller.category
 
 import jakarta.validation.Valid
 import net.thechance.trends.api.dto.category.SubmitUserCategoriesRequest
@@ -14,14 +14,14 @@ import org.springframework.web.bind.annotation.RestController
 import java.util.UUID
 
 @RestController
-@RequestMapping("/trends")
+@RequestMapping("/trends/categories")
 class CategoryController(
     private val categoryService: CategoryService,
     private val trendUserService: TrendUserService,
 ) {
 
-    @PostMapping("/interests")
-    fun postUserInterests(
+    @PostMapping
+    fun postUserCategories(
         @RequestBody @Valid userCategoriesRequest: SubmitUserCategoriesRequest,
         @AuthenticationPrincipal userId: UUID
     ): ResponseEntity<SubmitUserCategoriesResponse> {
