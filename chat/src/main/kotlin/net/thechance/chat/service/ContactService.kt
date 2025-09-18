@@ -1,7 +1,5 @@
 package net.thechance.chat.service
 
-import chat.service.ContactModel
-import chat.service.toModel
 import net.thechance.chat.repository.ContactRepository
 import org.springframework.data.domain.Page
 import org.springframework.data.domain.PageRequest

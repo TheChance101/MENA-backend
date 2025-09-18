@@ -20,8 +20,9 @@ class ContactController(
     @GetMapping
     fun getPagedContact(
         pageable: Pageable,
-        @AuthenticationPrincipal userId: UUID
+        //@AuthenticationPrincipal userId: UUID
     ): ResponseEntity<PagedResponse<ContactResponse>> {
+        val userId = UUID.fromString("eff6ab1b-f5a6-4d3d-ac7b-703a441275df")
         val page = contactService.getPagedContactByUserId(userId, pageable)
         return ResponseEntity.ok(page.toResponse())
     }

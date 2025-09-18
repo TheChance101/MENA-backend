@@ -1,4 +1,4 @@
-package chat.service
+package net.thechance.chat.service
 
 import net.thechance.chat.api.dto.ContactResponse
 import net.thechance.chat.entity.Contact
