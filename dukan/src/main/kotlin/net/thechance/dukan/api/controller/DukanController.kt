@@ -1,7 +1,9 @@
 package net.thechance.dukan.api.controller
 
 import jakarta.validation.constraints.NotBlank
+import net.thechance.dukan.api.dto.DukanColorResponse
 import net.thechance.dukan.api.dto.DukanNameAvailabilityResponse
+import net.thechance.dukan.mapper.toDto
 import net.thechance.dukan.service.DukanService
 import org.springframework.http.ResponseEntity
 import org.springframework.web.bind.annotation.GetMapping
@@ -21,5 +23,11 @@ class DukanController(
     ): ResponseEntity<DukanNameAvailabilityResponse> {
         val available = dukanService.isDukanNameAvailable(name)
         return ResponseEntity.ok(DukanNameAvailabilityResponse(available))
+    }
+
+    @GetMapping("/colors")
+    fun getAllColors(): ResponseEntity<DukanColorResponse> {
+        val colors = dukanService.getAllColors().map { it.toDto() }
+        return ResponseEntity.ok(DukanColorResponse(colors))
     }
 }
