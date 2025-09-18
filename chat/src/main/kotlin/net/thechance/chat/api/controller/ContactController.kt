@@ -1,6 +1,5 @@
 package net.thechance.chat.api.controller
 
-import chat.service.toResponse
 import net.thechance.chat.api.dto.ContactResponse
 import net.thechance.chat.api.dto.PagedResponse
 import net.thechance.chat.api.dto.toResponse
@@ -23,7 +22,7 @@ class ContactController(
         pageable: Pageable,
         @AuthenticationPrincipal userId: UUID
     ): ResponseEntity<PagedResponse<ContactResponse>> {
-        val page = contactService.getPagedContactByUserId(userId, pageable).map { it.toResponse() }
+        val page = contactService.getPagedContactByUserId(userId, pageable)
         return ResponseEntity.ok(page.toResponse())
     }
 }
