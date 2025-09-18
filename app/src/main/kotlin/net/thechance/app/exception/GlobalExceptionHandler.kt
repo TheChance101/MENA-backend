@@ -3,6 +3,9 @@ package net.thechance.app.exception
 import org.slf4j.LoggerFactory
 import org.springframework.http.HttpStatus
 import org.springframework.http.ResponseEntity
+import org.springframework.validation.FieldError
+import org.springframework.web.bind.MethodArgumentNotValidException
+import org.springframework.web.bind.MissingServletRequestParameterException
 import org.springframework.web.bind.annotation.ExceptionHandler
 import org.springframework.web.bind.annotation.RestControllerAdvice
 
@@ -11,24 +14,35 @@ class GlobalExceptionHandler {
 
     private val logger = LoggerFactory.getLogger(GlobalExceptionHandler::class.java)
 
-    @ExceptionHandler(AccessForbiddenException::class)
-    fun handleAccessForbidden(ex: AccessForbiddenException): ResponseEntity<ApiErrorResponse> {
-        return createErrorResponse(ex, HttpStatus.FORBIDDEN.value(), "Access Forbidden")
+    @ExceptionHandler(MethodArgumentNotValidException::class)
+    fun handleValidationException(ex: MethodArgumentNotValidException): ResponseEntity<ApiErrorResponse> {
+        val errors = ex.bindingResult.allErrors.map {
+            when (it) {
+                is FieldError -> "${it.field}: ${it.defaultMessage}"
+                else -> it.defaultMessage ?: "Validation error"
+            }
+        }
+        return createErrorResponse(
+            ex = ex,
+            status = HttpStatus.BAD_REQUEST.value(),
+            message = "Validation failed: ${errors.joinToString(", ")}"
+        )
     }
 
-    @ExceptionHandler(RequestValidationException::class)
-    fun handleRequestValidation(ex: RequestValidationException): ResponseEntity<ApiErrorResponse> {
-        return createErrorResponse(ex, HttpStatus.BAD_REQUEST.value(), "Validation Failed")
-    }
-
-    @ExceptionHandler(MissingRequiredFieldException::class)
-    fun handleMissingRequiredField(ex: MissingRequiredFieldException): ResponseEntity<ApiErrorResponse> {
-        return createErrorResponse(ex, HttpStatus.BAD_REQUEST.value(), "Missing Required Field")
+    @ExceptionHandler(MissingServletRequestParameterException::class)
+    fun handleMissingParameter(ex: MissingServletRequestParameterException): ResponseEntity<ApiErrorResponse> {
+        return createErrorResponse(
+            ex = ex,
+            status = HttpStatus.BAD_REQUEST.value(),
+            message = "Missing required parameter: ${ex.parameterName}"
+        )
     }
 
     @ExceptionHandler(Exception::class)
     fun handleGeneral(ex: Exception): ResponseEntity<ApiErrorResponse> {
-        return createErrorResponse(ex, HttpStatus.INTERNAL_SERVER_ERROR.value(), "Unexpected Error")
+        return createErrorResponse(
+            ex = ex, status = HttpStatus.INTERNAL_SERVER_ERROR.value(), message = "Unexpected Error"
+        )
     }
 
     private fun createErrorResponse(
