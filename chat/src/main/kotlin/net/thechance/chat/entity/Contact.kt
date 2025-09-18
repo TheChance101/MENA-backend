@@ -5,13 +5,15 @@ import jakarta.persistence.Entity
 import jakarta.persistence.Id
 import jakarta.persistence.Table
 import jakarta.persistence.Index
+import jakarta.persistence.UniqueConstraint
 import java.util.UUID
 
 @Entity
 @Table(
     name = "contacts",
     schema = "chat",
-    indexes = [Index(name = "idx_contacts_user_id", columnList = "userId")]
+    indexes = [Index(name = "idx_contacts_user_id", columnList = "userId")],
+    uniqueConstraints = [UniqueConstraint(columnNames = ["userId", "phoneNumber"])]
 )
 data class Contact(
     @Id @Column(columnDefinition = "uuid", updatable = false, nullable = false)
@@ -19,5 +21,5 @@ data class Contact(
     @Column(nullable = false) val firstName: String,
     @Column(nullable = false) val lastName: String,
     @Column(nullable = false) val phoneNumber: String,
-    @Column(nullable = false) val userId: UUID,
+    @Column(nullable = false) val userId: UUID
 )
