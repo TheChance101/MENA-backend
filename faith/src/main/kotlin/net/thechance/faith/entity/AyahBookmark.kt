@@ -6,8 +6,8 @@ import java.time.Instant
 import java.util.*
 
 @Entity
-@Table(name = "bookmarks", schema = "faith")
-data class Bookmark(
+@Table(name = "ayah_bookmark", schema = "faith")
+data class AyahBookmark(
     @Id
     @GeneratedValue
     @Column(updatable = false, nullable = false)

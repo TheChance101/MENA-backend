@@ -1,6 +1,6 @@
 package net.thechance.faith.service
 
-import net.thechance.faith.entity.Bookmark
+import net.thechance.faith.entity.AyahBookmark
 import net.thechance.faith.repository.BookmarkRepository
 import org.springframework.stereotype.Service
 
@@ -8,7 +8,7 @@ import org.springframework.stereotype.Service
 class BookmarkService(
     private val bookmarkRepository: BookmarkRepository
 ) {
-    fun saveBookmark(bookmark: Bookmark): Bookmark {
-        return bookmarkRepository.save(bookmark)
+    fun saveBookmark(ayahBookmark: AyahBookmark): AyahBookmark {
+        return bookmarkRepository.save(ayahBookmark)
     }
 }

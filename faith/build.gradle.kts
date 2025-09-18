@@ -11,7 +11,6 @@ dependencies {
     implementation("org.springframework.boot:spring-boot-starter-security")
     implementation("org.springframework.boot:spring-boot-starter-validation")
     implementation("org.springframework.boot:spring-boot-starter-web")
-    runtimeOnly("org.postgresql:postgresql")
 
     testImplementation(kotlin("test"))
     testImplementation("io.mockk:mockk:1.13.12")

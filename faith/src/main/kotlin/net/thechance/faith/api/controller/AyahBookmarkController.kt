@@ -15,12 +15,12 @@ import org.springframework.web.bind.annotation.RestController
 import java.util.*
 
 @RestController
-@RequestMapping("faith/bookmark")
-class BookmarkController(
+@RequestMapping("faith/ayah/bookmark")
+class AyahBookmarkController(
     private val bookmarkService: BookmarkService
 ) {
     @PostMapping("/save")
-    fun saveBookmark(
+    fun saveAyahBookmark(
         @Valid @RequestBody bookmarkRequest: BookmarkRequest,
         @AuthenticationPrincipal userId: UUID
     ): ResponseEntity<BookmarkResponse> {
