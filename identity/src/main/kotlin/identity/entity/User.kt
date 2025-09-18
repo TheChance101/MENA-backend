@@ -4,16 +4,16 @@ import jakarta.persistence.Column
 import jakarta.persistence.Entity
 import jakarta.persistence.Id
 import jakarta.persistence.Table
-import java.util.UUID
+import java.util.*
 
 @Entity
-@Table(name = "users")
-data class User(
+@Table(name = "users", schema = "identity")
+class User(
     @Id
     @Column(columnDefinition = "uuid", updatable = false, nullable = false)
     val id: UUID = UUID.randomUUID(),
-    @Column(nullable = false)
+    @Column(name = "phone_number", nullable = false)
     val phoneNumber: String,
-    @Column(nullable = false)
+    @Column(name = "password", nullable = false)
     val password: String,
 )
