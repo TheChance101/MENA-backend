@@ -1,0 +1,19 @@
+databaseChangeLog:
+
+  - include:
+      file: classpath:db-chat/changelog/db.changelog-master.yaml
+
+  - include:
+      file: classpath:db-dukan/changelog/db.changelog-master.yaml
+
+  - include:
+      file: classpath:db-faith/changelog/db.changelog-master.yaml
+
+  - include:
+      file: classpath:db-identity/changelog/db.changelog-master.yaml
+
+  - include:
+      file: classpath:db-trends/changelog/db.changelog-master.yaml
+
+  - include:
+      file: classpath:db-wallet/changelog/db.changelog-master.yaml
