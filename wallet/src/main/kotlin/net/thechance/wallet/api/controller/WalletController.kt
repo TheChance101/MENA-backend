@@ -1,4 +1,4 @@
-package net.thechance.wallet
+package net.thechance.wallet.api.controller
 
 import org.springframework.web.bind.annotation.GetMapping
 import org.springframework.web.bind.annotation.RestController
