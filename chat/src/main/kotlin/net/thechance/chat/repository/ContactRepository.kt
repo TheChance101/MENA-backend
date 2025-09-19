@@ -21,10 +21,10 @@ interface ContactRepository: JpaRepository<Contact, UUID>{
                 "CASE WHEN u IS NOT NULL THEN u.imageUrl ELSE null END) "+
                 "FROM Contact c " +
                 "LEFT JOIN ContactUser u ON u.phoneNumber = c.phoneNumber " +
-                "WHERE c.ownerUserId = :ownerUserId"
+                "WHERE c.contactOwnerId = :contactOwnerId"
     )
-    fun findAllContactModelsByOwnerUserId(
-        @Param("ownerUserId") ownerUserId: UUID,
+    fun findAllContactModelsByContactOwnerId(
+        @Param("contactOwnerId") contactOwnerId: UUID,
         pageable: Pageable?
     ): Page<ContactModel>
 }

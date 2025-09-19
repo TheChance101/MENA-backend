@@ -13,7 +13,7 @@ databaseChangeLog:
               ALTER TABLE chat.contacts
               ALTER COLUMN phone_number TYPE VARCHAR;
               ALTER TABLE chat.contacts
-              RENAME COLUMN user_id TO owner_user_id;
+              RENAME COLUMN user_id TO contact_owner_id;
   - changeSet:
       id: 5-chat
       author: Joseph-Sameh-0
