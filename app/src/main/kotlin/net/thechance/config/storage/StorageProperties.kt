@@ -4,6 +4,7 @@ import org.springframework.boot.context.properties.ConfigurationProperties
 
 @ConfigurationProperties(prefix = "storage")
 data class AllStorageProperties(
+    val mena: StorageProperties,
     val dukan: StorageProperties,
     val trends: StorageProperties,
     val wallet: StorageProperties
