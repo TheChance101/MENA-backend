@@ -36,6 +36,8 @@ dependencies {
     testRuntimeOnly("org.junit.platform:junit-platform-launcher")
 
     implementation("org.springframework.boot:spring-boot-starter-data-jpa")
-    // liquibase
+
+    implementation ("org.springframework.boot:spring-boot-starter-security")
+    
     runtimeOnly("org.liquibase:liquibase-core")
 }
