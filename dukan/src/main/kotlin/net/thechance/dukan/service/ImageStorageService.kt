@@ -13,9 +13,9 @@ import java.time.LocalDateTime
 
 @Service
 class ImageStorageService(
-    private val s3Client: S3Client,
-    @param:Value("\${storage.bucket}") val bucket: String,
-    @param:Value("\${storage.cdn-endpoint}") val cdnEndpoint: String
+    private val dukanS3Client: S3Client,
+    @param:Value("\${storage.dukan.bucket}") val bucket: String,
+    @param:Value("\${storage.dukan.cdn-endpoint}") val cdnEndpoint: String
 ) {
     fun uploadImage(
         file: MultipartFile,
@@ -28,7 +28,7 @@ class ImageStorageService(
             val fileName = "${fileName}_${LocalDateTime.now()}.$extension"
             val key = "images/$folderName/$fileName"
             val putReq = createObjectRequest(key, mimeType)
-            s3Client.putObject(putReq, RequestBody.fromBytes(file.bytes))
+            dukanS3Client.putObject(putReq, RequestBody.fromBytes(file.bytes))
             return "${cdnEndpoint}/$key"
         } catch (_: Exception) {
             throw ImageUploadingFailedException()
