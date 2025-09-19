@@ -4,9 +4,10 @@ import net.thechance.dukan.api.dto.DukanStyleResponse
 import net.thechance.dukan.mapper.toDukanStyleResponse
 import net.thechance.dukan.api.dto.DukanCategoryResponse
 import net.thechance.dukan.mapper.DukanLanguage
-import net.thechance.dukan.mapper.toDto
 import jakarta.validation.constraints.NotBlank
+import net.thechance.dukan.api.dto.DukanColorResponse
 import net.thechance.dukan.api.dto.DukanNameAvailabilityResponse
+import net.thechance.dukan.mapper.toDto
 import net.thechance.dukan.api.dto.DukanStatuesResponse
 import net.thechance.dukan.service.DukanService
 import org.springframework.http.ResponseEntity
@@ -45,6 +46,12 @@ class DukanController(
         return ResponseEntity.ok(DukanNameAvailabilityResponse(available))
     }
 
+    @GetMapping("/colors")
+    fun getAllColors(): ResponseEntity<DukanColorResponse> {
+        val colors = dukanService.getAllColors().map { it.toDto() }
+        return ResponseEntity.ok(DukanColorResponse(colors))
+    }
+    
     @GetMapping("/statues")
     fun getDukanStatues(
         @AuthenticationPrincipal userId: UUID,

@@ -1,5 +1,6 @@
 package net.thechance.dukan.service
 
+import net.thechance.dukan.entity.DukanColor
 import net.thechance.dukan.api.dto.DukanStyleResponse
 import net.thechance.dukan.mapper.toDukanStyleResponse
 import kotlin.enums.EnumEntries
@@ -21,6 +22,7 @@ class DukanService(
     fun getAllStyles(): EnumEntries<Dukan.Style> = Dukan.Style.entries
     fun getAllCategories(): List<DukanCategory> = dukanCategoryRepository.findAll()
     fun isDukanNameAvailable(name: String): Boolean = dukanRepository.existsByName(name).not()
+    fun getAllColors(): List<DukanColor> = dukanColorRepository.findAll()
     fun getDukanByOwnerId(ownerId: UUID): Dukan {
        return  dukanRepository.findByOwnerId(ownerId) ?: throw DukanNotFoundException()
     }
