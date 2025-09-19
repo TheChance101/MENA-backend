@@ -1,8 +1,10 @@
 package net.thechance.identity.service
 
+import identity.service.exception.InvalidRefreshTokenException
 import net.thechance.identity.api.dto.AuthResponse
 import net.thechance.identity.entity.LoginLog
 import net.thechance.identity.entity.User
+import net.thechance.identity.repository.RefreshTokenRepository
 import net.thechance.identity.exception.UserIsBlockedException
 import net.thechance.identity.security.JwtService
 import org.springframework.security.authentication.BadCredentialsException
@@ -14,6 +16,7 @@ import java.time.Instant
 @Service
 class AuthenticationService(
     private val userService: UserService,
+    private val refreshRepo: RefreshTokenRepository,
     private val jwtService: JwtService,
     private val refreshTokenService: RefreshTokenService,
     private val loginLogService: LoginLogService,
@@ -29,6 +32,12 @@ class AuthenticationService(
         addUserToLogs(user = user, isSuccess = isPasswordCorrect, ipAddress = ipAddress)
         if (!isPasswordCorrect) throw BadCredentialsException("Invalid Credentials")
         return generateAuthResponse(user)
+    }
+
+    fun refreshToken(refreshToken: String): AuthResponse {
+        val token = refreshTokenService.validateRefreshToken(refreshToken) ?: throw InvalidRefreshTokenException()
+        refreshRepo.delete(token)
+        return generateAuthResponse(token.user)
     }
 
     private fun addUserToLogs(
