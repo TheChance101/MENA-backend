@@ -20,16 +20,16 @@ init {
     println(props.dukan.toString())
 }
     @Bean
-    fun dukanS3Client(@Qualifier("dukanCreds") creds: StaticCredentialsProvider): S3Client =
-        buildClient(props.dukan.endpoint, creds)
+    fun dukanS3Client(dukanCreds: StaticCredentialsProvider): S3Client =
+        buildClient(props.dukan.endpoint, dukanCreds)
 
     @Bean
-    fun trendsS3Client(@Qualifier("trendCreds") creds: StaticCredentialsProvider): S3Client =
-        buildClient(props.trends.endpoint, creds)
+    fun trendsS3Client(trendCreds: StaticCredentialsProvider): S3Client =
+        buildClient(props.trends.endpoint, trendCreds)
 
     @Bean
-    fun walletS3Client(@Qualifier("walletCreds") creds: StaticCredentialsProvider): S3Client =
-        buildClient(props.wallet.endpoint, creds)
+    fun walletS3Client(walletCreds: StaticCredentialsProvider): S3Client =
+        buildClient(props.wallet.endpoint, walletCreds)
 
     @Bean
     fun dukanCreds(): StaticCredentialsProvider =
