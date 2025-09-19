@@ -8,10 +8,7 @@ import net.thechance.faith.api.dto.bookmark.toBookmarkResponse
 import net.thechance.faith.service.AyahBookmarkService
 import org.springframework.http.ResponseEntity
 import org.springframework.security.core.annotation.AuthenticationPrincipal
-import org.springframework.web.bind.annotation.PostMapping
-import org.springframework.web.bind.annotation.RequestBody
-import org.springframework.web.bind.annotation.RequestMapping
-import org.springframework.web.bind.annotation.RestController
+import org.springframework.web.bind.annotation.*
 import java.util.*
 
 @RestController
@@ -19,6 +16,7 @@ import java.util.*
 class AyahBookmarkController(
     private val ayahBookmarkService: AyahBookmarkService
 ) {
+
     @PostMapping
     fun saveAyahBookmark(
         @Valid @RequestBody ayahBookmarkRequest: AyahBookmarkRequest,
@@ -27,5 +25,14 @@ class AyahBookmarkController(
         val savedBookmark = ayahBookmarkService.saveBookmark(ayahBookmarkRequest.toBookmark(userId))
         val response = savedBookmark.toBookmarkResponse()
         return ResponseEntity.ok(response)
+    }
+
+    @DeleteMapping("/{id}")
+    fun delete(
+        @PathVariable id: Int,
+        @AuthenticationPrincipal userId: UUID
+    ): ResponseEntity<Void> {
+        ayahBookmarkService.deleteByIdAndUserId(id, userId)
+        return ResponseEntity.ok().build()
     }
 }
