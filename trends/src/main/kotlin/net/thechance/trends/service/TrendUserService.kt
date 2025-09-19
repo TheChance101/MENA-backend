@@ -6,6 +6,7 @@ import net.thechance.trends.repository.TrendUserRepository
 import org.springframework.stereotype.Service
 import org.springframework.transaction.annotation.Transactional
 import java.util.UUID
+import kotlin.jvm.optionals.getOrNull
 
 @Service
 @Transactional
@@ -22,5 +23,9 @@ class TrendUserService(
         trendUser.categories.clear()
         trendUser.categories.addAll(newCategories)
         trendUserRepository.save(trendUser)
+    }
+
+    fun getDoesUserHaveCategories(userId: UUID): Boolean {
+        return trendUserRepository.findById(userId).getOrNull()?.categories?.isNotEmpty() ?: false
     }
 }
