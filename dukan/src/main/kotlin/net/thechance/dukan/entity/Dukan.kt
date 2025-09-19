@@ -21,8 +21,8 @@ data class Dukan(
         schema = "dukan"
     )
     val categories: Set<DukanCategory>,
-    @Column(name = "image_url", nullable = false)
-    val imageUrl: String,
+    @Column(name = "image_url", nullable = true)
+    val imageUrl: String? = null,
     @Column(name = "address", nullable = false)
     val address: String,
     @Column(name = "latitude", nullable = false)
