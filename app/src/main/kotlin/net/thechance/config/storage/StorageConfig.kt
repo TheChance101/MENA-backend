@@ -1,6 +1,5 @@
 package net.thechance.config.storage
 
-import org.springframework.beans.factory.annotation.Qualifier
 import org.springframework.boot.context.properties.EnableConfigurationProperties
 import org.springframework.context.annotation.Bean
 import org.springframework.context.annotation.Configuration
@@ -16,9 +15,10 @@ import java.net.URI
 class StorageConfig(
     private val props: AllStorageProperties,
 ) {
-init {
-    println(props.dukan.toString())
-}
+    init {
+        println(props.dukan.toString())
+    }
+
     @Bean
     fun dukanS3Client(dukanCreds: StaticCredentialsProvider): S3Client =
         buildClient(props.dukan.endpoint, dukanCreds)
@@ -32,22 +32,19 @@ init {
         buildClient(props.wallet.endpoint, walletCreds)
 
     @Bean
-    fun dukanCreds(): StaticCredentialsProvider =
-        StaticCredentialsProvider.create(
-            AwsBasicCredentials.create(props.dukan.key, props.dukan.secret)
-        )
+    fun dukanCreds(): StaticCredentialsProvider {
+        return StaticCredentialsProvider.create(AwsBasicCredentials.create(props.dukan.key, props.dukan.secret))
+    }
 
     @Bean
-    fun trendCreds(): StaticCredentialsProvider =
-        StaticCredentialsProvider.create(
-            AwsBasicCredentials.create(props.trends.key, props.trends.secret)
-        )
+    fun trendCreds(): StaticCredentialsProvider {
+        return StaticCredentialsProvider.create(AwsBasicCredentials.create(props.trends.key, props.trends.secret))
+    }
 
     @Bean
-    fun walletCreds(): StaticCredentialsProvider =
-        StaticCredentialsProvider.create(
-            AwsBasicCredentials.create(props.wallet.key, props.wallet.secret)
-        )
+    fun walletCreds(): StaticCredentialsProvider {
+        return StaticCredentialsProvider.create(AwsBasicCredentials.create(props.wallet.key, props.wallet.secret))
+    }
 
     private fun buildClient(
         endpoint: String,
