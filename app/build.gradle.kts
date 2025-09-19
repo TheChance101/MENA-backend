@@ -36,6 +36,8 @@ dependencies {
     testRuntimeOnly("org.junit.platform:junit-platform-launcher")
 
     implementation("org.springframework.boot:spring-boot-starter-data-jpa")
+    implementation(platform("software.amazon.awssdk:bom:2.33.8"))
+    implementation("software.amazon.awssdk:s3")
 
     implementation ("org.springframework.boot:spring-boot-starter-security")
     
