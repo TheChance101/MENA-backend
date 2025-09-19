@@ -8,5 +8,6 @@ import java.util.UUID
 @Repository
 interface DukanRepository : JpaRepository<Dukan, UUID> {
     fun existsByName(name: String): Boolean
+    fun existsByOwnerId(ownerId: UUID): Boolean
     fun findByOwnerId(ownerId: UUID): Dukan?
 }
