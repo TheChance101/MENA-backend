@@ -8,7 +8,7 @@ import java.util.*
 
 @Entity
 @Table(name = "users", schema = "identity")
-class User(
+data class User(
     @Id
     @Column(columnDefinition = "uuid", updatable = false, nullable = false)
     val id: UUID = UUID.randomUUID(),

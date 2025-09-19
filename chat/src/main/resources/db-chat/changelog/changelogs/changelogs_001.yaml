@@ -1,0 +1,21 @@
+databaseChangeLog:
+  - changeSet:
+      id: 1-chat
+      author: alqassim
+      comment: Create the chat schema
+      changes:
+        - sql: CREATE SCHEMA IF NOT EXISTS chat;
+
+  - changeSet:
+      id: 2-chat
+      author: alqassim
+      comment: Create the contacts table
+      changes:
+          - sql:
+              CREATE TABLE chat.contacts (
+                id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+                first_name VARCHAR NOT NULL,
+                last_name VARCHAR NOT NULL,
+                phone_number VARCHAR NOT NULL,
+                user_id UUID NOT NULL
+              );
