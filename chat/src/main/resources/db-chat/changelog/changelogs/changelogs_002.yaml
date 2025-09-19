@@ -1,0 +1,29 @@
+databaseChangeLog:
+  - changeSet:
+      id: 4-chat
+      author: Joseph-Sameh-0
+      comment: Migrate contacts table to match Kotlin entity
+      changes:
+        - sql:
+            sql:
+              ALTER TABLE chat.contacts
+              ALTER COLUMN first_name TYPE VARCHAR;
+              ALTER TABLE chat.contacts
+              ALTER COLUMN last_name TYPE VARCHAR;
+              ALTER TABLE chat.contacts
+              ALTER COLUMN phone_number TYPE VARCHAR;
+              ALTER TABLE chat.contacts
+              RENAME COLUMN user_id TO owner_user_id;
+  - changeSet:
+      id: 5-chat
+      author: Joseph-Sameh-0
+      changes:
+        - sql:
+            sql:
+              CREATE TABLE chat.users_of_contacts (
+                id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+                first_name VARCHAR(255) NOT NULL,
+                last_name VARCHAR(255) NOT NULL,
+                phone_number VARCHAR(255) NOT NULL,
+                image_url VARCHAR(255)
+              );

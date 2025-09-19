@@ -7,7 +7,7 @@ import jakarta.persistence.Table
 import java.util.UUID
 
 @Entity
-@Table(name = "contactUser", schema = "chat")
+@Table(name = "users_of_contacts", schema = "chat")
 data class ContactUser(
     @Id
     @Column(columnDefinition = "uuid", updatable = false, nullable = false)
