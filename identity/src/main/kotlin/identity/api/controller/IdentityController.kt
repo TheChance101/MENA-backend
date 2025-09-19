@@ -1,9 +1,10 @@
-package net.thechance.identity.controller
+package net.thechance.identity.api.controller
 
+import jakarta.servlet.http.HttpServletRequest
 import identity.api.dto.RefreshTokenRequest
 import jakarta.validation.Valid
-import net.thechance.identity.dto.AuthRequest
-import net.thechance.identity.dto.AuthResponse
+import net.thechance.identity.api.dto.AuthRequest
+import net.thechance.identity.api.dto.AuthResponse
 import net.thechance.identity.service.AuthenticationService
 import org.springframework.http.HttpStatus
 import org.springframework.http.ResponseEntity
@@ -13,7 +14,7 @@ import org.springframework.web.bind.annotation.*
 @RestController
 @RequestMapping("/identity")
 class IdentityController(
-    val authenticationService: AuthenticationService
+    private val authenticationService: AuthenticationService
 ) {
     @ExceptionHandler(BadCredentialsException::class)
     fun handleBadCredentialsException(): ResponseEntity<String> {
@@ -21,8 +22,12 @@ class IdentityController(
     }
 
     @PostMapping("/login")
-    fun login(@RequestBody @Valid request: AuthRequest): ResponseEntity<AuthResponse> {
-        val authResponse = authenticationService.login(request.phoneNumber, request.password)
+    fun login(
+        @RequestBody @Valid request: AuthRequest,
+        httpRequest: HttpServletRequest
+    ): ResponseEntity<AuthResponse> {
+        val ipAddress = httpRequest.remoteAddr ?: throw IllegalStateException("Invalid IP")
+        val authResponse = authenticationService.login(request.phoneNumber, request.password, ipAddress)
         return ResponseEntity.ok(authResponse)
     }
 
