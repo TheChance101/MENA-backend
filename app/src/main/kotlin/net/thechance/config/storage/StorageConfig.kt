@@ -15,9 +15,9 @@ import java.net.URI
 class StorageConfig(
     private val props: AllStorageProperties,
 ) {
-    init {
-        println(props.dukan.toString())
-    }
+    @Bean
+    fun menaS3Client(menaCreds: StaticCredentialsProvider): S3Client =
+        buildClient(props.mena.endpoint, menaCreds)
 
     @Bean
     fun dukanS3Client(dukanCreds: StaticCredentialsProvider): S3Client =
@@ -30,6 +30,11 @@ class StorageConfig(
     @Bean
     fun walletS3Client(walletCreds: StaticCredentialsProvider): S3Client =
         buildClient(props.wallet.endpoint, walletCreds)
+
+    @Bean
+    fun menaCreds(): StaticCredentialsProvider {
+        return StaticCredentialsProvider.create(AwsBasicCredentials.create(props.mena.key, props.mena.secret))
+    }
 
     @Bean
     fun dukanCreds(): StaticCredentialsProvider {
