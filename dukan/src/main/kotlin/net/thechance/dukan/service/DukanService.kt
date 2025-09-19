@@ -1,5 +1,6 @@
 package net.thechance.dukan.service
 
+import jakarta.persistence.EntityNotFoundException
 import jakarta.transaction.Transactional
 import net.thechance.dukan.entity.Dukan
 import net.thechance.dukan.entity.DukanCategory
@@ -31,24 +32,29 @@ class DukanService(
     fun isDukanNameAvailable(name: String): Boolean = dukanRepository.existsByName(name).not()
 
     fun getDukanByOwnerId(ownerId: UUID): Dukan {
-        return  dukanRepository.findByOwnerId(ownerId) ?: throw DukanNotFoundException()
+        return dukanRepository.findByOwnerId(ownerId) ?: throw DukanNotFoundException()
     }
 
     fun createDukan(params: DukanCreationParams): Dukan {
-        validateDukanCreation(params)
+        try {
+            validateDukanCreation(params)
 
-        val categories = dukanCategoryRepository.findAllById(params.categoryIds)
-            .toSet()
-            .ifEmpty { throw DukanCreationFailedException() }
-        val color = dukanColorRepository.findById(params.colorId)
-            .orElseThrow { DukanCreationFailedException() }
+            val categories = params.categoryIds.map { id -> dukanCategoryRepository.getReferenceById(id) }
+                .toSet()
+                .ifEmpty { throw DukanCreationFailedException() }
 
-        val dukan = params.toDukan(
-            color = color,
-            categories = categories
-        )
-        return dukanRepository.save(dukan)
+            val color = dukanColorRepository.getReferenceById(params.colorId)
+
+            val dukan = params.toDukan(
+                color = color,
+                categories = categories
+            )
+            return dukanRepository.save(dukan)
+        } catch (_: EntityNotFoundException) {
+            throw DukanCreationFailedException()
+        }
     }
+
     @Transactional
     fun uploadDukanImage(ownerId: UUID, file: MultipartFile): String {
         val dukan = dukanRepository.findByOwnerId(ownerId) ?: throw DukanNotFoundException()
