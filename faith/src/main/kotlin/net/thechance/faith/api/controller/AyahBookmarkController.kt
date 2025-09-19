@@ -1,11 +1,11 @@
 package net.thechance.faith.api.controller
 
 import jakarta.validation.Valid
-import net.thechance.faith.api.dto.bookmark.BookmarkRequest
-import net.thechance.faith.api.dto.bookmark.BookmarkResponse
+import net.thechance.faith.api.dto.bookmark.AyahBookmarkRequest
+import net.thechance.faith.api.dto.bookmark.AyahBookmarkResponse
 import net.thechance.faith.api.dto.bookmark.toBookmark
 import net.thechance.faith.api.dto.bookmark.toBookmarkResponse
-import net.thechance.faith.service.BookmarkService
+import net.thechance.faith.service.AyahBookmarkService
 import org.springframework.http.ResponseEntity
 import org.springframework.security.core.annotation.AuthenticationPrincipal
 import org.springframework.web.bind.annotation.PostMapping
@@ -17,14 +17,14 @@ import java.util.*
 @RestController
 @RequestMapping("faith/ayah/bookmark")
 class AyahBookmarkController(
-    private val bookmarkService: BookmarkService
+    private val ayahBookmarkService: AyahBookmarkService
 ) {
-    @PostMapping("/save")
+    @PostMapping
     fun saveAyahBookmark(
-        @Valid @RequestBody bookmarkRequest: BookmarkRequest,
+        @Valid @RequestBody ayahBookmarkRequest: AyahBookmarkRequest,
         @AuthenticationPrincipal userId: UUID
-    ): ResponseEntity<BookmarkResponse> {
-        val savedBookmark = bookmarkService.saveBookmark(bookmarkRequest.toBookmark(userId))
+    ): ResponseEntity<AyahBookmarkResponse> {
+        val savedBookmark = ayahBookmarkService.saveBookmark(ayahBookmarkRequest.toBookmark(userId))
         val response = savedBookmark.toBookmarkResponse()
         return ResponseEntity.ok(response)
     }

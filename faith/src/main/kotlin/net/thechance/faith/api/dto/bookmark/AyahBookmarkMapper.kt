@@ -3,7 +3,7 @@ package net.thechance.faith.api.dto.bookmark
 import net.thechance.faith.entity.AyahBookmark
 import java.util.*
 
-fun BookmarkRequest.toBookmark(userId: UUID): AyahBookmark {
+fun AyahBookmarkRequest.toBookmark(userId: UUID): AyahBookmark {
     return AyahBookmark(
         userId = userId,
         surahId = surahId,
@@ -11,8 +11,8 @@ fun BookmarkRequest.toBookmark(userId: UUID): AyahBookmark {
     )
 }
 
-fun AyahBookmark.toBookmarkResponse(): BookmarkResponse {
-    return BookmarkResponse(
+fun AyahBookmark.toBookmarkResponse(): AyahBookmarkResponse {
+    return AyahBookmarkResponse(
         id = id.toString(),
         surahId = surahId,
         ayahNumber = ayahNumber,
