@@ -1,0 +1,28 @@
+databaseChangeLog:
+  - changeSet:
+      id: 1-identity
+      author: alqassim
+      comment: Create the identity schema
+      changes:
+        - sql: CREATE SCHEMA IF NOT EXISTS identity;
+
+  - changeSet:
+      id: 2-identity
+      author: alqassim
+      comment: Create the users and refresh_tokens tables in the identity schema
+      changes:
+        - sql:
+            CREATE TABLE identity.users (
+            id UUID PRIMARY KEY,
+            phone_number VARCHAR(255) NOT NULL,
+            password VARCHAR(255) NOT NULL
+            );
+
+        - sql:
+            CREATE TABLE identity.refresh_tokens (
+            id BIGSERIAL PRIMARY KEY,
+            refresh_token VARCHAR(255) NOT NULL,
+            expires_in BIGINT NOT NULL,
+            user_id UUID NOT NULL,
+            CONSTRAINT fk_refresh_tokens_user_id FOREIGN KEY (user_id) REFERENCES identity.users(id)
+            );
