@@ -1,20 +1,24 @@
 package net.thechance.identity.security
 
+import io.jsonwebtoken.ExpiredJwtException
+import io.jsonwebtoken.MalformedJwtException
 import jakarta.servlet.FilterChain
 import jakarta.servlet.http.HttpServletRequest
 import jakarta.servlet.http.HttpServletResponse
+import net.thechance.identity.security.handler.AuthErrorResponder
 import net.thechance.identity.service.UserService
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken
 import org.springframework.security.core.context.SecurityContextHolder
 import org.springframework.security.web.authentication.WebAuthenticationDetailsSource
 import org.springframework.stereotype.Component
 import org.springframework.web.filter.OncePerRequestFilter
-import java.util.UUID
+import java.util.*
 
 @Component
 class JwtFilter(
     private val jwtService: JwtService,
     private val userService: UserService,
+    private val authErrorResponder: AuthErrorResponder
 ) : OncePerRequestFilter() {
 
     override fun doFilterInternal(
@@ -40,8 +44,12 @@ class JwtFilter(
             }
 
             filterChain.doFilter(request, response)
-        } catch (ex: Exception) {
-            //todo implement error handling
+        } catch (_: ExpiredJwtException) {
+            authErrorResponder.handleJwtExpired(response)
+        } catch (_: MalformedJwtException) {
+            authErrorResponder.handleInvalidToken(response)
+        } catch (_: Exception) {
+            authErrorResponder.handleGeneralAuthError(response)
         }
     }
 
