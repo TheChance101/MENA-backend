@@ -18,7 +18,7 @@ import org.springframework.web.bind.annotation.RestController
 import java.util.UUID
 
 @RestController
-@RequestMapping("/${Constants.TRENDS_PATH}/category")
+@RequestMapping("/${Constants.TRENDS_PATH}/categories")
 class CategoryController(
     private val categoryService: CategoryService,
     private val trendUserService: TrendUserService,
