@@ -14,5 +14,5 @@ data class Contact(
     @Column(nullable = false) val firstName: String,
     @Column(nullable = false) val lastName: String,
     @Column(nullable = false) val phoneNumber: String,
-    @Column(nullable = false) val userId: UUID,
+    @Column(nullable = false) val ownerUserId: UUID,
 )

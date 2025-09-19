@@ -1,7 +1,6 @@
-package net.thechance.chat.service
+package net.thechance.chat.service.model
 
 import net.thechance.chat.api.dto.ContactResponse
-import net.thechance.chat.entity.Contact
 import java.util.UUID
 
 data class ContactModel(
@@ -13,16 +12,6 @@ data class ContactModel(
     val imageUrl: String
 )
 
-fun Contact.toModel(isMenaUser: Boolean, imageUrl: String): ContactModel{
-    return ContactModel(
-        id = this.id,
-        firstName = this.firstName,
-        lastName = this.lastName,
-        phoneNumber = this.phoneNumber,
-        isMenaUser = isMenaUser,
-        imageUrl = imageUrl
-    )
-}
 fun ContactModel.toResponse() : ContactResponse{
     return ContactResponse(
         id = this.id,

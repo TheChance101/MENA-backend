@@ -1,7 +1,7 @@
 package net.thechance.chat.api.dto
 
-import net.thechance.chat.service.ContactModel
-import net.thechance.chat.service.toResponse
+import net.thechance.chat.service.model.ContactModel
+import net.thechance.chat.service.model.toResponse
 import org.springframework.data.domain.Page
 
 
