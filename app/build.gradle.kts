@@ -3,6 +3,21 @@ plugins {
     id("io.spring.dependency-management")
     kotlin("jvm")
     kotlin("plugin.spring")
+    id("org.liquibase.gradle") version "2.2.1"
+}
+
+liquibase {
+    activities {
+        register("mainConfig") {
+            arguments = listOf(
+                "changeLogFile=${project.findProperty("spring.liquibase.change-log") as String}",
+                "url=${project.findProperty("spring.datasource.url") as String}",
+                "username=${project.findProperty("spring.datasource.username") as String}",
+                "password=${project.findProperty("spring.datasource.password") as String}",
+            )
+        }
+    }
+    runList = "mainConfig"
 }
 
 dependencies {
@@ -23,4 +38,6 @@ dependencies {
     implementation("org.springframework.boot:spring-boot-starter-data-jpa")
 
     implementation ("org.springframework.boot:spring-boot-starter-security")
+    
+    runtimeOnly("org.liquibase:liquibase-core")
 }

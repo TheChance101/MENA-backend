@@ -1,0 +1,7 @@
+databaseChangeLog:
+  - changeSet:
+      id: 1-faith
+      author: alqassim
+      comment: Create the faith schema
+      changes:
+        - sql: CREATE SCHEMA IF NOT EXISTS faith;
