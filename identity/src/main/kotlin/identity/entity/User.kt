@@ -7,7 +7,7 @@ import jakarta.persistence.Table
 import java.util.UUID
 
 @Entity
-@Table(name = "users")
+@Table(name = "users", schema = "identity")
 data class User(
     @Id
     @Column(columnDefinition = "uuid", updatable = false, nullable = false)
