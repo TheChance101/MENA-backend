@@ -20,8 +20,8 @@ kover.reports {
 
     filters {
         excludes {
-            packages("faith.api.dto*")
-            packages("faith.entity*")
+            packages("net.thechance.faith.api.dto*")
+            packages("net.thechance.faith.entity*")
         }
     }
 }

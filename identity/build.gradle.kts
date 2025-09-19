@@ -31,8 +31,8 @@ kover.reports {
 
     filters {
         excludes {
-            packages("identity.api.dto*")
-            packages("identity.entity*")
+            packages("net.thechance.identity.api.dto*")
+            packages("net.thechance.identity.entity*")
         }
     }
 }
