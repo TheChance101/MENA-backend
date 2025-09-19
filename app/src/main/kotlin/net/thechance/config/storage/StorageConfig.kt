@@ -1,0 +1,70 @@
+package net.thechance.config.storage
+
+import org.springframework.beans.factory.annotation.Qualifier
+import org.springframework.boot.context.properties.EnableConfigurationProperties
+import org.springframework.context.annotation.Bean
+import org.springframework.context.annotation.Configuration
+import software.amazon.awssdk.auth.credentials.AwsBasicCredentials
+import software.amazon.awssdk.auth.credentials.StaticCredentialsProvider
+import software.amazon.awssdk.regions.Region
+import software.amazon.awssdk.services.s3.S3Client
+import software.amazon.awssdk.services.s3.S3Configuration
+import java.net.URI
+
+@Configuration
+@EnableConfigurationProperties(AllStorageProperties::class)
+class StorageConfig(
+    private val props: AllStorageProperties,
+) {
+init {
+    println(props.dukan.toString())
+}
+    @Bean
+    fun dukanS3Client(@Qualifier("dukanCreds") creds: StaticCredentialsProvider): S3Client =
+        buildClient(props.dukan.endpoint, creds)
+
+    @Bean
+    fun trendsS3Client(@Qualifier("trendCreds") creds: StaticCredentialsProvider): S3Client =
+        buildClient(props.trends.endpoint, creds)
+
+    @Bean
+    fun walletS3Client(@Qualifier("walletCreds") creds: StaticCredentialsProvider): S3Client =
+        buildClient(props.wallet.endpoint, creds)
+
+    @Bean
+    fun dukanCreds(): StaticCredentialsProvider =
+        StaticCredentialsProvider.create(
+            AwsBasicCredentials.create(props.dukan.key, props.dukan.secret)
+        )
+
+    @Bean
+    fun trendCreds(): StaticCredentialsProvider =
+        StaticCredentialsProvider.create(
+            AwsBasicCredentials.create(props.trends.key, props.trends.secret)
+        )
+
+    @Bean
+    fun walletCreds(): StaticCredentialsProvider =
+        StaticCredentialsProvider.create(
+            AwsBasicCredentials.create(props.wallet.key, props.wallet.secret)
+        )
+
+    private fun buildClient(
+        endpoint: String,
+        creds: StaticCredentialsProvider
+    ): S3Client {
+        return S3Client.builder()
+            .region(Region.US_EAST_1) // The region is required by AWS SDK, but DigitalOcean Spaces ignores it
+            .endpointOverride(URI.create(endpoint))
+            .credentialsProvider(creds)
+            .serviceConfiguration(pathStyleStorageConfiguration())
+            .build()
+    }
+
+    @Bean
+    fun pathStyleStorageConfiguration(): S3Configuration {
+        return S3Configuration.builder()
+            .pathStyleAccessEnabled(true)
+            .build()
+    }
+}
