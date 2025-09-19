@@ -1,0 +1,51 @@
+databaseChangeLog:
+  - changeSet:
+      id: 1-dukan
+      author: alqassim
+      comment: Create the dukan schema
+      changes:
+        - sql: CREATE SCHEMA IF NOT EXISTS dukan;
+
+  - changeSet:
+      id: 2-dukan
+      author: alqassim
+      comment:
+        Create the dukan_colors, dukan_categories, dukans, and dukan_categories_junction tables in the dukan schema
+      changes:
+        - sql:
+              CREATE TABLE dukan.dukan_colors (
+                id UUID PRIMARY KEY,
+                hex_code VARCHAR(255) NOT NULL
+              );
+
+        - sql:
+              CREATE TABLE dukan.dukan_categories (
+                id UUID PRIMARY KEY,
+                icon_url VARCHAR(255) NOT NULL,
+                arabic_title VARCHAR(255) NOT NULL,
+                english_title VARCHAR(255) NOT NULL
+              );
+
+        - sql:
+              CREATE TABLE dukan.dukans (
+                id UUID PRIMARY KEY,
+                owner_id UUID NOT NULL UNIQUE,
+                name VARCHAR(255) NOT NULL UNIQUE,
+                image_url VARCHAR(255) NOT NULL,
+                address VARCHAR(255) NOT NULL,
+                latitude DOUBLE PRECISION NOT NULL,
+                longitude DOUBLE PRECISION NOT NULL,
+                color_id UUID NOT NULL,
+                style VARCHAR(50) NOT NULL,
+                status VARCHAR(50) NOT NULL,
+                CONSTRAINT fk_dukans_color_id FOREIGN KEY (color_id) REFERENCES dukan.dukan_colors(id)
+              );
+
+        - sql:
+              CREATE TABLE dukan.dukan_categories_junction (
+                dukan_id UUID NOT NULL,
+                category_id UUID NOT NULL,
+                PRIMARY KEY (dukan_id, category_id),
+                CONSTRAINT fk_dukan_categories_junction_dukan_id FOREIGN KEY (dukan_id) REFERENCES dukan.dukans(id),
+                CONSTRAINT fk_dukan_categories_junction_category_id FOREIGN KEY (category_id) REFERENCES dukan.dukan_categories(id)
+              );
