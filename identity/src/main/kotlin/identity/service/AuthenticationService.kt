@@ -48,13 +48,24 @@ class AuthenticationService(
             .filter { !it.isSuccess }
             .ifEmpty { return false }
 
+        if (isUserLoginRetriesWithInLimit(loginLogs)) return false
+        if (isCurrentTimeWithInBlockRange(loginLogs)) return false
+        return isDurationBetweenFirstAndLastLoginTimeWithInBlockRange(loginLogs)
+    }
+
+    private fun isUserLoginRetriesWithInLimit(loginLogs: List<LoginLog>) = loginLogs.size < MAX_LOGIN_ATTEMPTS
+
+    private fun isCurrentTimeWithInBlockRange(loginLogs: List<LoginLog>): Boolean {
         val lastTimeToLogin = loginLogs.first().loginTime
         val now = Instant.now()
         val durationSinceLastLogin = Duration.between(lastTimeToLogin, now)
+        return durationSinceLastLogin.toMinutes() >= MAX_BLOCK_TIME_IN_MINUTES
+    }
+
+    private fun isDurationBetweenFirstAndLastLoginTimeWithInBlockRange(loginLogs: List<LoginLog>): Boolean {
+        val lastTimeToLogin = loginLogs.first().loginTime
         val firstTimeToLogin = loginLogs.last().loginTime
         val durationBetweenFirstAndLastLogin = Duration.between(firstTimeToLogin, lastTimeToLogin)
-        if (loginLogs.size < MAX_LOGIN_ATTEMPTS) return false
-        if (durationSinceLastLogin.toMinutes() >= MAX_BLOCK_TIME_IN_MINUTES) return false
         return durationBetweenFirstAndLastLogin.toMinutes() <= BLOCK_TIME_IN_MINUTES
     }
 

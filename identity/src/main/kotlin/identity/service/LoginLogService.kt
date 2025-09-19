@@ -14,10 +14,15 @@ class LoginLogService(
         loginLogRepository.save(loginLog)
     }
 
-    fun getLoginLogsByIpAddress(ipAddress: String, numberOfLogs: Int): List<LoginLog> {
+    fun getLoginLogsByIpAddress(
+        ipAddress: String,
+        numberOfLogs: Int,
+        sortedBy: String = LoginLog::loginTime.name,
+        sortedDirection: Sort.Direction = Sort.Direction.DESC
+    ): List<LoginLog> {
         return loginLogRepository.findLoginLogsByIpAddress(
             ipAddress = ipAddress,
-            sort = Sort.by(Sort.Direction.DESC, LoginLog::loginTime.name),
+            sort = Sort.by(sortedDirection, sortedBy),
             limit = Limit.of(numberOfLogs)
         )
     }
