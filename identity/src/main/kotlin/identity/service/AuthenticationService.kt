@@ -1,13 +1,14 @@
 package net.thechance.identity.service
 
 import net.thechance.identity.api.dto.AuthResponse
+import net.thechance.identity.entity.IdentityUser
 import net.thechance.identity.entity.LoginLog
-import net.thechance.identity.entity.User
 import net.thechance.identity.exception.InvalidCredentialsException
 import net.thechance.identity.exception.InvalidRefreshTokenException
 import net.thechance.identity.exception.UserIsBlockedException
 import net.thechance.identity.repository.RefreshTokenRepository
 import net.thechance.identity.security.JwtService
+import org.springframework.security.authentication.BadCredentialsException
 import org.springframework.security.crypto.password.PasswordEncoder
 import org.springframework.stereotype.Service
 import java.time.Duration
@@ -15,7 +16,7 @@ import java.time.Instant
 
 @Service
 class AuthenticationService(
-    val userService: UserService,
+    private val userService: UserService,
     private val refreshRepo: RefreshTokenRepository,
     private val jwtService: JwtService,
     private val refreshTokenService: RefreshTokenService,
@@ -34,8 +35,14 @@ class AuthenticationService(
         return generateAuthResponse(user)
     }
 
+    fun refreshToken(refreshToken: String): AuthResponse {
+        val token = refreshTokenService.validateRefreshToken(refreshToken) ?: throw InvalidRefreshTokenException()
+        refreshRepo.delete(token)
+        return generateAuthResponse(token.user)
+    }
+
     private fun addUserToLogs(
-        user: User,
+        user: IdentityUser,
         isSuccess: Boolean,
         ipAddress: String
     ) {
@@ -69,13 +76,7 @@ class AuthenticationService(
         return durationBetweenFirstAndLastLogin.toMinutes() <= BLOCK_TIME_IN_MINUTES
     }
 
-    fun refreshToken(refreshToken: String): AuthResponse {
-        val token = refreshTokenService.validateRefreshToken(refreshToken) ?: throw InvalidRefreshTokenException()
-        refreshRepo.delete(token)
-        return generateAuthResponse(token.user)
-    }
-
-    private fun generateAuthResponse(user: User): AuthResponse {
+    private fun generateAuthResponse(user: IdentityUser): AuthResponse {
         val accessToken = jwtService.generateToken(user)
         val refreshToken = refreshTokenService.createRefreshToken(user).refreshToken
         return AuthResponse(accessToken, refreshToken)

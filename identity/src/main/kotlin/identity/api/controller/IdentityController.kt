@@ -1,7 +1,7 @@
 package net.thechance.identity.api.controller
 
-import identity.api.dto.RefreshTokenRequest
 import jakarta.servlet.http.HttpServletRequest
+import identity.api.dto.RefreshTokenRequest
 import jakarta.validation.Valid
 import net.thechance.identity.api.dto.AuthRequest
 import net.thechance.identity.api.dto.AuthResponse
