@@ -9,7 +9,6 @@ jobs:
   detect:
     name: Detect Changed Modules
     uses: ./.github/workflows/detect-changed-modules.yml
-    id: detect
     secrets: inherit
 
   test:
