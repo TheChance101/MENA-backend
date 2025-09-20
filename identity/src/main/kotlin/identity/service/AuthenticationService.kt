@@ -54,9 +54,9 @@ class AuthenticationService(
             .filter { !it.isSuccess }
             .ifEmpty { return false }
 
-        if (isUserLoginRetriesWithInLimit(loginLogs)) return false
-        if (isCurrentTimeWithInBlockRange(loginLogs)) return false
-        return isDurationBetweenFirstAndLastLoginTimeWithInBlockRange(loginLogs)
+        return !isUserLoginRetriesWithInLimit(loginLogs)
+                && !isCurrentTimeWithInBlockRange(loginLogs)
+                && isDurationBetweenFirstAndLastLoginTimeWithInBlockRange(loginLogs)
     }
 
     private fun isUserLoginRetriesWithInLimit(loginLogs: List<LoginLog>) = loginLogs.size < MAX_LOGIN_ATTEMPTS
