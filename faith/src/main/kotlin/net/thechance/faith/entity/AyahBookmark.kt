@@ -9,7 +9,7 @@ import java.util.*
 @Table(name = "ayah_bookmark", schema = "faith")
 data class AyahBookmark(
     @Id
-    @GeneratedValue
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Column(updatable = false, nullable = false)
     val id: Int = 0,
 
