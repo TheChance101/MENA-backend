@@ -47,7 +47,7 @@ class IdentityController(
 
             is InvalidCredentialsException -> {
                 ResponseEntity
-                    .status(HttpStatus.UNAUTHORIZED)
+                    .status(HttpStatus.NOT_FOUND)
                     .body(ErrorResponse("Invalid credentials"))
             }
 
