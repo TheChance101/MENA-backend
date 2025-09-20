@@ -31,5 +31,5 @@ jobs:
           MODULES=$(echo '${{ needs.detect.outputs.modules }}' | jq -r '.[]')
           for module in $MODULES; do
             echo "Compiling $module..."
-            ./gradlew :$module:assemble -x test --build-cache
+            ./gradlew :$module:classes -x test --build-cache
           done
