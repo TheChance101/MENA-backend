@@ -31,4 +31,4 @@ COPY --from=builder app/app/build/libs/*.jar app.jar
 # Expose Spring Boot default port
 EXPOSE 8080
 
-ENTRYPOINT ["java", "-jar", "app.jar"]
+ENTRYPOINT ["java", "-Dspring.profiles.active=prod", "-jar", "app.jar"]
