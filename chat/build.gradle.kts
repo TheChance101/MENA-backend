@@ -4,6 +4,7 @@ plugins {
     kotlin("jvm")
     kotlin("plugin.spring")
     kotlin("plugin.jpa")
+    id("org.jetbrains.kotlinx.kover")
 }
 
 dependencies {
@@ -12,4 +13,19 @@ dependencies {
     implementation("org.springframework.boot:spring-boot-starter-data-jpa")
     implementation("org.springframework.boot:spring-boot-starter-validation")
     implementation("org.springframework.boot:spring-boot-starter-security")
+}
+
+kover.reports {
+    verify {
+        rule {
+            minBound(0)
+        }
+    }
+
+    filters {
+        excludes {
+            packages("net.thechance.chat.api.dto*")
+            packages("net.thechance.chat.entity*")
+        }
+    }
 }

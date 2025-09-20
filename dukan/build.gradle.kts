@@ -4,6 +4,7 @@ plugins {
     kotlin("jvm")
     kotlin("plugin.spring")
     kotlin("plugin.jpa")
+    id("org.jetbrains.kotlinx.kover")
 }
 
 dependencies {
@@ -14,4 +15,19 @@ dependencies {
     implementation(platform("software.amazon.awssdk:bom:2.33.8"))
     implementation("software.amazon.awssdk:s3")
     implementation("org.springframework.boot:spring-boot-starter-security")
+}
+
+kover.reports {
+    verify {
+        rule {
+            minBound(0)
+        }
+    }
+
+    filters {
+        excludes {
+            packages("net.thechance.dukan.api.dto*")
+            packages("net.thechance.dukan.entity*")
+        }
+    }
 }

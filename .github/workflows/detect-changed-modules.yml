@@ -1,0 +1,61 @@
+name: Changed Modules (Backend)
+
+on:
+  workflow_call:
+    outputs:
+      modules:
+        description: "Changed modules"
+        value: ${{ jobs.detect.outputs.modules }}
+      has_changes:
+        description: "If there are any changes"
+        value: ${{ jobs.detect.outputs.has_changes }}
+
+jobs:
+  detect:
+    runs-on: ubuntu-latest
+    outputs:
+      modules: ${{ steps.changes.outputs.modules }}
+      has_changes: ${{ steps.changes.outputs.has_changes }}
+
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Get changed files
+        id: changed-files-git
+        run: |
+          if [ "${{ github.event_name }}" = "pull_request" ]; then
+            CHANGED_FILES=$(git diff --name-only ${{ github.event.pull_request.base.sha }}...${{ github.event.pull_request.head.sha }})
+          else
+            CHANGED_FILES=$(git diff --name-only HEAD~1..HEAD)
+          fi
+          echo "changed_files<<EOF" >> $GITHUB_OUTPUT
+          echo "$CHANGED_FILES" >> $GITHUB_OUTPUT
+          echo "EOF" >> $GITHUB_OUTPUT
+
+      - name: Determine modules
+        id: changes
+        run: |
+          ALL_MODULES='app identity chat dukan faith wallet trends'
+
+          CHANGED_FILES="${{ steps.changed-files-git.outputs.changed_files }}"
+          UNIQUE_MODULE_LIST=$(echo "$CHANGED_FILES" | awk -F/ '{print $1}' | sort -u)
+          FINAL_MODULES=""
+
+          for module in $UNIQUE_MODULE_LIST; do
+            if [[ " $ALL_MODULES " =~ " $module " ]]; then
+              FINAL_MODULES="$FINAL_MODULES $module"
+            fi
+          done
+
+          FINAL_MODULES=$(echo $FINAL_MODULES | tr ' ' '\n' | sort -u | tr '\n' ' ')
+          JSON_ARRAY=$(echo "$FINAL_MODULES" | jq -R 'split(" ") | map(select(length > 0))' | jq -c '.')
+
+          if [ "$(echo $JSON_ARRAY | jq 'length')" -gt 0 ]; then
+            echo "has_changes=true" >> $GITHUB_OUTPUT
+            echo "modules=$JSON_ARRAY" >> $GITHUB_OUTPUT
+          else
+            echo "has_changes=false" >> $GITHUB_OUTPUT
+            echo "modules=[]" >> $GITHUB_OUTPUT
+          fi

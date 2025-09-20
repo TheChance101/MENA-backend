@@ -4,6 +4,7 @@ plugins {
     kotlin("jvm") version "1.9.25" apply false
     kotlin("plugin.spring") version "1.9.25" apply false
     kotlin("plugin.jpa") version "1.9.25" apply false
+    id("org.jetbrains.kotlinx.kover") version "0.9.1" apply false
 }
 
 allprojects {
