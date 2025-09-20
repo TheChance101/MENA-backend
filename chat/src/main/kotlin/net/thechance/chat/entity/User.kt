@@ -1,4 +1,4 @@
-package net.thechance.identity.entity
+package net.thechance.chat.entity
 
 import jakarta.persistence.Column
 import jakarta.persistence.Entity
@@ -7,13 +7,22 @@ import jakarta.persistence.Table
 import java.util.UUID
 
 @Entity
-@Table(name = "users", schema = "identity")
+@Table(name = "users", schema = "chat")
 data class User(
     @Id
     @Column(columnDefinition = "uuid", updatable = false, nullable = false)
     val id: UUID = UUID.randomUUID(),
-    @Column(name = "phone_number", nullable = false)
+
+    @Column(nullable = false)
+    val firstName: String,
+
+    @Column(nullable = false)
+    val lastName: String,
+
+    @Column(nullable = false)
     val phoneNumber: String,
-    @Column(name = "password", nullable = false)
-    val password: String,
+
+    @Column(nullable = true)
+    val imageUrl: String? = null,
+
 )

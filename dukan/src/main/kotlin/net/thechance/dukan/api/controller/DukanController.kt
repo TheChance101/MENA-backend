@@ -1,22 +1,20 @@
 package net.thechance.dukan.api.controller
 
-import net.thechance.dukan.api.dto.DukanStyleResponse
-import net.thechance.dukan.mapper.toDukanStyleResponse
-import net.thechance.dukan.api.dto.DukanCategoryResponse
-import net.thechance.dukan.mapper.DukanLanguage
+import jakarta.validation.Valid
 import jakarta.validation.constraints.NotBlank
-import net.thechance.dukan.api.dto.DukanColorResponse
-import net.thechance.dukan.api.dto.DukanNameAvailabilityResponse
+import net.thechance.dukan.api.dto.*
+import net.thechance.dukan.entity.Dukan
+import net.thechance.dukan.mapper.DukanLanguage
 import net.thechance.dukan.mapper.toDto
-import net.thechance.dukan.api.dto.DukanStatuesResponse
+import net.thechance.dukan.mapper.toDukanCreationParams
+import net.thechance.dukan.mapper.toDukanStyleResponse
 import net.thechance.dukan.service.DukanService
 import org.springframework.http.ResponseEntity
 import org.springframework.security.core.annotation.AuthenticationPrincipal
-import org.springframework.web.bind.annotation.GetMapping
-import org.springframework.web.bind.annotation.RequestMapping
-import org.springframework.web.bind.annotation.RequestParam
-import org.springframework.web.bind.annotation.RestController
-import java.util.UUID
+import org.springframework.web.bind.annotation.*
+import org.springframework.web.multipart.MultipartFile
+import java.util.*
+
 
 @RestController
 @RequestMapping("/dukan")
@@ -44,6 +42,24 @@ class DukanController(
     ): ResponseEntity<DukanNameAvailabilityResponse> {
         val available = dukanService.isDukanNameAvailable(name)
         return ResponseEntity.ok(DukanNameAvailabilityResponse(available))
+    }
+
+    @PostMapping("/create")
+    fun createDukan(
+        @Valid @RequestBody requestBody: DukanCreationRequest,
+        @AuthenticationPrincipal userId: UUID,
+    ): ResponseEntity<Dukan> {
+        val dukan = dukanService.createDukan(requestBody.toDukanCreationParams(userId))
+        return ResponseEntity.ok(dukan)
+    }
+
+    @PostMapping("/image")
+    fun uploadDukanImage(
+        @AuthenticationPrincipal ownerId: UUID,
+        @RequestParam("file") file: MultipartFile,
+    ): ResponseEntity<String> {
+        val imageUrl = dukanService.uploadDukanImage(ownerId, file)
+        return ResponseEntity.ok(imageUrl)
     }
 
     @GetMapping("/colors")

@@ -1,8 +1,8 @@
 package net.thechance.identity.security.handler
 
 import com.fasterxml.jackson.databind.ObjectMapper
+import identity.security.handler.ApiErrorResponse
 import jakarta.servlet.http.HttpServletResponse
-import net.thechance.app.exception.ApiErrorResponse
 import org.springframework.stereotype.Component
 
 @Component
