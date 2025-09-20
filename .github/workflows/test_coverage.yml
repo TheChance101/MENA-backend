@@ -34,6 +34,9 @@ jobs:
       - name: Run tests
         run: ./gradlew :${{ matrix.module }}:test --build-cache --parallel
 
+      - name: Verify coverage thresholds
+        run: ./gradlew :${{ matrix.module }}:koverVerify --build-cache --parallel
+
       - name: Generate coverage (JaCoCo/Kover)
         run: ./gradlew :${{ matrix.module }}:koverXmlReport :${{ matrix.module }}:koverHtmlReport --build-cache
 
