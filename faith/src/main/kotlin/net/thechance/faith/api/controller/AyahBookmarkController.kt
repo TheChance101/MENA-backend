@@ -7,9 +7,10 @@ import net.thechance.faith.api.dto.bookmark.toBookmark
 import net.thechance.faith.api.dto.bookmark.toBookmarkResponse
 import net.thechance.faith.service.AyahBookmarkService
 import org.springframework.data.domain.Page
+import org.springframework.data.domain.PageRequest
 import org.springframework.data.domain.Pageable
+import org.springframework.data.domain.Sort
 import org.springframework.data.domain.Sort.Direction
-import org.springframework.data.web.PageableDefault
 import org.springframework.http.ResponseEntity
 import org.springframework.security.core.annotation.AuthenticationPrincipal
 import org.springframework.web.bind.annotation.*
@@ -43,9 +44,18 @@ class AyahBookmarkController(
     @GetMapping("/all")
     fun getAyahBookmarks(
         @AuthenticationPrincipal userId: UUID,
-        @PageableDefault(size = 10, page = 1, sort = ["createdAt"], direction = Direction.DESC)
-        pageable: Pageable
+        @RequestParam(defaultValue = "1") page: Int,
+        @RequestParam(defaultValue = "10") size: Int
     ): ResponseEntity<Page<AyahBookmarkResponse>> {
+
+        val zeroBasedPage = if (page > 0) page - 1 else 0
+
+        val pageable: Pageable = PageRequest.of(
+            zeroBasedPage,
+            size,
+            Sort.by(Direction.DESC, "createdAt")
+        )
+
         val bookmarks = ayahBookmarkService.getBookmarks(userId = userId, pageable = pageable)
         val response = bookmarks.map { it.toBookmarkResponse() }
         return ResponseEntity.ok(response)
