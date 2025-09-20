@@ -1,6 +1,5 @@
 package net.thechance.identity.entity
 
-import jakarta.persistence.*
 import jakarta.persistence.Column
 import jakarta.persistence.Entity
 import jakarta.persistence.FetchType
@@ -23,5 +22,5 @@ class RefreshToken(
     val expiresIn: Long,
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "user_id", nullable = false)
-    val user: IdentityUser
+    val user: User
 )
