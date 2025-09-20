@@ -2,7 +2,8 @@ package net.thechance.dukan.service
 
 import net.thechance.dukan.exception.ImageUploadingFailedException
 import net.thechance.dukan.exception.InvalidPictureException
-import org.springframework.beans.factory.annotation.Value
+import org.springframework.boot.context.properties.ConfigurationProperties
+import org.springframework.boot.context.properties.EnableConfigurationProperties
 import org.springframework.stereotype.Service
 import org.springframework.web.multipart.MultipartFile
 import software.amazon.awssdk.core.sync.RequestBody
@@ -11,11 +12,17 @@ import software.amazon.awssdk.services.s3.model.ObjectCannedACL
 import software.amazon.awssdk.services.s3.model.PutObjectRequest
 import java.time.LocalDateTime
 
+@ConfigurationProperties(prefix = "storage.dukan")
+data class DukanStorageProperties(
+    val bucket: String,
+    val cdnEndpoint: String
+)
+
 @Service
+@EnableConfigurationProperties(DukanStorageProperties::class)
 class ImageStorageService(
-    private val s3Client: S3Client,
-    @param:Value("\${storage.bucket}") val bucket: String,
-    @param:Value("\${storage.cdn-endpoint}") val cdnEndpoint: String
+    private val dukanS3Client: S3Client,
+    private val props: DukanStorageProperties,
 ) {
     fun uploadImage(
         file: MultipartFile,
@@ -28,8 +35,8 @@ class ImageStorageService(
             val fileName = "${fileName}_${LocalDateTime.now()}.$extension"
             val key = "images/$folderName/$fileName"
             val putReq = createObjectRequest(key, mimeType)
-            s3Client.putObject(putReq, RequestBody.fromBytes(file.bytes))
-            return "${cdnEndpoint}/$key"
+            dukanS3Client.putObject(putReq, RequestBody.fromBytes(file.bytes))
+            return "${props.cdnEndpoint}/$key"
         } catch (_: Exception) {
             throw ImageUploadingFailedException()
         }
@@ -37,7 +44,7 @@ class ImageStorageService(
 
     private fun createObjectRequest(key: String, contentType: String): PutObjectRequest? {
         return PutObjectRequest.builder()
-            .bucket(bucket)
+            .bucket(props.bucket)
             .key(key)
             .contentType(contentType)
             .acl(ObjectCannedACL.PUBLIC_READ)
