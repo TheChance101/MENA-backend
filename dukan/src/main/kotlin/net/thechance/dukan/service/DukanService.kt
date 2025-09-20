@@ -21,7 +21,7 @@ import kotlin.enums.EnumEntries
 class DukanService(
     private val dukanRepository: DukanRepository,
     private val dukanColorRepository: DukanColorRepository,
-    private val imageStorageService: ImageStorageService
+    private val imageStorageService: ImageStorageService,
     private val dukanCategoryRepository: DukanCategoryRepository
 ) {
     fun getAllStyles(): EnumEntries<Dukan.Style> = Dukan.Style.entries

@@ -26,3 +26,19 @@ databaseChangeLog:
             user_id UUID NOT NULL,
             CONSTRAINT fk_refresh_tokens_user_id FOREIGN KEY (user_id) REFERENCES identity.users(id)
             );
+
+  - changeSet:
+      id: 3-identity
+      author: alqassim
+      comment: Create the login_log table in the identity schema
+      changes:
+        - sql:
+            CREATE TABLE identity.login_log (
+              id UUID NOT NULL,
+              user_id UUID NOT NULL,
+              is_success BOOLEAN NOT NULL,
+              login_time TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT NOW(),
+              ip_address TEXT NOT NULL,
+              PRIMARY KEY (id),
+              CONSTRAINT fk_user_id FOREIGN KEY (user_id) REFERENCES identity.users(id)
+            );
