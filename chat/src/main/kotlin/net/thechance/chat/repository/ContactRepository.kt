@@ -28,6 +28,5 @@ interface ContactRepository: JpaRepository<Contact, UUID>{
         pageable: Pageable?
     ): Page<ContactModel>
 
-    fun findAllByContactOwnerIdAndPhoneNumberIn(contactOwnerId: UUID, phoneNumbers: List<String>): List<Contact>
-    fun deleteAllByContactOwnerIdAndPhoneNumberNotIn(contactOwnerId: UUID, requestedPhoneNumbers: List<String>)
+    fun findAllByContactOwnerId(contactOwnerId: UUID): List<Contact>
 }

@@ -36,10 +36,9 @@ class ContactService(
         val uniqueContactRequests = contactRequests
             .groupBy { it.phoneNumber }
             .map { it.value.last() }
-        val requestedPhoneNumbers = uniqueContactRequests.map { it.phoneNumber }
 
         val existingContactsMap = contactRepository
-            .findAllByContactOwnerIdAndPhoneNumberIn(userId, requestedPhoneNumbers)
+            .findAllByContactOwnerId(userId)
             .associateBy { it.phoneNumber }
 
         val contactsToSave = uniqueContactRequests.map { request ->
@@ -49,7 +48,6 @@ class ContactService(
             ) ?: request
         }
 
-        contactRepository.deleteAllByContactOwnerIdAndPhoneNumberNotIn(userId, requestedPhoneNumbers)
         contactRepository.saveAll(contactsToSave)
     }
 }
