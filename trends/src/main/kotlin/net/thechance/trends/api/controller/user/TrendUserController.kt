@@ -1,4 +1,4 @@
-package net.thechance.trends.api.controller.category
+package net.thechance.trends.api.controller.user
 
 import net.thechance.trends.api.controller.Constants
 import net.thechance.trends.api.dto.trendUser.DoesUserHaveCategoriesResponse
@@ -19,7 +19,7 @@ class TrendUserController(
     @GetMapping("/user/categories/status")
     fun getDoesUserHaveCategories(
         @AuthenticationPrincipal userId: UUID,
-    ): ResponseEntity<DoesUserHaveCategoriesResponse>{
+    ): ResponseEntity<DoesUserHaveCategoriesResponse> {
         val doesUserHaveCategories = trendUserService.getDoesUserHaveCategories(userId)
         val response = DoesUserHaveCategoriesResponse(value = doesUserHaveCategories)
         return ResponseEntity.ok(response)
