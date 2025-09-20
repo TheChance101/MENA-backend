@@ -1,0 +1,18 @@
+databaseChangeLog:
+  - changeSet:
+      id: 3-trends
+      author: Mohamed Hassan
+      comment: Create user info table and junction
+      changes:
+        - sql:
+            CREATE TABLE trends.user(
+            user_id UUID PRIMARY KEY
+            );
+        - sql:
+            CREATE TABLE trends.user_categories(
+            user_id UUID NOT NULL,
+            category_id UUID NOT NULL,
+            PRIMARY KEY (user_id, category_id),
+            CONSTRAINT fk_user_categories_user_id FOREIGN KEY (user_id) REFERENCES trends.user(user_id),
+            CONSTRAINT fk_user_categories_category_id FOREIGN KEY (category_id) REFERENCES trends.categories(id)
+            );
