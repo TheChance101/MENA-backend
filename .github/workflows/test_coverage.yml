@@ -1,0 +1,68 @@
+name: Test Coverage and Codecov Report (Backend)
+
+on:
+  pull_request:
+    branches: [ main, develop ]
+  workflow_dispatch:
+
+jobs:
+  detect:
+    name: Detect Changes
+    uses: ./.github/workflows/detect-changed-modules.yml
+    secrets: inherit
+
+  test:
+    name: Test
+    needs: detect
+    if: needs.detect.outputs.has_changes == 'true'
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        module: ${{ fromJSON(needs.detect.outputs.modules) }}
+      fail-fast: false
+
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-java@v4
+        with:
+          distribution: 'temurin'
+          java-version: 17
+          cache: gradle
+
+      - run: chmod +x gradlew
+
+      - name: Run tests
+        run: ./gradlew :${{ matrix.module }}:test --build-cache --parallel
+
+      - name: Generate coverage (JaCoCo/Kover)
+        run: ./gradlew :${{ matrix.module }}:koverXmlReport :${{ matrix.module }}:koverHtmlReport --build-cache
+
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: html-report-${{ matrix.module }}
+          path: ${{ matrix.module }}/build/reports/kover/html/
+
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: xml-report-${{ matrix.module }}
+          path: ${{ matrix.module }}/build/reports/kover/report.xml
+
+  codecov:
+    name: Coverage
+    needs: [ detect, test ]
+    if: always() && needs.detect.outputs.has_changes == 'true'
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/download-artifact@v4
+        with:
+          pattern: "xml-report-*"
+          path: coverage-reports
+
+      - uses: codecov/codecov-action@v4
+        with:
+          token: ${{ secrets.CODECOV_TOKEN }}
+          directory: ./coverage-reports/
+          fail_ci_if_error: true
