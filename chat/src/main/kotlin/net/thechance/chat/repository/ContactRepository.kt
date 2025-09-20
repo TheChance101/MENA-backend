@@ -25,6 +25,8 @@ interface ContactRepository: JpaRepository<Contact, UUID>{
     )
     fun findAllContactModelsByContactOwnerId(
         @Param("contactOwnerId") contactOwnerId: UUID,
-        pageable: Pageable?
+        pageable: Pageable
     ): Page<ContactModel>
+
+    fun findAllByContactOwnerId(contactOwnerId: UUID): List<Contact>
 }

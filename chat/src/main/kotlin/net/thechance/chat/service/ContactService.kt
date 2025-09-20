@@ -1,5 +1,6 @@
 package net.thechance.chat.service
 
+import net.thechance.chat.entity.Contact
 import net.thechance.chat.repository.ContactRepository
 import net.thechance.chat.service.model.ContactModel
 import org.springframework.data.domain.Page
@@ -7,6 +8,7 @@ import org.springframework.data.domain.PageRequest
 import org.springframework.data.domain.Pageable
 import org.springframework.data.domain.Sort
 import org.springframework.stereotype.Service
+import org.springframework.transaction.annotation.Transactional
 import java.util.UUID
 
 @Service
@@ -26,5 +28,26 @@ class ContactService(
                 PageRequest.of(pageable.pageNumber - 1, pageable.pageSize, Sort.by("firstName").ascending())
             )
         }
+    }
+
+    @Transactional
+    fun syncContacts(userId: UUID, contactRequests: List<Contact>) {
+
+        val uniqueContactRequests = contactRequests
+            .groupBy { it.phoneNumber }
+            .map { it.value.last() }
+
+        val existingContactsMap = contactRepository
+            .findAllByContactOwnerId(userId)
+            .associateBy { it.phoneNumber }
+
+        val contactsToSave = uniqueContactRequests.map { request ->
+            existingContactsMap[request.phoneNumber]?.copy(
+                firstName = request.firstName,
+                lastName = request.lastName
+            ) ?: request
+        }
+
+        contactRepository.saveAll(contactsToSave)
     }
 }
