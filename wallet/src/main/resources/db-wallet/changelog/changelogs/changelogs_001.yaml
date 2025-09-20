@@ -43,3 +43,11 @@ databaseChangeLog:
                 block_id UUID NOT NULL,
                 FOREIGN KEY (block_id) REFERENCES wallet.blocks(id) ON DELETE RESTRICT
               );
+
+  - changeSet:
+      id: 3-wallet
+      author: alqassim
+      comment: remove unnecessary accounts table
+      changes:
+        - sql:
+            DROP TABLE IF EXISTS wallet.accounts;

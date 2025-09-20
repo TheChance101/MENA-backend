@@ -20,6 +20,7 @@ import java.util.*
 class AyahBookmarkController(
     private val ayahBookmarkService: AyahBookmarkService
 ) {
+
     @PostMapping
     fun saveAyahBookmark(
         @Valid @RequestBody ayahBookmarkRequest: AyahBookmarkRequest,
@@ -28,6 +29,15 @@ class AyahBookmarkController(
         val savedBookmark = ayahBookmarkService.saveBookmark(ayahBookmarkRequest.toBookmark(userId))
         val response = savedBookmark.toBookmarkResponse()
         return ResponseEntity.ok(response)
+    }
+
+    @DeleteMapping("/{id}")
+    fun delete(
+        @PathVariable id: Int,
+        @AuthenticationPrincipal userId: UUID
+    ): ResponseEntity<Void> {
+        ayahBookmarkService.deleteByIdAndUserId(id, userId)
+        return ResponseEntity.ok().build()
     }
 
     @GetMapping("/all")
