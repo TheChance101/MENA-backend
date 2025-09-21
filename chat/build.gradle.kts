@@ -4,6 +4,7 @@ plugins {
     kotlin("jvm")
     kotlin("plugin.spring")
     kotlin("plugin.jpa")
+    id("org.jetbrains.kotlinx.kover")
 }
 
 dependencies {
@@ -26,4 +27,20 @@ tasks.test {
     include("**/*Test.class")
     include("**/*Tests.class")
     include("**/*TestCase.class")
+}
+
+
+kover.reports {
+    verify {
+        rule {
+            minBound(0)
+        }
+    }
+
+    filters {
+        excludes {
+            packages("net.thechance.chat.api.dto*")
+            packages("net.thechance.chat.entity*")
+        }
+    }
 }
