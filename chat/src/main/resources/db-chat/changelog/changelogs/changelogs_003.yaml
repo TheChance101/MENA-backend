@@ -1,0 +1,11 @@
+databaseChangeLog:
+  - changeSet:
+      id: 6-chat-unique-contacts
+      author: raouf
+      comment: Add unique constraint to contacts table on contact_owner_id and phone_number
+      changes:
+        - addUniqueConstraint:
+            tableName: contacts
+            columnNames: contact_owner_id, phone_number
+            constraintName: contacts_owner_phone_unique
+            schemaName: chat

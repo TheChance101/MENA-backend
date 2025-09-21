@@ -10,7 +10,8 @@ import java.util.UUID
 @Entity
 @Table(
     name = "contacts", schema = "chat",
-    uniqueConstraints = [UniqueConstraint(columnNames = ["contactOwnerId", "phoneNumber"])]
+      uniqueConstraints = [UniqueConstraint(columnNames = ["contact_owner_id", "phone_number"])]
+
 )
 data class Contact(
     @Id @Column(columnDefinition = "uuid", updatable = false, nullable = false)
