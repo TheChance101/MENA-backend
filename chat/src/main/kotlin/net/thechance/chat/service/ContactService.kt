@@ -30,22 +30,14 @@ class ContactService(
     }
 
     fun syncContacts(userId: UUID, contactRequests: List<Contact>) {
-        val uniqueContacts = contactRequests
-            .groupBy { it.phoneNumber }
-            .map { it.value.last() }
+        val uniqueContacts = contactRequests.distinctBy { it.phoneNumber }
 
         if (uniqueContacts.isEmpty()) return
 
-        uniqueContacts.chunked(CHUNK_SIZE).forEach { chunk ->
-            val phones = chunk.map { it.phoneNumber }.toTypedArray()
-            val firstNames = chunk.map { it.firstName }.toTypedArray()
-            val lastNames = chunk.map { it.lastName }.toTypedArray()
+        val phones = uniqueContacts.map { it.phoneNumber }.toTypedArray()
+        val firstNames = uniqueContacts.map { it.firstName }.toTypedArray()
+        val lastNames = uniqueContacts.map { it.lastName }.toTypedArray()
 
-            contactRepository.bulkUpsert(userId, phones, firstNames, lastNames)
-        }
-    }
-
-    private companion object {
-        const val CHUNK_SIZE = 1000
+        contactRepository.bulkUpsert(userId, phones, firstNames, lastNames)
     }
 }
