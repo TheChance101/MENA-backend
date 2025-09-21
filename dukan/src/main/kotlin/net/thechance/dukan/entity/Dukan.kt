@@ -38,6 +38,8 @@ data class Dukan(
     @Enumerated(EnumType.STRING)
     @Column(name = "status", nullable = false)
     val status: Status = Status.PENDING,
+    @OneToMany(mappedBy = "dukan", cascade = [CascadeType.ALL])
+    val shelves: Set<DukanShelf> = emptySet()
 ) {
     enum class Status {
         APPROVED,

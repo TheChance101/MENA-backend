@@ -1,4 +1,4 @@
-package identity.api.dto
+package net.thechance.identity.api.dto
 
 import jakarta.validation.constraints.NotBlank
 
