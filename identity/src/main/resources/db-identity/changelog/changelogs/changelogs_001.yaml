@@ -35,9 +35,7 @@ databaseChangeLog:
         - sql:
             create table identity.login_log
             (
-            id         uuid                    not null
-            constraint pk_login_log
-            primary key,
+            id         uuid                    not null   constraint    pk_login_log    primary key,
             user_id    uuid                    not null,
             is_success boolean                 not null,
             login_time timestamp default now() not null,
