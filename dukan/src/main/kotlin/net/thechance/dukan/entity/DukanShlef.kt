@@ -8,15 +8,20 @@ import jakarta.persistence.Id
 import jakarta.persistence.JoinColumn
 import jakarta.persistence.ManyToOne
 import jakarta.persistence.Table
+import jakarta.persistence.UniqueConstraint
 import java.util.UUID
 
-@Table(name = "dukan_shelves", schema = "dukan")
+@Table(
+    name = "dukan_shelves",
+    schema = "dukan",
+    uniqueConstraints = [UniqueConstraint(columnNames = ["dukan_id", "title"])]
+)
 @Entity
-data class Shelf(
+data class DukanShlef(
     @Id
     @GeneratedValue(strategy = GenerationType.UUID)
     val id: UUID = UUID.randomUUID(),
-    @Column(name = "title", nullable = false, unique = true)
+    @Column(name = "title", nullable = false)
     val title: String,
     @ManyToOne
     @JoinColumn(name = "dukan_id", nullable = false)

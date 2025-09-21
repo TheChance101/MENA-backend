@@ -39,7 +39,7 @@ data class Dukan(
     @Column(name = "status", nullable = false)
     val status: Status = Status.PENDING,
     @OneToMany(mappedBy = "dukan", cascade = [CascadeType.ALL])
-    val shelves: Set<Shelf> = emptySet()
+    val shelves: Set<DukanShlef> = emptySet()
 ) {
     enum class Status {
         APPROVED,

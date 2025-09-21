@@ -63,3 +63,13 @@ databaseChangeLog:
             CONSTRAINT fk_shelves_dukan FOREIGN KEY (dukan_id) REFERENCES dukan.dukans(id)
             );
 
+  - changeSet:
+      id: 4-dukan
+      author: haider
+      changes:
+        - addUniqueConstraint:
+            tableName: dukan_shelves
+            columnNames: dukan_id,title
+            constraintName: uq_dukan_shelves_dukan_title
+            schemaName: dukan
+
