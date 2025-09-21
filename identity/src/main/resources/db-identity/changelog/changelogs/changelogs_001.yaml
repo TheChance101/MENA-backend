@@ -29,16 +29,16 @@ databaseChangeLog:
 
   - changeSet:
       id: 3-identity
-      author: alqassim
-      comment: Create the login_log table in the identity schema
+      author: poula
+      comment: Create login_log table for identity
       changes:
         - sql:
-            CREATE TABLE identity.login_log (
-              id UUID NOT NULL,
-              user_id UUID NOT NULL,
-              is_success BOOLEAN NOT NULL,
-              login_time TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT NOW(),
-              ip_address TEXT NOT NULL,
-              PRIMARY KEY (id),
-              CONSTRAINT fk_user_id FOREIGN KEY (user_id) REFERENCES identity.users(id)
+            create table identity.login_log
+            (
+            id         uuid                    not null   constraint    pk_login_log    primary key,
+            user_id    uuid                    not null,
+            is_success boolean                 not null,
+            login_time timestamp default now() not null,
+            ip_address text                    not null,
+            CONSTRAINT fk_login_log_user_id FOREIGN KEY (user_id) REFERENCES identity.users(id)
             );

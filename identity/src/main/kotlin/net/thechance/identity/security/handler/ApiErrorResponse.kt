@@ -1,4 +1,4 @@
-package identity.security.handler
+package net.thechance.identity.security.handler
 
 data class ApiErrorResponse(
     val status: Int,
