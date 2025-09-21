@@ -3,6 +3,7 @@ plugins {
     id("io.spring.dependency-management")
     kotlin("jvm")
     kotlin("plugin.spring")
+    id("org.jetbrains.kotlinx.kover")
 }
 
 dependencies {
@@ -13,4 +14,19 @@ dependencies {
     implementation("org.springframework.boot:spring-boot-starter-web")
     testImplementation("io.mockk:mockk:1.13.12")
     testImplementation("com.google.truth:truth:1.4.4")
+}
+
+kover.reports {
+    verify {
+        rule {
+            minBound(0)
+        }
+    }
+
+    filters {
+        excludes {
+            packages("net.thechance.wallet.api.dto*")
+            packages("net.thechance.wallet.entity*")
+        }
+    }
 }

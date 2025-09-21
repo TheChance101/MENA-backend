@@ -21,6 +21,7 @@ import kotlin.enums.EnumEntries
 class DukanService(
     private val dukanRepository: DukanRepository,
     private val dukanColorRepository: DukanColorRepository,
+    private val imageStorageService: ImageStorageService,
     private val dukanCategoryRepository: DukanCategoryRepository
 ) {
     fun getAllStyles(): EnumEntries<Dukan.Style> = Dukan.Style.entries
@@ -58,7 +59,12 @@ class DukanService(
     @Transactional
     fun uploadDukanImage(ownerId: UUID, file: MultipartFile): String {
         val dukan = dukanRepository.findByOwnerId(ownerId) ?: throw DukanNotFoundException()
-        val imageUrl = file.originalFilename.orEmpty() // TODO (Upload the image to real storage service)
+        val imageUrl =
+            imageStorageService.uploadImage(
+                file = file,
+                fileName = "${dukan.name}-${file.originalFilename}",
+                folderName = DUKAN_FOLDER_NAME
+            )
         dukanRepository.save(dukan.copy(imageUrl = imageUrl))
         return imageUrl
     }
@@ -71,5 +77,9 @@ class DukanService(
         if (dukanRepository.existsByName(params.name)) {
             throw DukanCreationFailedException()
         }
+    }
+
+    companion object {
+        private val DUKAN_FOLDER_NAME = "dukan"
     }
 }

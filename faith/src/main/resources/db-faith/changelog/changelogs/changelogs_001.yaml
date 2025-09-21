@@ -5,3 +5,38 @@ databaseChangeLog:
       comment: Create the faith schema
       changes:
         - sql: CREATE SCHEMA IF NOT EXISTS faith;
+
+  - changeSet:
+      id: 2-faith
+      author: faresmohamed
+      comment: Create the aya bookmark in the faith schema
+      changes:
+        - sql:
+            create table ayah_bookmark
+            (
+            id          integer                     not null
+            primary key,
+            ayah_number integer                     not null,
+            created_at  timestamp(6) with time zone not null,
+            surah_id    integer                     not null,
+            user_id     uuid                        not null
+            );
+
+  - changeSet:
+      id: 3-faith
+      author: alqassim
+      comment: put aya bookmark table in the correct schema
+      changes:
+        - sql:
+            drop table ayah_bookmark
+
+        - sql:
+            create table faith.ayah_bookmark
+            (
+            id          integer                     not null
+            primary key,
+            ayah_number integer                     not null,
+            created_at  timestamp(6) with time zone not null,
+            surah_id    integer                     not null,
+            user_id     uuid                        not null
+            );
