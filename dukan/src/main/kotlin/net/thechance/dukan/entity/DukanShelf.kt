@@ -17,7 +17,7 @@ import java.util.UUID
     uniqueConstraints = [UniqueConstraint(columnNames = ["dukan_id", "title"])]
 )
 @Entity
-data class DukanShlef(
+data class DukanShelf(
     @Id
     @GeneratedValue(strategy = GenerationType.UUID)
     val id: UUID = UUID.randomUUID(),
