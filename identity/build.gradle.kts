@@ -10,9 +10,10 @@ dependencies {
     implementation("org.springframework.boot:spring-boot-starter-data-jpa")
     implementation("org.springframework.boot:spring-boot-starter-security")
     implementation("org.springframework.boot:spring-boot-starter-validation")
-    testImplementation(kotlin("test"))
     implementation("org.springframework.boot:spring-boot-starter-web")
     testImplementation("org.springframework.security:spring-security-test")
+    testImplementation("io.mockk:mockk:1.14.5")
+    testImplementation("com.google.truth:truth:1.4.5")
     runtimeOnly("org.postgresql:postgresql")
 
 
