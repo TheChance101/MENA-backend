@@ -11,6 +11,7 @@ import org.springframework.data.domain.PageRequest
 import org.springframework.data.domain.Pageable
 import org.springframework.data.domain.Sort
 import org.springframework.data.domain.Sort.Direction
+import org.springframework.data.web.PageableDefault
 import org.springframework.http.ResponseEntity
 import org.springframework.security.core.annotation.AuthenticationPrincipal
 import org.springframework.web.bind.annotation.*
@@ -41,21 +42,12 @@ class AyahBookmarkController(
         return ResponseEntity.ok().build()
     }
 
-    @GetMapping("/all")
+    @GetMapping
     fun getAyahBookmarks(
         @AuthenticationPrincipal userId: UUID,
-        @RequestParam(defaultValue = "1") page: Int,
-        @RequestParam(defaultValue = "10") size: Int
+        @PageableDefault(size = 10, page = 0, sort = ["createdAt"], direction = Direction.DESC)
+        pageable: Pageable
     ): ResponseEntity<Page<AyahBookmarkResponse>> {
-
-        val zeroBasedPage = if (page > 0) page - 1 else 0
-
-        val pageable: Pageable = PageRequest.of(
-            zeroBasedPage,
-            size,
-            Sort.by(Direction.DESC, "createdAt")
-        )
-
         val bookmarks = ayahBookmarkService.getBookmarks(userId = userId, pageable = pageable)
         val response = bookmarks.map { it.toBookmarkResponse() }
         return ResponseEntity.ok(response)
