@@ -1,28 +1,45 @@
 package net.thechance.trends.service
 
+import net.thechance.trends.api.controller.exception.InvalidTrendInputException
+import net.thechance.trends.api.controller.exception.TrendCategoryNotFoundException
 import net.thechance.trends.entity.Category
 import net.thechance.trends.entity.TrendUser
+import net.thechance.trends.repository.CategoryRepository
 import net.thechance.trends.repository.TrendUserRepository
 import org.springframework.stereotype.Service
 import org.springframework.transaction.annotation.Transactional
 import java.util.UUID
+import kotlin.jvm.optionals.getOrElse
 import kotlin.jvm.optionals.getOrNull
 
 @Service
 @Transactional
 class TrendUserService(
-    private val trendUserRepository: TrendUserRepository
+    private val trendUserRepository: TrendUserRepository,
+    private val categoryRepository: CategoryRepository
 ) {
-    fun saveCategoriesToUser(userId: UUID, categories: List<Category>) {
-        val trendUser = trendUserRepository.findById(userId).orElseGet {
-            TrendUser(userId = userId, categories = mutableSetOf())
-        }
-        val existingCategoryIds = trendUser.categories.map { it.id }.toSet()
-        val newCategories = categories.filterNot { it.id in existingCategoryIds }
+    fun saveCategoriesToUser(userId: UUID, categoryIds: List<UUID>) {
 
-        trendUser.categories.clear()
-        trendUser.categories.addAll(newCategories)
-        trendUserRepository.save(trendUser)
+        if (categoryIds.isEmpty()) {
+            throw InvalidTrendInputException()
+        }
+
+        val existingCategoryCount = categoryRepository.countByIdIn(categoryIds.toMutableList())
+        if (existingCategoryCount != categoryIds.size.toLong()) {
+            throw TrendCategoryNotFoundException()
+        }
+
+        val trendUser = trendUserRepository.findById(userId).getOrElse {
+            TrendUser(userId = userId)
+        }
+
+        val categoryProxies = categoryIds.map { categoryId ->
+            categoryRepository.getReferenceById(categoryId)
+        }.toMutableSet()
+
+        val updatedUser = trendUser.copy(categories = categoryProxies)
+        trendUserRepository.save(updatedUser)
+
     }
 
     fun getDoesUserHaveCategories(userId: UUID): Boolean {

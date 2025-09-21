@@ -13,17 +13,6 @@ import java.util.UUID
 class CategoryService(
     private val categoryRepository: CategoryRepository
 ) {
-    fun getCategoriesToBeSaved(categoryIds: List<UUID>): List<Category> {
-        if (categoryIds.isEmpty()) {
-            throw InvalidTrendInputException()
-        }
-
-        val categories = categoryRepository.findAllById(categoryIds) ?: throw TrendCategoryNotFoundException()
-        if(categories.size != categoryIds.size) {
-            throw TrendCategoryNotFoundException()
-        }
-        return categories
-    }
 
     fun getAllCategories(): List<Category> {
         return categoryRepository.findAll()

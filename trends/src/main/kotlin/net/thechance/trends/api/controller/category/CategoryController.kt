@@ -29,8 +29,7 @@ class CategoryController(
         @RequestBody @Valid userCategoriesRequest: SubmitUserCategoriesRequest,
         @AuthenticationPrincipal userId: UUID
     ): ResponseEntity<SubmitUserCategoriesResponse> {
-        val categories = categoryService.getCategoriesToBeSaved(userCategoriesRequest.categoryIds)
-        trendUserService.saveCategoriesToUser(userId, categories)
+        trendUserService.saveCategoriesToUser(userId, userCategoriesRequest.categoryIds)
 
         return ResponseEntity.ok(
             SubmitUserCategoriesResponse(
