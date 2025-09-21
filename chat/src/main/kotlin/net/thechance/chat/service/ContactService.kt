@@ -9,7 +9,7 @@ import org.springframework.data.domain.Pageable
 import org.springframework.data.domain.Sort
 import org.springframework.stereotype.Service
 import org.springframework.transaction.annotation.Transactional
-import java.util.UUID
+import java.util.*
 
 @Service
 class ContactService(
@@ -32,22 +32,22 @@ class ContactService(
 
     @Transactional
     fun syncContacts(userId: UUID, contactRequests: List<Contact>) {
-
-        val uniqueContactRequests = contactRequests
+        val uniqueContacts = contactRequests
             .groupBy { it.phoneNumber }
             .map { it.value.last() }
 
-        val existingContactsMap = contactRepository
-            .findAllByContactOwnerId(userId)
-            .associateBy { it.phoneNumber }
+        if (uniqueContacts.isEmpty()) return
 
-        val contactsToSave = uniqueContactRequests.map { request ->
-            existingContactsMap[request.phoneNumber]?.copy(
-                firstName = request.firstName,
-                lastName = request.lastName
-            ) ?: request
+        uniqueContacts.chunked(CHUNK_SIZE).forEach { chunk ->
+            val phones = chunk.map { it.phoneNumber }.toTypedArray()
+            val firstNames = chunk.map { it.firstName }.toTypedArray()
+            val lastNames = chunk.map { it.lastName }.toTypedArray()
+
+            contactRepository.bulkUpsert(userId, phones, firstNames, lastNames)
         }
+    }
 
-        contactRepository.saveAll(contactsToSave)
+    private companion object {
+        const val CHUNK_SIZE = 1000
     }
 }
