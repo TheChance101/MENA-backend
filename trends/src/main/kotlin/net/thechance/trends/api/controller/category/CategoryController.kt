@@ -34,9 +34,7 @@ class CategoryController(
 
         return ResponseEntity.ok(
             SubmitUserCategoriesResponse(
-                userId = userId,
                 categoryIds = userCategoriesRequest.categoryIds,
-                message = "User interests updated successfully"
             )
         )
     }
