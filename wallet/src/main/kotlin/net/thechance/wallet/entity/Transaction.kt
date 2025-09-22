@@ -5,6 +5,10 @@ import java.math.BigDecimal
 import java.time.LocalDateTime
 import java.util.*
 
+enum class TransactionStatus {
+    COMPLETED, FAILED
+}
+
 @Entity
 @Table(name = "transactions", schema = "wallet")
 data class Transaction(
@@ -25,9 +29,16 @@ data class Transaction(
     val senderSignature: String,
 
     @Column(nullable = false, updatable = false)
-    val amount: BigDecimal,
+    val amount: Double,
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "block_id", nullable = false, updatable = false)
-    val block: Block
+    val block: Block,
+
+    @Column(nullable = false)
+    val description: String = "Transfer",
+
+    @Enumerated(EnumType.STRING)
+    @Column(nullable = false)
+    val status: TransactionStatus = TransactionStatus.COMPLETED
 )

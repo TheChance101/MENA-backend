@@ -1,6 +1,8 @@
 package net.thechance.wallet.repository
 
 import net.thechance.wallet.entity.Transaction
+import org.springframework.data.domain.Page
+import org.springframework.data.domain.Pageable
 import org.springframework.data.jpa.repository.JpaRepository
 import org.springframework.data.jpa.repository.Query
 import org.springframework.data.repository.query.Param
@@ -12,4 +14,10 @@ interface TransactionRepository : JpaRepository<Transaction, UUID> {
 
     @Query("SELECT SUM(t.amount) FROM Transaction t WHERE t.senderId = :senderId")
     fun sumAmountBySenderId(@Param("senderId") senderId: UUID): Double?
+
+    fun findBySenderIdOrReceiverIdOrderByCreatedAtDesc(
+        senderId: UUID,
+        receiverId: UUID,
+        pageable: Pageable
+    ): Page<Transaction>
 }
