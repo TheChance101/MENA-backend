@@ -21,7 +21,7 @@ class TrendUserController(
         @AuthenticationPrincipal userId: UUID,
     ): ResponseEntity<DoesUserHaveCategoriesResponse> {
         val doesUserHaveCategories = trendUserService.getDoesUserHaveCategories(userId)
-        val response = DoesUserHaveCategoriesResponse(value = doesUserHaveCategories)
+        val response = DoesUserHaveCategoriesResponse(hasCategory = doesUserHaveCategories)
         return ResponseEntity.ok(response)
     }
 }
