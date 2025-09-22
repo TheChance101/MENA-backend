@@ -19,7 +19,7 @@ data class DukanProduct(
 
     @ManyToOne
     @JoinColumn(name = "shelf_id", nullable = false)
-    val shelf: DukanShlef,
+    val shelf: DukanShelf,
 
     @ManyToOne
     @JoinColumn(name = "dukan_id", nullable = false)
