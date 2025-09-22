@@ -1,23 +1,18 @@
 package net.thechance.chat.api.controller
 
-import com.ninjasquad.springmockk.MockkBean
 import io.mockk.every
 import io.mockk.justRun
+import io.mockk.mockk
 import net.thechance.chat.api.dto.ContactRequest
 import net.thechance.chat.service.ContactService
 import net.thechance.chat.service.model.ContactModel
 import org.junit.jupiter.api.Test
-import org.springframework.boot.autoconfigure.SpringBootApplication
 import org.springframework.data.domain.PageImpl
 import org.springframework.data.domain.PageRequest
 import org.springframework.data.domain.Pageable
 import org.springframework.http.HttpStatus
-import java.util.UUID
 import com.google.common.truth.Truth.assertThat
-import io.mockk.mockk
-
-@SpringBootApplication
-class ChatApplication
+import java.util.UUID
 
 class ContactControllerTest {
 
