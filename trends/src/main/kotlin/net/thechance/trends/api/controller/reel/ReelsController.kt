@@ -1,4 +1,4 @@
-package net.thechance.trends.api.controller
+package net.thechance.trends.api.controller.reel
 
 import net.thechance.trends.api.dto.PagingResponse
 import net.thechance.trends.api.dto.ReelResponse
@@ -7,8 +7,12 @@ import net.thechance.trends.service.ReelsService
 import org.springframework.data.domain.Pageable
 import org.springframework.http.ResponseEntity
 import org.springframework.security.core.annotation.AuthenticationPrincipal
-import org.springframework.web.bind.annotation.*
-import java.util.*
+import org.springframework.web.bind.annotation.DeleteMapping
+import org.springframework.web.bind.annotation.GetMapping
+import org.springframework.web.bind.annotation.PathVariable
+import org.springframework.web.bind.annotation.RequestMapping
+import org.springframework.web.bind.annotation.RestController
+import java.util.UUID
 
 @RestController
 @RequestMapping("/trends/reels")
