@@ -2,7 +2,6 @@ package net.thechance.dukan.api.controller
 
 import jakarta.validation.Valid
 import net.thechance.dukan.api.dto.DukanShelfCreationRequest
-import net.thechance.dukan.entity.DukanShelf
 import net.thechance.dukan.service.DukanShelfService
 import org.springframework.http.ResponseEntity
 import org.springframework.security.core.annotation.AuthenticationPrincipal
@@ -10,7 +9,6 @@ import org.springframework.web.bind.annotation.PostMapping
 import org.springframework.web.bind.annotation.RequestBody
 import org.springframework.web.bind.annotation.RequestMapping
 import org.springframework.web.bind.annotation.RestController
-import java.security.Principal
 import java.util.UUID
 
 @RestController
@@ -23,11 +21,11 @@ class DukanShelfController(
     fun createShelf(
         @Valid @RequestBody requestBody: DukanShelfCreationRequest,
         @AuthenticationPrincipal ownerId: UUID,
-    ): ResponseEntity<DukanShelf> {
-        val shelf = dukanShelfService.createShelf(
+    ): ResponseEntity<Unit> {
+        dukanShelfService.createShelf(
             ownerId = ownerId,
             title = requestBody.title,
         )
-        return ResponseEntity.ok(shelf)
+        return ResponseEntity.ok().build()
     }
 }
