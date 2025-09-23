@@ -8,5 +8,6 @@ data class ContactResponse(
     val lastName: String,
     val phoneNumber: String,
     val isMenaUser: Boolean,
+    val userId: UUID?,
     val imageUrl: String?
 )

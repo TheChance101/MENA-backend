@@ -9,6 +9,7 @@ data class ContactModel(
     val lastName: String,
     val phoneNumber: String,
     val isMenaUser: Boolean,
+    val userId: UUID?,
     val imageUrl: String?
 )
 
@@ -19,6 +20,7 @@ fun ContactModel.toResponse() : ContactResponse{
         lastName = this.lastName,
         phoneNumber = this.phoneNumber,
         isMenaUser = this.isMenaUser,
+        userId = this.userId,
         imageUrl = this.imageUrl
     )
 }
