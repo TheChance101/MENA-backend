@@ -46,10 +46,12 @@ interface TransactionRepository : JpaRepository<Transaction, UUID> {
               AND (t.senderId = :currentUserId 
                    OR t.receiverId = :currentUserId
                    OR d.ownerId = :currentUserId)
-              AND (:type IS NULL 
-                  OR (:type = 'ONLINE_PURCHASE' AND d.id IS NOT NULL)
-                  OR (:type = 'SENT' AND t.senderId = :currentUserId)
-                  OR (:type = 'RECEIVED' AND t.receiverId = :currentUserId))
+              AND (
+                :type IS NULL
+                OR (:type = 'SENT' AND t.senderId = :currentUserId AND d.id IS NULL)
+                OR (:type = 'RECEIVED' AND t.receiverId = :currentUserId AND d.id IS NULL)
+                OR (:type = 'ONLINE_PURCHASE' AND d.id IS NOT NULL)
+              )
         """
     )
     fun findFilteredTransactions(
