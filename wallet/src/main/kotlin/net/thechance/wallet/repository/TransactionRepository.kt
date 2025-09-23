@@ -43,6 +43,9 @@ interface TransactionRepository : JpaRepository<Transaction, UUID> {
         LEFT JOIN Dukan d ON t.receiverId = d.ownerId
           WHERE (:status IS NULL OR t.status = :status)
               AND (t.createdAt BETWEEN :startDate AND :endDate)
+              AND (t.senderId = :currentUserId 
+                   OR t.receiverId = :currentUserId
+                   OR d.ownerId = :currentUserId)
               AND (:type IS NULL 
                   OR (:type = 'ONLINE_PURCHASE' AND d.id IS NOT NULL)
                   OR (:type = 'SENT' AND t.senderId = :currentUserId)

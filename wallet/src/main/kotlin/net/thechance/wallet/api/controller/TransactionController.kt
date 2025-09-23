@@ -26,7 +26,7 @@ class TransactionController(
     @GetMapping("/transactions")
     fun getFilteredTransactions(
         @AuthenticationPrincipal userId: UUID,
-        @RequestParam(required = false) type: TransactionType,
+        @RequestParam(required = false) type: TransactionType?,
         @RequestParam(required = false) status: Transaction.Status?,
         @RequestParam(required = false) startDate: LocalDateTime?,
         @RequestParam(required = false) endDate: LocalDateTime?,
