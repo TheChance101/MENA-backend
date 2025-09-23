@@ -25,5 +25,5 @@ interface ChatRepository : JpaRepository<Conversation, UUID> {
         AND c.isGroup = false
     """
     )
-    fun getChatByParticipants(participantIds: List<UUID>): Conversation?
+    fun getConversationByParticipants(participantIds: List<UUID>): Conversation?
 }
