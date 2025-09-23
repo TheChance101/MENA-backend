@@ -1,58 +1,11 @@
 databaseChangeLog:
   - changeSet:
-      id: 6-chat
-      author: omer-faris
-      comment: create conversation table
+      id: 6-chat-unique-contacts
+      author: raouf
+      comment: Add unique constraint to contacts table on contact_owner_id and phone_number
       changes:
-        - sql:
-            sql:
-              CREATE TABLE IF NOT EXISTS chat.conversations(
-              id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
-              is_group BOOLEAN NOT NULL,
-              group_name VARCHAR(255),
-              group_image_url VARCHAR(512)
-              );
-
-  - changeSet:
-      id: 7-chat
-      author: omer-faris
-      comment: create messages table
-      changes:
-        - sql:
-            sql:
-              CREATE TABLE IF NOT EXISTS chat.messages(
-                id UUID PRIMARY KEY,
-                conversation_id UUID NOT NULL,
-                sender_id UUID NOT NULL,
-                content TEXT NOT NULL,
-                timestamp TIMESTAMP NOT NULL DEFAULT NOW(),
-                CONSTRAINT fk_messages_conversation FOREIGN KEY(conversation_id) REFERENCES chat.conversations(id) ON DELETE CASCADE
-              );
-
-  - changeSet:
-      id: 8-chat
-      author: omer-faris
-      comment: create conversation_participants table
-      changes:
-        - sql:
-            sql:
-              CREATE TABLE IF NOT EXISTS chat.conversation_participant(
-              id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
-              user_id UUID NOT NULL,
-              conversation_id UUID NOT NULL,
-              CONSTRAINT fk_conversation_participant FOREIGN KEY(conversation_id) REFERENCES chat.conversations(id) ON DELETE CASCADE 
-              );
-
-  - changeSet:
-      id: 9-chat
-      author: omer-faris
-      comment: create message_seen table
-      changes:
-        - sql:
-            sql:
-              CREATE TABLE IF NOT EXISTS chat.message_seen(
-              id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
-              user_id UUID NOT NULL,
-              message_id UUID NOT NULL,
-              CONSTRAINT fk_message_seen FOREIGN KEY(message_id) REFERENCES chat.messages(id) ON DELETE CASCADE
-              );
+        - addUniqueConstraint:
+            tableName: contacts
+            columnNames: contact_owner_id, phone_number
+            constraintName: contacts_owner_phone_unique
+            schemaName: chat
