@@ -37,9 +37,9 @@ databaseChangeLog:
         - sql:
             sql:
               CREATE TABLE IF NOT EXISTS chat.conversation_participant(
-              id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
-              user_id UUID NOT NULL,
               conversation_id UUID NOT NULL,
+              user_id UUID NOT NULL,
+              PRIMARY KEY (conversation_id, user_id),
               CONSTRAINT fk_conversation_participant FOREIGN KEY(conversation_id) REFERENCES chat.conversations(id) ON DELETE CASCADE
               );
 
@@ -51,8 +51,8 @@ databaseChangeLog:
         - sql:
             sql:
               CREATE TABLE IF NOT EXISTS chat.message_seen(
-              id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
               user_id UUID NOT NULL,
               message_id UUID NOT NULL,
+              PRIMARY KEY (user_id, message_id),
               CONSTRAINT fk_message_seen FOREIGN KEY(message_id) REFERENCES chat.messages(id) ON DELETE CASCADE
               );
