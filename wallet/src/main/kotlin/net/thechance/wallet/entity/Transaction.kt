@@ -15,6 +15,10 @@ data class Transaction(
     @Column(nullable = false, updatable = false)
     val createdAt: LocalDateTime = LocalDateTime.now(),
 
+    @Column(nullable = false)
+    @Enumerated(EnumType.STRING)
+    val status: Status,
+
     @Column(columnDefinition = "uuid", nullable = false, updatable = false)
     val senderId: UUID,
 
@@ -30,4 +34,10 @@ data class Transaction(
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "block_id", nullable = false, updatable = false)
     val block: Block
-)
+){
+
+    enum class Status{
+        FAILED,
+        SUCCESS
+    }
+}
