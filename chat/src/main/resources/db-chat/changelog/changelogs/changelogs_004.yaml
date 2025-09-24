@@ -25,7 +25,7 @@ databaseChangeLog:
               conversation_id UUID NOT NULL,
               sender_id UUID NOT NULL,
               text TEXT NOT NULL,
-              sendAt TIMESTAMP NOT NULL DEFAULT NOW(),
+              send_at TIMESTAMP NOT NULL DEFAULT NOW(),
               CONSTRAINT fk_messages_conversation FOREIGN KEY(conversation_id) REFERENCES chat.conversations(id) ON DELETE CASCADE
               );
 

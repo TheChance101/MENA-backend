@@ -12,13 +12,13 @@ interface MessageRepository : JpaRepository<Message, UUID> {
 
     fun getAllByConversationId(conversationId: UUID, pageable: Pageable): List<Message>
 
-    fun getAllByConversationIdAndIdAndIdAfterOrderBySendAtAsc(
+    fun getAllByConversationIdAndIdAfterOrderBySendAtAsc(
         conversationId: UUID,
         id: UUID,
         pageable: Pageable
     ): List<Message>
 
-    fun getAllByConversationIdAndIdAndIdBeforeOrderBySendAtAsc(
+    fun getAllByConversationIdAndIdBeforeOrderBySendAtAsc(
         conversationId: UUID,
         id: UUID,
         pageable: Pageable
