@@ -116,26 +116,4 @@ interface MessageRepository : JpaRepository<Message, UUID> {
         nativeQuery = true
     )
     fun markConversationMessagesAsSeen(conversationId: UUID, userId: UUID)
-
-
-    @Query(
-        value = """
-            SELECT new net.thechance.chat.service.model.MessageModel(
-                m.id,
-                m.senderId,
-                m.conversationId,
-                m.text,
-                m.sendAt,
-                (COUNT(ms.id.userId) >= COUNT(cp.id.userId) - 1)
-            )
-            FROM Message m
-            LEFT JOIN MessageSeen ms ON ms.id.messageId = m.id
-            LEFT JOIN ConversationParticipants cp ON cp.id.conversationId = m.conversationId
-            WHERE m.conversationId = :conversationId
-            GROUP BY m.id, m.senderId, m.conversationId, m.text, m.sendAt
-            ORDER BY m.sendAt ASC
-            """,
-    )
-    fun getAllByConversationIdWithReadStatus(conversationId: UUID, pageable: Pageable): List<MessageModel>
-
 }
