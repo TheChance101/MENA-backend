@@ -38,6 +38,7 @@ kover.reports {
         excludes {
             packages("net.thechance.chat.api.dto*")
             packages("net.thechance.chat.entity*")
+            packages("net.thechance.chat.repository*")
         }
     }
 }
