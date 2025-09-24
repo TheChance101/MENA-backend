@@ -20,10 +20,10 @@ class DukanShelfController(
     @PostMapping("/create")
     fun createShelf(
         @Valid @RequestBody requestBody: DukanShelfCreationRequest,
-        @AuthenticationPrincipal ownerId: UUID,
+        @AuthenticationPrincipal userId: UUID,
     ): ResponseEntity<Unit> {
         dukanShelfService.createShelf(
-            ownerId = ownerId,
+            ownerId = userId,
             title = requestBody.title,
         )
         return ResponseEntity.ok().build()
