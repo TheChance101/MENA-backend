@@ -1,6 +1,7 @@
 package net.thechance.chat.repository
 
 import net.thechance.chat.entity.Message
+import net.thechance.chat.service.model.MessageModel
 import org.springframework.data.domain.Pageable
 import org.springframework.data.jpa.repository.JpaRepository
 import org.springframework.data.jpa.repository.Modifying
@@ -45,19 +46,24 @@ interface MessageRepository : JpaRepository<Message, UUID> {
     fun markConversationMessagesAsSeen(conversationId: UUID, userId: UUID)
 
 
-//    @Query(
-//        value = """
-//    SELECT
-//        m.id, m.sender_id, m.conversation_id, m.text, m.timestamp,
-//        (COUNT(ms.user_id) >= COUNT(cp.user_id) - 1) AS is_read
-//    FROM Message m
-//    LEFT JOIN MessageSeen ms ON ms.id.message_id = m.id
-//    LEFT JOIN ConversationParticipants cp ON cp.id.conversation_id = m.conversation_id
-//    WHERE m.conversation_id = :conversationId
-//    GROUP BY m.id, m.sender_id, m.conversation_id, m.text, m.timestamp
-//    ORDER BY m.timestamp ASC
-//    """,
-//    )
-//    fun getAllByConversationIdWithReadStatus(conversationId: UUID): List<Map<String, Any>>
+    @Query(
+        value = """
+            SELECT new net.thechance.chat.service.model.MessageModel(
+                m.id,
+                m.senderId,
+                m.conversationId,
+                m.text,
+                m.sendAt,
+                (COUNT(ms.id.userId) >= COUNT(cp.id.userId) - 1)
+            )
+            FROM Message m
+            LEFT JOIN MessageSeen ms ON ms.id.messageId = m.id
+            LEFT JOIN ConversationParticipants cp ON cp.id.conversationId = m.conversationId
+            WHERE m.conversationId = :conversationId
+            GROUP BY m.id, m.senderId, m.conversationId, m.text, m.sendAt
+            ORDER BY m.sendAt ASC
+            """,
+    )
+    fun getAllByConversationIdWithReadStatus(conversationId: UUID, pageable: Pageable): List<MessageModel>
 
 }
