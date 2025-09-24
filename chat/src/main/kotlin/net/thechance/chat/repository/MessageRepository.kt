@@ -11,25 +11,97 @@ import java.util.UUID
 
 interface MessageRepository : JpaRepository<Message, UUID> {
 
-    fun getAllByConversationId(conversationId: UUID, pageable: Pageable): List<Message>
+    @Query(
+        value = """
+            SELECT new net.thechance.chat.service.model.MessageModel(
+                m.id,
+                m.senderId,
+                m.conversationId,
+                m.text,
+                m.sendAt,
+                (COUNT(ms.id.userId) >= COUNT(cp.id.userId) - 1)
+            )
+            FROM Message m
+            LEFT JOIN MessageSeen ms ON ms.id.messageId = m.id
+            LEFT JOIN ConversationParticipants cp ON cp.id.conversationId = m.conversationId
+            WHERE m.conversationId = :conversationId
+            GROUP BY m.id, m.senderId, m.conversationId, m.text, m.sendAt
+            ORDER BY m.sendAt ASC
+        """
+    )
+    fun getAllByConversationId(conversationId: UUID, pageable: Pageable): List<MessageModel>
 
+    @Query(
+        value = """
+            SELECT new net.thechance.chat.service.model.MessageModel(
+                m.id,
+                m.senderId,
+                m.conversationId,
+                m.text,
+                m.sendAt,
+                (COUNT(ms.id.userId) >= COUNT(cp.id.userId) - 1)
+            )
+            FROM Message m
+            LEFT JOIN MessageSeen ms ON ms.id.messageId = m.id
+            LEFT JOIN ConversationParticipants cp ON cp.id.conversationId = m.conversationId
+            WHERE m.conversationId = :conversationId AND m.id > :id
+            GROUP BY m.id, m.senderId, m.conversationId, m.text, m.sendAt
+            ORDER BY m.sendAt ASC
+        """
+    )
     fun getAllByConversationIdAndIdAfterOrderBySendAtAsc(
         conversationId: UUID,
         id: UUID,
         pageable: Pageable
-    ): List<Message>
+    ): List<MessageModel>
 
+    @Query(
+        value = """
+            SELECT new net.thechance.chat.service.model.MessageModel(
+                m.id,
+                m.senderId,
+                m.conversationId,
+                m.text,
+                m.sendAt,
+                (COUNT(ms.id.userId) >= COUNT(cp.id.userId) - 1)
+            )
+            FROM Message m
+            LEFT JOIN MessageSeen ms ON ms.id.messageId = m.id
+            LEFT JOIN ConversationParticipants cp ON cp.id.conversationId = m.conversationId
+            WHERE m.conversationId = :conversationId AND m.id < :id
+            GROUP BY m.id, m.senderId, m.conversationId, m.text, m.sendAt
+            ORDER BY m.sendAt ASC
+        """
+    )
     fun getAllByConversationIdAndIdBeforeOrderBySendAtAsc(
         conversationId: UUID,
         id: UUID,
         pageable: Pageable
-    ): List<Message>
+    ): List<MessageModel>
 
+    @Query(
+        value = """
+            SELECT new net.thechance.chat.service.model.MessageModel(
+                m.id,
+                m.senderId,
+                m.conversationId,
+                m.text,
+                m.sendAt,
+                (COUNT(ms.id.userId) >= COUNT(cp.id.userId) - 1)
+            )
+            FROM Message m
+            LEFT JOIN MessageSeen ms ON ms.id.messageId = m.id
+            LEFT JOIN ConversationParticipants cp ON cp.id.conversationId = m.conversationId
+            WHERE m.conversationId = :conversationId AND m.sendAt > :sendAt
+            GROUP BY m.id, m.senderId, m.conversationId, m.text, m.sendAt
+            ORDER BY m.sendAt ASC
+        """
+    )
     fun getAllByConversationIdAndSendAtAfterOrderBySendAtAsc(
         conversationId: UUID,
         sendAt: Instant,
         pageable: Pageable
-    ): List<Message>
+    ): List<MessageModel>
 
 
     @Modifying
