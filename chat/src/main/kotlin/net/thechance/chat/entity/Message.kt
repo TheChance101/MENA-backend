@@ -18,6 +18,6 @@ data class Message(
     val conversationId: UUID,
     @Column(name = "text", nullable = false)
     val text: String,
-    @Column(name= "timestamp",nullable = false)
-    val timestamp: Instant = Instant.now(),
+    @Column(name= "sendAt",nullable = false)
+    val sendAt: Instant = Instant.now(),
 )
