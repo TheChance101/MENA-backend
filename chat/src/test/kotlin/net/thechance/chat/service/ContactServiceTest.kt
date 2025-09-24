@@ -22,7 +22,7 @@ class ContactServiceTest {
     fun `getPagedContactByUserId should return paged contacts when called with valid user id and pageable`() {
         val userId = UUID.randomUUID()
         val pageable: Pageable = PageRequest.of(1, 10)
-        val contactsModels = listOf(ContactModel(UUID.randomUUID(), "John", "Doe", "123456789", true, null))
+        val contactsModels = listOf(ContactModel(UUID.randomUUID(), "John", "Doe", "123456789", true, UUID.randomUUID(), null))
         val page = PageImpl(contactsModels, pageable, contactsModels.size.toLong())
         every { contactRepository.findAllContactModelsByContactOwnerId(userId, any()) } returns page
 
@@ -41,7 +41,7 @@ class ContactServiceTest {
     fun `getPagedContactByUserId should return all contacts when pageable pageNumber is less than or equal to zero`() {
         val userId = UUID.randomUUID()
         val pageable: Pageable = PageRequest.of(0, 5)
-        val contactsModels = listOf(ContactModel(UUID.randomUUID(), "Jane", "Smith", "987654321", true, null))
+        val contactsModels = listOf(ContactModel(UUID.randomUUID(), "Jane", "Smith", "987654321", true, UUID.randomUUID(), null))
         val page = PageImpl(contactsModels)
         every { contactRepository.findAllContactModelsByContactOwnerId(userId, any()) } returns page
 
@@ -88,7 +88,7 @@ class ContactServiceTest {
     fun `getPagedContactByUserId should fetch all contacts unpaged when pageNumber or pageSize is zero`() {
         val userId = UUID.randomUUID()
         val pageable: Pageable = PageRequest.of(0, 5)
-        val contactsModels = listOf(ContactModel(UUID.randomUUID(), "Alice", "Wonder", "555", true, null))
+        val contactsModels = listOf(ContactModel(UUID.randomUUID(), "Alice", "Wonder", "555", true, UUID.randomUUID(), null))
         val page = PageImpl(contactsModels)
         every { contactRepository.findAllContactModelsByContactOwnerId(userId, any()) } returns page
 

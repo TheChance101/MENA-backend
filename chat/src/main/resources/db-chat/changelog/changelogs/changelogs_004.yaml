@@ -1,0 +1,70 @@
+databaseChangeLog:
+  - changeSet:
+      id: 7-chat
+      author: omer-faris
+      comment: create conversation table
+      changes:
+        - sql:
+            sql:
+              CREATE TABLE IF NOT EXISTS chat.conversations(
+                id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+                is_group BOOLEAN NOT NULL
+              );
+
+  - changeSet:
+      id: 8-chat
+      author: omer-faris
+      comment: create group_conversations table
+      changes:
+        - sql:
+            sql:
+              CREATE TABLE IF NOT EXISTS chat.group_conversations(
+                conversation_id UUID PRIMARY KEY,
+                group_name VARCHAR(255),
+                group_image_url VARCHAR(512),
+                CONSTRAINT fk_group_conversation_conversation FOREIGN KEY(conversation_id) REFERENCES chat.conversations(id) ON DELETE CASCADE
+              );
+
+  - changeSet:
+      id: 9-chat
+      author: omer-faris
+      comment: create messages table
+      changes:
+        - sql:
+            sql:
+              CREATE TABLE IF NOT EXISTS chat.messages(
+              id UUID PRIMARY KEY,
+              conversation_id UUID NOT NULL,
+              sender_id UUID NOT NULL,
+              text TEXT NOT NULL,
+              send_at TIMESTAMP NOT NULL DEFAULT NOW(),
+              CONSTRAINT fk_messages_conversation FOREIGN KEY(conversation_id) REFERENCES chat.conversations(id) ON DELETE CASCADE
+              );
+
+  - changeSet:
+      id: 10-chat
+      author: omer-faris
+      comment: create conversation_participant table
+      changes:
+        - sql:
+            sql:
+              CREATE TABLE IF NOT EXISTS chat.conversation_participant(
+              conversation_id UUID NOT NULL,
+              user_id UUID NOT NULL,
+              PRIMARY KEY (conversation_id, user_id),
+              CONSTRAINT fk_conversation_participant FOREIGN KEY(conversation_id) REFERENCES chat.conversations(id) ON DELETE CASCADE
+              );
+
+  - changeSet:
+      id: 11-chat
+      author: omer-faris
+      comment: create message_seen table
+      changes:
+        - sql:
+            sql:
+              CREATE TABLE IF NOT EXISTS chat.message_seen(
+              user_id UUID NOT NULL,
+              message_id UUID NOT NULL,
+              PRIMARY KEY (user_id, message_id),
+              CONSTRAINT fk_message_seen FOREIGN KEY(message_id) REFERENCES chat.messages(id) ON DELETE CASCADE
+              );
