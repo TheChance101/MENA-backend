@@ -1,6 +1,7 @@
 package net.thechance.trends.service
 
 import net.thechance.trends.api.controller.exception.ReelNotFoundException
+import net.thechance.trends.api.controller.exception.TrendCategoryNotFoundException
 import net.thechance.trends.entity.Reel
 import net.thechance.trends.repository.CategoryRepository
 import net.thechance.trends.repository.ReelsRepository
@@ -52,6 +53,7 @@ class ReelsService(
             ?: throw ReelNotFoundException()
 
         val categories = categoryRepository.findAllById(categoryIds).toSet()
+        if (categories.isEmpty()) throw TrendCategoryNotFoundException()
 
         val updatedReel = existingReel.copy(
             description = newDescription,
