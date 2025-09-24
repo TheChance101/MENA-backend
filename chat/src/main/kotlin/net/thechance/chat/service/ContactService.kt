@@ -1,5 +1,6 @@
 package net.thechance.chat.service
 
+import net.thechance.chat.entity.Contact
 import net.thechance.chat.repository.ContactRepository
 import net.thechance.chat.service.model.ContactModel
 import org.springframework.data.domain.Page
@@ -26,5 +27,17 @@ class ContactService(
                 PageRequest.of(pageable.pageNumber - 1, pageable.pageSize, Sort.by("firstName").ascending())
             )
         }
+    }
+
+    fun syncContacts(userId: UUID, contactRequests: List<Contact>) {
+        val uniqueContacts = contactRequests.distinctBy { it.phoneNumber }
+
+        if (uniqueContacts.isEmpty()) return
+
+        val phones = uniqueContacts.map { it.phoneNumber }.toTypedArray()
+        val firstNames = uniqueContacts.map { it.firstName }.toTypedArray()
+        val lastNames = uniqueContacts.map { it.lastName }.toTypedArray()
+
+        contactRepository.bulkUpsert(userId, phones, firstNames, lastNames)
     }
 }
