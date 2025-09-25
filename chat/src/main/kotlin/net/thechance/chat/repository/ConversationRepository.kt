@@ -65,11 +65,11 @@ interface ConversationRepository : JpaRepository<Conversation, UUID> {
     JOIN ConversationParticipants p ON c.id = p.id.conversationId
     LEFT JOIN ContactUser u ON p.id.userId = u.id AND c.isGroup = false
     LEFT JOIN Contact ct ON ct.phoneNumber = u.phoneNumber AND c.isGroup = false
-    WHERE p.id.userId IN :participantIds AND c.isGroup = false
+    WHERE p.id.userId IN :participantIds AND c.isGroup = :isGroup
     GROUP BY c.id, c.isGroup, gc.groupName, gc.groupImageUrl, u.firstName, u.lastName, u.imageUrl, ct.firstName, ct.lastName
     HAVING COUNT(p.id.userId) = :#{#participantIds.size}
     """
     )
-    fun getConversationByParticipants(participantIds: List<UUID>): ConversationModel?
+    fun getConversationByParticipants(participantIds: List<UUID>, isGroup: Boolean): ConversationModel?
 
 }
