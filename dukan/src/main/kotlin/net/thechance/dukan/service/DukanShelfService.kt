@@ -4,6 +4,7 @@ import net.thechance.dukan.entity.DukanShelf
 import net.thechance.dukan.exception.DukanNotFoundException
 import net.thechance.dukan.exception.ShelfDeletionNotAllowedException
 import net.thechance.dukan.exception.ShelfNameAlreadyTakenException
+import net.thechance.dukan.exception.ShelfNotFoundException
 import net.thechance.dukan.repository.DukanProductRepository
 import net.thechance.dukan.repository.DukanRepository
 import net.thechance.dukan.repository.DukanShelfRepository
@@ -34,7 +35,7 @@ class DukanShelfService(
         val dukan = dukanRepository.findByOwnerId(ownerId) ?: throw DukanNotFoundException()
 
         val shelf = dukanShelfRepository.findByIdAndDukanId(shelfId, dukan.id)
-            ?: throw DukanNotFoundException()
+            ?: throw ShelfNotFoundException()
 
         val products = dukanProductRepository.findAllByShelfId(shelf.id)
         if (products.isNotEmpty()) {

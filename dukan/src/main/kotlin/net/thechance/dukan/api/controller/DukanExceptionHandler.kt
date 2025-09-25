@@ -5,6 +5,7 @@ import net.thechance.dukan.exception.DukanNotFoundException
 import net.thechance.dukan.exception.ImageUploadingFailedException
 import net.thechance.dukan.exception.InvalidPictureException
 import net.thechance.dukan.exception.ShelfDeletionNotAllowedException
+import net.thechance.dukan.exception.ShelfNotFoundException
 import org.springframework.http.HttpStatus
 import org.springframework.http.ResponseEntity
 import org.springframework.web.bind.MethodArgumentNotValidException
@@ -46,6 +47,11 @@ class DukanExceptionHandler {
     }
     @ExceptionHandler(ShelfDeletionNotAllowedException::class)
     fun handleShelfDeletionNotAllowed(ex: ShelfDeletionNotAllowedException): ResponseEntity<String> {
+        //TODO: once other team find a way to handle exceptions globally we will do the same
+        return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(ex.message)
+    }
+    @ExceptionHandler(ShelfNotFoundException::class)
+    fun handleShelfDeletionNotAllowed(ex: ShelfNotFoundException): ResponseEntity<String> {
         //TODO: once other team find a way to handle exceptions globally we will do the same
         return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(ex.message)
     }
