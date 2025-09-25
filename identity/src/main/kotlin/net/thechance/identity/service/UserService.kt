@@ -30,8 +30,7 @@ class UserService(
     }
 
     private fun getUserWithNewPassword(phoneNumber: String, newPassword: String): User {
-        val user = userRepository.findByPhoneNumber(phoneNumber)
-            ?: throw InvalidCredentialsException("User not found")
+        val user = findByPhoneNumber(phoneNumber)
         return user.copy(password = newPassword)
     }
 }
