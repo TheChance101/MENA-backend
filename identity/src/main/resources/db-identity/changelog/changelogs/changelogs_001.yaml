@@ -42,26 +42,3 @@ databaseChangeLog:
             ip_address text                    not null,
             CONSTRAINT fk_login_log_user_id FOREIGN KEY (user_id) REFERENCES identity.users(id)
             );
-
-
-  - changeSet:
-      id: 4-identity
-      author: nabil
-      comment: Add new columns for identity.user table for identity schema
-      changes:
-        - sql:
-            ALTER TABLE identity.users ADD image_url varchar(2083) NULL;
-            ALTER TABLE identity.users ADD first_name varchar(255) NOT NULL;
-            ALTER TABLE identity.users ADD last_name varchar(255) NOT NULL;
-            ALTER TABLE identity.users ADD username varchar(255) NOT NULL;
-
-  - changeSet:
-      id: 5-identity
-      author: nabil
-      comment: Add unique constraint to users table on username and phone number for identity schema
-      changes:
-        - addUniqueConstraint:
-            tableName: users
-            columnNames: username, phone_number
-            constraintName: users_username_phone_unique
-            schemaName: identity
