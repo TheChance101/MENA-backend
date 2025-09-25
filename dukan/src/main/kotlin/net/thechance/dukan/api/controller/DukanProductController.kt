@@ -24,7 +24,6 @@ class DukanProductController(
         @PageableDefault(size = 10, page = 0)
         pageable: Pageable
     ): ResponseEntity<Page<DukanProductResponse>> {
-//        return productService.getProductsByShelf(shelfId,pageable)
         val products = productService.getProductsByShelf(shelfId,pageable)
         val productsResponse = products.map { it.toProductResponse() }
         return ResponseEntity.ok(productsResponse)
