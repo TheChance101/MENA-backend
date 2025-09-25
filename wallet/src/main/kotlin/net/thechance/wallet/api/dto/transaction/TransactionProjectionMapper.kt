@@ -13,6 +13,6 @@ fun TransactionProjection.toResponse(): TransactionResponse {
         status = status,
         type = TransactionType.valueOf(type),
         createdAt = createdAt,
-        amount = amount,
+        amount = amount.toDouble(),
     )
 }

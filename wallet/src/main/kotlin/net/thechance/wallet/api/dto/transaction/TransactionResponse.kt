@@ -1,9 +1,9 @@
 package net.thechance.wallet.api.dto.transaction
 
 import net.thechance.wallet.entity.Transaction
-import java.math.BigDecimal
+import org.springframework.data.domain.Page
 import java.time.LocalDateTime
-import java.util.UUID
+import java.util.*
 
 data class TransactionResponse(
     val id: UUID,
@@ -14,5 +14,10 @@ data class TransactionResponse(
     val status: Transaction.Status,
     val type: TransactionType,
     val createdAt: LocalDateTime,
-    val amount: BigDecimal,
+    val amount: Double
+)
+
+data class TransactionPageResponse(
+    val earliestTransactionDate: LocalDateTime?,
+    val transactions: Page<TransactionResponse>
 )
