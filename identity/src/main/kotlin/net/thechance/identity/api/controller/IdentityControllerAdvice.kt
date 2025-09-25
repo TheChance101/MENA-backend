@@ -46,4 +46,20 @@ class IdentityControllerAdvice {
             .status(HttpStatus.UNAUTHORIZED)
             .body(ErrorResponse("Invalid refresh token"))
     }
+
+    @ExceptionHandler(PasswordMismatchException::class)
+    fun handlePasswordMismatchException(exception: PasswordMismatchException): ResponseEntity<ErrorResponse?> {
+        logger.error("Password mismatch: ${exception.message}", exception)
+        return ResponseEntity
+            .badRequest()
+            .body(ErrorResponse(exception.message.toString()))
+    }
+
+    @ExceptionHandler(PasswordNotUpdatedException::class)
+    fun handlePasswordNotUpdatedException(exception: PasswordNotUpdatedException): ResponseEntity<ErrorResponse?> {
+        logger.error("Password not updated: ${exception.message}", exception)
+        return ResponseEntity
+            .badRequest()
+            .body(ErrorResponse(exception.message.toString()))
+    }
 }
