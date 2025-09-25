@@ -12,7 +12,7 @@ import java.util.UUID
     name = "contacts", schema = "chat",
     uniqueConstraints = [UniqueConstraint(columnNames = ["contact_owner_id", "phone_number"])]
 )
-data class Contact(
+open class Contact(
     @Id @Column(columnDefinition = "uuid", updatable = false, nullable = false)
     val id: UUID = UUID.randomUUID(),
     @Column(nullable = false) val firstName: String,
