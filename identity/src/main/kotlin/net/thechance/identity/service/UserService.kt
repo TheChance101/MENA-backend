@@ -18,4 +18,20 @@ class UserService(
     fun userExists(userId: UUID): Boolean {
         return userRepository.existsById(userId)
     }
+
+    fun updatePasswordByPhoneNumber(phoneNumber: String, newPassword: String): Boolean {
+        val userWithNewPassword = getUserWithNewPassword(phoneNumber, newPassword)
+        return try {
+            val savedUser = userRepository.save(userWithNewPassword)
+            savedUser.password == newPassword
+        } catch (exception: Exception) {
+            false
+        }
+    }
+
+    private fun getUserWithNewPassword(phoneNumber: String, newPassword: String): User {
+        val user = userRepository.findByPhoneNumber(phoneNumber)
+            ?: throw InvalidCredentialsException("User not found")
+        return user.copy(password = newPassword)
+    }
 }
