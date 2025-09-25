@@ -8,5 +8,6 @@ import java.util.*
 
 interface ReelsRepository : JpaRepository<Reel, UUID> {
     fun findByOwnerId(ownerId: UUID, pageable: Pageable): Page<Reel>
+    fun findByIdAndOwnerId(id: UUID, ownerId: UUID): Reel?
     fun existsByIdAndOwnerId(id: UUID, ownerId: UUID): Boolean
 }
