@@ -9,6 +9,7 @@ import jakarta.persistence.JoinColumn
 import jakarta.persistence.ManyToOne
 import jakarta.persistence.Table
 import jakarta.persistence.UniqueConstraint
+import java.time.Instant
 import java.util.UUID
 
 @Table(
@@ -25,5 +26,7 @@ data class DukanShelf(
     val title: String,
     @ManyToOne
     @JoinColumn(name = "dukan_id", nullable = false)
-    val dukan: Dukan
+    val dukan: Dukan,
+    @Column(name = "created_at", nullable = false, updatable = false)
+    val createdAt: Instant = Instant.now(),
 )

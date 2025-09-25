@@ -1,0 +1,16 @@
+databaseChangeLog:
+  - changeSet:
+      id: 8-dukan
+      author: haider
+      comment: Create created_at column in dukan_shelves
+      changes:
+        - addColumn:
+            schemaName: dukan
+            tableName: dukan_shelves
+            columns:
+              - column:
+                  name: created_at
+                  type: TIMESTAMP
+                  constraints:
+                    nullable: false
+                  defaultValueComputed: CURRENT_TIMESTAMP
