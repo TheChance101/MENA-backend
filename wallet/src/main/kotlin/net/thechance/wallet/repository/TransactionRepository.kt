@@ -64,5 +64,13 @@ interface TransactionRepository : JpaRepository<Transaction, UUID> {
     ): Page<TransactionProjection>
 
 
-    fun findFirstByOrderByCreatedAtAsc(): Transaction?
+    @Query(
+        """
+        SELECT t FROM Transaction t
+        WHERE t.senderId = :userId OR t.receiverId = :userId
+        ORDER BY t.createdAt ASC
+        LIMIT 1
+        """
+    )
+    fun findFirstByUserId(@Param("userId") userId: UUID): Transaction?
 }

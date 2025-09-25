@@ -10,7 +10,7 @@ import java.time.LocalDateTime
 import java.util.*
 
 @Service
-class TransactionService (
+class TransactionService(
     private val transactionRepository: TransactionRepository
 ) {
     fun getFilteredTransactions(
@@ -19,7 +19,9 @@ class TransactionService (
         currentUserId: UUID
     ): Page<TransactionProjection> {
         val startDate =
-            filter.startDate ?: transactionRepository.findFirstByOrderByCreatedAtAsc()?.createdAt ?: LocalDateTime.now()
+            filter.startDate
+                ?: transactionRepository.findFirstByUserId(userId = currentUserId)?.createdAt
+                ?: LocalDateTime.now()
 
         val endDate = filter.endDate ?: LocalDateTime.now()
 
@@ -31,5 +33,9 @@ class TransactionService (
             pageable = pageable,
             currentUserId = currentUserId
         )
+    }
+
+    fun getUserFirstTransactionDate(currentUserId: UUID): LocalDateTime? {
+        return transactionRepository.findFirstByUserId(userId = currentUserId)?.createdAt
     }
 }
