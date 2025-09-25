@@ -52,7 +52,7 @@ class ReelsService(
         val existingReel = reelsRepository.findByIdAndOwnerId(id = reelId, ownerId = ownerId)
             ?: throw ReelNotFoundException()
 
-        val categories = categoryRepository.findAllById(categoryIds).toSet()
+        val categories = categoryIds.map { categoryRepository.getReferenceById(it) }.toSet()
         if (categories.isEmpty()) throw TrendCategoryNotFoundException()
 
         val updatedReel = existingReel.copy(
