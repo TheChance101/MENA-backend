@@ -73,3 +73,42 @@ databaseChangeLog:
             constraintName: uq_dukan_shelves_dukan_title
             schemaName: dukan
 
+  - changeSet:
+        id: 5-dukan
+        author: mostafa
+        comment: create dukan_products table in dukan schema
+        changes:
+            - sql: |
+                  CREATE TABLE dukan.dukan_products (
+                    id UUID PRIMARY KEY,
+                    name VARCHAR(255) NOT NULL,
+                    shelf_id UUID NOT NULL,
+                    dukan_id UUID NOT NULL,
+                    price DOUBLE PRECISION NOT NULL,
+                    description TEXT NOT NULL,
+                    CONSTRAINT fk_dukan_product_shelf FOREIGN KEY (shelf_id) REFERENCES dukan.dukan_shelves(id),
+                    CONSTRAINT fk_dukan_product_dukan FOREIGN KEY (dukan_id) REFERENCES dukan.dukans(id)
+                  );
+
+  - changeSet:
+        id: 6-dukan
+        author: mostafa
+        comment: create product_images table in dukan schema
+        changes:
+            - sql: |
+                  CREATE TABLE dukan.product_images (
+                    product_id UUID NOT NULL,
+                    image_url VARCHAR(1000) NOT NULL,
+                    CONSTRAINT fk_image_dukan_product FOREIGN KEY (product_id) REFERENCES dukan.dukan_products(id) ON DELETE CASCADE
+                  );
+
+  - changeSet:
+        id: 7-dukan
+        author: mostafa
+        comment: add unique constraint on (dukan_id, name) for dukan_products
+        changes:
+            - addUniqueConstraint:
+                  tableName: dukan_products
+                  columnNames: dukan_id,name
+                  constraintName: uq_dukan_product_name
+                  schemaName: dukan
