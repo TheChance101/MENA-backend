@@ -53,6 +53,6 @@ class DukanExceptionHandler {
     @ExceptionHandler(ShelfNotFoundException::class)
     fun handleShelfDeletionNotAllowed(ex: ShelfNotFoundException): ResponseEntity<String> {
         //TODO: once other team find a way to handle exceptions globally we will do the same
-        return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(ex.message)
+        return ResponseEntity.status(HttpStatus.NOT_FOUND).body(ex.message)
     }
 }
