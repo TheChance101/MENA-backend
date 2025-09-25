@@ -4,9 +4,9 @@ import net.thechance.dukan.entity.DukanShelf
 import net.thechance.dukan.exception.DukanNotFoundException
 import net.thechance.dukan.exception.ShelfDeletionNotAllowedException
 import net.thechance.dukan.exception.ShelfNameAlreadyTakenException
+import net.thechance.dukan.repository.DukanProductRepository
 import net.thechance.dukan.repository.DukanRepository
 import net.thechance.dukan.repository.DukanShelfRepository
-import net.thechance.dukan.repository.DukanProductRepository
 import org.springframework.stereotype.Service
 import java.util.UUID
 

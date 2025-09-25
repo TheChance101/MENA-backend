@@ -30,6 +30,7 @@ class DukanShelfController(
         )
         return ResponseEntity.ok().build()
     }
+
     @DeleteMapping("/{shelfId}")
     fun deleteShelf(
         @PathVariable shelfId: UUID,
