@@ -4,11 +4,13 @@ import jakarta.persistence.EntityNotFoundException
 import net.thechance.wallet.api.dto.TransactionDetailsResponse
 import net.thechance.wallet.api.dto.TransactionHistoryResponse
 import net.thechance.wallet.repository.TransactionRepository
+import net.thechance.wallet.service.util.helperFunctions.toDetailsDto
 import net.thechance.wallet.service.util.helperFunctions.toDto
 import org.springframework.data.domain.Page
 import org.springframework.data.domain.Pageable
 import org.springframework.stereotype.Service
 import java.math.BigDecimal
+import java.nio.file.AccessDeniedException
 import java.util.*
 
 @Service
@@ -35,16 +37,13 @@ class WalletService(
     }
 
     fun getTransactionDetails(transactionId: UUID, currentUserId: UUID): TransactionDetailsResponse {
-        // 1. Find the transaction by its ID or throw an error if not found.
         val transaction = transactionRepository.findById(transactionId)
             .orElseThrow { EntityNotFoundException("Transaction with ID $transactionId not found") }
 
-        // 2. Authorize: Ensure the user requesting the details is part of the transaction.
         if (transaction.senderId != currentUserId && transaction.receiverId != currentUserId) {
             throw AccessDeniedException("User is not authorized to view this transaction")
         }
 
-        // 3. Map the entity to our detailed DTO and return it.
         return transaction.toDetailsDto()
     }
 }
