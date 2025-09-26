@@ -6,4 +6,6 @@ import org.springframework.stereotype.Repository
 import java.util.UUID
 
 @Repository
-interface DukanShelfRepository : JpaRepository<DukanShelf, UUID>
+interface DukanShelfRepository : JpaRepository<DukanShelf, UUID> {
+    fun existsByTitleAndDukanId(title: String, dukanId: UUID): Boolean
+}

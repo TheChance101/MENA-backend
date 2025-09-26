@@ -8,14 +8,14 @@ import jakarta.persistence.Table
 import java.util.UUID
 
 @Entity
-@Table(name = "message_seen", schema = "chat")
-open class MessageSeen(
+@Table(name = "message_reed", schema = "chat")
+open class MessageReed(
     @EmbeddedId
-    val id: MessageSeenId,
+    val id: MessageReedId,
 )
 
 @Embeddable
-open class MessageSeenId(
+open class MessageReedId(
     @Column(name = "user_id", nullable = false)
     val userId: UUID,
 
