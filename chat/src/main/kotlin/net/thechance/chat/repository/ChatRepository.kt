@@ -21,16 +21,15 @@ interface ChatRepository : JpaRepository<Chat, UUID> {
         c.id,
         c.isGroup,
         CASE 
-            WHEN c.isGroup = true THEN gc.groupName
+            WHEN c.isGroup = true THEN c.groupChat.groupName
             ELSE COALESCE(CONCAT(ct.firstName, ' ', ct.lastName), CONCAT(u.firstName, ' ', u.lastName))
         END,
         CASE 
-            WHEN c.isGroup = true THEN gc.groupImageUrl
+            WHEN c.isGroup = true THEN c.groupChat.groupImageUrl
             ELSE u.imageUrl
         END
     )
     FROM Chat c
-    LEFT JOIN GroupChat gc ON c.id = gc.chat.id
     LEFT JOIN ChatParticipants p ON c.id = p.id.chatId AND c.isGroup = false
     LEFT JOIN ContactUser u ON p.id.userId = u.id AND c.isGroup = false
     LEFT JOIN Contact ct ON ct.phoneNumber = u.phoneNumber AND ct.contactOwnerId = :userId AND c.isGroup = false
@@ -53,21 +52,20 @@ interface ChatRepository : JpaRepository<Chat, UUID> {
         c.id,
         c.isGroup,
         CASE
-            WHEN c.isGroup = true THEN gc.groupName
+            WHEN c.isGroup = true THEN c.groupChat.groupName
             ELSE COALESCE(CONCAT(ct.firstName, ' ', ct.lastName), CONCAT(u.firstName, ' ', u.lastName))
         END,
         CASE
-            WHEN c.isGroup = true THEN gc.groupImageUrl
+            WHEN c.isGroup = true THEN c.groupChat.groupImageUrl
             ELSE u.imageUrl
         END
     )
     FROM Chat c
-    LEFT JOIN GroupChat gc ON c.id = gc.chat.id
     JOIN ChatParticipants p ON c.id = p.id.chatId
     LEFT JOIN ContactUser u ON p.id.userId = u.id AND c.isGroup = false
     LEFT JOIN Contact ct ON ct.phoneNumber = u.phoneNumber AND c.isGroup = false
     WHERE c.isGroup = :isGroup
-    GROUP BY c.id, c.isGroup, gc.groupName, gc.groupImageUrl, u.firstName, u.lastName, u.imageUrl, ct.firstName, ct.lastName
+    GROUP BY c.id, c.isGroup, c.groupChat.groupName, c.groupChat.groupImageUrl, u.firstName, u.lastName, u.imageUrl, ct.firstName, ct.lastName
     HAVING COUNT(DISTINCT p.id.userId) = :#{#participantIds.size}
         AND COUNT(DISTINCT (CASE WHEN p.id.userId IN :participantIds THEN p.id.userId END)) = :#{#participantIds.size}
     """

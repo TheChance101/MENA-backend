@@ -1,5 +1,6 @@
 package net.thechance.chat.entity
 
+import jakarta.persistence.CascadeType
 import jakarta.persistence.Column
 import jakarta.persistence.Entity
 import jakarta.persistence.Id
@@ -7,6 +8,7 @@ import jakarta.persistence.Table
 import jakarta.persistence.ManyToMany
 import jakarta.persistence.JoinTable
 import jakarta.persistence.JoinColumn
+import jakarta.persistence.OneToOne
 import java.util.UUID
 
 @Entity
@@ -24,5 +26,8 @@ data class Chat(
         joinColumns = [JoinColumn(name = "chat_id", referencedColumnName = "id")],
         inverseJoinColumns = [JoinColumn(name = "user_id", referencedColumnName = "id")]
     )
-    val users: Set<ContactUser> = emptySet()
+    val users: Set<ContactUser> = emptySet(),
+
+    @OneToOne(mappedBy = "chat", cascade = [CascadeType.ALL])
+    val groupChat: GroupChat? = null
 )
