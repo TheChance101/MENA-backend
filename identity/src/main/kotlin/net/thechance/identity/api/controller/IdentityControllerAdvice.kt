@@ -46,4 +46,28 @@ class IdentityControllerAdvice {
             .status(HttpStatus.UNAUTHORIZED)
             .body(ErrorResponse("Invalid refresh token"))
     }
+
+    @ExceptionHandler(UserNotFoundException::class)
+    fun handleUserNotFoundException(exception: UserNotFoundException): ResponseEntity<ErrorResponse?> {
+        logger.error("User not found: ${exception.message}", exception)
+        return ResponseEntity
+            .status(HttpStatus.NOT_FOUND)
+            .body(ErrorResponse("User not found"))
+    }
+
+    @ExceptionHandler(InvalidPhoneNumberException::class)
+    fun handleInvalidPhoneNumberException(exception: InvalidPhoneNumberException): ResponseEntity<ErrorResponse?> {
+        logger.error("Invalid phone number: ${exception.message}", exception)
+        return ResponseEntity
+            .status(HttpStatus.BAD_REQUEST)
+            .body(ErrorResponse("Invalid phone number"))
+    }
+
+    @ExceptionHandler(FrequentOtpRequestException::class)
+    fun handleFrequentOtpRequestException(exception: FrequentOtpRequestException): ResponseEntity<ErrorResponse?> {
+        logger.error("Frequent otp request: ${exception.message}", exception)
+        return ResponseEntity
+            .status(HttpStatus.TOO_MANY_REQUESTS)
+            .body(ErrorResponse("Frequent otp requests, try again later"))
+    }
 }
