@@ -17,8 +17,6 @@ import java.util.UUID
 data class Chat(
     @Id @Column(columnDefinition = "uuid", updatable = false, nullable = false)
     val id: UUID = UUID.randomUUID(),
-    @Column(name = "is_group", nullable = false)
-    val isGroup: Boolean,
 
     @ManyToMany
     @JoinTable(
