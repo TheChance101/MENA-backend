@@ -6,6 +6,7 @@ import io.mockk.verify
 import net.thechance.identity.exception.InvalidCredentialsException
 import net.thechance.identity.exception.PasswordMismatchException
 import net.thechance.identity.exception.PasswordNotUpdatedException
+import net.thechance.identity.utils.DummyUsers
 import org.junit.Assert.assertThrows
 import org.junit.Test
 import org.springframework.security.crypto.password.PasswordEncoder
@@ -79,7 +80,7 @@ class ResetPasswordServiceTest {
     }
 }
 
-private const val phoneNumber = "+201145236258"
-private const val newPassword = "12345678"
-private const val confirmPassword = "12345678"
-private const val wrongConfirmPassword = "12345679"
+private val phoneNumber = DummyUsers.validUser1.phoneNumber
+private val newPassword = DummyUsers.validUser1.password
+private val confirmPassword = DummyUsers.validUser1.password
+private val wrongConfirmPassword = DummyUsers.validUser2.password

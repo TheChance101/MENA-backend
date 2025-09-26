@@ -5,6 +5,7 @@ import io.mockk.every
 import io.mockk.mockk
 import io.mockk.verify
 import net.thechance.identity.exception.InvalidCredentialsException
+import net.thechance.identity.exception.PasswordNotUpdatedException
 import net.thechance.identity.repository.UserRepository
 import net.thechance.identity.utils.DummyUsers
 import org.junit.Assert.assertThrows
@@ -87,13 +88,13 @@ class UserServiceTest {
     }
 
     @Test
-    fun `updatePasswordByPhoneNumber() should return false when save in repository returns null`() {
+    fun `updatePasswordByPhoneNumber() should throw PasswordNotUpdatedException when save in repository returns null`() {
         every { userRepository.findByPhoneNumber(any()) } returns user
         every { userRepository.save(any()) } returns null
 
-        val isPasswordUpdated = userService.updatePasswordByPhoneNumber(phoneNumber, password)
-
-        assertThat(isPasswordUpdated).isFalse()
+        assertThrows(PasswordNotUpdatedException::class.java) {
+            userService.updatePasswordByPhoneNumber(phoneNumber, password)
+        }
     }
 
     @Test
@@ -109,5 +110,5 @@ class UserServiceTest {
 private val user = DummyUsers.validUser1
 private val phoneNumber = user.phoneNumber
 private val id = user.id
-private const val password = "12345678"
+private val password = DummyUsers.validUser2.password
 private val updatedUser = user.copy(password = password)
