@@ -30,10 +30,10 @@ class DukanShelfService(
         )
     }
 
-    fun getDukanShelvesByOwnerId(ownerId: UUID, pageable: Pageable): Page<DukanShelf> {
+    fun getDukanShelvesByOwnerId(ownerId: UUID): List<DukanShelf> {
 
         val dukan = dukanRepository.findByOwnerId(ownerId) ?: throw DukanNotFoundException()
 
-        return dukanShelfRepository.findAllByDukanId(dukan.id, pageable)
+        return dukanShelfRepository.findAllByDukanId(dukan.id)
     }
 }

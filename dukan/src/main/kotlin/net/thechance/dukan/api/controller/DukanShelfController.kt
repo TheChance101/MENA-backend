@@ -6,10 +6,6 @@ import net.thechance.dukan.api.dto.DukanShelfResponse
 import net.thechance.dukan.entity.DukanShelf
 import net.thechance.dukan.mapper.toResponse
 import net.thechance.dukan.service.DukanShelfService
-import org.springframework.data.domain.Page
-import org.springframework.data.domain.Pageable
-import org.springframework.data.domain.Sort
-import org.springframework.data.web.PageableDefault
 import org.springframework.http.ResponseEntity
 import org.springframework.security.core.annotation.AuthenticationPrincipal
 import org.springframework.web.bind.annotation.GetMapping
@@ -40,10 +36,9 @@ class DukanShelfController(
     @GetMapping
     fun getMyDukanShelves(
         @AuthenticationPrincipal userId: UUID,
-        @PageableDefault(sort = ["createdAt"], direction = Sort.Direction.DESC) pageable: Pageable
-    ): ResponseEntity<Page<DukanShelfResponse>> {
+    ): ResponseEntity<List<DukanShelfResponse>> {
         val shelves = dukanShelfService
-            .getDukanShelvesByOwnerId(userId, pageable)
+            .getDukanShelvesByOwnerId(userId)
             .map(DukanShelf::toResponse)
         return ResponseEntity.ok(shelves)
     }

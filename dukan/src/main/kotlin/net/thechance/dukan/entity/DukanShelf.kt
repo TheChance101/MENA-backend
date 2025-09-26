@@ -27,6 +27,4 @@ data class DukanShelf(
     @ManyToOne
     @JoinColumn(name = "dukan_id", nullable = false)
     val dukan: Dukan,
-    @Column(name = "created_at", nullable = false, updatable = false)
-    val createdAt: Instant = Instant.now(),
 )
