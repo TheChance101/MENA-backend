@@ -28,4 +28,7 @@ data class Message(
     @ManyToOne(optional = false)
     @JoinColumn(name = "chat_id", referencedColumnName = "id", nullable = false)
     val chat: Chat
-)
+) {
+    val isRead: Boolean
+        get() = reedByUsers.size >= (chat.users.size - 1)
+}

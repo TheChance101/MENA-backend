@@ -32,6 +32,6 @@ data class Chat(
     @OneToOne(mappedBy = "chat", cascade = [CascadeType.ALL])
     val groupChat: GroupChat? = null,
 
-    @OneToMany(mappedBy = "chat")
+    @OneToMany(mappedBy = "chat", cascade = [CascadeType.ALL], orphanRemoval = true)
     val messages: List<Message> = emptyList()
 )

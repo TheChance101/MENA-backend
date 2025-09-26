@@ -1,7 +1,6 @@
 package net.thechance.chat.repository
 
 import net.thechance.chat.entity.Message
-import net.thechance.chat.service.model.MessageModel
 import org.springframework.data.domain.Pageable
 import org.springframework.data.jpa.repository.JpaRepository
 import org.springframework.data.jpa.repository.Modifying
@@ -11,94 +10,13 @@ import java.util.UUID
 
 interface MessageRepository : JpaRepository<Message, UUID> {
 
-    @Query(
-        value = """
-            SELECT new net.thechance.chat.service.model.MessageModel(
-                m.id,
-                m.senderId,
-                m.chatId,
-                m.text,
-                m.sendAt,
-                (m.reedByUsers.size >= (c.users.size - 1))
-            )
-            FROM Message m
-            LEFT JOIN Chat c ON c.id = m.chatId
-            WHERE m.chatId = :chatId
-            GROUP BY m.id, m.senderId, m.chatId, m.text, m.sendAt
-            ORDER BY m.sendAt ASC
-        """
-    )
-    fun getAllByChatId(chatId: UUID, pageable: Pageable): List<MessageModel>
+    fun getAllByChatId(chatId: UUID, pageable: Pageable): List<Message>
 
-    @Query(
-        value = """
-            SELECT new net.thechance.chat.service.model.MessageModel(
-                m.id,
-                m.senderId,
-                m.chatId,
-                m.text,
-                m.sendAt,
-                (m.reedByUsers.size >= (c.users.size - 1))
-            )
-            FROM Message m
-            LEFT JOIN Chat c ON c.id = m.chatId
-            WHERE m.chatId = :chatId AND m.id > :id
-            GROUP BY m.id, m.senderId, m.chatId, m.text, m.sendAt
-            ORDER BY m.sendAt ASC
-        """
-    )
-    fun getAllByChatIdAndIdAfterOrderBySendAtAsc(
-        chatId: UUID,
-        id: UUID,
-        pageable: Pageable
-    ): List<MessageModel>
+    fun getAllByChatIdAndIdAfterOrderBySendAtAsc(chatId: UUID, id: UUID, pageable: Pageable): List<Message>
 
-    @Query(
-        value = """
-            SELECT new net.thechance.chat.service.model.MessageModel(
-                m.id,
-                m.senderId,
-                m.chatId,
-                m.text,
-                m.sendAt,
-                (m.reedByUsers.size >= (c.users.size - 1))
-            )
-            FROM Message m
-            LEFT JOIN Chat c ON c.id = m.chatId
-            WHERE m.chatId = :chatId AND m.id < :id
-            GROUP BY m.id, m.senderId, m.chatId, m.text, m.sendAt
-            ORDER BY m.sendAt ASC
-        """
-    )
-    fun getAllByChatIdAndIdBeforeOrderBySendAtAsc(
-        chatId: UUID,
-        id: UUID,
-        pageable: Pageable
-    ): List<MessageModel>
+    fun getAllByChatIdAndIdBeforeOrderBySendAtAsc(chatId: UUID, id: UUID, pageable: Pageable): List<Message>
 
-    @Query(
-        value = """
-            SELECT new net.thechance.chat.service.model.MessageModel(
-                m.id,
-                m.senderId,
-                m.chatId,
-                m.text,
-                m.sendAt,
-                (m.reedByUsers.size >= (c.users.size - 1))
-            )
-            FROM Message m
-            LEFT JOIN Chat c ON c.id = m.chatId
-            WHERE m.chatId = :chatId AND m.sendAt > :sendAt
-            GROUP BY m.id, m.senderId, m.chatId, m.text, m.sendAt
-            ORDER BY m.sendAt ASC
-        """
-    )
-    fun getAllByChatIdAndSendAtAfterOrderBySendAtAsc(
-        chatId: UUID,
-        sendAt: Instant,
-        pageable: Pageable
-    ): List<MessageModel>
-
+    fun getAllByChatIdAndSendAtAfterOrderBySendAtAsc(chatId: UUID, sendAt: Instant, pageable: Pageable): List<Message>
 
     @Modifying
     @Query(
