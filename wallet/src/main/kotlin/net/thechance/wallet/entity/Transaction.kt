@@ -29,7 +29,7 @@ data class Transaction(
     val senderSignature: String,
 
     @Column(nullable = false, updatable = false)
-    val amount: Double,
+    val amount: BigDecimal,
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "block_id", nullable = false, updatable = false)

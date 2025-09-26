@@ -1,0 +1,22 @@
+databaseChangeLog:
+  - changeSet:
+      id: 4-wallet
+      author: el-mancy
+      comment: Add status and description columns to transactions table
+      changes:
+        - addColumn:
+            schemaName: wallet
+            tableName: transactions
+            columns:
+              - column:
+                  name: description
+                  type: VARCHAR(255)
+                  constraints:
+                    nullable: false
+                  defaultValue: 'Transfer'
+              - column:
+                  name: status
+                  type: VARCHAR(255)
+                  constraints:
+                    nullable: false
+                  defaultValue: 'COMPLETED'
