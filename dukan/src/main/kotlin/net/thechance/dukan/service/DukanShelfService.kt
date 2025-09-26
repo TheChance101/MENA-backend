@@ -1,5 +1,6 @@
 package net.thechance.dukan.service
 
+import net.thechance.dukan.entity.Dukan
 import net.thechance.dukan.entity.DukanShelf
 import net.thechance.dukan.exception.DukanNotFoundException
 import net.thechance.dukan.exception.ShelfDeletionNotAllowedException
@@ -14,11 +15,11 @@ import java.util.UUID
 @Service
 class DukanShelfService(
     private val dukanShelfRepository: DukanShelfRepository,
-    private val dukanRepository: DukanRepository,
+    private val dukanService: DukanService,
     private val dukanProductRepository: DukanProductRepository
 ) {
     fun createShelf(title: String, ownerId: UUID): DukanShelf {
-        val dukan = dukanRepository.findByOwnerId(ownerId) ?: throw DukanNotFoundException()
+        val dukan = dukanService.getDukanByOwnerId(ownerId)
 
         if (dukanShelfRepository.existsByTitleAndDukanId(title, dukan.id)) {
             throw ShelfNameAlreadyTakenException()
@@ -32,7 +33,7 @@ class DukanShelfService(
         )
     }
     fun deleteShelf(shelfId: UUID, ownerId: UUID) {
-        val dukan = dukanRepository.findByOwnerId(ownerId) ?: throw DukanNotFoundException()
+        val dukan = dukanService.getDukanByOwnerId(ownerId)
 
         val shelf = dukanShelfRepository.findByIdAndDukanId(shelfId, dukan.id)
             ?: throw ShelfNotFoundException()
