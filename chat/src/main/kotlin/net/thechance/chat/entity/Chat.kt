@@ -25,11 +25,11 @@ data class Chat(
         joinColumns = [JoinColumn(name = "chat_id", referencedColumnName = "id")],
         inverseJoinColumns = [JoinColumn(name = "user_id", referencedColumnName = "id")]
     )
-    val users: Set<ContactUser> = emptySet(),
+    val users: MutableSet<ContactUser> = mutableSetOf(),
 
     @OneToOne(mappedBy = "chat", cascade = [CascadeType.ALL])
     val groupChat: GroupChat? = null,
 
     @OneToMany(mappedBy = "chat", cascade = [CascadeType.ALL], orphanRemoval = true)
-    val messages: List<Message> = emptyList()
+    val messages: MutableSet<Message> = mutableSetOf()
 )

@@ -18,6 +18,7 @@ data class GroupChat(
 
     @Column(name = "group_name", nullable = true)
     val groupName: String,
+
     @Column(name = "group_image_url", nullable = true)
     val groupImageUrl: String?
 )

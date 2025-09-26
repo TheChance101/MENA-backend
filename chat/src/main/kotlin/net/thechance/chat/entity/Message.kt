@@ -1,5 +1,6 @@
 package net.thechance.chat.entity
 
+import jakarta.persistence.CascadeType
 import jakarta.persistence.Column
 import jakarta.persistence.Entity
 import jakarta.persistence.Id
@@ -22,8 +23,8 @@ data class Message(
     @Column(name= "sendAt",nullable = false)
     val sendAt: Instant = Instant.now(),
 
-    @ManyToMany(mappedBy = "reedMessages")
-    val reedByUsers: Set<ContactUser> = emptySet(),
+    @ManyToMany(mappedBy = "readMessages", cascade = [CascadeType.ALL])
+    val readByUsers: MutableSet<ContactUser> = mutableSetOf(),
 
     @ManyToOne(optional = false)
     @JoinColumn(name = "chat_id", referencedColumnName = "id", nullable = false)

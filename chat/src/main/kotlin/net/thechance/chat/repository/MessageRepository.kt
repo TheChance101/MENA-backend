@@ -1,5 +1,6 @@
 package net.thechance.chat.repository
 
+import net.thechance.chat.entity.ContactUser
 import net.thechance.chat.entity.Message
 import org.springframework.data.domain.Pageable
 import org.springframework.data.jpa.repository.JpaRepository
@@ -18,16 +19,22 @@ interface MessageRepository : JpaRepository<Message, UUID> {
 
     fun getAllByChatIdAndSendAtAfterOrderBySendAtAsc(chatId: UUID, sendAt: Instant, pageable: Pageable): List<Message>
 
-    @Modifying
-    @Query(
-        value = """
-            INSERT INTO chat.message_reed (user_id, message_id)
-                SELECT :userId, m.id
-                FROM chat.messages m
-                LEFT JOIN chat.message_reed ms ON ms.message_id = m.id AND ms.user_id = :userId
-                WHERE m.chat_id = :chatId AND ms.message_id IS NULL AND m.sender_id <> :userId
-        """,
-        nativeQuery = true
-    )
-    fun markChatMessagesAsReed(chatId: UUID, userId: UUID)
+    fun findAllByChatIdAndReadByUsersNotContaining(chatId: UUID, user: ContactUser, pageable: Pageable): List<Message>
+
+    fun markChatMessagesAsRead(chatId: UUID, user: ContactUser) {
+        var page = 0
+        val pageSize = PAGE_SIZE
+        var messages: List<Message>
+        do {
+            messages = findAllByChatIdAndReadByUsersNotContaining(chatId, user, Pageable.ofSize(pageSize).withPage(page))
+            if (messages.isNotEmpty()) {
+                saveAll(messages.onEach { it.readByUsers += user })
+            }
+            page++
+        } while (messages.size == pageSize)
+    }
+
+    companion object {
+        const val PAGE_SIZE = 500
+    }
 }
