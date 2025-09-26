@@ -3,6 +3,7 @@ package net.thechance.chat.entity
 import jakarta.persistence.Column
 import jakarta.persistence.Entity
 import jakarta.persistence.Id
+import jakarta.persistence.ManyToMany
 import jakarta.persistence.Table
 import java.util.UUID
 
@@ -10,7 +11,7 @@ import java.util.UUID
 @Table(name = "users_of_contacts", schema = "chat")
 data class ContactUser(
     @Id
-    @Column(columnDefinition = "uuid", updatable = false, nullable = false)
+    @Column(name = "user_id", columnDefinition = "uuid", updatable = false, nullable = false)
     val id: UUID = UUID.randomUUID(),
 
     @Column(nullable = false)
@@ -25,4 +26,6 @@ data class ContactUser(
     @Column(nullable = true)
     val imageUrl: String? = null,
 
+    @ManyToMany(mappedBy = "users")
+    val chats: Set<Chat> = emptySet()
 )
