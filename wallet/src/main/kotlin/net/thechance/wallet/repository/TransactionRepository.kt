@@ -25,32 +25,27 @@ interface TransactionRepository : JpaRepository<Transaction, UUID> {
         t.amount,
         t.status,
         t.senderId,
-        s.phoneNumber,
+        sender.userName,
         t.receiverId,
-        CASE 
-            WHEN d.id IS NOT NULL THEN d.name
-            ELSE r.phoneNumber
-        END AS receiverName,
+        COALESCE(receiver.dukanName, receiver.userName) AS receiverName,
         CASE
-            WHEN d.id IS NOT NULL THEN 'ONLINE_PURCHASE'
+            WHEN receiver.dukanName IS NOT NULL THEN 'ONLINE_PURCHASE'
             WHEN t.senderId = :currentUserId THEN 'SENT'
             WHEN t.receiverId = :currentUserId THEN 'RECEIVED'
         END
     )
         FROM Transaction t
-        JOIN User s ON t.senderId = s.id
-        LEFT JOIN User r ON t.receiverId = r.id
-        LEFT JOIN Dukan d ON t.receiverId = d.ownerId
+        JOIN WalletUser sender ON t.senderId = sender.userId
+        JOIN WalletUser receiver ON t.receiverId = receiver.userId
           WHERE (:status IS NULL OR t.status = :status)
               AND (t.createdAt BETWEEN :startDate AND :endDate)
               AND (t.senderId = :currentUserId 
-                   OR t.receiverId = :currentUserId
-                   OR d.ownerId = :currentUserId)
+                   OR t.receiverId = :currentUserId)
               AND (
                 :type IS NULL
-                OR (:type = 'SENT' AND t.senderId = :currentUserId AND d.id IS NULL)
-                OR (:type = 'RECEIVED' AND t.receiverId = :currentUserId AND d.id IS NULL)
-                OR (:type = 'ONLINE_PURCHASE' AND d.id IS NOT NULL)
+                OR (:type = 'SENT' AND t.senderId = :currentUserId AND receiver.dukanName IS NULL)
+                OR (:type = 'RECEIVED' AND t.receiverId = :currentUserId AND receiver.dukanName IS NULL)
+                OR (:type = 'ONLINE_PURCHASE' AND receiver.dukanName IS NOT NULL)
               )
         """
     )
