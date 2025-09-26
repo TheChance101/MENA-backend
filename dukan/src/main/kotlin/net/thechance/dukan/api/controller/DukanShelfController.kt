@@ -5,6 +5,8 @@ import net.thechance.dukan.api.dto.DukanShelfCreationRequest
 import net.thechance.dukan.service.DukanShelfService
 import org.springframework.http.ResponseEntity
 import org.springframework.security.core.annotation.AuthenticationPrincipal
+import org.springframework.web.bind.annotation.DeleteMapping
+import org.springframework.web.bind.annotation.PathVariable
 import org.springframework.web.bind.annotation.PostMapping
 import org.springframework.web.bind.annotation.RequestBody
 import org.springframework.web.bind.annotation.RequestMapping
@@ -27,5 +29,14 @@ class DukanShelfController(
             title = requestBody.title,
         )
         return ResponseEntity.ok().build()
+    }
+
+    @DeleteMapping("/{shelfId}")
+    fun deleteShelf(
+        @PathVariable shelfId: UUID,
+        @AuthenticationPrincipal userId: UUID,
+    ): ResponseEntity<Unit> {
+        dukanShelfService.deleteShelf(shelfId, userId)
+        return ResponseEntity.noContent().build()
     }
 }
