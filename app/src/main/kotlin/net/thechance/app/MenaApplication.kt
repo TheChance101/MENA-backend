@@ -15,3 +15,5 @@ class MenaApplication
 fun main(args: Array<String>) {
     runApplication<MenaApplication>(*args)
 }
+
+//test pr tempalte
