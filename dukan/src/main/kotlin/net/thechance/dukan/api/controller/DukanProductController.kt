@@ -15,7 +15,7 @@ import org.springframework.web.bind.annotation.*
 import java.util.*
 
 @RestController
-@RequestMapping("/products")
+@RequestMapping("/product")
 class DukanProductController(
     private val productService: DukanProductService
 ) {
