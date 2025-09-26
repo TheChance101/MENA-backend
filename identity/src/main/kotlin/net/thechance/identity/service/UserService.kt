@@ -6,6 +6,7 @@ import net.thechance.identity.exception.InvalidCredentialsException
 import net.thechance.identity.exception.UserNotFoundException
 import net.thechance.identity.mapper.toResponse
 import net.thechance.identity.repository.UserRepository
+import org.springframework.data.repository.findByIdOrNull
 import org.springframework.stereotype.Service
 import java.util.*
 
@@ -18,9 +19,9 @@ class UserService(
 		return userRepository.findByPhoneNumber(phoneNumber) ?: throw InvalidCredentialsException("User not found")
 	}
 
-	fun findByUsername(username: String): ProfileResponse {
-		return userRepository.findByUsername(username)?.toResponse()
-			?: throw UserNotFoundException("User with username: $username not found")
+	fun findById(userId: UUID): ProfileResponse {
+		return userRepository.findByIdOrNull(userId)?.toResponse()
+			?: throw UserNotFoundException("User with id: $userId not found")
 	}
 
 	fun userExists(userId: UUID): Boolean {
