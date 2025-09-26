@@ -9,7 +9,7 @@ import org.springframework.transaction.annotation.Transactional
 import java.util.UUID
 
 @Service
-class messagingService(
+class MessagingService(
     private val messageRepository: MessageRepository,
 ) {
 
