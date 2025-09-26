@@ -9,6 +9,7 @@ import jakarta.persistence.ManyToMany
 import jakarta.persistence.JoinTable
 import jakarta.persistence.JoinColumn
 import jakarta.persistence.OneToOne
+import jakarta.persistence.OneToMany
 import java.util.UUID
 
 @Entity
@@ -29,5 +30,8 @@ data class Chat(
     val users: Set<ContactUser> = emptySet(),
 
     @OneToOne(mappedBy = "chat", cascade = [CascadeType.ALL])
-    val groupChat: GroupChat? = null
+    val groupChat: GroupChat? = null,
+
+    @OneToMany(mappedBy = "chat")
+    val messages: List<Message> = emptyList()
 )

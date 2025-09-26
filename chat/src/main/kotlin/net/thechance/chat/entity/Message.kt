@@ -5,6 +5,8 @@ import jakarta.persistence.Entity
 import jakarta.persistence.Id
 import jakarta.persistence.Table
 import jakarta.persistence.ManyToMany
+import jakarta.persistence.ManyToOne
+import jakarta.persistence.JoinColumn
 import java.time.Instant
 import java.util.UUID
 
@@ -15,13 +17,15 @@ data class Message(
     val id: UUID = UUID.randomUUID(),
     @Column(name = "sender_id", nullable = false)
     val senderId: UUID,
-    @Column(name = "chat_id", nullable = false)
-    val chatId: UUID,
     @Column(name = "text", nullable = false)
     val text: String,
     @Column(name= "sendAt",nullable = false)
     val sendAt: Instant = Instant.now(),
 
     @ManyToMany(mappedBy = "reedMessages")
-    val reedByUsers: Set<ContactUser> = emptySet()
+    val reedByUsers: Set<ContactUser> = emptySet(),
+
+    @ManyToOne(optional = false)
+    @JoinColumn(name = "chat_id", referencedColumnName = "id", nullable = false)
+    val chat: Chat
 )
