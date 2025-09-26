@@ -112,3 +112,11 @@ databaseChangeLog:
                   columnNames: dukan_id,name
                   constraintName: uq_dukan_product_name
                   schemaName: dukan
+  - changeSet:
+        id: 8-dukan
+        author: mostafa
+        comment: update products table in dukan schema add created_at column
+        changes:
+            - sql: |
+               ALTER TABLE dukan.dukan_products 
+               ADD COLUMN created_at TIMESTAMP NOT NULL DEFAULT NOW();

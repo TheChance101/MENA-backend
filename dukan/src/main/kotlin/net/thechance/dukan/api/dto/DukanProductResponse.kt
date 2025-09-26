@@ -1,5 +1,6 @@
 package net.thechance.dukan.api.dto
 
+import java.time.LocalDateTime
 import java.util.UUID
 
 data class DukanProductResponse(
@@ -9,5 +10,6 @@ data class DukanProductResponse(
     val dukanId:UUID,
     val price:Double,
     val description:String,
-    val imageUrls:List<String>
+    val imageUrls:List<String>,
+    val createdAt:LocalDateTime
 )

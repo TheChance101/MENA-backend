@@ -10,6 +10,7 @@ fun DukanProduct.toProductResponse():DukanProductResponse{
         dukanId = this.dukan.id,
         price = this.price,
         description = this.description,
-        imageUrls = this.imageUrls
+        imageUrls = this.imageUrls,
+        createdAt = this.createdAt
     )
 }
