@@ -52,7 +52,7 @@ class IdentityControllerAdvice {
         logger.error("Password mismatch: ${exception.message}", exception)
         return ResponseEntity
             .badRequest()
-            .body(ErrorResponse(exception.message.toString()))
+            .body(ErrorResponse("Password and Confirm Password do not match"))
     }
 
     @ExceptionHandler(PasswordNotUpdatedException::class)
@@ -60,6 +60,6 @@ class IdentityControllerAdvice {
         logger.error("Password not updated: ${exception.message}", exception)
         return ResponseEntity
             .badRequest()
-            .body(ErrorResponse(exception.message.toString()))
+            .body(ErrorResponse("Password not updated"))
     }
 }

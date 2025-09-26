@@ -2,6 +2,7 @@ package net.thechance.identity.service
 
 import net.thechance.identity.entity.User
 import net.thechance.identity.exception.InvalidCredentialsException
+import net.thechance.identity.exception.PasswordNotUpdatedException
 import net.thechance.identity.repository.UserRepository
 import org.springframework.stereotype.Service
 import java.util.*
@@ -25,7 +26,7 @@ class UserService(
             val savedUser = userRepository.save(userWithNewPassword)
             savedUser.password == newPassword
         } catch (exception: Exception) {
-            false
+            throw PasswordNotUpdatedException(exception.message.toString())
         }
     }
 
