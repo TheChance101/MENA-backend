@@ -19,11 +19,11 @@ interface MessageRepository : JpaRepository<Message, UUID> {
                 m.chatId,
                 m.text,
                 m.sendAt,
-                (COUNT(ms.id.userId) >= COUNT(cp.id.userId) - 1)
+                (COUNT(ms.id.userId) >= (c.users.size - 1))
             )
             FROM Message m
             LEFT JOIN MessageReed ms ON ms.id.messageId = m.id
-            LEFT JOIN ChatParticipants cp ON cp.id.chatId = m.chatId
+            LEFT JOIN Chat c ON c.id = m.chatId
             WHERE m.chatId = :chatId
             GROUP BY m.id, m.senderId, m.chatId, m.text, m.sendAt
             ORDER BY m.sendAt ASC
@@ -39,11 +39,11 @@ interface MessageRepository : JpaRepository<Message, UUID> {
                 m.chatId,
                 m.text,
                 m.sendAt,
-                (COUNT(ms.id.userId) >= COUNT(cp.id.userId) - 1)
+                (COUNT(ms.id.userId) >= (c.users.size - 1))
             )
             FROM Message m
             LEFT JOIN MessageReed ms ON ms.id.messageId = m.id
-            LEFT JOIN ChatParticipants cp ON cp.id.chatId = m.chatId
+            LEFT JOIN Chat c ON c.id = m.chatId
             WHERE m.chatId = :chatId AND m.id > :id
             GROUP BY m.id, m.senderId, m.chatId, m.text, m.sendAt
             ORDER BY m.sendAt ASC
@@ -63,11 +63,11 @@ interface MessageRepository : JpaRepository<Message, UUID> {
                 m.chatId,
                 m.text,
                 m.sendAt,
-                (COUNT(ms.id.userId) >= COUNT(cp.id.userId) - 1)
+                (COUNT(ms.id.userId) >= (c.users.size - 1))
             )
             FROM Message m
             LEFT JOIN MessageReed ms ON ms.id.messageId = m.id
-            LEFT JOIN ChatParticipants cp ON cp.id.chatId = m.chatId
+            LEFT JOIN Chat c ON c.id = m.chatId
             WHERE m.chatId = :chatId AND m.id < :id
             GROUP BY m.id, m.senderId, m.chatId, m.text, m.sendAt
             ORDER BY m.sendAt ASC
@@ -87,11 +87,11 @@ interface MessageRepository : JpaRepository<Message, UUID> {
                 m.chatId,
                 m.text,
                 m.sendAt,
-                (COUNT(ms.id.userId) >= COUNT(cp.id.userId) - 1)
+                (COUNT(ms.id.userId) >= (c.users.size - 1))
             )
             FROM Message m
             LEFT JOIN MessageReed ms ON ms.id.messageId = m.id
-            LEFT JOIN ChatParticipants cp ON cp.id.chatId = m.chatId
+            LEFT JOIN Chat c ON c.id = m.chatId
             WHERE m.chatId = :chatId AND m.sendAt > :sendAt
             GROUP BY m.id, m.senderId, m.chatId, m.text, m.sendAt
             ORDER BY m.sendAt ASC
