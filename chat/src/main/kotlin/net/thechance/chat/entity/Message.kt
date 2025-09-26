@@ -9,7 +9,7 @@ import java.util.UUID
 
 @Entity
 @Table(name = "messages", schema = "chat")
-open class Message(
+data class Message(
     @Id @Column(columnDefinition = "uuid", updatable = false, nullable = false)
     val id: UUID = UUID.randomUUID(),
     @Column(name = "sender_id", nullable = false)

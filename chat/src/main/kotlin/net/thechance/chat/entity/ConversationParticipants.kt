@@ -9,13 +9,13 @@ import java.util.UUID
 
 @Entity
 @Table(name = "chat_participant", schema = "chat")
-open class ChatParticipants(
+data class ChatParticipants(
     @EmbeddedId
     val id: ChatParticipantsId,
 )
 
 @Embeddable
-open class ChatParticipantsId(
+data class ChatParticipantsId(
     @Column(name = "chat_id", nullable = false)
     val chatId: UUID,
 

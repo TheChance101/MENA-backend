@@ -20,7 +20,7 @@ databaseChangeLog:
             sql:
               CREATE TABLE IF NOT EXISTS chat.group_chats(
                 chat_id UUID PRIMARY KEY,
-                group_name VARCHAR(255),
+                group_name VARCHAR(255) NOT NULL,
                 group_image_url VARCHAR(512),
                 CONSTRAINT fk_group_chat_chat FOREIGN KEY(chat_id) REFERENCES chat.chats(id) ON DELETE CASCADE
               );

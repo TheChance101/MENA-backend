@@ -8,7 +8,7 @@ import java.util.UUID
 
 @Entity
 @Table(name = "chats", schema = "chat")
-open class Chat(
+data class Chat(
     @Id @Column(columnDefinition = "uuid", updatable = false, nullable = false)
     val id: UUID = UUID.randomUUID(),
     @Column(name = "is_group", nullable = false)

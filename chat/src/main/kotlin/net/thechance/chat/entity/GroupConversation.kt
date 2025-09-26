@@ -4,7 +4,7 @@ import jakarta.persistence.*
 
 @Entity
 @Table(name = "group_chats", schema = "chat")
-open class GroupChat(
+data class GroupChat(
 
     @Id
     @OneToOne
@@ -17,7 +17,7 @@ open class GroupChat(
     val chat: Chat,
 
     @Column(name = "group_name", nullable = true)
-    val groupName: String?,
+    val groupName: String,
     @Column(name = "group_image_url", nullable = true)
     val groupImageUrl: String?
 )
