@@ -22,6 +22,6 @@ data class Message(
     @Column(name= "sendAt",nullable = false)
     val sendAt: Instant = Instant.now(),
 
-    @ManyToMany(mappedBy = "seenMessages")
-    val seenByUsers: Set<ContactUser> = emptySet()
+    @ManyToMany(mappedBy = "reedMessages")
+    val reedByUsers: Set<ContactUser> = emptySet()
 )

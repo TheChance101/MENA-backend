@@ -33,10 +33,10 @@ data class ContactUser(
 
     @ManyToMany
     @JoinTable(
-        name = "message_seen",
+        name = "message_reed",
         schema = "chat",
         joinColumns = [JoinColumn(name = "user_id", referencedColumnName = "id")],
         inverseJoinColumns = [JoinColumn(name = "message_id", referencedColumnName = "id")]
     )
-    val seenMessages: Set<Message> = emptySet()
+    val reedMessages: Set<Message> = emptySet()
 )

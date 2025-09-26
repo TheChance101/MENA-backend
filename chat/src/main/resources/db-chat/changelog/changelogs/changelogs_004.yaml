@@ -67,5 +67,6 @@ databaseChangeLog:
               user_id UUID NOT NULL,
               message_id UUID NOT NULL,
               PRIMARY KEY (user_id, message_id),
-              CONSTRAINT fk_message_reed FOREIGN KEY(message_id) REFERENCES chat.messages(id) ON DELETE CASCADE
+              CONSTRAINT fk_message_reed_user FOREIGN KEY(user_id) REFERENCES chat.users_of_contacts(id) ON DELETE CASCADE,
+              CONSTRAINT fk_message_reed_message FOREIGN KEY(message_id) REFERENCES chat.messages(id) ON DELETE CASCADE
               );
