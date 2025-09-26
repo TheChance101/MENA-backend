@@ -9,7 +9,7 @@ data class ContactModel(
     val lastName: String,
     val phoneNumber: String,
     val isMenaUser: Boolean,
-    val imageUrl: String
+    val imageUrl: String?
 )
 
 fun ContactModel.toResponse() : ContactResponse{
