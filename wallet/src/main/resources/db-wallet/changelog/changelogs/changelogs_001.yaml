@@ -89,3 +89,17 @@ databaseChangeLog:
             schemaName: wallet
             columnName: type
 
+
+  - changeSet:
+      id: 6-wallet-user
+      author: malakraef
+      comment: Create wallet_user table to store replicated user and dukan info
+      changes:
+        - sql:
+            sql: |
+              CREATE TABLE wallet.wallet_user (
+                user_id UUID PRIMARY KEY,
+                user_name VARCHAR NOT NULL,
+                dukan_name VARCHAR
+              );
+
