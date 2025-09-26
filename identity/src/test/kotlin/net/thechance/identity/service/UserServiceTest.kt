@@ -12,9 +12,7 @@ import org.junit.Test
 
 class UserServiceTest {
     private val userRepository: UserRepository = mockk(relaxed = true)
-    private val userService: UserService by lazy {
-        UserService(userRepository)
-    }
+    private val userService = UserService(userRepository)
 
     @Test
     fun `findByPhoneNumber() should return User when user exists`() {

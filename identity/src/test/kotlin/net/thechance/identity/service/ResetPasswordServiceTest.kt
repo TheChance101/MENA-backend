@@ -13,12 +13,10 @@ import org.springframework.security.crypto.password.PasswordEncoder
 class ResetPasswordServiceTest {
     private val userService: UserService = mockk(relaxed = true)
     private val passwordEncoder: PasswordEncoder = mockk(relaxed = true)
-    private val resetPasswordService: ResetPasswordService by lazy {
-        ResetPasswordService(
-            userService = userService,
-            passwordEncoder = passwordEncoder
-        )
-    }
+    private val resetPasswordService = ResetPasswordService(
+        userService = userService,
+        passwordEncoder = passwordEncoder
+    )
 
     @Test
     fun `resetPassword() should throw PasswordMismatchException when password and confirm password do not match`() {
