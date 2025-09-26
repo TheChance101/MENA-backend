@@ -1,6 +1,7 @@
 package net.thechance.dukan.service
 
 import jakarta.transaction.Transactional
+import net.thechance.dukan.exception.dukan_product.InvalidFileNameFormatException
 import net.thechance.dukan.exception.dukan_product.InvalidImageUrlFormatException
 import net.thechance.dukan.exception.dukan_product.ProductNotFoundException
 import net.thechance.dukan.repository.DukanProductRepository
@@ -19,6 +20,9 @@ class DukanProductService(
         val product = dukanProductRepository.findByProductId(productId) ?: throw ProductNotFoundException()
         val imageUrls = mutableListOf<String>()
         files.forEach { file ->
+            val fileName = file.originalFilename
+            checkFileNameValidity(fileName)
+
             val imageUrl = imageStorageService.uploadImage(
                 file = file,
                 fileName = "${product.name}-${Instant.now().toEpochMilli()}-${file.originalFilename}",
@@ -26,12 +30,18 @@ class DukanProductService(
             )
             imageUrls.add(imageUrl)
         }
-        checkImageValidity(imageUrls)
+        checkImageUrlsValidity(imageUrls)
         dukanProductRepository.save(product.copy(imageUrls = imageUrls))
         return imageUrls
     }
 
-    private fun checkImageValidity(imageUrls: List<String>) {
+    private fun checkFileNameValidity(fileName: String?) {
+        if (fileName == null || !fileName.matches(FILE_NAME_PATTERN.toRegex())) {
+            throw InvalidFileNameFormatException()
+        }
+    }
+
+    private fun checkImageUrlsValidity(imageUrls: List<String>) {
         imageUrls.forEach { url ->
             if (!url.matches(IMAGE_URL_PATTERN.toRegex())) {
                 throw InvalidImageUrlFormatException()
@@ -42,5 +52,6 @@ class DukanProductService(
     companion object {
         private const val PRODUCT_FOLDER_NAME = "product"
         private const val IMAGE_URL_PATTERN = "^[a-zA-Z0-9/_.-]+$"
+        private const val FILE_NAME_PATTERN = "^[a-zA-Z0-9._-]+$"
     }
 }
