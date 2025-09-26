@@ -3,18 +3,18 @@ package net.thechance.chat.entity
 import jakarta.persistence.*
 
 @Entity
-@Table(name = "group_conversations", schema = "chat")
-open class GroupConversation(
+@Table(name = "group_chats", schema = "chat")
+open class GroupChat(
 
     @Id
     @OneToOne
     @JoinColumn(
-        name = "conversation_id",
+        name = "chat_id",
         referencedColumnName = "id",
         nullable = false,
-        foreignKey = ForeignKey(name = "fk_group_conversation_conversation")
+        foreignKey = ForeignKey(name = "fk_group_chat_chat")
     )
-    val conversation: Conversation,
+    val chat: Chat,
 
     @Column(name = "group_name", nullable = true)
     val groupName: String?,

@@ -14,8 +14,8 @@ open class Message(
     val id: UUID = UUID.randomUUID(),
     @Column(name = "sender_id", nullable = false)
     val senderId: UUID,
-    @Column(name = "conversation_id", nullable = false)
-    val conversationId: UUID,
+    @Column(name = "chat_id", nullable = false)
+    val chatId: UUID,
     @Column(name = "text", nullable = false)
     val text: String,
     @Column(name= "sendAt",nullable = false)

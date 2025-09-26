@@ -7,8 +7,8 @@ import jakarta.persistence.Table
 import java.util.UUID
 
 @Entity
-@Table(name = "conversations", schema = "chat")
-open class Conversation(
+@Table(name = "chats", schema = "chat")
+open class Chat(
     @Id @Column(columnDefinition = "uuid", updatable = false, nullable = false)
     val id: UUID = UUID.randomUUID(),
     @Column(name = "is_group", nullable = false)
