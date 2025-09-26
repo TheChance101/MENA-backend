@@ -12,7 +12,7 @@ import java.util.UUID
 @Entity
 @Table(name = "chats", schema = "chat")
 data class Chat(
-    @Id @Column(name = "chat_id",columnDefinition = "uuid", updatable = false, nullable = false)
+    @Id @Column(columnDefinition = "uuid", updatable = false, nullable = false)
     val id: UUID = UUID.randomUUID(),
     @Column(name = "is_group", nullable = false)
     val isGroup: Boolean,
@@ -21,8 +21,8 @@ data class Chat(
     @JoinTable(
         name = "chat_users",
         schema = "chat",
-        joinColumns = [JoinColumn(name = "chat_id")],
-        inverseJoinColumns = [JoinColumn(name = "user_id")]
+        joinColumns = [JoinColumn(name = "chat_id", referencedColumnName = "id")],
+        inverseJoinColumns = [JoinColumn(name = "user_id", referencedColumnName = "id")]
     )
     val users: Set<ContactUser> = emptySet()
 )

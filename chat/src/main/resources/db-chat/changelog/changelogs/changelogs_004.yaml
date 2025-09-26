@@ -7,7 +7,7 @@ databaseChangeLog:
         - sql:
             sql:
               CREATE TABLE IF NOT EXISTS chat.chats(
-                chat_id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+                id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
                 is_group BOOLEAN NOT NULL
               );
 
@@ -22,7 +22,7 @@ databaseChangeLog:
                 chat_id UUID PRIMARY KEY,
                 group_name VARCHAR(255) NOT NULL,
                 group_image_url VARCHAR(512),
-                CONSTRAINT fk_group_chat_chat FOREIGN KEY(chat_id) REFERENCES chat.chats(chat_id) ON DELETE CASCADE
+                CONSTRAINT fk_group_chat_chat FOREIGN KEY(chat_id) REFERENCES chat.chats(id) ON DELETE CASCADE
               );
 
   - changeSet:
@@ -38,7 +38,7 @@ databaseChangeLog:
               sender_id UUID NOT NULL,
               text TEXT NOT NULL,
               send_at TIMESTAMP NOT NULL DEFAULT NOW(),
-              CONSTRAINT fk_messages_chat FOREIGN KEY(chat_id) REFERENCES chat.chats(chat_id) ON DELETE CASCADE
+              CONSTRAINT fk_messages_chat FOREIGN KEY(chat_id) REFERENCES chat.chats(id) ON DELETE CASCADE
               );
 
   - changeSet:
@@ -52,8 +52,8 @@ databaseChangeLog:
                 chat_id UUID NOT NULL,
                 user_id UUID NOT NULL,
                 PRIMARY KEY (chat_id, user_id),
-                CONSTRAINT fk_chat_users_chat FOREIGN KEY(chat_id) REFERENCES chat.chats(chat_id) ON DELETE CASCADE,
-                CONSTRAINT fk_chat_users_user FOREIGN KEY(user_id) REFERENCES chat.users_of_contacts(user_id) ON DELETE CASCADE
+                CONSTRAINT fk_chat_users_chat FOREIGN KEY(chat_id) REFERENCES chat.chats(id) ON DELETE CASCADE,
+                CONSTRAINT fk_chat_users_user FOREIGN KEY(user_id) REFERENCES chat.users_of_contacts(id) ON DELETE CASCADE
               );
 
   - changeSet:

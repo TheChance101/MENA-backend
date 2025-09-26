@@ -4,6 +4,7 @@ import jakarta.persistence.Column
 import jakarta.persistence.Entity
 import jakarta.persistence.Id
 import jakarta.persistence.Table
+import jakarta.persistence.ManyToMany
 import java.time.Instant
 import java.util.UUID
 
@@ -20,4 +21,7 @@ data class Message(
     val text: String,
     @Column(name= "sendAt",nullable = false)
     val sendAt: Instant = Instant.now(),
+
+    @ManyToMany(mappedBy = "seenMessages")
+    val seenByUsers: Set<ContactUser> = emptySet()
 )
