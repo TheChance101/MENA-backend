@@ -1,6 +1,7 @@
 package net.thechance.identity.api.controller
 
 import net.thechance.identity.api.dto.ProfileResponse
+import net.thechance.identity.mapper.toResponse
 import net.thechance.identity.service.UserService
 import org.springframework.http.ResponseEntity
 import org.springframework.security.core.annotation.AuthenticationPrincipal
@@ -17,7 +18,7 @@ class ProfileController(
 
 	@GetMapping("/me")
 	fun getCurrentUserProfile(@AuthenticationPrincipal userId: UUID): ResponseEntity<ProfileResponse> {
-		val response = userService.findById(userId)
+		val response = userService.findById(userId).toResponse()
 		return ResponseEntity.ok(response)
 	}
 }
