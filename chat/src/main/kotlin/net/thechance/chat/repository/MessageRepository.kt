@@ -19,10 +19,9 @@ interface MessageRepository : JpaRepository<Message, UUID> {
                 m.chatId,
                 m.text,
                 m.sendAt,
-                (COUNT(ms.id.userId) >= (c.users.size - 1))
+                (m.reedByUsers.size >= (c.users.size - 1))
             )
             FROM Message m
-            LEFT JOIN MessageReed ms ON ms.id.messageId = m.id
             LEFT JOIN Chat c ON c.id = m.chatId
             WHERE m.chatId = :chatId
             GROUP BY m.id, m.senderId, m.chatId, m.text, m.sendAt
@@ -39,10 +38,9 @@ interface MessageRepository : JpaRepository<Message, UUID> {
                 m.chatId,
                 m.text,
                 m.sendAt,
-                (COUNT(ms.id.userId) >= (c.users.size - 1))
+                (m.reedByUsers.size >= (c.users.size - 1))
             )
             FROM Message m
-            LEFT JOIN MessageReed ms ON ms.id.messageId = m.id
             LEFT JOIN Chat c ON c.id = m.chatId
             WHERE m.chatId = :chatId AND m.id > :id
             GROUP BY m.id, m.senderId, m.chatId, m.text, m.sendAt
@@ -63,10 +61,9 @@ interface MessageRepository : JpaRepository<Message, UUID> {
                 m.chatId,
                 m.text,
                 m.sendAt,
-                (COUNT(ms.id.userId) >= (c.users.size - 1))
+                (m.reedByUsers.size >= (c.users.size - 1))
             )
             FROM Message m
-            LEFT JOIN MessageReed ms ON ms.id.messageId = m.id
             LEFT JOIN Chat c ON c.id = m.chatId
             WHERE m.chatId = :chatId AND m.id < :id
             GROUP BY m.id, m.senderId, m.chatId, m.text, m.sendAt
@@ -87,10 +84,9 @@ interface MessageRepository : JpaRepository<Message, UUID> {
                 m.chatId,
                 m.text,
                 m.sendAt,
-                (COUNT(ms.id.userId) >= (c.users.size - 1))
+                (m.reedByUsers.size >= (c.users.size - 1))
             )
             FROM Message m
-            LEFT JOIN MessageReed ms ON ms.id.messageId = m.id
             LEFT JOIN Chat c ON c.id = m.chatId
             WHERE m.chatId = :chatId AND m.sendAt > :sendAt
             GROUP BY m.id, m.senderId, m.chatId, m.text, m.sendAt
