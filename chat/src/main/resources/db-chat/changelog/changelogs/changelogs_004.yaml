@@ -58,13 +58,13 @@ databaseChangeLog:
   - changeSet:
       id: 11-chat
       author: omer-faris
-      comment: create message_seen table
+      comment: create message_reed table
       changes:
         - sql:
             sql:
-              CREATE TABLE IF NOT EXISTS chat.message_seen(
+              CREATE TABLE IF NOT EXISTS chat.message_reed(
               user_id UUID NOT NULL,
               message_id UUID NOT NULL,
               PRIMARY KEY (user_id, message_id),
-              CONSTRAINT fk_message_seen FOREIGN KEY(message_id) REFERENCES chat.messages(id) ON DELETE CASCADE
+              CONSTRAINT fk_message_reed FOREIGN KEY(message_id) REFERENCES chat.messages(id) ON DELETE CASCADE
               );

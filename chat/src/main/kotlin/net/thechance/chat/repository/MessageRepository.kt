@@ -22,7 +22,7 @@ interface MessageRepository : JpaRepository<Message, UUID> {
                 (COUNT(ms.id.userId) >= COUNT(cp.id.userId) - 1)
             )
             FROM Message m
-            LEFT JOIN MessageSeen ms ON ms.id.messageId = m.id
+            LEFT JOIN MessageReed ms ON ms.id.messageId = m.id
             LEFT JOIN ChatParticipants cp ON cp.id.chatId = m.chatId
             WHERE m.chatId = :chatId
             GROUP BY m.id, m.senderId, m.chatId, m.text, m.sendAt
@@ -42,7 +42,7 @@ interface MessageRepository : JpaRepository<Message, UUID> {
                 (COUNT(ms.id.userId) >= COUNT(cp.id.userId) - 1)
             )
             FROM Message m
-            LEFT JOIN MessageSeen ms ON ms.id.messageId = m.id
+            LEFT JOIN MessageReed ms ON ms.id.messageId = m.id
             LEFT JOIN ChatParticipants cp ON cp.id.chatId = m.chatId
             WHERE m.chatId = :chatId AND m.id > :id
             GROUP BY m.id, m.senderId, m.chatId, m.text, m.sendAt
@@ -66,7 +66,7 @@ interface MessageRepository : JpaRepository<Message, UUID> {
                 (COUNT(ms.id.userId) >= COUNT(cp.id.userId) - 1)
             )
             FROM Message m
-            LEFT JOIN MessageSeen ms ON ms.id.messageId = m.id
+            LEFT JOIN MessageReed ms ON ms.id.messageId = m.id
             LEFT JOIN ChatParticipants cp ON cp.id.chatId = m.chatId
             WHERE m.chatId = :chatId AND m.id < :id
             GROUP BY m.id, m.senderId, m.chatId, m.text, m.sendAt
@@ -90,7 +90,7 @@ interface MessageRepository : JpaRepository<Message, UUID> {
                 (COUNT(ms.id.userId) >= COUNT(cp.id.userId) - 1)
             )
             FROM Message m
-            LEFT JOIN MessageSeen ms ON ms.id.messageId = m.id
+            LEFT JOIN MessageReed ms ON ms.id.messageId = m.id
             LEFT JOIN ChatParticipants cp ON cp.id.chatId = m.chatId
             WHERE m.chatId = :chatId AND m.sendAt > :sendAt
             GROUP BY m.id, m.senderId, m.chatId, m.text, m.sendAt
@@ -107,13 +107,13 @@ interface MessageRepository : JpaRepository<Message, UUID> {
     @Modifying
     @Query(
         value = """
-            INSERT INTO chat.message_seen (user_id, message_id)
+            INSERT INTO chat.message_reed (user_id, message_id)
                 SELECT :userId, m.id
                 FROM chat.messages m
-                LEFT JOIN chat.message_seen ms ON ms.message_id = m.id AND ms.user_id = :userId
+                LEFT JOIN chat.message_reed ms ON ms.message_id = m.id AND ms.user_id = :userId
                 WHERE m.chat_id = :chatId AND ms.message_id IS NULL AND m.sender_id <> :userId
         """,
         nativeQuery = true
     )
-    fun markChatMessagesAsSeen(chatId: UUID, userId: UUID)
+    fun markChatMessagesAsReed(chatId: UUID, userId: UUID)
 }
