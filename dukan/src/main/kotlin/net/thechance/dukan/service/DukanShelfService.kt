@@ -5,8 +5,6 @@ import net.thechance.dukan.exception.DukanNotFoundException
 import net.thechance.dukan.exception.ShelfNameAlreadyTakenException
 import net.thechance.dukan.repository.DukanRepository
 import net.thechance.dukan.repository.DukanShelfRepository
-import org.springframework.data.domain.Page
-import org.springframework.data.domain.Pageable
 import org.springframework.stereotype.Service
 import java.util.UUID
 
