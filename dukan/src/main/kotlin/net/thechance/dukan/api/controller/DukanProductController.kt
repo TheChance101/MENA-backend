@@ -19,7 +19,7 @@ import java.util.*
 class DukanProductController(
     private val productService: DukanProductService
 ) {
-    @GetMapping("/shelf/{shelfId}")
+    @GetMapping("/{shelfId}")
     fun getProductsByShelf(
         @PathVariable shelfId: UUID,
         @PageableDefault(size = 10, page = 0,sort = ["createdAt"], direction = Sort.Direction.DESC)
