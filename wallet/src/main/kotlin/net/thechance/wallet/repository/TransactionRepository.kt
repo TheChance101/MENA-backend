@@ -47,6 +47,7 @@ interface TransactionRepository : JpaRepository<Transaction, UUID> {
                 OR (:type = 'RECEIVED' AND t.receiverId = :currentUserId AND receiver.dukanName IS NULL)
                 OR (:type = 'ONLINE_PURCHASE' AND receiver.dukanName IS NOT NULL)
               )
+        ORDER BY t.createdAt DESC
         """
     )
     fun findFilteredTransactions(
