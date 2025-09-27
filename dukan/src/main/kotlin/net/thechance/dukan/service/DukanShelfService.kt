@@ -47,7 +47,7 @@ class DukanShelfService(
 
     fun getDukanShelvesByOwnerId(ownerId: UUID): List<DukanShelf> {
 
-        val dukan = dukanRepository.findByOwnerId(ownerId) ?: throw DukanNotFoundException()
+        val dukan = dukanService.getDukanByOwnerId(ownerId)
 
         return dukanShelfRepository.findAllByDukanId(dukan.id)
     }
