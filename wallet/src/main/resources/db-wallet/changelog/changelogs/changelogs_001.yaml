@@ -56,38 +56,18 @@ databaseChangeLog:
   - changeSet:
       id: 4-wallet
       author: malakraef
-      comment: Add type and status columns to wallet.transactions
+      comment: Add status column to wallet.transactions
       changes:
         - addColumn:
             tableName: transactions
             schemaName: wallet
             columns:
               - column:
-                  name: type
-                  type: VARCHAR(50)
-                  constraints:
-                    nullable: false
-              - column:
                   name: status
                   type: VARCHAR(50)
+                  defaultValue: 'SUCCESS'
                   constraints:
                     nullable: false
-
-  - changeSet:
-      id: 5-remove-type-column
-      author: malakraef
-      comment: Remove type column from wallet.transactions
-      preConditions:
-        - onFail: MARK_RAN
-        - columnExists:
-            tableName: transactions
-            schemaName: wallet
-            columnName: type
-      changes:
-        - dropColumn:
-            tableName: transactions
-            schemaName: wallet
-            columnName: type
 
 
   - changeSet:
