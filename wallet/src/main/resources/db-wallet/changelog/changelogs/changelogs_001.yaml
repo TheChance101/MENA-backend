@@ -51,3 +51,55 @@ databaseChangeLog:
       changes:
         - sql:
             DROP TABLE IF EXISTS wallet.accounts;
+
+
+  - changeSet:
+      id: 4-wallet
+      author: malakraef
+      comment: Add type and status columns to wallet.transactions
+      changes:
+        - addColumn:
+            tableName: transactions
+            schemaName: wallet
+            columns:
+              - column:
+                  name: type
+                  type: VARCHAR(50)
+                  constraints:
+                    nullable: false
+              - column:
+                  name: status
+                  type: VARCHAR(50)
+                  constraints:
+                    nullable: false
+
+  - changeSet:
+      id: 5-remove-type-column
+      author: malakraef
+      comment: Remove type column from wallet.transactions
+      preConditions:
+        - onFail: MARK_RAN
+        - columnExists:
+            tableName: transactions
+            schemaName: wallet
+            columnName: type
+      changes:
+        - dropColumn:
+            tableName: transactions
+            schemaName: wallet
+            columnName: type
+
+
+  - changeSet:
+      id: 6-wallet-user
+      author: malakraef
+      comment: Create wallet_user table to store replicated user and dukan info
+      changes:
+        - sql:
+            sql: |
+              CREATE TABLE wallet.wallet_user (
+                user_id UUID PRIMARY KEY,
+                user_name VARCHAR NOT NULL,
+                dukan_name VARCHAR
+              );
+
