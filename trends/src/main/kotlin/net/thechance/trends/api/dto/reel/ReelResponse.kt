@@ -1,4 +1,4 @@
-package net.thechance.trends.api.dto
+package net.thechance.trends.api.dto.reel
 
 import net.thechance.trends.entity.Category
 import net.thechance.trends.entity.Reel
