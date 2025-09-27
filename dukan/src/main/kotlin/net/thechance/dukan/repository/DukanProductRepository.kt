@@ -9,4 +9,5 @@ import java.util.*
 interface DukanProductRepository : JpaRepository<DukanProduct, UUID> {
     fun findAllByShelfId(shelfId: UUID): List<DukanProduct>
     fun findAllByDukanId(dukanId: UUID): List<DukanProduct>
+    fun existsByDukanIdAndNameIgnoreCase(dukanId: UUID, name: String): Boolean
 }
