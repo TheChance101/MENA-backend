@@ -1,8 +1,11 @@
 package net.thechance.identity.service
 
 import net.thechance.identity.api.dto.RequestOtpResponse
+import net.thechance.identity.api.dto.VerifyOtpResponse
 import net.thechance.identity.entity.OtpLog
 import net.thechance.identity.exception.FrequentOtpRequestException
+import net.thechance.identity.exception.InvalidOtpException
+import net.thechance.identity.exception.OtpExpiredException
 import net.thechance.identity.exception.UserNotFoundException
 import net.thechance.identity.repository.OtpLogRepository
 import net.thechance.identity.repository.UserRepository
@@ -12,6 +15,7 @@ import net.thechance.identity.service.sms.SmsService
 import org.springframework.data.domain.PageRequest
 import org.springframework.stereotype.Service
 import java.time.Instant
+import java.util.UUID
 
 @Service
 class ResetPasswordService(
@@ -21,9 +25,7 @@ class ResetPasswordService(
     private val otpLogRepository: OtpLogRepository,
     private val userRepository: UserRepository
 ) {
-    fun requestOtp(
-        phoneNumber: String, defaultRegion: String
-    ): RequestOtpResponse {
+    fun requestOtp(phoneNumber: String, defaultRegion: String): RequestOtpResponse {
         val validatedPhoneNumber = phoneNumberValidatorService.validateAndParse(phoneNumber, defaultRegion)
         checkPhoneNumberExistence(phoneNumber)
         checkRequestLimitByPhoneNumber(phoneNumber)
@@ -42,6 +44,15 @@ class ResetPasswordService(
             otp,
         )
         return RequestOtpResponse(otpLog.sessionId.toString())
+    }
+
+    fun verifyOtp(phoneNumber: String, otp: String, sessionId: String): VerifyOtpResponse {
+        val parsedSessionId = UUID.fromString(sessionId)
+        val otpLog = otpLogRepository.findByPhoneNumberAndOtpAndSessionId(phoneNumber, otp, parsedSessionId)
+            ?: throw InvalidOtpException()
+        if (otpLog.expireAt.isBefore(Instant.now())) throw OtpExpiredException()
+        otpLogRepository.verifyOtp(phoneNumber, parsedSessionId)
+        return VerifyOtpResponse("OTP verified successfully")
     }
 
     private fun checkPhoneNumberExistence(phoneNumber: String) {

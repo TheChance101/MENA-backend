@@ -41,4 +41,13 @@ class IdentityController(
         val response = resetPasswordService.requestOtp(request.phoneNumber, request.defaultRegion)
         return ResponseEntity.ok(response)
     }
+
+    @PostMapping("/verify-otp")
+    fun verifyOtp(
+        @RequestBody @Valid request: VerifyOtpRequest,
+        httpRequest: HttpServletRequest
+    ): ResponseEntity<VerifyOtpResponse> {
+        val response = resetPasswordService.verifyOtp(request.phoneNumber, request.otp, request.sessionId)
+        return ResponseEntity.ok(response)
+    }
 }
