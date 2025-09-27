@@ -9,5 +9,5 @@ import java.util.UUID
 
 interface ChatRepository : JpaRepository<Chat, UUID> {
     fun findByIdIs(id: UUID): Chat?
-    fun findByUsersIdInAndGroupChatIsNull(users: Set<UUID>): Chat?
+    fun findByUsersIsAndGroupChatIsNull(users: Set<ContactUser>): Chat?
 }
