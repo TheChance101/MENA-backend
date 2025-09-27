@@ -30,7 +30,7 @@ class ChatService(
                 text = chatMessage.text,
                 sendAt = chatMessage.sendAt
             ).let { message ->
-                chat.messages.add(message)
+
                 return messageRepository.save(message)
             }
         } ?: throw IllegalArgumentException("Chat with id ${chatMessage.chatId} not found")
