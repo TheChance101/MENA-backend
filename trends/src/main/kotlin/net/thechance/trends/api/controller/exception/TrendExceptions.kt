@@ -10,3 +10,7 @@ class TrendUserNotFoundException: TrendExceptions("User not found")
 class TrendCategoryNotFoundException: TrendExceptions("Category not found")
 
 class InvalidTrendInputException: TrendExceptions("Invalid input")
+
+class InvalidVideoException: TrendExceptions("Invalid video")
+
+class VideoUploadFailedException: TrendExceptions("Video upload failed")
