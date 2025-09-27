@@ -6,15 +6,19 @@ import io.mockk.verify
 import net.thechance.chat.entity.ContactUser
 import net.thechance.chat.entity.Message
 import net.thechance.chat.entity.Chat
+import net.thechance.chat.repository.ChatRepository
+import net.thechance.chat.repository.ContactUserRepository
 import net.thechance.chat.repository.MessageRepository
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
 import java.util.UUID
 
-class MessagingServiceTest {
+class ChatServiceTest {
 
     private lateinit var messageRepository: MessageRepository
-    private lateinit var service: MessagingService
+    private lateinit var chatRepository: ChatRepository
+    private lateinit var contactUserRepository: ContactUserRepository
+    private lateinit var service: ChatService
 
     private fun testUser(id: UUID = UUID.randomUUID()) = ContactUser(
         id = id,
@@ -33,7 +37,9 @@ class MessagingServiceTest {
     @BeforeEach
     fun setUp() {
         messageRepository = mockk(relaxed = true)
-        service = MessagingService(messageRepository)
+        chatRepository = mockk(relaxed = true)
+        contactUserRepository = mockk(relaxed = true)
+        service = ChatService(messageRepository, chatRepository, contactUserRepository)
     }
 
     @Test
@@ -41,7 +47,7 @@ class MessagingServiceTest {
         val chatId = UUID.randomUUID()
         val user = testUser()
         val chat = testChat(chatId)
-        val pageSize = MessagingService.PAGE_SIZE
+        val pageSize = ChatService.PAGE_SIZE
 
         val messagesPage1 = List(pageSize) {
             Message(UUID.randomUUID(), UUID.randomUUID(), "msg1", readByUsers = mutableSetOf(), chat = chat)
@@ -77,6 +83,6 @@ class MessagingServiceTest {
 
     @Test
     fun `PAGE_SIZE companion object is correct`() {
-        assert(MessagingService.PAGE_SIZE == 500)
+        assert(ChatService.PAGE_SIZE == 500)
     }
 }
