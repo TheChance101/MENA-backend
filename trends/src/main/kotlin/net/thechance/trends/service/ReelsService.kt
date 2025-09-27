@@ -11,12 +11,14 @@ import org.springframework.data.domain.Pageable
 import org.springframework.data.domain.Sort
 import org.springframework.stereotype.Service
 import org.springframework.transaction.annotation.Transactional
+import org.springframework.web.multipart.MultipartFile
 import java.util.*
 
 @Service
 class ReelsService(
     private val reelsRepository: ReelsRepository,
-    private val categoryRepository: CategoryRepository
+    private val categoryRepository: CategoryRepository,
+    private val videoStorageService: VideoStorageService,
 ) {
     fun getAllReelsByUserId(
         pageable: Pageable,
@@ -61,5 +63,25 @@ class ReelsService(
         )
 
         return reelsRepository.save(updatedReel)
+    }
+
+
+    fun uploadReel(currentUserId: UUID, file: MultipartFile): UUID {
+        val videoUrl = videoStorageService.uploadVideo(
+            file = file,
+            fileName = file.originalFilename ?: "Untitled",
+            folderName = TRENDS_FOLDER_NAME
+        )
+        val reel = Reel(
+            ownerId = currentUserId,
+            thumbnailUrl = "",
+            videoUrl = videoUrl,
+        )
+        reelsRepository.save(reel)
+        return reel.id
+    }
+
+    companion object {
+        private const val TRENDS_FOLDER_NAME = "trends"
     }
 }
