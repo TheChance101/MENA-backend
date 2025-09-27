@@ -1,12 +1,13 @@
 package net.thechance.dukan.service
 
+import jakarta.persistence.EntityNotFoundException
 import jakarta.transaction.Transactional
 import net.thechance.dukan.entity.DukanProduct
-import net.thechance.dukan.exception.dukan_product.InvalidProductDescriptionException
-import net.thechance.dukan.exception.dukan_product.InvalidProductPriceException
+import net.thechance.dukan.exception.dukan_product.DukanProductCreationFailedException
 import net.thechance.dukan.exception.dukan_product.ProductNameAlreadyTakenException
 import net.thechance.dukan.exception.dukan_product.ProductNotFoundException
 import net.thechance.dukan.repository.DukanProductRepository
+import net.thechance.dukan.service.model.DukanProductCreationParams
 import org.springframework.stereotype.Service
 import org.springframework.web.multipart.MultipartFile
 import java.lang.Exception
@@ -45,37 +46,27 @@ class DukanProductService(
         return imageUrls
     }
 
-    fun createProduct(
-        ownerId: UUID,
-        shelfId: UUID,
-        name: String,
-        description: String,
-        price: Double,
-    ): UUID {
-        val dukan = dukanService.getDukanByOwnerId(ownerId)
-        val shelf = dukanShelfService.getShelfById(shelfId, ownerId)
-        if (dukanProductRepository.existsByDukanIdAndNameIgnoreCase(dukan.id, name)) {
-            throw ProductNameAlreadyTakenException()
-        }
-        if (price <= 0.0) {
-            throw InvalidProductPriceException()
-        }
-        val descriptionRegex = Regex("^.{100,3000}$")
-        if (!descriptionRegex.matches(description)) {
-            throw InvalidProductDescriptionException()
-        }
-        val product = dukanProductRepository.save(
-            DukanProduct(
-                name = name.trim(),
-                shelf = shelf,
-                dukan = dukan,
-                price = price,
-                description = description,
-                imageUrls = emptyList() // Images will be uploaded using a different endpoint
+    fun createProduct(params: DukanProductCreationParams): UUID {
+        try {
+            val dukan = dukanService.getDukanByOwnerId(params.ownerId)
+            val shelf = dukanShelfService.getShelfById(params.shelfId, params.ownerId)
+            if (dukanProductRepository.existsByDukanIdAndNameIgnoreCase(dukan.id, params.name)) {
+                throw ProductNameAlreadyTakenException()
+            }
+            val product = dukanProductRepository.save(
+                DukanProduct(
+                    name = params.name.trim(),
+                    shelf = shelf,
+                    dukan = dukan,
+                    price = params.price,
+                    description = params.description,
+                    imageUrls = emptyList() // Images will be uploaded using a different endpoint
+                )
             )
-        )
-
-        return product.id
+            return product.id
+        } catch (_: EntityNotFoundException) {
+            throw DukanProductCreationFailedException()
+        }
     }
 
     companion object {
