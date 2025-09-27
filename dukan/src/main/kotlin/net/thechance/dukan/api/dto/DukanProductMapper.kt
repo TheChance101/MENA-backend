@@ -7,7 +7,6 @@ fun DukanProduct.toProductResponse():DukanProductResponse{
         id = this.id,
         name = this.name,
         shelfId = this.shelf.id,
-        dukanId = this.dukan.id,
         price = this.price,
         description = this.description,
         imageUrls = this.imageUrls,
