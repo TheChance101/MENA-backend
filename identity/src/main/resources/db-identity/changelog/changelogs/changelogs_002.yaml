@@ -16,15 +16,18 @@ databaseChangeLog:
               - column:
                   name: first_name
                   type: varchar(255)
+                  defaultValue: ''
                   constraints:
                     nullable: false
               - column:
                   name: last_name
+                  defaultValue: ''
                   type: varchar(255)
                   constraints:
                     nullable: false
               - column:
                   name: username
+                  defaultValue: ''
                   type: varchar(255)
                   constraints:
                     unique: true
@@ -40,3 +43,18 @@ databaseChangeLog:
             columnNames: phone_number
             constraintName: users_phone_number_unique
             schemaName: identity
+        - dropDefaultValue:
+            schemaName: identity
+            tableName: users
+            columnName: first_name
+            columnDataType: varchar(255)
+        - dropDefaultValue:
+            schemaName: identity
+            tableName: users
+            columnName: last_name
+            columnDataType: varchar(255)
+        - dropDefaultValue:
+            schemaName: identity
+            tableName: users
+            columnName: username
+            columnDataType: varchar(255)
