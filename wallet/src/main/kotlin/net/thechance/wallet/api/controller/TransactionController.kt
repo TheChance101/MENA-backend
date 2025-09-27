@@ -1,6 +1,5 @@
 package net.thechance.wallet.api.controller
 
-import net.thechance.wallet.api.dto.transaction.TransactionFilterRequest
 import net.thechance.wallet.api.dto.transaction.TransactionPageResponse
 import net.thechance.wallet.api.dto.transaction.TransactionType
 import net.thechance.wallet.api.dto.transaction.toResponse
@@ -31,14 +30,15 @@ class TransactionController(
         @RequestParam(required = false) endDate: LocalDateTime?,
         pageable: Pageable
     ): ResponseEntity<TransactionPageResponse> {
-        val filter = TransactionFilterRequest(
-            type = type,
-            status = status,
-            startDate = startDate,
-            endDate = endDate
-        )
         val transactions =
-            transactionService.getFilteredTransactions(filter = filter, pageable = pageable, currentUserId = userId)
+            transactionService.getFilteredTransactions(
+                type = type,
+                status = status,
+                startDate = startDate,
+                endDate = endDate,
+                pageable = pageable,
+                currentUserId = userId
+            )
                 .map { it.toResponse() }
 
         val earliestDate = transactionService.getUserFirstTransactionDate(currentUserId = userId)

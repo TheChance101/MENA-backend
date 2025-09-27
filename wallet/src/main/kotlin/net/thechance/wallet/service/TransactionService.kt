@@ -1,6 +1,7 @@
 package net.thechance.wallet.service
 
-import net.thechance.wallet.api.dto.transaction.TransactionFilterRequest
+import net.thechance.wallet.api.dto.transaction.TransactionType
+import net.thechance.wallet.entity.Transaction
 import net.thechance.wallet.repository.TransactionRepository
 import net.thechance.wallet.repository.transaction.TransactionProjection
 import org.springframework.data.domain.Page
@@ -14,22 +15,25 @@ class TransactionService(
     private val transactionRepository: TransactionRepository
 ) {
     fun getFilteredTransactions(
-        filter: TransactionFilterRequest,
+        type: TransactionType?,
+        status: Transaction.Status?,
+        startDate: LocalDateTime?,
+        endDate: LocalDateTime?,
         pageable: Pageable,
         currentUserId: UUID
     ): Page<TransactionProjection> {
-        val startDate =
-            filter.startDate
+        val startDateValue =
+            startDate
                 ?: transactionRepository.findFirstByUserId(userId = currentUserId)?.createdAt
                 ?: LocalDateTime.now()
 
-        val endDate = filter.endDate ?: LocalDateTime.now()
+        val endDateValue = endDate ?: LocalDateTime.now()
 
         return transactionRepository.findFilteredTransactions(
-            type = filter.type?.name,
-            status = filter.status,
-            startDate = startDate,
-            endDate = endDate,
+            type = type?.name,
+            status = status,
+            startDate = startDateValue,
+            endDate = endDateValue,
             pageable = pageable,
             currentUserId = currentUserId
         )
