@@ -14,7 +14,10 @@ class DukanProductService(
 ) {
     @Transactional
     fun uploadProductImages(productId: UUID, files: List<MultipartFile>): List<String> {
-        val product = dukanProductRepository.findByProductId(productId) ?: throw ProductNotFoundException()
+        val product = dukanProductRepository.findById(productId)
+            .orElseThrow {
+                ProductNotFoundException()
+            }
         val imageUrls = mutableListOf<String>()
         files.forEach { file ->
             val imageUrl = imageStorageService.uploadImage(
