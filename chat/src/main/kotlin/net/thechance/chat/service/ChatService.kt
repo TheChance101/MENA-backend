@@ -36,7 +36,7 @@ class ChatService(
         } ?: throw IllegalArgumentException("Chat with id ${chatMessage.chatId} not found")
     }
 
-    @Transactional
+/*    @Transactional
     fun getOrCreateConversationByParticipants(requesterId: UUID, theOtherUserId: UUID): ChatModel {
         val requester = contactUserRepository.findById(requesterId)
             .orElseThrow { IllegalArgumentException("Requester with id $requesterId not found") }
@@ -50,7 +50,26 @@ class ChatService(
 
         return chatRepository.findByIdIs(savedConversation.id)?.toModel(requesterId)
             ?: throw IllegalStateException("Failed to retrieve the newly created conversation.")
+    }*/
+
+    @Transactional
+    fun getOrCreateConversationByParticipants(requesterId: UUID, otherUserId: UUID): ChatModel {
+        val userIds = setOf(requesterId, otherUserId)
+
+        val existingChat = chatRepository.findPrivateChatBetweenUsers(userIds, userIds.size.toLong())
+        if (existingChat != null) {
+            return existingChat.toModel(requesterId)
+        }
+
+        val requester = contactUserRepository.findById(requesterId)
+            .orElseThrow { IllegalArgumentException("Requester not found") }
+        val otherUser = contactUserRepository.findById(otherUserId)
+            .orElseThrow { IllegalArgumentException("Other user not found") }
+
+        val newChat = chatRepository.save(Chat(users = mutableSetOf(requester, otherUser)))
+        return newChat.toModel(requesterId)
     }
+
 
     @Transactional
     fun markChatMessagesAsRead(chatId: UUID, user: ContactUser) {

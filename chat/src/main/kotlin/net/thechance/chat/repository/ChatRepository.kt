@@ -3,6 +3,7 @@ package net.thechance.chat.repository
 import net.thechance.chat.entity.Chat
 import org.springframework.data.jpa.repository.JpaRepository
 import org.springframework.data.jpa.repository.Query
+import org.springframework.data.repository.query.Param
 import java.util.UUID
 
 interface ChatRepository : JpaRepository<Chat, UUID> {
@@ -21,4 +22,19 @@ interface ChatRepository : JpaRepository<Chat, UUID> {
     """
     )
     fun findByUsersIdsAndGroupChatIsNull(userIds: Set<UUID>): Chat?
+
+    @Query("""
+    select c from Chat c
+    join c.users u
+    where u.id in :userIds
+      and c.groupChat is null
+    group by c
+    having count(c) = :size
+""")
+    fun findPrivateChatBetweenUsers(
+        @Param("userIds") userIds: Set<UUID>,
+        @Param("size") size: Long
+    ): Chat?
+
+
 }
