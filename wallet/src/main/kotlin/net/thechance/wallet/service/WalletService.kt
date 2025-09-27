@@ -31,6 +31,6 @@ class WalletService(
             throw AccessDeniedException("User is not authorized to view this transaction")
         }
 
-        return transaction.toDetailsDto()
+        return transaction.toDetailsDto(senderName = transaction.senderId.toString(), receiverName = transaction.receiverId.toString())
     }
 }

@@ -7,6 +7,7 @@ data class TransactionDetailsResponse(
     val amount: BigDecimal,
     val status: String,
     val type: String,
+    val senderName: String,
     val receiverName: String,
     val date: LocalDateTime,
     val transactionId: String
