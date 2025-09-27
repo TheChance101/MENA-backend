@@ -9,5 +9,6 @@ import java.util.*
 
 @Repository
 interface DukanProductRepository : JpaRepository<DukanProduct, UUID> {
+    fun findAllByDukanId(dukanId: UUID): List<DukanProduct>
     fun findAllByShelfId(shelfId: UUID, pageable: Pageable): Page<DukanProduct>
 }
