@@ -8,6 +8,5 @@ import java.util.*
 @Repository
 interface DukanProductRepository : JpaRepository<DukanProduct, UUID> {
     fun findAllByShelfId(shelfId: UUID): List<DukanProduct>
-
     fun findAllByDukanId(dukanId: UUID): List<DukanProduct>
 }
