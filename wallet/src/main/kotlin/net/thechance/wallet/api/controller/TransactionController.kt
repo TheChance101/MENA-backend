@@ -1,5 +1,6 @@
 package net.thechance.wallet.api.controller
 
+import net.thechance.wallet.api.dto.toPageResponse
 import net.thechance.wallet.api.dto.transaction.TransactionPageResponse
 import net.thechance.wallet.api.dto.transaction.TransactionType
 import net.thechance.wallet.api.dto.transaction.toResponse
@@ -44,10 +45,11 @@ class TransactionController(
         val earliestDate = transactionService.getUserFirstTransactionDate(currentUserId = userId)
 
         val response = TransactionPageResponse(
-            transactions = transactions,
+            transactions = transactions.toPageResponse(),
             earliestTransactionDate = earliestDate
         )
 
         return ResponseEntity.ok(response)
     }
 }
+

@@ -1,7 +1,7 @@
 package net.thechance.wallet.api.dto.transaction
 
+import net.thechance.wallet.api.dto.PageResponse
 import net.thechance.wallet.entity.Transaction
-import org.springframework.data.domain.Page
 import java.time.LocalDateTime
 import java.util.*
 
@@ -19,5 +19,5 @@ data class TransactionResponse(
 
 data class TransactionPageResponse(
     val earliestTransactionDate: LocalDateTime?,
-    val transactions: Page<TransactionResponse>
+    val transactions: PageResponse<TransactionResponse>
 )
