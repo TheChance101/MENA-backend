@@ -19,9 +19,10 @@ class MessagingService(
         val pageSize = PAGE_SIZE
         var messages: List<Message>
         do {
-            messages = messageRepository.findAllByChatIdAndReadByUsersNotContaining(
+            messages = messageRepository.findAllByChatIdAndReadByUsersNotContainingAndSenderIdNot(
                 chatId,
                 user,
+                user.id,
                 Pageable.ofSize(pageSize).withPage(page)
             )
             if (messages.isNotEmpty()) {

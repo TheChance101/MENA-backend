@@ -17,5 +17,5 @@ interface MessageRepository : JpaRepository<Message, UUID> {
 
     fun getAllByChatIdAndSendAtAfterOrderBySendAtAsc(chatId: UUID, sendAt: Instant, pageable: Pageable): List<Message>
 
-    fun findAllByChatIdAndReadByUsersNotContaining(chatId: UUID, user: ContactUser, pageable: Pageable): List<Message>
+    fun findAllByChatIdAndReadByUsersNotContainingAndSenderIdNot(chatId: UUID, user: ContactUser, senderId: UUID, pageable: Pageable): List<Message>
 }

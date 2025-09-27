@@ -52,7 +52,7 @@ class MessagingServiceTest {
         val messagesPage3 = emptyList<Message>()
 
         every {
-            messageRepository.findAllByChatIdAndReadByUsersNotContaining(eq(chatId), eq(user), any())
+            messageRepository.findAllByChatIdAndReadByUsersNotContainingAndSenderIdNot(eq(chatId), eq(user), eq(user.id), any())
         } returnsMany listOf(messagesPage1, messagesPage2, messagesPage3)
 
         every { messageRepository.saveAll(any<List<Message>>()) } returnsArgument 0
@@ -60,18 +60,18 @@ class MessagingServiceTest {
         service.markChatMessagesAsRead(chatId, user)
 
         verify(exactly = 2) { messageRepository.saveAll(match<List<Message>> { it.all { msg -> user in msg.readByUsers } }) }
-        verify(exactly = 3) { messageRepository.findAllByChatIdAndReadByUsersNotContaining(any(), any(), any()) }
+        verify(exactly = 3) { messageRepository.findAllByChatIdAndReadByUsersNotContainingAndSenderIdNot(any(), any(), any(), any()) }
     }
 
     @Test
     fun `markChatMessagesAsRead does nothing if no unread messages`() {
         val chatId = UUID.randomUUID()
         val user = testUser()
-        every { messageRepository.findAllByChatIdAndReadByUsersNotContaining(chatId, user, any()) } returns emptyList()
+        every { messageRepository.findAllByChatIdAndReadByUsersNotContainingAndSenderIdNot(chatId, user, user.id, any()) } returns emptyList()
 
         service.markChatMessagesAsRead(chatId, user)
 
-        verify(exactly = 1) { messageRepository.findAllByChatIdAndReadByUsersNotContaining(chatId, user, any()) }
+        verify(exactly = 1) { messageRepository.findAllByChatIdAndReadByUsersNotContainingAndSenderIdNot(chatId, user, user.id, any()) }
         verify(exactly = 0) { messageRepository.saveAll(any<List<Message>>()) }
     }
 
