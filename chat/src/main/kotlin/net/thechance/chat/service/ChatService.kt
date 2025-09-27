@@ -43,7 +43,7 @@ class ChatService(
         val theOtherUser = contactUserRepository.findById(theOtherUserId)
             .orElseThrow { IllegalArgumentException("User with id $theOtherUserId not found") }
 
-        chatRepository.findByUsersAndGroupChatIsNull(setOf(requester, theOtherUser))
+        chatRepository.findByUsersIdsAndGroupChatIsNull(setOf(requester.id, theOtherUser.id))
             ?.let { return it.toModel(requesterId) }
 
         val savedConversation = chatRepository.save(Chat(users = mutableSetOf(requester, theOtherUser)))
