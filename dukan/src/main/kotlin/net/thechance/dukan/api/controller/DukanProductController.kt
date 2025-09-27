@@ -1,6 +1,9 @@
 package net.thechance.dukan.api.controller
 
-import net.thechance.dukan.api.dto.ProductCreationRequest
+import jakarta.validation.Valid
+import net.thechance.dukan.api.dto.DukanProductCreateResponse
+import net.thechance.dukan.api.dto.DukanProductCreationRequest
+import net.thechance.dukan.mapper.toProductCreationParams
 import net.thechance.dukan.service.DukanProductService
 import org.springframework.http.ResponseEntity
 import org.springframework.security.core.annotation.AuthenticationPrincipal
@@ -30,19 +33,12 @@ class DukanProductController(
         return ResponseEntity.ok(imageUrls)
     }
 
-    @PostMapping("/create/{shelfId}")
+    @PostMapping("/create")
     fun createProduct(
-        @PathVariable shelfId: UUID,
         @AuthenticationPrincipal userId: UUID,
-        @RequestBody  request: ProductCreationRequest,
-    ): ResponseEntity<UUID> {
-        val productId = dukanProductService.createProduct(
-            ownerId = userId,
-            shelfId = shelfId,
-            name = request.name,
-            description = request.description,
-            price = request.price,
-        )
-        return ResponseEntity.ok(productId)
+        @Valid @RequestBody request: DukanProductCreationRequest,
+    ): ResponseEntity<DukanProductCreateResponse> {
+        val productId = dukanProductService.createProduct(request.toProductCreationParams(userId))
+        return ResponseEntity.ok(DukanProductCreateResponse(productId))
     }
 }
