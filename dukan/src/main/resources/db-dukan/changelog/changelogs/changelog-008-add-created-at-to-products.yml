@@ -1,0 +1,16 @@
+databaseChangeLog:
+  - changeSet:
+      id: 008-add-created-at-to-products
+      author: mostafa
+      comment: Add created_at column to dukan_products
+      changes:
+        - addColumn:
+            tableName: dukan_products
+            schemaName: dukan
+            columns:
+              - column:
+                  name: created_at
+                  type: TIMESTAMP
+                  defaultValueComputed: NOW()
+                  constraints:
+                    nullable: false
