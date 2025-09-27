@@ -43,7 +43,7 @@ class ChatService(
         val theOtherUser = contactUserRepository.findById(theOtherUserId)
             .orElseThrow { IllegalArgumentException("User with id $theOtherUserId not found") }
 
-        chatRepository.findByUsersIdIn(listOf(requesterId, theOtherUserId).toSet())
+        chatRepository.findByUsersIdInAndGroupChatIsNull(listOf(requesterId, theOtherUserId).toSet())
             ?.let { return it.toModel(requesterId) }
 
         val savedConversation = chatRepository.save(Chat(users = mutableSetOf(requester, theOtherUser)))
@@ -58,9 +58,10 @@ class ChatService(
         val pageSize = PAGE_SIZE
         var messages: List<Message>
         do {
-            messages = messageRepository.findAllByChatIdAndReadByUsersNotContaining(
+            messages = messageRepository.findAllByChatIdAndReadByUsersNotContainingAndSenderIdNot(
                 chatId,
                 user,
+                user.id,
                 Pageable.ofSize(pageSize).withPage(page)
             )
             if (messages.isNotEmpty()) {
