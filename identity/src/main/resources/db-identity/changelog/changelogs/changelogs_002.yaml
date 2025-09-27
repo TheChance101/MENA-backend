@@ -1,0 +1,42 @@
+databaseChangeLog:
+  - changeSet:
+      id: 4-identity
+      author: nabil
+      comment: Add new columns for identity.user table for identity schema
+      changes:
+        - addColumn:
+            schemaName: identity
+            tableName: users
+            columns:
+              - column:
+                  name: image_url
+                  type: varchar(2083)
+                  constraints:
+                    nullable: true
+              - column:
+                  name: first_name
+                  type: varchar(255)
+                  constraints:
+                    nullable: false
+              - column:
+                  name: last_name
+                  type: varchar(255)
+                  constraints:
+                    nullable: false
+              - column:
+                  name: username
+                  type: varchar(255)
+                  constraints:
+                    unique: true
+                    nullable: false
+
+  - changeSet:
+      id: 5-identity
+      author: nabil
+      comment: Add unique constraint to users table on username and phone number for identity schema
+      changes:
+        - addUniqueConstraint:
+            tableName: users
+            columnNames: phone_number
+            constraintName: users_phone_number_unique
+            schemaName: identity
