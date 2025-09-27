@@ -33,10 +33,7 @@ class DukanShelfService(
         )
     }
     fun deleteShelf(shelfId: UUID, ownerId: UUID) {
-        val dukan = dukanService.getDukanByOwnerId(ownerId)
-
-        val shelf = dukanShelfRepository.findByIdAndDukanId(shelfId, dukan.id)
-            ?: throw ShelfNotFoundException()
+        val shelf = getShelfById(shelfId,ownerId)
 
         val products = dukanProductRepository.findAllByShelfId(shelf.id)
         if (products.isNotEmpty()) {
@@ -44,5 +41,11 @@ class DukanShelfService(
         }
 
         dukanShelfRepository.delete(shelf)
+    }
+
+    fun getShelfById(shelfId: UUID, ownerId: UUID): DukanShelf {
+        val dukan = dukanService.getDukanByOwnerId(ownerId)
+        return dukanShelfRepository.findByIdAndDukanId(shelfId, dukan.id)
+            ?: throw ShelfNotFoundException()
     }
 }
