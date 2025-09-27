@@ -17,7 +17,7 @@ data class Reel(
     @Column(name = "video_url", nullable = false)
     val videoUrl: String,
     @Column(name = "description", nullable = false)
-    val description: String,
+    val description: String = "",
     @Column(name = "likes_count", nullable = false)
     val likesCount: Int = 0,
     @Column(name = "views_count", nullable = false)
