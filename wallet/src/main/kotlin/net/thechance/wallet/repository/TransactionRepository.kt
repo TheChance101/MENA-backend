@@ -15,10 +15,4 @@ interface TransactionRepository : JpaRepository<Transaction, UUID> {
 
     @Query("SELECT SUM(t.amount) FROM Transaction t WHERE t.senderId = :senderId")
     fun sumAmountBySenderId(@Param("senderId") senderId: UUID): BigDecimal?
-
-    fun findBySenderIdOrReceiverIdOrderByCreatedAtDesc(
-        senderId: UUID,
-        receiverId: UUID,
-        pageable: Pageable
-    ): Page<Transaction>
 }
