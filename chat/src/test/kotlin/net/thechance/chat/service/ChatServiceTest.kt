@@ -12,6 +12,9 @@ import net.thechance.chat.repository.MessageRepository
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
 import java.util.UUID
+import net.thechance.chat.service.model.toModel
+import java.util.Optional
+import org.junit.jupiter.api.Assertions.assertEquals
 
 class ChatServiceTest {
 
@@ -84,5 +87,71 @@ class ChatServiceTest {
     @Test
     fun `PAGE_SIZE companion object is correct`() {
         assert(ChatService.PAGE_SIZE == 500)
+    }
+
+    @Test
+    fun `getOrCreateConversationByParticipants returns existing chat if found`() {
+        val requester = testUser()
+        val theOtherUser = testUser()
+        val chat = testChat().apply { users.addAll(listOf(requester, theOtherUser)) }
+        val chatModel = chat.toModel(requester.id)
+
+        every { contactUserRepository.findById(requester.id) } returns Optional.of(requester)
+        every { contactUserRepository.findById(theOtherUser.id) } returns Optional.of(theOtherUser)
+        every { chatRepository.findByUsersIsAndGroupChatIsNull(setOf(requester, theOtherUser)) } returns chat
+
+        val result = service.getOrCreateConversationByParticipants(requester.id, theOtherUser.id)
+
+        assertEquals(chatModel, result)
+        verify { chatRepository.findByUsersIsAndGroupChatIsNull(setOf(requester, theOtherUser)) }
+        verify(exactly = 0) { chatRepository.save(any()) }
+    }
+
+    @Test
+    fun `getOrCreateConversationByParticipants creates and returns new chat if not found`() {
+        val requester = testUser()
+        val theOtherUser = testUser()
+        val newChat = testChat().apply { users.addAll(listOf(requester, theOtherUser)) }
+        val chatModel = newChat.toModel(requester.id)
+
+        every { contactUserRepository.findById(requester.id) } returns Optional.of(requester)
+        every { contactUserRepository.findById(theOtherUser.id) } returns Optional.of(theOtherUser)
+        every { chatRepository.findByUsersIsAndGroupChatIsNull(setOf(requester, theOtherUser)) } returns null
+        every { chatRepository.save(any()) } returns newChat
+        every { chatRepository.findByIdIs(newChat.id) } returns newChat
+
+        val result = service.getOrCreateConversationByParticipants(requester.id, theOtherUser.id)
+
+        assertEquals(chatModel, result)
+        verify { chatRepository.findByIdIs(newChat.id) }
+    }
+
+    @Test
+    fun `getOrCreateConversationByParticipants throws if requester not found`() {
+        val requesterId = UUID.randomUUID()
+        val theOtherUser = testUser()
+        every { contactUserRepository.findById(requesterId) } returns Optional.empty()
+
+        try {
+            service.getOrCreateConversationByParticipants(requesterId, theOtherUser.id)
+            assert(false) // Should not reach here
+        } catch (e: IllegalArgumentException) {
+            assert(e.message!!.contains("Requester with id"))
+        }
+    }
+
+    @Test
+    fun `getOrCreateConversationByParticipants throws if the other user not found`() {
+        val requester = testUser()
+        val theOtherUserId = UUID.randomUUID()
+        every { contactUserRepository.findById(requester.id) } returns Optional.of(requester)
+        every { contactUserRepository.findById(theOtherUserId) } returns Optional.empty()
+
+        try {
+            service.getOrCreateConversationByParticipants(requester.id, theOtherUserId)
+            assert(false) // Should not reach here
+        } catch (e: IllegalArgumentException) {
+            assert(e.message!!.contains("User with id"))
+        }
     }
 }

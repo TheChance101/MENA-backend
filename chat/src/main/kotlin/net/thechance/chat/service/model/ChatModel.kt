@@ -3,7 +3,7 @@ package net.thechance.chat.service.model
 import net.thechance.chat.entity.Chat
 import java.util.UUID
 
-class ChatModel(
+data class ChatModel(
     val id: UUID,
     val isGroup: Boolean,
     val name: String,
