@@ -43,17 +43,17 @@ class MessagingServiceTest {
         val chat = testChat(chatId)
         val pageSize = MessagingService.PAGE_SIZE
 
-        val message1 = Message(UUID.randomUUID(), UUID.randomUUID(), "msg1", readByUsers = mutableSetOf(), chat = chat)
-        val message2 = Message(UUID.randomUUID(), UUID.randomUUID(), "msg2", readByUsers = mutableSetOf(), chat = chat)
-        val messagesPage1 = listOf(message1, message2)
+        val messagesPage1 = List(pageSize) {
+            Message(UUID.randomUUID(), UUID.randomUUID(), "msg1", readByUsers = mutableSetOf(), chat = chat)
+        }
         val messagesPage2 = List(pageSize) {
-            Message(UUID.randomUUID(), UUID.randomUUID(), "msg", readByUsers = mutableSetOf(), chat = chat)
+            Message(UUID.randomUUID(), UUID.randomUUID(), "msg2", readByUsers = mutableSetOf(), chat = chat)
         }
         val messagesPage3 = emptyList<Message>()
 
         every {
             messageRepository.findAllByChatIdAndReadByUsersNotContaining(eq(chatId), eq(user), any())
-        } returnsMany listOf(messagesPage2, messagesPage1, messagesPage3)
+        } returnsMany listOf(messagesPage1, messagesPage2, messagesPage3)
 
         every { messageRepository.saveAll(any<List<Message>>()) } returnsArgument 0
 
