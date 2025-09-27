@@ -2,14 +2,16 @@ package net.thechance.trends.api.controller.reel
 
 import jakarta.validation.Valid
 import net.thechance.trends.api.dto.PagingResponse
-import net.thechance.trends.api.dto.ReelResponse
-import net.thechance.trends.api.dto.UpdateReelRequest
-import net.thechance.trends.api.dto.toResponse
+import net.thechance.trends.api.dto.reel.ReelResponse
+import net.thechance.trends.api.dto.reel.UpdateReelRequest
+import net.thechance.trends.api.dto.reel.UploadReelResponse
+import net.thechance.trends.api.dto.reel.toResponse
 import net.thechance.trends.service.ReelsService
 import org.springframework.data.domain.Pageable
 import org.springframework.http.ResponseEntity
 import org.springframework.security.core.annotation.AuthenticationPrincipal
 import org.springframework.web.bind.annotation.*
+import org.springframework.web.multipart.MultipartFile
 import java.util.*
 
 @RestController
@@ -59,5 +61,14 @@ class ReelsController(
         )
 
         return ResponseEntity.ok(updatedReel.toResponse())
+    }
+
+    @PostMapping
+    fun uploadReel(
+        @AuthenticationPrincipal currentUserId: UUID,
+        @RequestParam video: MultipartFile,
+    ): ResponseEntity<UploadReelResponse> {
+        val reelId = reelsService.uploadReel(currentUserId, video)
+        return ResponseEntity.ok(UploadReelResponse(reelId = reelId))
     }
 }
