@@ -2,12 +2,18 @@ databaseChangeLog:
   - changeSet:
       id: 4-wallet
       author: malakraef
-      comment: Add status column to wallet.transactions
+      comment: Add type and status columns to wallet.transactions
       changes:
         - addColumn:
             tableName: transactions
             schemaName: wallet
             columns:
+              - column:
+                  name: type
+                  type: VARCHAR(50)
+                  defaultValue: 'P2P'
+                  constraints:
+                    nullable: false
               - column:
                   name: status
                   type: VARCHAR(50)
@@ -27,3 +33,5 @@ databaseChangeLog:
                 user_name VARCHAR NOT NULL,
                 dukan_name VARCHAR
               );
+
+
