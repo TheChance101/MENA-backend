@@ -13,11 +13,9 @@ import org.springframework.core.io.ResourceLoader
 import org.springframework.data.domain.Page
 import org.springframework.data.domain.Pageable
 import org.springframework.stereotype.Service
-import org.springframework.util.ResourceUtils
 import org.thymeleaf.TemplateEngine
 import org.thymeleaf.context.Context
 import java.math.BigDecimal
-import java.nio.charset.StandardCharsets
 import java.time.LocalDate
 import java.time.LocalDateTime
 import java.time.format.DateTimeFormatter
@@ -34,25 +32,22 @@ class StatementService(
         userId: UUID,
         startDate: LocalDate?,
         endDate: LocalDate?,
-        types: List<UserTransactionType>,
+        types: List<UserTransactionType>?,
         status: Transaction.Status?,
         response: HttpServletResponse
     ) {
-        val earliestTransactionDate =
-            transactionRepository.findFirstBySender_UserIdOrReceiver_UserIdOrderByCreatedAtAsc(
-                userId,
-                userId
-            )?.createdAt ?: LocalDateTime.now()
 
-        val startDateTime =
-            startDate?.atStartOfDay()
-                ?: earliestTransactionDate
+        val startDateTime = startDate?.atStartOfDay()
+                ?: transactionRepository.findFirstBySender_UserIdOrReceiver_UserIdOrderByCreatedAtAsc(
+                    userId,
+                    userId
+                )?.createdAt ?: LocalDateTime.now()
 
         val endDateTime = endDate?.atTime(23, 59, 59, 59) ?: LocalDateTime.now()
 
         val transactions = transactionRepository.findFilteredTransactions(
             status = status,
-            transactionTypes = types.map { it.name },
+            transactionTypes = types?.map { it.name },
             startDate = startDateTime,
             endDate = endDateTime,
             pageable = Pageable.unpaged(),
@@ -66,7 +61,7 @@ class StatementService(
         }
         val username = getUsername(transactions, userId)
 
-        val openingBalance = getOpeningBalance(userId, status, types, earliestTransactionDate, startDateTime)
+        val openingBalance = if(startDate == null) 0.0 else getOpeningBalance(userId, status, types, startDateTime)
 
         val closingBalance = getClosingBalance(openingBalance, transactions, userId)
 
@@ -132,16 +127,14 @@ class StatementService(
     private fun getOpeningBalance(
         userId: UUID,
         status: Transaction.Status?,
-        types: List<UserTransactionType>,
-        earliestTransactionDate: LocalDateTime,
+        types: List<UserTransactionType>?,
         startDate: LocalDateTime
     ): Double {
-        if (earliestTransactionDate.isEqual(startDate)) return 0.0
         return transactionRepository.findFilteredTransactions(
             currentUserId = userId,
             status = status,
-            transactionTypes = types.map { it.name },
-            startDate = earliestTransactionDate,
+            transactionTypes = types?.map { it.name },
+            startDate = LocalDate.ofEpochDay(0L).atStartOfDay(),
             endDate = startDate,
             pageable = Pageable.unpaged()
         ).sumOf { if (userId == it.sender.userId) it.amount.unaryMinus() else it.amount }.toDouble()

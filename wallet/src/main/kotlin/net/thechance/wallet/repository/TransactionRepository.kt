@@ -23,7 +23,7 @@ interface TransactionRepository : JpaRepository<Transaction, UUID> {
           AND (:status IS NULL OR t.status = :status)
           AND t.createdAt BETWEEN :startDate AND :endDate
           AND (
-                SIZE(:transactionTypes) = 0
+                :transactionTypes IS NULL
             OR (
                 ('SENT' IN :transactionTypes AND t.type = 'P2P' AND t.sender.userId = :currentUserId)
                 OR ('RECEIVED' IN :transactionTypes AND t.type = 'P2P' AND t.receiver.userId = :currentUserId)
@@ -35,7 +35,7 @@ interface TransactionRepository : JpaRepository<Transaction, UUID> {
     fun findFilteredTransactions(
         @Param("currentUserId") currentUserId: UUID,
         @Param("status") status: Transaction.Status?,
-        @Param("transactionType") transactionTypes: List<String>,
+        @Param("transactionType") transactionTypes: List<String>?,
         @Param("startDate") startDate: LocalDateTime?,
         @Param("endDate") endDate: LocalDateTime?,
         pageable: Pageable
