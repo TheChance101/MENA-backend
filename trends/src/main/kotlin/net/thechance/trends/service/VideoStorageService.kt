@@ -1,7 +1,7 @@
 package net.thechance.trends.service
 
-import net.thechance.trends.api.controller.exception.InvalidVideoException
-import net.thechance.trends.api.controller.exception.VideoUploadFailedException
+import net.thechance.trends.exception.InvalidVideoException
+import net.thechance.trends.exception.VideoUploadFailedException
 import org.springframework.boot.context.properties.ConfigurationProperties
 import org.springframework.boot.context.properties.EnableConfigurationProperties
 import org.springframework.stereotype.Service

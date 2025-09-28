@@ -1,7 +1,7 @@
 package net.thechance.trends.service
 
-import net.thechance.trends.api.controller.exception.ReelNotFoundException
-import net.thechance.trends.api.controller.exception.TrendCategoryNotFoundException
+import net.thechance.trends.exception.ReelNotFoundException
+import net.thechance.trends.exception.TrendCategoryNotFoundException
 import net.thechance.trends.entity.Reel
 import net.thechance.trends.repository.CategoryRepository
 import net.thechance.trends.repository.ReelsRepository

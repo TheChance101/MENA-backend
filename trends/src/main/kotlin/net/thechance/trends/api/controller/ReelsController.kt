@@ -1,4 +1,4 @@
-package net.thechance.trends.api.controller.reel
+package net.thechance.trends.api.controller
 
 import jakarta.validation.Valid
 import net.thechance.trends.api.dto.PagingResponse
@@ -10,9 +10,17 @@ import net.thechance.trends.service.ReelsService
 import org.springframework.data.domain.Pageable
 import org.springframework.http.ResponseEntity
 import org.springframework.security.core.annotation.AuthenticationPrincipal
-import org.springframework.web.bind.annotation.*
+import org.springframework.web.bind.annotation.DeleteMapping
+import org.springframework.web.bind.annotation.GetMapping
+import org.springframework.web.bind.annotation.PathVariable
+import org.springframework.web.bind.annotation.PostMapping
+import org.springframework.web.bind.annotation.PutMapping
+import org.springframework.web.bind.annotation.RequestBody
+import org.springframework.web.bind.annotation.RequestMapping
+import org.springframework.web.bind.annotation.RequestParam
+import org.springframework.web.bind.annotation.RestController
 import org.springframework.web.multipart.MultipartFile
-import java.util.*
+import java.util.UUID
 
 @RestController
 @RequestMapping("/trends/reels")
@@ -52,7 +60,7 @@ class ReelsController(
         @PathVariable id: UUID,
         @AuthenticationPrincipal currentUserId: UUID,
         @Valid @RequestBody updateReelRequest: UpdateReelRequest
-    ): ResponseEntity<ReelResponse>{
+    ): ResponseEntity<ReelResponse> {
         val updatedReel = reelsService.updateReelDescriptionAndCategories(
             reelId = id,
             ownerId = currentUserId,

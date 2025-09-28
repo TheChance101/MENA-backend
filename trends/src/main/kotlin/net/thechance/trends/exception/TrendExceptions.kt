@@ -1,4 +1,4 @@
-package net.thechance.trends.api.controller.exception
+package net.thechance.trends.exception
 
 
 open class TrendExceptions(messages: String): Exception(messages)
