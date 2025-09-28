@@ -1,7 +1,7 @@
 package net.thechance.wallet.api.dto.transaction
 
-import java.time.LocalDateTime
+import java.time.LocalDate
 
 data class FirstTransactionDateResponse(
-    val firstTransactionDate: LocalDateTime?,
+    val firstTransactionDate: LocalDate?,
 )

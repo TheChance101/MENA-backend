@@ -62,7 +62,7 @@ class TransactionController(
         @AuthenticationPrincipal userId: UUID,
     ): ResponseEntity<FirstTransactionDateResponse> {
 
-        val date = transactionService.getUserFirstTransactionDate(currentUserId = userId)
+        val date = transactionService.getUserFirstTransactionDate(currentUserId = userId)?.toLocalDate()
         return ResponseEntity.ok(FirstTransactionDateResponse(firstTransactionDate = date))
     }
 }
