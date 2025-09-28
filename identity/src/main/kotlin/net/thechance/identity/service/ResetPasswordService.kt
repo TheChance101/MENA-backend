@@ -62,13 +62,13 @@ class ResetPasswordService(
     }
 
     private fun checkRequestLimitByPhoneNumber(phoneNumber: String) {
-        val pageable = PageRequest.of(0, MAX_RETRIES_PER_SESSION)
+        val pageable = PageRequest.of(0, MAX_RETRIES_PER_WINDOW)
         val latestOtpLog = otpLogRepository.findByPhoneNumberOrderByCreatedAtDesc(phoneNumber, pageable)
         if (latestOtpLog.isNotEmpty()) {
             val isLastRequestIsFrequent =
                 latestOtpLog.first().createdAt > Instant.now().minusSeconds(MIN_OTP_RESEND_GAP_SECONDS)
             val ifWindowLimitExceeded =
-                latestOtpLog.last().createdAt > Instant.now().minusSeconds(WINDOW_DURATION_IN_SECONDS)
+                latestOtpLog.size == MAX_RETRIES_PER_WINDOW && latestOtpLog.last().createdAt > Instant.now().minusSeconds(WINDOW_DURATION_IN_SECONDS)
             if (isLastRequestIsFrequent || ifWindowLimitExceeded) throw FrequentOtpRequestException()
         }
     }
@@ -76,7 +76,7 @@ class ResetPasswordService(
     companion object {
         private const val OTP_EXPIRY_SECONDS = 3 * 60L
         private const val MIN_OTP_RESEND_GAP_SECONDS = 60L
-        private const val MAX_RETRIES_PER_SESSION = 5
+        private const val MAX_RETRIES_PER_WINDOW = 5
         private const val WINDOW_DURATION_IN_SECONDS = 10 * 60L
     }
 }
