@@ -185,12 +185,16 @@ class StatementService(
         }
 
     fun getAppIconSvg(): String {
-        val resource = ResourceUtils.getFile("classpath:static/mena_logo.svg")
-        val svgContent = resource.readText(Charsets.UTF_8)
+        return try {
+            val resource = ResourceUtils.getFile("classpath:static/mena_logo.svg")
+            val svgContent = resource.readText(Charsets.UTF_8)
 
-        return svgContent
-            .replace("""<\?xml.*?\?>""".toRegex(), "")
-            .trim()
+            svgContent
+                .replace("""<\?xml.*?\?>""".toRegex(), "")
+                .trim()
+        } catch (_: Exception) {
+            ""
+        }
     }
 
     private fun setResponseHeaders(response: HttpServletResponse, from: LocalDateTime, to: LocalDateTime) {
