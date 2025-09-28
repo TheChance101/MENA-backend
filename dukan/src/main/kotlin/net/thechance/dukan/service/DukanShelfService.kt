@@ -1,5 +1,6 @@
 package net.thechance.dukan.service
 
+re/DKN-50-Create-endpoint-that-returns-the-product-from-a-certain-shelf
 import net.thechance.dukan.entity.DukanProduct
 import net.thechance.dukan.entity.DukanShelf
 import net.thechance.dukan.exception.ShelfDeletionNotAllowedException
@@ -32,6 +33,7 @@ class DukanShelfService(
             )
         )
     }
+
     fun deleteShelf(shelfId: UUID, ownerId: UUID) {
         val dukan = dukanService.getDukanByOwnerId(ownerId)
 
@@ -43,5 +45,12 @@ class DukanShelfService(
         }
 
         dukanShelfRepository.delete(shelf)
+    }
+
+    fun getDukanShelvesByOwnerId(ownerId: UUID): List<DukanShelf> {
+
+        val dukan = dukanService.getDukanByOwnerId(ownerId)
+
+        return dukanShelfRepository.findAllByDukanId(dukan.id)
     }
 }
