@@ -57,7 +57,7 @@ class TransactionController(
         return ResponseEntity.ok(response)
     }
 
-    @GetMapping("/first")
+    @GetMapping("/first-date")
     fun getUserFirstTransactionDate(
         @AuthenticationPrincipal userId: UUID,
     ): ResponseEntity<FirstTransactionDateResponse> {
