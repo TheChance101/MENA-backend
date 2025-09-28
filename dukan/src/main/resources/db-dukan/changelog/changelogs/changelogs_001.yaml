@@ -112,3 +112,4 @@ databaseChangeLog:
                   columnNames: dukan_id,name
                   constraintName: uq_dukan_product_name
                   schemaName: dukan
+
