@@ -1,5 +1,7 @@
 package net.thechance.identity.service
 
+import net.thechance.events.MenaEventPublisher
+import net.thechance.events.UserCreatedEvent
 import net.thechance.identity.api.dto.AuthResponse
 import net.thechance.identity.entity.User
 import net.thechance.identity.entity.LoginLog
@@ -20,7 +22,8 @@ class AuthenticationService(
     private val jwtService: JwtService,
     private val refreshTokenService: RefreshTokenService,
     private val loginLogService: LoginLogService,
-    private val passwordEncoder: PasswordEncoder
+    private val passwordEncoder: PasswordEncoder,
+    private val eventPublisher: MenaEventPublisher
 ) {
 
     fun login(phoneNumber: String, password: String, ipAddress: String): AuthResponse {
@@ -28,6 +31,9 @@ class AuthenticationService(
             throw UserIsBlockedException("User with phone Number: $phoneNumber is blocked")
         }
         val user = userService.findByPhoneNumber(phoneNumber)
+        println("testKarrar: publish event")
+        eventPublisher.publish(UserCreatedEvent(phoneNumber = user.phoneNumber, firstName = "karrar", lastName = "testKarrar123"))
+        println("testKarrar: publish event finished")
         val isPasswordCorrect = passwordEncoder.matches(password, user.password)
         addUserToLogs(user = user, isSuccess = isPasswordCorrect, ipAddress = ipAddress)
         if (!isPasswordCorrect) throw InvalidCredentialsException("Invalid Credentials")
