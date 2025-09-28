@@ -1,33 +1,35 @@
 package net.thechance.wallet.service
 
-import net.thechance.wallet.api.dto.transaction.TransactionFilterRequest
+import net.thechance.wallet.entity.Transaction
 import net.thechance.wallet.repository.TransactionRepository
-import net.thechance.wallet.repository.transaction.TransactionProjection
+import net.thechance.wallet.service.helper.TransactionFilterParams
 import org.springframework.data.domain.Page
 import org.springframework.data.domain.Pageable
 import org.springframework.stereotype.Service
 import java.time.LocalDateTime
 import java.util.*
 
+
 @Service
 class TransactionService(
     private val transactionRepository: TransactionRepository
 ) {
     fun getFilteredTransactions(
-        filter: TransactionFilterRequest,
+        transactionFilterParams: TransactionFilterParams,
+        currentUserId: UUID,
         pageable: Pageable,
-        currentUserId: UUID
-    ): Page<TransactionProjection> {
+    ): Page<Transaction> {
+
         val startDate =
-            filter.startDate
-                ?: transactionRepository.findFirstByUserId(userId = currentUserId)?.createdAt
+            transactionFilterParams.startDate?.atStartOfDay()
+                ?: transactionRepository.findFirstBySender_UserIdOrReceiver_UserIdOrderByCreatedAtAsc(currentUserId, currentUserId)?.createdAt
                 ?: LocalDateTime.now()
 
-        val endDate = filter.endDate ?: LocalDateTime.now()
+        val endDate = transactionFilterParams.endDate?.atTime(23, 59, 59, 59) ?: LocalDateTime.now()
 
         return transactionRepository.findFilteredTransactions(
-            type = filter.type?.name,
-            status = filter.status,
+            status = transactionFilterParams.status,
+            transactionType = transactionFilterParams.type?.name,
             startDate = startDate,
             endDate = endDate,
             pageable = pageable,
@@ -36,6 +38,6 @@ class TransactionService(
     }
 
     fun getUserFirstTransactionDate(currentUserId: UUID): LocalDateTime? {
-        return transactionRepository.findFirstByUserId(userId = currentUserId)?.createdAt
+        return transactionRepository.findFirstBySender_UserIdOrReceiver_UserIdOrderByCreatedAtAsc(currentUserId, currentUserId)?.createdAt
     }
 }
