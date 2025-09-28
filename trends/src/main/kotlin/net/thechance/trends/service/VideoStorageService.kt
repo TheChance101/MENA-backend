@@ -36,7 +36,7 @@ class VideoStorageService(
             val key = "video/$folderName/$fileName"
             val putReq = createObjectRequest(key, mimeType)
             trendsS3Client.putObject(putReq, RequestBody.fromBytes(file.bytes))
-            return "${props.cdnEndpoint}/$key"
+            return "${props.cdnEndpoint}/${props.bucket}/$key"
         } catch (_: Exception) {
             throw VideoUploadFailedException()
         }
