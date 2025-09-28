@@ -29,7 +29,7 @@ class TransactionController(
     @GetMapping
     fun getFilteredTransactions(
         @AuthenticationPrincipal userId: UUID,
-        @RequestParam(required = false) type: UserTransactionType?,
+        @RequestParam(required = false) types: List<UserTransactionType> = emptyList(),
         @RequestParam(required = false) status: Transaction.Status?,
         @RequestParam(required = false) startDate: LocalDate?,
         @RequestParam(required = false) endDate: LocalDate?,
@@ -39,7 +39,7 @@ class TransactionController(
         val transactions =
             transactionService.getFilteredTransactions(
                 TransactionFilterParams(
-                    type = type,
+                    types = types,
                     status = status,
                     startDate = startDate,
                     endDate = endDate
@@ -73,7 +73,7 @@ class TransactionController(
     fun generateStatement(
         response: HttpServletResponse,
         @AuthenticationPrincipal userId: UUID,
-        @RequestParam(required = false) type: UserTransactionType?,
+        @RequestParam(required = false) types: List<UserTransactionType> = emptyList(),
         @RequestParam(required = false) status: Transaction.Status?,
         @RequestParam(required = false) startDate: LocalDate?,
         @RequestParam(required = false) endDate: LocalDate?,
@@ -82,7 +82,7 @@ class TransactionController(
             userId = userId,
             startDate = startDate,
             endDate = endDate,
-            type = type,
+            types = types,
             status = status,
             response = response
         )

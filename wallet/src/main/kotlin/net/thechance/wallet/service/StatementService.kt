@@ -1,5 +1,6 @@
 package net.thechance.wallet.service
 
+import com.itextpdf.html2pdf.ConverterProperties
 import com.itextpdf.html2pdf.HtmlConverter
 import com.itextpdf.kernel.pdf.PdfDocument
 import com.itextpdf.kernel.pdf.PdfWriter
@@ -33,7 +34,7 @@ class StatementService(
         userId: UUID,
         startDate: LocalDate?,
         endDate: LocalDate?,
-        type: UserTransactionType?,
+        types: List<UserTransactionType>,
         status: Transaction.Status?,
         response: HttpServletResponse
     ) {
@@ -51,7 +52,7 @@ class StatementService(
 
         val transactions = transactionRepository.findFilteredTransactions(
             status = status,
-            transactionType = type?.name,
+            transactionTypes = types.map { it.name },
             startDate = startDateTime,
             endDate = endDateTime,
             pageable = Pageable.unpaged(),
@@ -65,7 +66,7 @@ class StatementService(
         }
         val username = getUsername(transactions, userId)
 
-        val openingBalance = getOpeningBalance(userId, status, type, earliestTransactionDate, startDateTime)
+        val openingBalance = getOpeningBalance(userId, status, types, earliestTransactionDate, startDateTime)
 
         val closingBalance = getClosingBalance(openingBalance, transactions, userId)
 
@@ -92,16 +93,16 @@ class StatementService(
         val writer = PdfWriter(response.outputStream)
         val pdf = PdfDocument(writer)
 
-        val converterProperties = com.itextpdf.html2pdf.ConverterProperties()
+        val converterProperties = ConverterProperties()
 
         val fontProvider = FontProvider()
         listOf(
-            "fonts/MadimiOne-Regular.ttf",
-            "fonts/Poppins-Regular.ttf",
-            "fonts/Poppins-Medium.ttf",
-            "fonts/Poppins-SemiBold.ttf"
+            "MadimiOne-Regular.ttf",
+            "Poppins-Regular.ttf",
+            "Poppins-Medium.ttf",
+            "Poppins-SemiBold.ttf"
         ).forEach { fontPath ->
-            val resource = resourceLoader.getResource("classpath:$fontPath")
+            val resource = resourceLoader.getResource("classpath:fonts/$fontPath")
             if (resource.exists()) {
                 resource.inputStream.use { inputStream ->
                     fontProvider.addFont(inputStream.readAllBytes())
@@ -131,7 +132,7 @@ class StatementService(
     private fun getOpeningBalance(
         userId: UUID,
         status: Transaction.Status?,
-        type: UserTransactionType?,
+        types: List<UserTransactionType>,
         earliestTransactionDate: LocalDateTime,
         startDate: LocalDateTime
     ): Double {
@@ -139,7 +140,7 @@ class StatementService(
         return transactionRepository.findFilteredTransactions(
             currentUserId = userId,
             status = status,
-            transactionType = type?.name,
+            transactionTypes = types.map { it.name },
             startDate = earliestTransactionDate,
             endDate = startDate,
             pageable = Pageable.unpaged()
@@ -203,10 +204,12 @@ class StatementService(
 
     fun getAppIconSvg(): String {
         return try {
-            val resource = resourceLoader.getResource("classpath:static/mena_logo.svg")
-            resource.inputStream.use { inputStream ->
-                inputStream.readBytes().toString(StandardCharsets.UTF_8)
-            }.replace("""<\?xml.*?\?>""".toRegex(), "").trim()
+            resourceLoader.getResource("classpath:static/mena_logo.svg").inputStream.use { inputStream ->
+                inputStream.reader(Charsets.UTF_8)
+                    .readText()
+                    .replace("""<\?xml.*?\?>""".toRegex(), "")
+                    .trim()
+            }
         } catch (_: Exception) {
             ""
         }
