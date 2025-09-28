@@ -29,7 +29,7 @@ class IpRateLimitingFilter(
             if (!rateLimitManagerService.isRequestAllowed(clientIp, requestUri)) {
                 response.status = HttpStatus.TOO_MANY_REQUESTS.value()
                 response.contentType = "text/plain"
-                response.writer.write("Too many requests from this IP for '$requestUri'. Please try again later.")
+                response.writer.write("Too many requests from this IP. Please try again later.")
                 return
             }
         }

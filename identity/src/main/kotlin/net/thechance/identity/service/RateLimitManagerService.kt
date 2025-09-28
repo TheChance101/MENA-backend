@@ -49,11 +49,6 @@ class RateLimitManagerService(
         val longTermEndpointCache = getOrCreateLongTermCache(requestPath, config)
 
         val currentShortTermAttempts = shortTermEndpointCache.get(ip) { AtomicLong(0) }!!.incrementAndGet()
-
-        if (currentShortTermAttempts > config.shortTermLimit) {
-            return false
-        }
-
         val currentLongTermAttempts = longTermEndpointCache.get(ip) { AtomicLong(0) }!!.incrementAndGet()
 
         if (currentLongTermAttempts > config.longTermLimit) {
@@ -63,6 +58,11 @@ class RateLimitManagerService(
             }
             return false
         }
+
+        if (currentShortTermAttempts > config.shortTermLimit) {
+            return false
+        }
+
         return true
     }
 }
