@@ -44,4 +44,5 @@ interface TransactionRepository : JpaRepository<Transaction, UUID> {
         senderId: UUID,
         receiverId: UUID
     ): Transaction?
+
 }

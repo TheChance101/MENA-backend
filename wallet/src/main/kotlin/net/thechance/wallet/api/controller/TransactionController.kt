@@ -1,10 +1,12 @@
 package net.thechance.wallet.api.controller
 
+import jakarta.servlet.http.HttpServletResponse
 import net.thechance.wallet.api.dto.transaction.FirstTransactionDateResponse
 import net.thechance.wallet.api.dto.transaction.TransactionPageResponse
 import net.thechance.wallet.api.dto.transaction.UserTransactionType
 import net.thechance.wallet.api.dto.transaction.toResponse
 import net.thechance.wallet.entity.Transaction
+import net.thechance.wallet.service.StatementService
 import net.thechance.wallet.service.TransactionService
 import net.thechance.wallet.service.helper.TransactionFilterParams
 import org.springframework.data.domain.Pageable
@@ -21,7 +23,8 @@ import java.util.*
 @RestController
 @RequestMapping("/wallet/transactions")
 class TransactionController(
-    private val transactionService: TransactionService
+    private val transactionService: TransactionService,
+    private val statementService: StatementService
 ) {
     @GetMapping
     fun getFilteredTransactions(
@@ -64,6 +67,25 @@ class TransactionController(
 
         val date = transactionService.getUserFirstTransactionDate(currentUserId = userId)?.toLocalDate()
         return ResponseEntity.ok(FirstTransactionDateResponse(firstTransactionDate = date))
+    }
+
+    @GetMapping("/statement")
+    fun generateStatement(
+        response: HttpServletResponse,
+        @AuthenticationPrincipal userId: UUID,
+        @RequestParam(required = false) type: UserTransactionType?,
+        @RequestParam(required = false) status: Transaction.Status?,
+        @RequestParam(required = true) startDate: LocalDate,
+        @RequestParam(required = true) endDate: LocalDate,
+    ) {
+        statementService.generateStatementPdf(
+            userId = userId,
+            startDate = startDate,
+            endDate = endDate,
+            type = type,
+            status = status,
+            response = response
+        )
     }
 }
 
