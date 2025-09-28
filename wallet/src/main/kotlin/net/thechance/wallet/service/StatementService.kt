@@ -27,18 +27,28 @@ class StatementService(
 
     fun generateStatementPdf(
         userId: UUID,
-        startDate: LocalDate,
-        endDate: LocalDate,
+        startDate: LocalDate?,
+        endDate: LocalDate?,
         type: UserTransactionType?,
         status: Transaction.Status?,
         response: HttpServletResponse
     ) {
+        val startDateTime =
+            startDate?.atStartOfDay()
+                ?: transactionRepository.findFirstBySender_UserIdOrReceiver_UserIdOrderByCreatedAtAsc(
+                    userId,
+                    userId
+                )?.createdAt
+                ?: LocalDateTime.now()
+
+        val endDateTime = endDate?.atTime(23, 59, 59, 59) ?: LocalDateTime.now()
+
         try {
             val transactions = transactionRepository.findFilteredTransactions(
                 status = status,
                 transactionType = type?.name,
-                startDate = startDate.atStartOfDay(),
-                endDate = endDate.atTime(23, 59, 59, 59),
+                startDate = startDateTime,
+                endDate = endDateTime,
                 pageable = Pageable.unpaged(),
                 currentUserId = userId
             )
@@ -50,21 +60,21 @@ class StatementService(
             }
             val username = getUsername(transactions, userId)
 
-            val openingBalance = getOpeningBalance(userId, status, type, startDate)
+            val openingBalance = getOpeningBalance(userId, status, type, startDateTime)
 
             val closingBalance = getClosingBalance(openingBalance, transactions, userId)
 
             val templateData = mutableMapOf<String?, Any?>(
                 "userName" to username,
-                "fromFormatted" to startDate.formatHeaderDate(),
-                "toFormatted" to endDate.formatHeaderDate(),
+                "fromFormatted" to startDateTime.formatHeaderDate(),
+                "toFormatted" to endDateTime.formatHeaderDate(),
                 "openingBalance" to String.format("%.2f", openingBalance),
                 "closingBalance" to String.format("%.2f", closingBalance),
                 "logoSvgInline" to getAppIconSvg(),
                 "transactions" to transactions.map { mapTransactionForTemplate(userId, it) }
             )
 
-            setResponseHeaders(response, startDate, endDate)
+            setResponseHeaders(response, startDateTime, endDateTime)
 
             generatePdfFile(templateData, response)
         } catch (e: Exception) {
@@ -116,13 +126,13 @@ class StatementService(
         userId: UUID,
         status: Transaction.Status?,
         type: UserTransactionType?,
-        startDate: LocalDate
+        startDate: LocalDateTime
     ): Double = transactionRepository.findFilteredTransactions(
         currentUserId = userId,
         status = status,
         transactionType = type?.name,
         startDate = null,
-        endDate = startDate.atStartOfDay(),
+        endDate = startDate,
         pageable = Pageable.unpaged()
     ).sumOf { if (userId == it.sender.userId) it.amount.unaryMinus() else it.amount }.toDouble()
 
@@ -183,15 +193,15 @@ class StatementService(
             .trim()
     }
 
-    private fun setResponseHeaders(response: HttpServletResponse, from: LocalDate, to: LocalDate) {
+    private fun setResponseHeaders(response: HttpServletResponse, from: LocalDateTime, to: LocalDateTime) {
         response.contentType = "application/pdf"
         response.setHeader(
             "Content-Disposition",
-            "attachment; filename=\"statement_${from}_to_${to}.pdf\""
+            "attachment; filename=\"statement_${from.formatHeaderDate()}_to_${to.formatHeaderDate()}.pdf\""
         )
     }
 
-    private fun LocalDate.formatHeaderDate(): String = this.format(DateTimeFormatter.ofPattern("dd MMM yyyy"))
+    private fun LocalDateTime.formatHeaderDate(): String = this.format(DateTimeFormatter.ofPattern("dd MMM yyyy"))
     private fun LocalDateTime.formatRowItemDate(): String = this.format(DateTimeFormatter.ofPattern("yyyy/MM/dd"))
     private fun LocalDateTime.formatRowItemTime(): String = this.format(DateTimeFormatter.ofPattern("HH:mm a"))
 }

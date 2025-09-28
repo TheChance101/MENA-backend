@@ -75,8 +75,8 @@ class TransactionController(
         @AuthenticationPrincipal userId: UUID,
         @RequestParam(required = false) type: UserTransactionType?,
         @RequestParam(required = false) status: Transaction.Status?,
-        @RequestParam(required = true) startDate: LocalDate,
-        @RequestParam(required = true) endDate: LocalDate,
+        @RequestParam(required = false) startDate: LocalDate?,
+        @RequestParam(required = false) endDate: LocalDate?,
     ) {
         statementService.generateStatementPdf(
             userId = userId,
