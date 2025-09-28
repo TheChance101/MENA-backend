@@ -8,6 +8,7 @@ import jakarta.servlet.http.HttpServletResponse
 import net.thechance.wallet.api.dto.transaction.UserTransactionType
 import net.thechance.wallet.entity.Transaction
 import net.thechance.wallet.repository.TransactionRepository
+import org.springframework.core.io.ResourceLoader
 import org.springframework.data.domain.Page
 import org.springframework.data.domain.Pageable
 import org.springframework.stereotype.Service
@@ -15,6 +16,7 @@ import org.springframework.util.ResourceUtils
 import org.thymeleaf.TemplateEngine
 import org.thymeleaf.context.Context
 import java.math.BigDecimal
+import java.nio.charset.StandardCharsets
 import java.time.LocalDate
 import java.time.LocalDateTime
 import java.time.format.DateTimeFormatter
@@ -23,7 +25,8 @@ import java.util.*
 @Service
 class StatementService(
     private val transactionRepository: TransactionRepository,
-    private val templateEngine: TemplateEngine
+    private val templateEngine: TemplateEngine,
+    private val resourceLoader: ResourceLoader
 ) {
 
     fun generateStatementPdf(
@@ -98,8 +101,11 @@ class StatementService(
             "fonts/Poppins-Medium.ttf",
             "fonts/Poppins-SemiBold.ttf"
         ).forEach { fontPath ->
-            javaClass.classLoader.getResource(fontPath)?.path?.let { resourcePath ->
-                fontProvider.addFont(resourcePath)
+            val resource = resourceLoader.getResource("classpath:$fontPath")
+            if (resource.exists()) {
+                resource.inputStream.use { inputStream ->
+                    fontProvider.addFont(inputStream.readAllBytes())
+                }
             }
         }
 
@@ -197,12 +203,10 @@ class StatementService(
 
     fun getAppIconSvg(): String {
         return try {
-            val resource = ResourceUtils.getFile("classpath:static/mena_logo.svg")
-            val svgContent = resource.readText(Charsets.UTF_8)
-
-            svgContent
-                .replace("""<\?xml.*?\?>""".toRegex(), "")
-                .trim()
+            val resource = resourceLoader.getResource("classpath:static/mena_logo.svg")
+            resource.inputStream.use { inputStream ->
+                inputStream.readBytes().toString(StandardCharsets.UTF_8)
+            }.replace("""<\?xml.*?\?>""".toRegex(), "").trim()
         } catch (_: Exception) {
             ""
         }
