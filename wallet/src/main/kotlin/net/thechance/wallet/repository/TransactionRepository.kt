@@ -35,7 +35,7 @@ interface TransactionRepository : JpaRepository<Transaction, UUID> {
     fun findFilteredTransactions(
         @Param("currentUserId") currentUserId: UUID,
         @Param("status") status: Transaction.Status?,
-        @Param("transactionType") transactionTypes: List<String>?,
+        @Param("transactionTypes") transactionTypes: List<String>?,
         @Param("startDate") startDate: LocalDateTime?,
         @Param("endDate") endDate: LocalDateTime?,
         pageable: Pageable
