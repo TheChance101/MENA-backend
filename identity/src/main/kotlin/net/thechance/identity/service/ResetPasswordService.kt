@@ -47,7 +47,7 @@ class ResetPasswordService(
         val parsedSessionId = UUID.fromString(sessionId)
         val otpLog = otpLogRepository.findByPhoneNumberAndOtpAndSessionId(phoneNumber, otp, parsedSessionId)
             ?: throw InvalidOtpException()
-        if (otpLog.isVerified) throw OtpAlreadyVerifiedException()
+        if (otpLog.isVerified) throw InvalidOtpException()
         if (otpLog.expireAt.isBefore(Instant.now())) throw OtpExpiredException()
         otpLogRepository.verifyOtp(phoneNumber, parsedSessionId)
         return VerifyOtpResponse("OTP verified successfully")

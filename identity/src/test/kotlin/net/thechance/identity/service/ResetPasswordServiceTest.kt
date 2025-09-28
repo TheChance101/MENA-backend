@@ -112,9 +112,9 @@ class ResetPasswordServiceTest {
     }
 
     @Test
-    fun `verifyOtp should throw OtpAlreadyVerifiedException when otp is already verified`() {
+    fun `verifyOtp should throw InvalidOtpException when otp is already verified`() {
         every { otpLogRepository.findByPhoneNumberAndOtpAndSessionId(any(), any(), any()) } returns verifiedOtpLog
-        assertThrows(OtpAlreadyVerifiedException::class.java) {
+        assertThrows(InvalidOtpException::class.java) {
             resetPasswordService.verifyOtp(PHONE_NUMBER, OTP, SESSION_ID)
         }
     }
