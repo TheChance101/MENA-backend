@@ -17,23 +17,37 @@ class TrendsGlobalExceptionHandler {
 
 
     @ExceptionHandler(TrendUserNotFoundException::class)
-    fun handleReelNotFoundException(exception: TrendUserNotFoundException): ResponseEntity<String> {
+    fun handleTrendUserNotFoundException(exception: TrendUserNotFoundException): ResponseEntity<String> {
         val message = exception.localizedMessage
 
         return ResponseEntity.status(HttpStatus.NOT_FOUND).body(message)
     }
 
     @ExceptionHandler(TrendCategoryNotFoundException::class)
-    fun handleReelNotFoundException(exception: TrendCategoryNotFoundException): ResponseEntity<String> {
+    fun handleTrendCategoryNotFoundException(exception: TrendCategoryNotFoundException): ResponseEntity<String> {
         val message = exception.localizedMessage
 
         return ResponseEntity.status(HttpStatus.NOT_FOUND).body(message)
     }
 
     @ExceptionHandler(InvalidTrendInputException::class)
-    fun handleReelNotFoundException(exception: InvalidTrendInputException): ResponseEntity<String> {
+    fun handleInvalidTrendInputException(exception: InvalidTrendInputException): ResponseEntity<String> {
         val message = exception.localizedMessage
 
         return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(message)
+    }
+
+    @ExceptionHandler(InvalidTrendInputException::class)
+    fun handleInvalidVideoException(exception: InvalidVideoException): ResponseEntity<String> {
+        val message = exception.localizedMessage
+
+        return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(message)
+    }
+
+    @ExceptionHandler(InvalidTrendInputException::class)
+    fun handleVideoUploadFailedException(exception: VideoUploadFailedException): ResponseEntity<String> {
+        val message = exception.localizedMessage
+
+        return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(message)
     }
 }
