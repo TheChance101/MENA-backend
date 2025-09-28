@@ -2,10 +2,15 @@ package net.thechance.dukan.service
 
 import jakarta.transaction.Transactional
 import net.thechance.dukan.exception.dukan_product.ProductNotFoundException
+import net.thechance.dukan.entity.DukanProduct
 import net.thechance.dukan.repository.DukanProductRepository
+import org.springframework.data.domain.Page
+import org.springframework.data.domain.Pageable
 import org.springframework.stereotype.Service
 import org.springframework.web.multipart.MultipartFile
 import java.util.UUID
+import java.util.*
+
 
 @Service
 class DukanProductService(
@@ -29,6 +34,10 @@ class DukanProductService(
         }
         dukanProductRepository.save(product.copy(imageUrls = imageUrls))
         return imageUrls
+    }
+
+    fun getProductsByShelf(shelfId: UUID, pageable: Pageable): Page<DukanProduct> {
+        return dukanProductRepository.findAllByShelfId(shelfId, pageable)
     }
 
     companion object {

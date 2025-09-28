@@ -1,12 +1,15 @@
 package net.thechance.dukan.service
 
+re/DKN-50-Create-endpoint-that-returns-the-product-from-a-certain-shelf
+import net.thechance.dukan.entity.DukanProduct
 import net.thechance.dukan.entity.DukanShelf
-import net.thechance.dukan.exception.DukanNotFoundException
 import net.thechance.dukan.exception.ShelfDeletionNotAllowedException
 import net.thechance.dukan.exception.ShelfNameAlreadyTakenException
 import net.thechance.dukan.exception.ShelfNotFoundException
 import net.thechance.dukan.repository.DukanProductRepository
 import net.thechance.dukan.repository.DukanShelfRepository
+import org.springframework.data.domain.Page
+import org.springframework.data.domain.Pageable
 import org.springframework.stereotype.Service
 import java.util.UUID
 
@@ -37,8 +40,7 @@ class DukanShelfService(
         val shelf = dukanShelfRepository.findByIdAndDukanId(shelfId, dukan.id)
             ?: throw ShelfNotFoundException()
 
-        val products = dukanProductRepository.findAllByShelfId(shelf.id)
-        if (products.isNotEmpty()) {
+        if (dukanProductRepository.existsByShelfId(shelfId)) {
             throw ShelfDeletionNotAllowedException()
         }
 
