@@ -1,12 +1,15 @@
 package net.thechance.chat.api.controller
 
+import net.thechance.chat.api.dto.toResponse
 import net.thechance.chat.service.ChatService
 import net.thechance.chat.service.model.ChatModel
 import net.thechance.chat.service.model.MessageModel
+import org.springframework.http.ResponseEntity
 import org.springframework.messaging.handler.annotation.MessageMapping
 import org.springframework.messaging.handler.annotation.Payload
 import org.springframework.messaging.handler.annotation.SendTo
 import org.springframework.messaging.simp.SimpMessagingTemplate
+import org.springframework.security.core.annotation.AuthenticationPrincipal
 import org.springframework.stereotype.Controller
 import org.springframework.web.bind.annotation.GetMapping
 import org.springframework.web.bind.annotation.RequestMapping
@@ -48,10 +51,11 @@ class ChatController(
     @GetMapping
     @ResponseBody
     fun getOrCreateConversation(
-        @RequestParam requesterId: UUID,
-        @RequestParam otherUserId: UUID
-    ): ChatModel {
-        return chatService.getOrCreateConversationByParticipants(requesterId, otherUserId)
+        @AuthenticationPrincipal userId: UUID,
+        @RequestParam receiverId: UUID
+    ): ChatModel? {
+        return chatService.getOrCreateConversationByParticipants(userId, receiverId)
+
     }
 
 }

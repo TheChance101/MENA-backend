@@ -53,21 +53,21 @@ class ChatService(
     }*/
 
     @Transactional
-    fun getOrCreateConversationByParticipants(requesterId: UUID, otherUserId: UUID): ChatModel {
-        val userIds = setOf(requesterId, otherUserId)
+    fun getOrCreateConversationByParticipants(userId: UUID, receiverId: UUID): ChatModel {
+        val userIds = setOf(userId, receiverId)
 
         val existingChat = chatRepository.findPrivateChatBetweenUsers(userIds, userIds.size.toLong())
         if (existingChat != null) {
-            return existingChat.toModel(requesterId)
+            return existingChat.toModel(userId)
         }
 
-        val requester = contactUserRepository.findById(requesterId)
+        val requester = contactUserRepository.findById(userId)
             .orElseThrow { IllegalArgumentException("Requester not found") }
-        val otherUser = contactUserRepository.findById(otherUserId)
+        val otherUser = contactUserRepository.findById(receiverId)
             .orElseThrow { IllegalArgumentException("Other user not found") }
 
         val newChat = chatRepository.save(Chat(users = mutableSetOf(requester, otherUser)))
-        return newChat.toModel(requesterId)
+        return newChat.toModel(userId)
     }
 
 
