@@ -38,11 +38,7 @@ class DukanShelfService(
         val shelf = dukanShelfRepository.findByIdAndDukanId(shelfId, dukan.id)
             ?: throw ShelfNotFoundException()
 
-        val products: Page<DukanProduct> = dukanProductRepository.findAllByShelfId(
-            shelf.id,
-            Pageable.ofSize(1)
-        )
-        if (products.hasContent()) {
+        if (dukanProductRepository.existsByShelfId(shelfId)) {
             throw ShelfDeletionNotAllowedException()
         }
 

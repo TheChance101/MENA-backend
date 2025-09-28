@@ -11,4 +11,5 @@ import java.util.*
 interface DukanProductRepository : JpaRepository<DukanProduct, UUID> {
     fun findAllByDukanId(dukanId: UUID): List<DukanProduct>
     fun findAllByShelfId(shelfId: UUID, pageable: Pageable): Page<DukanProduct>
+    fun existsByShelfId(shelfId: UUID): Boolean
 }
