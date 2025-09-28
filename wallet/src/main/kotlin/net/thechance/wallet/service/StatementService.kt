@@ -14,6 +14,7 @@ import org.springframework.stereotype.Service
 import org.springframework.util.ResourceUtils
 import org.thymeleaf.TemplateEngine
 import org.thymeleaf.context.Context
+import java.math.BigDecimal
 import java.time.LocalDate
 import java.time.LocalDateTime
 import java.time.format.DateTimeFormatter
@@ -33,13 +34,13 @@ class StatementService(
         status: Transaction.Status?,
         response: HttpServletResponse
     ) {
+        val earliestTransactionDate = transactionRepository.findFirstBySender_UserIdOrReceiver_UserIdOrderByCreatedAtAsc(
+            userId,
+            userId
+        )?.createdAt ?: LocalDateTime.now()
         val startDateTime =
             startDate?.atStartOfDay()
-                ?: transactionRepository.findFirstBySender_UserIdOrReceiver_UserIdOrderByCreatedAtAsc(
-                    userId,
-                    userId
-                )?.createdAt
-                ?: LocalDateTime.now()
+                ?: earliestTransactionDate
 
         val endDateTime = endDate?.atTime(23, 59, 59, 59) ?: LocalDateTime.now()
 
@@ -52,6 +53,7 @@ class StatementService(
                 pageable = Pageable.unpaged(),
                 currentUserId = userId
             )
+            val transactionsCount = transactions.totalElements
 
             if (transactions.isEmpty) {
                 response.status = HttpServletResponse.SC_NO_CONTENT
@@ -60,7 +62,7 @@ class StatementService(
             }
             val username = getUsername(transactions, userId)
 
-            val openingBalance = getOpeningBalance(userId, status, type, startDateTime)
+            val openingBalance = getOpeningBalance(userId, status, type, earliestTransactionDate, startDateTime)
 
             val closingBalance = getClosingBalance(openingBalance, transactions, userId)
 
@@ -126,23 +128,32 @@ class StatementService(
         userId: UUID,
         status: Transaction.Status?,
         type: UserTransactionType?,
+        earliestTransactionDate: LocalDateTime,
         startDate: LocalDateTime
-    ): Double = transactionRepository.findFilteredTransactions(
-        currentUserId = userId,
-        status = status,
-        transactionType = type?.name,
-        startDate = null,
-        endDate = startDate,
-        pageable = Pageable.unpaged()
-    ).sumOf { if (userId == it.sender.userId) it.amount.unaryMinus() else it.amount }.toDouble()
+    ): Double {
+        if(earliestTransactionDate == startDate) return 0.0
+
+        val transactions = transactionRepository.findFilteredTransactions(
+            currentUserId = userId,
+            status = status,
+            transactionType = type?.name,
+            startDate = earliestTransactionDate,
+            endDate = startDate,
+            pageable = Pageable.unpaged()
+        )
+        val transactionsCount = transactions.totalElements
+        val openingBalance = transactions.sumOf { if (userId == it.sender.userId) it.amount.unaryMinus() else it.amount }.toDouble()
+        return openingBalance
+    }
 
     private fun getClosingBalance(
         openingBalance: Double,
         transactions: Page<Transaction>,
         userId: UUID
-    ): Double =
-        openingBalance + transactions.sumOf { if (userId == it.sender.userId) it.amount.unaryMinus() else it.amount }
+    ): Double {
+        return openingBalance + transactions.sumOf { if (userId == it.sender.userId) it.amount.unaryMinus() else it.amount }
             .toDouble()
+    }
 
     private fun mapTransactionForTemplate(currentUserId: UUID, transaction: Transaction): Map<String, Any> {
         return mapOf(
@@ -152,37 +163,43 @@ class StatementService(
             "typeHeader" to getTypeHeader(transaction, currentUserId),
             "counterParty" to getCounterParty(transaction, currentUserId),
             "amount" to getFormattedAmount(currentUserId, transaction),
-            "amountValue" to transaction.amount
+            "amountValue" to getAmountValue(currentUserId, transaction)
         )
     }
 
-    private fun getTypeHeader(transaction: Transaction, currentUserId: UUID): String = when {
-        transaction.type == Transaction.Type.P2P && currentUserId == transaction.receiver.userId -> "Received from"
-        transaction.type == Transaction.Type.P2P -> "Sent to"
-        transaction.type == Transaction.Type.ONLINE_PURCHASE -> "Purchase from"
-        else -> ""
+    private fun getTypeHeader(transaction: Transaction, currentUserId: UUID): String {
+        return when {
+            transaction.type == Transaction.Type.P2P && currentUserId == transaction.receiver.userId -> "Received from"
+            transaction.type == Transaction.Type.P2P -> "Sent to"
+            transaction.type == Transaction.Type.ONLINE_PURCHASE -> "Purchase from"
+            else -> ""
+        }
     }
 
-    private fun getCounterParty(transaction: Transaction, currentUserId: UUID): String = when {
-        transaction.type == Transaction.Type.P2P && currentUserId == transaction.receiver.userId -> transaction.sender.userName
-        transaction.type == Transaction.Type.P2P -> transaction.receiver.userName
-        transaction.type == Transaction.Type.ONLINE_PURCHASE -> transaction.receiver.dukanName ?: ""
-        else -> ""
+    private fun getCounterParty(transaction: Transaction, currentUserId: UUID): String {
+        return when {
+            transaction.type == Transaction.Type.P2P && currentUserId == transaction.receiver.userId -> transaction.sender.userName
+            transaction.type == Transaction.Type.P2P -> transaction.receiver.userName
+            transaction.type == Transaction.Type.ONLINE_PURCHASE -> transaction.receiver.dukanName ?: ""
+            else -> ""
+        }
     }
 
-    private fun getFormattedAmount(currentUserId: UUID, transaction: Transaction): String =
-        if (currentUserId == transaction.sender.userId) {
+    private fun getFormattedAmount(currentUserId: UUID, transaction: Transaction): String {
+        return if (currentUserId == transaction.sender.userId) {
             "-${String.format("%.2f", transaction.amount)}"
         } else {
             "+${String.format("%.2f", transaction.amount)}"
         }
+    }
 
-    private fun getAmountValue(currentUserId: UUID, transaction: Transaction): String =
-        if (currentUserId == transaction.sender.userId) {
-            "-${String.format("%.2f", transaction.amount)}"
+    private fun getAmountValue(currentUserId: UUID, transaction: Transaction): BigDecimal {
+        return if (currentUserId == transaction.sender.userId) {
+            transaction.amount.unaryMinus()
         } else {
-            "+${String.format("%.2f", transaction.amount)}"
+            transaction.amount
         }
+    }
 
     fun getAppIconSvg(): String {
         return try {
