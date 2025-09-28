@@ -34,55 +34,51 @@ class StatementService(
         status: Transaction.Status?,
         response: HttpServletResponse
     ) {
-        val earliestTransactionDate = transactionRepository.findFirstBySender_UserIdOrReceiver_UserIdOrderByCreatedAtAsc(
-            userId,
-            userId
-        )?.createdAt ?: LocalDateTime.now()
+        val earliestTransactionDate =
+            transactionRepository.findFirstBySender_UserIdOrReceiver_UserIdOrderByCreatedAtAsc(
+                userId,
+                userId
+            )?.createdAt ?: LocalDateTime.now()
+
         val startDateTime =
             startDate?.atStartOfDay()
                 ?: earliestTransactionDate
 
         val endDateTime = endDate?.atTime(23, 59, 59, 59) ?: LocalDateTime.now()
 
-        try {
-            val transactions = transactionRepository.findFilteredTransactions(
-                status = status,
-                transactionType = type?.name,
-                startDate = startDateTime,
-                endDate = endDateTime,
-                pageable = Pageable.unpaged(),
-                currentUserId = userId
-            )
-            val transactionsCount = transactions.totalElements
+        val transactions = transactionRepository.findFilteredTransactions(
+            status = status,
+            transactionType = type?.name,
+            startDate = startDateTime,
+            endDate = endDateTime,
+            pageable = Pageable.unpaged(),
+            currentUserId = userId
+        )
 
-            if (transactions.isEmpty) {
-                response.status = HttpServletResponse.SC_NO_CONTENT
-                response.writer.write("No transactions found for the specified filters")
-                return
-            }
-            val username = getUsername(transactions, userId)
-
-            val openingBalance = getOpeningBalance(userId, status, type, earliestTransactionDate, startDateTime)
-
-            val closingBalance = getClosingBalance(openingBalance, transactions, userId)
-
-            val templateData = mutableMapOf<String?, Any?>(
-                "userName" to username,
-                "fromFormatted" to startDateTime.formatHeaderDate(),
-                "toFormatted" to endDateTime.formatHeaderDate(),
-                "openingBalance" to String.format("%.2f", openingBalance),
-                "closingBalance" to String.format("%.2f", closingBalance),
-                "logoSvgInline" to getAppIconSvg(),
-                "transactions" to transactions.map { mapTransactionForTemplate(userId, it) }
-            )
-
-            setResponseHeaders(response, startDateTime, endDateTime)
-
-            generatePdfFile(templateData, response)
-        } catch (e: Exception) {
-            response.status = HttpServletResponse.SC_INTERNAL_SERVER_ERROR
-            response.writer.write("Error generating PDF: ${e.message}")
+        if (transactions.isEmpty) {
+            response.status = HttpServletResponse.SC_NO_CONTENT
+            response.writer.write("No transactions found for the specified filters")
+            return
         }
+        val username = getUsername(transactions, userId)
+
+        val openingBalance = getOpeningBalance(userId, status, type, earliestTransactionDate, startDateTime)
+
+        val closingBalance = getClosingBalance(openingBalance, transactions, userId)
+
+        val templateData = mutableMapOf<String?, Any?>(
+            "userName" to username,
+            "fromFormatted" to startDateTime.formatHeaderDate(),
+            "toFormatted" to endDateTime.formatHeaderDate(),
+            "openingBalance" to String.format("%.2f", openingBalance),
+            "closingBalance" to String.format("%.2f", closingBalance),
+            "logoSvgInline" to getAppIconSvg(),
+            "transactions" to transactions.map { mapTransactionForTemplate(userId, it) }
+        )
+
+        setResponseHeaders(response, startDateTime, endDateTime)
+
+        generatePdfFile(templateData, response)
     }
 
     private fun generatePdfFile(data: Map<String?, Any?>?, response: HttpServletResponse) {
@@ -118,11 +114,13 @@ class StatementService(
     private fun getUsername(
         transactions: Page<Transaction>,
         userId: UUID
-    ): String = transactions
-        .first { it.sender.userId == userId || it.receiver.userId == userId }
-        .let {
-            if (it.sender.userId == userId) it.sender.userName else it.receiver.userName
-        }
+    ): String {
+        return transactions
+            .first { it.sender.userId == userId || it.receiver.userId == userId }
+            .let {
+                if (it.sender.userId == userId) it.sender.userName else it.receiver.userName
+            }
+    }
 
     private fun getOpeningBalance(
         userId: UUID,
@@ -131,19 +129,15 @@ class StatementService(
         earliestTransactionDate: LocalDateTime,
         startDate: LocalDateTime
     ): Double {
-        if(earliestTransactionDate == startDate) return 0.0
-
-        val transactions = transactionRepository.findFilteredTransactions(
+        if (earliestTransactionDate.isEqual(startDate)) return 0.0
+        return transactionRepository.findFilteredTransactions(
             currentUserId = userId,
             status = status,
             transactionType = type?.name,
             startDate = earliestTransactionDate,
             endDate = startDate,
             pageable = Pageable.unpaged()
-        )
-        val transactionsCount = transactions.totalElements
-        val openingBalance = transactions.sumOf { if (userId == it.sender.userId) it.amount.unaryMinus() else it.amount }.toDouble()
-        return openingBalance
+        ).sumOf { if (userId == it.sender.userId) it.amount.unaryMinus() else it.amount }.toDouble()
     }
 
     private fun getClosingBalance(
