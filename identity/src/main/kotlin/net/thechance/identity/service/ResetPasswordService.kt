@@ -3,10 +3,7 @@ package net.thechance.identity.service
 import net.thechance.identity.api.dto.RequestOtpResponse
 import net.thechance.identity.api.dto.VerifyOtpResponse
 import net.thechance.identity.entity.OtpLog
-import net.thechance.identity.exception.FrequentOtpRequestException
-import net.thechance.identity.exception.InvalidOtpException
-import net.thechance.identity.exception.OtpExpiredException
-import net.thechance.identity.exception.UserNotFoundException
+import net.thechance.identity.exception.*
 import net.thechance.identity.repository.OtpLogRepository
 import net.thechance.identity.repository.UserRepository
 import net.thechance.identity.service.otpGenerator.OtpGeneratorService
@@ -50,6 +47,7 @@ class ResetPasswordService(
         val parsedSessionId = UUID.fromString(sessionId)
         val otpLog = otpLogRepository.findByPhoneNumberAndOtpAndSessionId(phoneNumber, otp, parsedSessionId)
             ?: throw InvalidOtpException()
+        if (otpLog.isVerified) throw OtpAlreadyVerifiedException()
         if (otpLog.expireAt.isBefore(Instant.now())) throw OtpExpiredException()
         otpLogRepository.verifyOtp(phoneNumber, parsedSessionId)
         return VerifyOtpResponse("OTP verified successfully")

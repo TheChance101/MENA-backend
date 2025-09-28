@@ -86,4 +86,12 @@ class IdentityControllerAdvice {
             .status(HttpStatus.BAD_REQUEST)
             .body(ErrorResponse("OTP is expired"))
     }
+
+    @ExceptionHandler(OtpAlreadyVerifiedException::class)
+    fun handleOtpAlreadyVerifiedException(exception: OtpAlreadyVerifiedException): ResponseEntity<ErrorResponse?> {
+        logger.error("OTP is already verified: ${exception.message}", exception)
+        return ResponseEntity
+            .status(HttpStatus.BAD_REQUEST)
+            .body(ErrorResponse("OTP is already verified"))
+    }
 }

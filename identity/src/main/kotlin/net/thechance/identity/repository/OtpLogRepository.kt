@@ -29,9 +29,10 @@ interface OtpLogRepository: JpaRepository<OtpLog, UUID> {
     )
 
     @Modifying
+    @Transactional
     @Query("""
         UPDATE OtpLog o 
-        SET o.isVerified = true 
+        SET o.isVerified = true
         WHERE o.phoneNumber = :phoneNumber
         AND o.sessionId = :sessionId
     """)
