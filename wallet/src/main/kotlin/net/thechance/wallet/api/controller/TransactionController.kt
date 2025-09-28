@@ -1,5 +1,6 @@
 package net.thechance.wallet.api.controller
 
+import net.thechance.wallet.api.dto.transaction.FirstTransactionDateResponse
 import net.thechance.wallet.api.dto.transaction.TransactionPageResponse
 import net.thechance.wallet.api.dto.transaction.UserTransactionType
 import net.thechance.wallet.api.dto.transaction.toResponse
@@ -14,7 +15,6 @@ import org.springframework.web.bind.annotation.RequestMapping
 import org.springframework.web.bind.annotation.RequestParam
 import org.springframework.web.bind.annotation.RestController
 import java.time.LocalDate
-import java.time.LocalDateTime
 import java.util.*
 
 
@@ -60,10 +60,10 @@ class TransactionController(
     @GetMapping("/first")
     fun getUserFirstTransactionDate(
         @AuthenticationPrincipal userId: UUID,
-    ): ResponseEntity<LocalDateTime?> {
+    ): ResponseEntity<FirstTransactionDateResponse> {
 
-        val firstTransactionDate = transactionService.getUserFirstTransactionDate(currentUserId = userId)
-        return ResponseEntity.ok(firstTransactionDate)
+        val date = transactionService.getUserFirstTransactionDate(currentUserId = userId)
+        return ResponseEntity.ok(FirstTransactionDateResponse(firstTransactionDate = date))
     }
 }
 
