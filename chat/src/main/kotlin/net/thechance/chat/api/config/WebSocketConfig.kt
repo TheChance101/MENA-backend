@@ -18,7 +18,7 @@ class WebSocketConfig : WebSocketMessageBrokerConfigurer {
     }
 
     override fun registerStompEndpoints(registry: StompEndpointRegistry) {
-        registry.addEndpoint("/chat-ws")
+        registry.addEndpoint("/ws")
             .setAllowedOriginPatterns("*")
     }
 }
