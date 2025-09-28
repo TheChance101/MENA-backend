@@ -34,19 +34,7 @@ class ChatController(
         )
     }
 
-    @MessageMapping("/chat.sendMessage")
-    @SendTo("/topic/public")
-    fun sendMessage(@Payload chatMessage: MessageModel): MessageModel {
-        chatService.saveMessage(chatMessage)
-        return chatMessage
-    }
 
-    @MessageMapping("/chat.addUser")
-    @SendTo("/topic/public")
-    fun addUser(@Payload chatMessage: MessageModel): MessageModel {
-        chatService.saveMessage(chatMessage)
-        return chatMessage
-    }
 
     @GetMapping
     @ResponseBody
