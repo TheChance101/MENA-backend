@@ -1,9 +1,5 @@
-package net.thechance.trends.api.controller
+package net.thechance.trends.exception
 
-import net.thechance.trends.exception.InvalidTrendInputException
-import net.thechance.trends.exception.ReelNotFoundException
-import net.thechance.trends.exception.TrendCategoryNotFoundException
-import net.thechance.trends.exception.TrendUserNotFoundException
 import org.springframework.http.HttpStatus
 import org.springframework.http.ResponseEntity
 import org.springframework.web.bind.annotation.ExceptionHandler
