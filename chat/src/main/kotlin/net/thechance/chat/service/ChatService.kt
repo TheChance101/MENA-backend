@@ -45,7 +45,8 @@ class ChatService(
                     senderId = message.senderId,
                     chat = chat,
                     text = message.text,
-                    sentAt = message.sendAt
+                    sentAt = message.sendAt,
+                    isRead = false
                 )
             )
         } ?: throw IllegalArgumentException("Chat with id ${message.chatId} not found")
