@@ -12,7 +12,7 @@ import net.thechance.chat.service.model.toModel
 import org.springframework.data.domain.Pageable
 import org.springframework.stereotype.Service
 import org.springframework.transaction.annotation.Transactional
-import java.util.UUID
+import java.util.*
 
 @Service
 class ChatService(
@@ -22,7 +22,7 @@ class ChatService(
 ) {
 
     fun saveMessage(chatMessage: MessageModel): Message {
-        chatRepository.findByIdIs(chatMessage.chatId)?.let { chat ->
+        return chatRepository.findByIdIs(chatMessage.chatId)?.let { chat ->
             Message(
                 id = chatMessage.id,
                 senderId = chatMessage.senderId,
@@ -30,8 +30,7 @@ class ChatService(
                 text = chatMessage.text,
                 sendAt = chatMessage.sendAt
             ).let { message ->
-
-                return messageRepository.save(message)
+                messageRepository.save(message)
             }
         } ?: throw IllegalArgumentException("Chat with id ${chatMessage.chatId} not found")
     }
