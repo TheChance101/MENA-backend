@@ -54,7 +54,7 @@ class ResetPasswordService(
     }
 
     private fun checkPhoneNumberExistence(phoneNumber: String) {
-        userRepository.findByPhoneNumber(phoneNumber) ?: throw UserNotFoundException()
+        userRepository.findByPhoneNumber(phoneNumber) ?: throw UserNotFoundException("User not found")
     }
 
     private fun expireOldActiveOtpByPhoneNumber(phoneNumber: String) {

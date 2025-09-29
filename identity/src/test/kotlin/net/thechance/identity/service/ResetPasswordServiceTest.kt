@@ -150,6 +150,10 @@ class ResetPasswordServiceTest {
         private val user = User(
             phoneNumber = PHONE_NUMBER,
             password = "password",
+            firstName = "",
+            lastName = "",
+            username = "",
+            imageUrl = null,
         )
 
         private val shortTermFrequentOtpLogs = listOf(

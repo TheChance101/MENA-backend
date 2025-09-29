@@ -1,6 +1,7 @@
 package net.thechance.wallet.entity
 
 import jakarta.persistence.*
+import net.thechance.wallet.entity.user.WalletUser
 import java.math.BigDecimal
 import java.time.LocalDateTime
 import java.util.*
@@ -15,11 +16,21 @@ data class Transaction(
     @Column(nullable = false, updatable = false)
     val createdAt: LocalDateTime = LocalDateTime.now(),
 
-    @Column(columnDefinition = "uuid", nullable = false, updatable = false)
-    val senderId: UUID,
+    @Column(nullable = false)
+    @Enumerated(EnumType.STRING)
+    val status: Status,
 
-    @Column(columnDefinition = "uuid", nullable = false, updatable = false)
-    val receiverId: UUID,
+    @Enumerated(EnumType.STRING)
+    @Column(nullable = false)
+    val type: Type,
+
+    @ManyToOne(fetch = FetchType.EAGER)
+    @JoinColumn(name = "sender_id", nullable = false)
+    val sender: WalletUser,
+
+    @ManyToOne(fetch = FetchType.EAGER)
+    @JoinColumn(name = "receiver_id", nullable = false)
+    val receiver: WalletUser,
 
     @Column(columnDefinition = "TEXT", nullable = false, updatable = false)
     val senderSignature: String,
@@ -30,4 +41,15 @@ data class Transaction(
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "block_id", nullable = false, updatable = false)
     val block: Block
-)
+){
+
+    enum class Status{
+        FAILED,
+        SUCCESS
+    }
+
+    enum class Type {
+        P2P,
+        ONLINE_PURCHASE
+    }
+}
