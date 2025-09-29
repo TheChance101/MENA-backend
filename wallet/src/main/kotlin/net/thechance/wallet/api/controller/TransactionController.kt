@@ -78,7 +78,6 @@ class TransactionController(
         response: HttpServletResponse,
         @AuthenticationPrincipal userId: UUID,
         @RequestParam(name = "type", required = false) types: List<UserTransactionType>?,
-        @RequestParam(required = false) status: Transaction.Status?,
         @RequestParam(required = false) startDate: LocalDate?,
         @RequestParam(required = false) endDate: LocalDate?,
     ) {
@@ -87,7 +86,6 @@ class TransactionController(
             startDate = startDate,
             endDate = endDate,
             types = types,
-            status = status
         )
 
         response.contentType = "application/pdf"

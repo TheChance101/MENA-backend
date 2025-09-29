@@ -22,7 +22,6 @@ class StatementService(
         startDate: LocalDate?,
         endDate: LocalDate?,
         types: List<UserTransactionType>?,
-        status: Transaction.Status?
     ): StatementData {
         val startDateTime = startDate?.atStartOfDay()
             ?: transactionRepository.findFirstBySender_UserIdOrReceiver_UserIdOrderByCreatedAtAsc(
@@ -33,7 +32,7 @@ class StatementService(
         val endDateTime = endDate?.atTime(23, 59, 59) ?: LocalDateTime.now()
 
         val firstPage = transactionRepository.findFilteredTransactions(
-            status = status,
+            status = null,
             transactionTypes = types?.map { it.name },
             startDate = startDateTime,
             endDate = endDateTime,
@@ -46,25 +45,19 @@ class StatementService(
         }
 
         val username = getUsername(firstPage, userId)
-        val openingBalance = if (startDate == null) 0.0 else transactionRepository.sumUserTransactions(
-            status = status,
-            transactionTypes = types?.map { it.name },
-            startDate = LocalDate.ofEpochDay(0L).atStartOfDay(),
+        val openingBalance = if (startDate == null) 0.0 else transactionRepository.sumNetUserTransactions(
             endDate = startDateTime,
             currentUserId = userId
         ) ?: 0.0
 
-        val closingBalance = transactionRepository.sumUserTransactions(
-            status = status,
-            transactionTypes = types?.map { it.name },
-            startDate = startDateTime,
+        val closingBalance = transactionRepository.sumNetUserTransactions(
             endDate = endDateTime,
             currentUserId = userId
         ) ?: 0.0
 
         val transactionProvider: (Int) -> List<Transaction> = { pageNum ->
             transactionRepository.findFilteredTransactions(
-                status = status,
+                status = null,
                 transactionTypes = types?.map { it.name },
                 startDate = startDateTime,
                 endDate = endDateTime,
@@ -81,7 +74,6 @@ class StatementService(
             openingBalance = openingBalance,
             closingBalance = closingBalance,
             totalPages = firstPage.totalPages,
-            status = status,
             types = types,
             transactionProvider = transactionProvider
         )

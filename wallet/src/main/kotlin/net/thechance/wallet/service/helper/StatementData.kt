@@ -13,7 +13,6 @@ data class StatementData(
     val openingBalance: Double,
     val closingBalance: Double,
     val totalPages: Int,
-    val status: Transaction.Status?,
     val types: List<UserTransactionType>?,
     val transactionProvider: (pageNum: Int) -> List<Transaction>
 )
