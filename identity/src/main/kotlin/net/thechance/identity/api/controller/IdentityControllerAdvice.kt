@@ -86,4 +86,20 @@ class IdentityControllerAdvice {
             .status(HttpStatus.BAD_REQUEST)
             .body(ErrorResponse("OTP is expired"))
     }
+
+    @ExceptionHandler(PasswordMismatchException::class)
+    fun handlePasswordMismatchException(exception: PasswordMismatchException): ResponseEntity<ErrorResponse?> {
+        logger.error("Password mismatch: ${exception.message}", exception)
+        return ResponseEntity
+            .badRequest()
+            .body(ErrorResponse("Password and Confirm Password do not match"))
+    }
+
+    @ExceptionHandler(PasswordNotUpdatedException::class)
+    fun handlePasswordNotUpdatedException(exception: PasswordNotUpdatedException): ResponseEntity<ErrorResponse?> {
+        logger.error("Password not updated: ${exception.message}", exception)
+        return ResponseEntity
+            .badRequest()
+            .body(ErrorResponse("Password not updated"))
+    }
 }

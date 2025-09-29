@@ -10,18 +10,29 @@ import net.thechance.identity.service.otpGenerator.OtpGeneratorService
 import net.thechance.identity.service.phoneNumberValidator.PhoneNumberValidatorService
 import net.thechance.identity.service.sms.SmsService
 import org.springframework.data.domain.PageRequest
+import net.thechance.identity.exception.PasswordMismatchException
+import net.thechance.identity.exception.PasswordNotUpdatedException
+import org.springframework.security.crypto.password.PasswordEncoder
 import org.springframework.stereotype.Service
 import java.time.Instant
 import java.util.UUID
 
 @Service
 class ResetPasswordService(
+    private val userService: UserService,
+    private val passwordEncoder: PasswordEncoder
     private val phoneNumberValidatorService: PhoneNumberValidatorService,
     private val otpGeneratorService: OtpGeneratorService,
     private val smsService: SmsService,
     private val otpLogRepository: OtpLogRepository,
     private val userRepository: UserRepository
 ) {
+    fun resetPassword(phoneNumber: String, newPassword: String, confirmPassword: String) {
+        if (newPassword != confirmPassword) throw PasswordMismatchException()
+        val encodedPassword = passwordEncoder.encode(newPassword)
+        val isPasswordUpdated = userService.updatePasswordByPhoneNumber(phoneNumber, encodedPassword)
+        if (!isPasswordUpdated) throw PasswordNotUpdatedException()
+    }
     fun requestOtp(phoneNumber: String, defaultRegion: String): RequestOtpResponse {
         val validatedPhoneNumber = phoneNumberValidatorService.validateAndParse(phoneNumber, defaultRegion)
         checkPhoneNumberExistence(phoneNumber)

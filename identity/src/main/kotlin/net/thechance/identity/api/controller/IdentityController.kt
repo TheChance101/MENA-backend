@@ -3,6 +3,9 @@ package net.thechance.identity.api.controller
 import jakarta.servlet.http.HttpServletRequest
 import jakarta.validation.Valid
 import net.thechance.identity.api.dto.*
+import net.thechance.identity.api.dto.AuthRequest
+import net.thechance.identity.api.dto.AuthResponse
+import net.thechance.identity.api.dto.RefreshTokenRequest
 import net.thechance.identity.exception.InvalidIpException
 import net.thechance.identity.service.AuthenticationService
 import net.thechance.identity.service.ResetPasswordService
@@ -16,7 +19,7 @@ import org.springframework.web.bind.annotation.RestController
 @RequestMapping("/identity")
 class IdentityController(
     private val authenticationService: AuthenticationService,
-    private val resetPasswordService: ResetPasswordService,
+    private val resetPasswordService: ResetPasswordService
 ) {
     @PostMapping("/login")
     fun login(
@@ -31,6 +34,12 @@ class IdentityController(
     @PostMapping("/refresh")
     fun refresh(@RequestBody @Valid request: RefreshTokenRequest): ResponseEntity<AuthResponse> {
         return ResponseEntity.ok(authenticationService.refreshToken(request.refreshToken))
+    }
+
+    @PostMapping("/reset-password")
+    fun resetPassword(@RequestBody @Valid request: ResetPasswordRequest): ResponseEntity<String> {
+        resetPasswordService.resetPassword(request.phoneNumber, request.newPassword, request.confirmPassword)
+        return ResponseEntity.ok("Password reset successfully")
     }
 
     @PostMapping("/request-reset-password-otp")
