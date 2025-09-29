@@ -31,38 +31,22 @@ class StatementPdfGenerator(
         endDate: LocalDate?,
         outputStream: ServletOutputStream
     ) {
-        val statementData = getStatementData(
-            userId = userId,
-            types = types,
-            startDate = startDate,
-            endDate = endDate,
-        )
+        val statementData = getStatementData(userId, types, startDate, endDate)
 
         val writer = PdfWriter(outputStream)
         val pdf = PdfDocument(writer)
         val converterProperties = setupConverterProperties()
 
-        val firstPage = statementService.getTransactionsPage(
-            userId = userId,
-            startDateTime = statementData.startDateTime,
-            endDateTime = statementData.endDateTime,
-            types = types,
-            pageNum = 0
-        )
+        val firstPage = statementService.getTransactionsPage(userId, statementData.startDateTime, statementData.endDateTime, types, 0)
 
         for (pageNum in 0 until firstPage.totalPages) {
-            val page = if (pageNum == 0) firstPage else statementService.getTransactionsPage(
-                userId = userId,
-                startDateTime = statementData.startDateTime,
-                endDateTime = statementData.endDateTime,
-                types = types,
-                pageNum = pageNum
-            )
+            val page = if (pageNum == 0) {
+                firstPage
+            } else {
+                statementService.getTransactionsPage( userId, statementData.startDateTime, statementData.endDateTime, types, pageNum)
+            }
 
-            val htmlContent = statementHtmlGenerator.generateForPage(
-                statementData = statementData,
-                transactionsPage = page
-            )
+            val htmlContent = statementHtmlGenerator.generateForPage(statementData, page)
 
             HtmlConverter.convertToPdf(htmlContent, pdf, converterProperties)
         }
