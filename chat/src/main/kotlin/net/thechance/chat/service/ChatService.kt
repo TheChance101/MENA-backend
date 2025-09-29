@@ -70,27 +70,7 @@ class ChatService(
         return newChat.toModel(userId)
     }
 
-
-    @Transactional
-    fun markChatMessagesAsRead(chatId: UUID, user: ContactUser) {
-        var page = 0
-        val pageSize = PAGE_SIZE
-        var messages: List<Message>
-        do {
-            messages = messageRepository.findAllByChatIdAndReadByUsersNotContainingAndSenderIdNot(
-                chatId,
-                user,
-                user.id,
-                Pageable.ofSize(pageSize).withPage(page)
-            )
-            if (messages.isNotEmpty()) {
-                messageRepository.saveAll(messages.onEach { it.readByUsers += user })
-            }
-            page++
-        } while (messages.size == pageSize)
-    }
-
-    companion object {
-        const val PAGE_SIZE = 500
+    fun markChatMessagesAsRead(chatId: UUID, userId: UUID) {
+        messageRepository.updateIsReadByChatIdAndSenderIdNot(chatId = chatId, userId = userId)
     }
 }
