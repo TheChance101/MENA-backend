@@ -46,8 +46,7 @@ interface TransactionRepository : JpaRepository<Transaction, UUID> {
     ): Transaction?
 
 
-    fun findByIdAndSender_UserIdOrReceiver_UserId(
+    fun findTransactionById(
         transactionId: UUID,
-        senderId: UUID,
-        receiverId: UUID
-    ): Transaction?}
+    ): Transaction?
+}

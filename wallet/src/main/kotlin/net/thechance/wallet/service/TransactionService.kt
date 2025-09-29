@@ -49,11 +49,9 @@ class TransactionService(
         )?.createdAt
     }
 
-    fun getTransactionDetails(transactionId: UUID, currentUserId: UUID): Transaction {
-        return transactionRepository.findByIdAndSender_UserIdOrReceiver_UserId(
+    fun getTransactionDetails(transactionId: UUID): Transaction {
+        return transactionRepository.findTransactionById(
             transactionId,
-            currentUserId,
-            currentUserId
         ) ?: throw EntityNotFoundException("Transaction with ID $transactionId not found or access denied.")
     }
 

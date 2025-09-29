@@ -65,7 +65,7 @@ class TransactionController(
         @AuthenticationPrincipal userId: UUID,
         @PathVariable transactionId: UUID
     ): ResponseEntity<TransactionResponse> {
-        val transactionDetails = transactionService.getTransactionDetails(transactionId, userId)
+        val transactionDetails = transactionService.getTransactionDetails(transactionId)
         return ResponseEntity.ok(transactionDetails.toResponse(userId))
     }
 }
