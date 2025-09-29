@@ -1,15 +1,6 @@
 package net.thechance.chat.entity
 
-import jakarta.persistence.CascadeType
-import jakarta.persistence.Column
-import jakarta.persistence.Entity
-import jakarta.persistence.Id
-import jakarta.persistence.Table
-import jakarta.persistence.ManyToMany
-import jakarta.persistence.JoinTable
-import jakarta.persistence.JoinColumn
-import jakarta.persistence.OneToOne
-import jakarta.persistence.OneToMany
+import jakarta.persistence.*
 import java.util.UUID
 
 @Entity
@@ -18,7 +9,7 @@ data class Chat(
     @Id @Column(columnDefinition = "uuid", updatable = false, nullable = false)
     val id: UUID = UUID.randomUUID(),
 
-    @ManyToMany
+    @ManyToMany(fetch = FetchType.EAGER)
     @JoinTable(
         name = "chat_users",
         schema = "chat",
@@ -26,9 +17,6 @@ data class Chat(
         inverseJoinColumns = [JoinColumn(name = "user_id", referencedColumnName = "id")]
     )
     val users: MutableSet<ContactUser> = mutableSetOf(),
-
-    @OneToOne(mappedBy = "chat", cascade = [CascadeType.ALL])
-    val groupChat: GroupChat? = null,
 
     @OneToMany(mappedBy = "chat", cascade = [CascadeType.ALL], orphanRemoval = true)
     val messages: MutableSet<Message> = mutableSetOf()

@@ -5,16 +5,14 @@ import java.util.UUID
 
 data class ChatModel(
     val id: UUID,
-    val isGroup: Boolean,
     val name: String,
     val imageUrl: String?,
 )
 
 fun Chat.toModel(requesterId: UUID) = ChatModel(
     id = id,
-    isGroup = groupChat != null,
-    name = groupChat?.groupName ?: users.firstOrNull { it.id != requesterId }
+    name = users.firstOrNull { it.id != requesterId }
         ?.let { "${it.firstName} ${it.lastName}" }
         .orEmpty(),
-    imageUrl = groupChat?.groupImageUrl ?: users.firstOrNull { it.id != requesterId }?.imageUrl,
+    imageUrl = users.firstOrNull { it.id != requesterId }?.imageUrl,
 )
