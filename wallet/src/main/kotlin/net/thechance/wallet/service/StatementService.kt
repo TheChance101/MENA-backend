@@ -50,7 +50,7 @@ class StatementService(
     ): Page<Transaction> {
 
         val transactionsPage = transactionRepository.findFilteredTransactions(
-            status = null,
+            status = Transaction.Status.SUCCESS,
             transactionTypes = types?.map { it.name },
             startDate = startDateTime,
             endDate = endDateTime,
