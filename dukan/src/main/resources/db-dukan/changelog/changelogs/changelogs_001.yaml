@@ -1,0 +1,115 @@
+databaseChangeLog:
+  - changeSet:
+      id: 1-dukan
+      author: alqassim
+      comment: Create the dukan schema
+      changes:
+        - sql: CREATE SCHEMA IF NOT EXISTS dukan;
+
+  - changeSet:
+      id: 2-dukan
+      author: alqassim
+      comment:
+        Create the dukan_colors, dukan_categories, dukans, and dukan_categories_junction tables in the dukan schema
+      changes:
+        - sql:
+            CREATE TABLE dukan.dukan_colors (
+            id UUID PRIMARY KEY,
+            hex_code VARCHAR(255) NOT NULL
+            );
+
+        - sql:
+            CREATE TABLE dukan.dukan_categories (
+            id UUID PRIMARY KEY,
+            icon_url VARCHAR(255) NOT NULL,
+            arabic_title VARCHAR(255) NOT NULL,
+            english_title VARCHAR(255) NOT NULL
+            );
+
+        - sql:
+            CREATE TABLE dukan.dukans (
+            id UUID PRIMARY KEY,
+            owner_id UUID NOT NULL UNIQUE,
+            name VARCHAR(255) NOT NULL UNIQUE,
+            image_url VARCHAR(255) NOT NULL,
+            address VARCHAR(255) NOT NULL,
+            latitude DOUBLE PRECISION NOT NULL,
+            longitude DOUBLE PRECISION NOT NULL,
+            color_id UUID NOT NULL,
+            style VARCHAR(50) NOT NULL,
+            status VARCHAR(50) NOT NULL,
+            CONSTRAINT fk_dukans_color_id FOREIGN KEY (color_id) REFERENCES dukan.dukan_colors(id)
+            );
+
+        - sql:
+            CREATE TABLE dukan.dukan_categories_junction (
+            dukan_id UUID NOT NULL,
+            category_id UUID NOT NULL,
+            PRIMARY KEY (dukan_id, category_id),
+            CONSTRAINT fk_dukan_categories_junction_dukan_id FOREIGN KEY (dukan_id) REFERENCES dukan.dukans(id),
+            CONSTRAINT fk_dukan_categories_junction_category_id FOREIGN KEY (category_id) REFERENCES dukan.dukan_categories(id)
+            );
+
+  - changeSet:
+      id: 3-dukan,
+      author: haider
+      comment: create shelves table in dukan schema
+      changes:
+        - sql:
+            CREATE TABLE dukan.dukan_shelves(
+            id UUID PRIMARY KEY ,
+            title VARCHAR(255) NOT NULL UNIQUE,
+            dukan_id UUID NOT NULL,
+            CONSTRAINT fk_shelves_dukan FOREIGN KEY (dukan_id) REFERENCES dukan.dukans(id)
+            );
+
+  - changeSet:
+      id: 4-dukan
+      author: haider
+      changes:
+        - addUniqueConstraint:
+            tableName: dukan_shelves
+            columnNames: dukan_id,title
+            constraintName: uq_dukan_shelves_dukan_title
+            schemaName: dukan
+
+  - changeSet:
+        id: 5-dukan
+        author: mostafa
+        comment: create dukan_products table in dukan schema
+        changes:
+            - sql: |
+                  CREATE TABLE dukan.dukan_products (
+                    id UUID PRIMARY KEY,
+                    name VARCHAR(255) NOT NULL,
+                    shelf_id UUID NOT NULL,
+                    dukan_id UUID NOT NULL,
+                    price DOUBLE PRECISION NOT NULL,
+                    description TEXT NOT NULL,
+                    CONSTRAINT fk_dukan_product_shelf FOREIGN KEY (shelf_id) REFERENCES dukan.dukan_shelves(id),
+                    CONSTRAINT fk_dukan_product_dukan FOREIGN KEY (dukan_id) REFERENCES dukan.dukans(id)
+                  );
+
+  - changeSet:
+        id: 6-dukan
+        author: mostafa
+        comment: create product_images table in dukan schema
+        changes:
+            - sql: |
+                  CREATE TABLE dukan.product_images (
+                    product_id UUID NOT NULL,
+                    image_url VARCHAR(1000) NOT NULL,
+                    CONSTRAINT fk_image_dukan_product FOREIGN KEY (product_id) REFERENCES dukan.dukan_products(id) ON DELETE CASCADE
+                  );
+
+  - changeSet:
+        id: 7-dukan
+        author: mostafa
+        comment: add unique constraint on (dukan_id, name) for dukan_products
+        changes:
+            - addUniqueConstraint:
+                  tableName: dukan_products
+                  columnNames: dukan_id,name
+                  constraintName: uq_dukan_product_name
+                  schemaName: dukan
+

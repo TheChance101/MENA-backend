@@ -1,0 +1,53 @@
+databaseChangeLog:
+  - changeSet:
+      id: 1-wallet
+      author: alqassim
+      comment: Create the wallet schema
+      changes:
+        - sql: CREATE SCHEMA IF NOT EXISTS wallet;
+
+  - changeSet:
+      id: 2-wallet
+      author: alqassim
+      comment: Create the wallet tables
+      changes:
+          - sql:
+              CREATE TABLE wallet.accounts (
+                  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+                  user_id UUID NOT NULL,
+                  balance NUMERIC NOT NULL DEFAULT 0,
+                  currency VARCHAR NOT NULL,
+                  created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP
+              );
+          - sql:
+              CREATE TABLE wallet.blocks (
+                id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+                previous_block_hash VARCHAR NOT NULL,
+                timestamp TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP
+              );
+
+          - sql:
+              CREATE TABLE wallet.public_keys (
+                user_id UUID PRIMARY KEY,
+                public_key TEXT NOT NULL
+              );
+
+          - sql:
+              CREATE TABLE wallet.transactions (
+                id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+                created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+                sender_id UUID NOT NULL,
+                receiver_id UUID NOT NULL,
+                sender_signature TEXT NOT NULL,
+                amount NUMERIC NOT NULL,
+                block_id UUID NOT NULL,
+                FOREIGN KEY (block_id) REFERENCES wallet.blocks(id) ON DELETE RESTRICT
+              );
+
+  - changeSet:
+      id: 3-wallet
+      author: alqassim
+      comment: remove unnecessary accounts table
+      changes:
+        - sql:
+            DROP TABLE IF EXISTS wallet.accounts;

@@ -1,0 +1,35 @@
+name: Build Changed Modules (Backend)
+
+on:
+  pull_request:
+    branches: [ main, develop ]
+  workflow_dispatch:
+
+jobs:
+  detect:
+    name: Detect Changed Modules
+    uses: ./.github/workflows/detect-changed-modules.yml
+    secrets: inherit
+
+  build:
+    name: Build Modules
+    needs: detect
+    if: needs.detect.outputs.has_changes == 'true'
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-java@v4
+        with:
+          distribution: 'temurin'
+          java-version: 17
+          cache: gradle
+
+      - run: chmod +x gradlew
+
+      - name: Compile changed modules
+        run: |
+          MODULES=$(echo '${{ needs.detect.outputs.modules }}' | jq -r '.[]')
+          for module in $MODULES; do
+            echo "Compiling $module..."
+            ./gradlew :$module:classes -x test --build-cache
+          done
