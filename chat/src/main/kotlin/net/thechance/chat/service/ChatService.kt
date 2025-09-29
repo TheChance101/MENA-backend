@@ -25,9 +25,7 @@ class ChatService(
         val userIds = setOf(userId, receiverId)
 
         val existingChat = chatRepository.findPrivateChatBetweenUsers(userIds)
-        if (existingChat != null) {
-            return existingChat
-        }
+        if (existingChat != null) return existingChat
 
         val requester = contactUserRepository.findById(userId)
             .orElseThrow { IllegalArgumentException("Requester not found") }
@@ -46,7 +44,6 @@ class ChatService(
                     chat = chat,
                     text = message.text,
                     sentAt = message.sendAt,
-                    isRead = false
                 )
             )
         } ?: throw IllegalArgumentException("Chat with id ${message.chatId} not found")

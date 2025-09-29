@@ -64,4 +64,5 @@ interface ContactRepository : JpaRepository<Contact, UUID> {
         @Param("lastNames") lastNames: Array<String>
     )
 
+    fun findByContactOwnerIdAndPhoneNumber(ownerId: UUID, phoneNumber: String): Contact?
 }

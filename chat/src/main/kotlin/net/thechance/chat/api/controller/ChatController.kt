@@ -2,6 +2,8 @@ package net.thechance.chat.api.controller
 
 import net.thechance.chat.api.dto.*
 import net.thechance.chat.service.ChatService
+import net.thechance.chat.service.ContactService
+import net.thechance.chat.service.ContactUserService
 import org.springframework.data.domain.Pageable
 import org.springframework.http.ResponseEntity
 import org.springframework.messaging.handler.annotation.MessageMapping
@@ -18,6 +20,8 @@ import java.util.*
 class ChatController(
     private val messagingTemplate: SimpMessagingTemplate,
     private val chatService: ChatService,
+    private val contactService: ContactService,
+    private val contactUserService: ContactUserService
 ) {
 
     @MessageMapping("/chat.privateMessage")
@@ -37,7 +41,9 @@ class ChatController(
         @AuthenticationPrincipal userId: UUID,
         @RequestParam receiverId: UUID
     ): ResponseEntity<ChatResponse> {
-        return ResponseEntity.ok(chatService.getOrCreateConversationByParticipants(userId, receiverId).toResponse(userId))
+        val receiverPhone = contactUserService.getPhoneNumberByIdOrNull(receiverId) ?: throw IllegalArgumentException("Receiver not found")
+        val contact = contactService.getContactByOwnerIdAndPhoneNumber(userId, receiverPhone)
+        return ResponseEntity.ok(chatService.getOrCreateConversationByParticipants(userId, receiverId).toResponse(userId, contact))
     }
 
     @GetMapping("/history")

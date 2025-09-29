@@ -40,4 +40,8 @@ class ContactService(
 
         contactRepository.bulkUpsert(userId, phones, firstNames, lastNames)
     }
+
+    fun getContactByOwnerIdAndPhoneNumber(ownerId: UUID, phoneNumber: String): Contact? {
+        return contactRepository.findByContactOwnerIdAndPhoneNumber(ownerId, phoneNumber)
+    }
 }
