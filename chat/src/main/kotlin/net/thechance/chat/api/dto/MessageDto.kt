@@ -27,7 +27,7 @@ fun Message.toDto(): MessageDto {
 }
 
 
-fun Page<Message>.toPagedResponse(): PagedResponse<MessageDto> {
+fun Page<Message>.toPagedMessageResponse(): PagedResponse<MessageDto> {
     return PagedResponse(
         data = this.content.map { it.toDto() },
         pageNumber = this.number + 1,

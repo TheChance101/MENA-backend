@@ -2,7 +2,7 @@ package net.thechance.chat.api.controller
 
 import net.thechance.chat.api.dto.MessageDto
 import net.thechance.chat.api.dto.PagedResponse
-import net.thechance.chat.api.dto.toPagedResponse
+import net.thechance.chat.api.dto.toPagedMessageResponse
 import net.thechance.chat.service.ChatService
 import net.thechance.chat.service.model.ChatModel
 import org.springframework.data.domain.Pageable
@@ -43,7 +43,7 @@ class ChatController(
         return ResponseEntity.ok(chatService.getOrCreateConversationByParticipants(userId, receiverId))
     }
 
-    @GetMapping
+    @GetMapping("/history")
     fun getChatHistory(
         @RequestParam chatId: UUID,
         pageable: Pageable
@@ -52,12 +52,15 @@ class ChatController(
             chatService.getAllChatMessages(
                 chatId = chatId,
                 pageable = pageable
-            ).toPagedResponse()
+            ).toPagedMessageResponse()
         )
     }
 
     @PatchMapping
-    fun markMessagesAsRead(chatId: UUID, userId: UUID) {
+    fun markMessagesAsRead(
+        @AuthenticationPrincipal userId: UUID,
+        @RequestParam chatId: UUID,
+    ) {
         chatService.markChatMessagesAsRead(chatId, userId)
     }
 }
