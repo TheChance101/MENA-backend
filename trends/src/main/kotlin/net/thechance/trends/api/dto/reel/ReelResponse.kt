@@ -7,7 +7,7 @@ import java.util.*
 
 data class ReelResponse(
     val reelId: UUID,
-    val thumbnailUrl: String,
+    val thumbnailUrl: String?,
     val videoUrl: String,
     val description: String,
     val createdAt: LocalDateTime,

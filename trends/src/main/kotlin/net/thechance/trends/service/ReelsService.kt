@@ -74,8 +74,7 @@ class ReelsService(
         )
         val reel = Reel(
             ownerId = currentUserId,
-            thumbnailUrl = "",
-            videoUrl = videoUrl,
+            videoUrl = videoUrl
         )
         reelsRepository.save(reel)
         return reel.id
