@@ -1,10 +1,10 @@
-package net.thechance.chat.service.model
+package net.thechance.chat.api.dto
 
 import net.thechance.chat.entity.Message
 import java.time.Instant
 import java.util.UUID
 
-class MessageModel(
+class MessageResponse(
     val id: UUID,
     val senderId: UUID,
     val chatId: UUID,
@@ -13,7 +13,7 @@ class MessageModel(
     val isRead: Boolean
 )
 
-fun Message.toModel() = MessageModel(
+fun Message.toResponse() = MessageResponse(
     id = id,
     senderId = senderId,
     chatId = chat.id,
