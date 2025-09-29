@@ -19,5 +19,5 @@ fun Message.toModel() = MessageModel(
     chatId = chat.id,
     text = text,
     sendAt = sendAt,
-    isRead = readByUsers.size >= (chat.users.size - 1)
+    isRead = isRead
 )

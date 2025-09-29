@@ -11,20 +11,6 @@ databaseChangeLog:
               );
 
   - changeSet:
-      id: 8-chat
-      author: omer-faris
-      comment: create group_chats table
-      changes:
-        - sql:
-            sql:
-              CREATE TABLE IF NOT EXISTS chat.group_chats(
-                chat_id UUID PRIMARY KEY,
-                group_name VARCHAR(255),
-                group_image_url VARCHAR(512),
-                CONSTRAINT fk_group_chat_chat FOREIGN KEY(chat_id) REFERENCES chat.chats(id) ON DELETE CASCADE
-              );
-
-  - changeSet:
       id: 9-chat
       author: omer-faris
       comment: create messages table
@@ -36,6 +22,7 @@ databaseChangeLog:
                 chat_id UUID NOT NULL,
                 sender_id UUID NOT NULL,
                 text TEXT NOT NULL,
+                is_read BOOLEAN NOT NULL DEFAULT FALSE,
                 send_at TIMESTAMP NOT NULL DEFAULT NOW(),
                 CONSTRAINT fk_messages_chat FOREIGN KEY(chat_id) REFERENCES chat.chats(id) ON DELETE CASCADE
               );
@@ -53,19 +40,4 @@ databaseChangeLog:
                 PRIMARY KEY (chat_id, user_id),
                 CONSTRAINT fk_chat_users_chat FOREIGN KEY(chat_id) REFERENCES chat.chats(id) ON DELETE CASCADE,
                 CONSTRAINT fk_chat_users_user FOREIGN KEY(user_id) REFERENCES chat.users_of_contacts(id) ON DELETE CASCADE
-              );
-
-  - changeSet:
-      id: 11-chat
-      author: omer-faris
-      comment: create message_read table
-      changes:
-        - sql:
-            sql:
-              CREATE TABLE IF NOT EXISTS chat.message_read(
-                user_id UUID NOT NULL,
-                message_id UUID NOT NULL,
-                PRIMARY KEY (user_id, message_id),
-                CONSTRAINT fk_message_read_user FOREIGN KEY(user_id) REFERENCES chat.users_of_contacts(id) ON DELETE CASCADE,
-                CONSTRAINT fk_message_read_message FOREIGN KEY(message_id) REFERENCES chat.messages(id) ON DELETE CASCADE
               );
