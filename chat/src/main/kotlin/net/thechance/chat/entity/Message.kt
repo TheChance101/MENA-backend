@@ -1,11 +1,9 @@
 package net.thechance.chat.entity
 
-import jakarta.persistence.CascadeType
 import jakarta.persistence.Column
 import jakarta.persistence.Entity
 import jakarta.persistence.Id
 import jakarta.persistence.Table
-import jakarta.persistence.ManyToMany
 import jakarta.persistence.ManyToOne
 import jakarta.persistence.JoinColumn
 import java.time.Instant
@@ -22,9 +20,8 @@ data class Message(
     val text: String,
     @Column(name= "sendAt",nullable = false)
     val sendAt: Instant = Instant.now(),
-
-    @ManyToMany(mappedBy = "readMessages", cascade = [CascadeType.ALL])
-    val readByUsers: MutableSet<ContactUser> = mutableSetOf(),
+    @Column(name = "is_read", nullable = false)
+    val isRead: Boolean,
 
     @ManyToOne(optional = false)
     @JoinColumn(name = "chat_id", referencedColumnName = "id", nullable = false)
