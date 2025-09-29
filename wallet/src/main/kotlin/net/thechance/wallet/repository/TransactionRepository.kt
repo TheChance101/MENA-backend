@@ -41,8 +41,13 @@ interface TransactionRepository : JpaRepository<Transaction, UUID> {
 
 
     fun findFirstBySender_UserIdOrReceiver_UserIdOrderByCreatedAtAsc(
-        transactionId: UUID? = null,
         senderId: UUID,
         receiverId: UUID
     ): Transaction?
-}
+
+
+    fun findByIdAndSender_UserIdOrReceiver_UserId(
+        transactionId: UUID,
+        senderId: UUID,
+        receiverId: UUID
+    ): Transaction?}

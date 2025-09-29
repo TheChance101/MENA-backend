@@ -50,7 +50,7 @@ class TransactionService(
     }
 
     fun getTransactionDetails(transactionId: UUID, currentUserId: UUID): Transaction {
-        return transactionRepository.findFirstBySender_UserIdOrReceiver_UserIdOrderByCreatedAtAsc(
+        return transactionRepository.findByIdAndSender_UserIdOrReceiver_UserId(
             transactionId,
             currentUserId,
             currentUserId

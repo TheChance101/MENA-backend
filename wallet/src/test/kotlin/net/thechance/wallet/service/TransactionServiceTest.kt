@@ -21,7 +21,7 @@ class TransactionServiceTest {
     @Test
     fun `getTransactionDetails should return transaction when it exists and user is authorized`() {
         every {
-            transactionRepository.findFirstBySender_UserIdOrReceiver_UserIdOrderByCreatedAtAsc(
+            transactionRepository.findByIdAndSender_UserIdOrReceiver_UserId(
                 TRANSACTION_ID, USER_ID, USER_ID
             )
         } returns FAKE_TRANSACTION
@@ -35,7 +35,7 @@ class TransactionServiceTest {
     fun `getTransactionDetails should throw EntityNotFoundException when transaction does not exist or user is not authorized`() {
         val transactionId = UUID.randomUUID()
         every {
-            transactionRepository.findFirstBySender_UserIdOrReceiver_UserIdOrderByCreatedAtAsc(
+            transactionRepository.findByIdAndSender_UserIdOrReceiver_UserId(
                 transactionId, USER_ID, USER_ID
             )
         } returns null
