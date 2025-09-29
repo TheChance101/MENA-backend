@@ -3,7 +3,7 @@ package net.thechance.chat.api.dto
 import net.thechance.chat.entity.Chat
 import java.util.UUID
 
-data class ChatResponse(
+class ChatResponse(
     val id: UUID,
     val name: String,
     val imageUrl: String?,

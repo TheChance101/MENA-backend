@@ -21,7 +21,7 @@ data class Message(
     @Column(nullable = false)
     val sentAt: Instant = Instant.now(),
     @Column(nullable = false)
-    val isRead: Boolean = false,
+    val isRead: Boolean,
 
     @ManyToOne(optional = false)
     @JoinColumn(name = "chat_id", referencedColumnName = "id", nullable = false)

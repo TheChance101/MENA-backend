@@ -18,4 +18,5 @@ interface ChatRepository : JpaRepository<Chat, UUID> {
         """
     )
     fun findPrivateChatBetweenUsers(userIds: Set<UUID>): Chat?
+    fun findByUsers(users: Set<ContactUser>): Chat?
 }
