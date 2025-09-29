@@ -1,6 +1,7 @@
 package net.thechance.wallet.api.controller
 
 import jakarta.servlet.http.HttpServletResponse
+import net.thechance.wallet.api.controller.helper.PdfConverter
 import net.thechance.wallet.api.dto.transaction.FirstTransactionDateResponse
 import net.thechance.wallet.api.dto.transaction.TransactionPageResponse
 import net.thechance.wallet.api.dto.transaction.UserTransactionType
@@ -17,6 +18,8 @@ import org.springframework.web.bind.annotation.RequestMapping
 import org.springframework.web.bind.annotation.RequestParam
 import org.springframework.web.bind.annotation.RestController
 import java.time.LocalDate
+import java.time.LocalDateTime
+import java.time.format.DateTimeFormatter
 import java.util.*
 
 
@@ -24,7 +27,8 @@ import java.util.*
 @RequestMapping("/wallet/transactions")
 class TransactionController(
     private val transactionService: TransactionService,
-    private val statementService: StatementService
+    private val statementService: StatementService,
+    private val pdfConverter: PdfConverter,
 ) {
     @GetMapping
     fun getFilteredTransactions(
@@ -78,14 +82,24 @@ class TransactionController(
         @RequestParam(required = false) startDate: LocalDate?,
         @RequestParam(required = false) endDate: LocalDate?,
     ) {
-        statementService.generateStatementPdf(
+        val statementData = statementService.prepareStatementData(
             userId = userId,
             startDate = startDate,
             endDate = endDate,
             types = types,
-            status = status,
-            response = response
+            status = status
         )
+
+        response.contentType = "application/pdf"
+        response.setHeader(
+            "Content-Disposition",
+            "attachment; filename=\"statement_${statementData.startDateTime.formatDate()}_to_${statementData.endDateTime.formatDate()}.pdf\""
+        )
+
+        pdfConverter.convertToPdfStream(statementData, response.outputStream)
     }
+
+    private fun LocalDateTime.formatDate(): String =
+        this.format(DateTimeFormatter.ofPattern("dd_MMM_yyyy"))
 }
 

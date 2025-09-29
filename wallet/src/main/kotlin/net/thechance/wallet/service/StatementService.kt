@@ -1,130 +1,128 @@
 package net.thechance.wallet.service
 
-import com.itextpdf.html2pdf.ConverterProperties
-import com.itextpdf.html2pdf.HtmlConverter
-import com.itextpdf.kernel.pdf.PdfDocument
-import com.itextpdf.kernel.pdf.PdfWriter
-import com.itextpdf.layout.font.FontProvider
-import jakarta.servlet.http.HttpServletResponse
 import net.thechance.wallet.api.dto.transaction.UserTransactionType
 import net.thechance.wallet.entity.Transaction
+import net.thechance.wallet.exception.NoTransactionsFoundException
 import net.thechance.wallet.repository.TransactionRepository
-import org.springframework.core.io.ResourceLoader
+import net.thechance.wallet.service.helper.StatementData
 import org.springframework.data.domain.Page
+import org.springframework.data.domain.PageRequest
 import org.springframework.data.domain.Pageable
 import org.springframework.stereotype.Service
-import org.thymeleaf.TemplateEngine
-import org.thymeleaf.context.Context
-import java.math.BigDecimal
 import java.time.LocalDate
 import java.time.LocalDateTime
-import java.time.format.DateTimeFormatter
 import java.util.*
 
 @Service
 class StatementService(
-    private val transactionRepository: TransactionRepository,
-    private val templateEngine: TemplateEngine,
-    private val resourceLoader: ResourceLoader
+    private val transactionRepository: TransactionRepository
 ) {
 
-    fun generateStatementPdf(
+    fun prepareStatementData(
         userId: UUID,
         startDate: LocalDate?,
         endDate: LocalDate?,
         types: List<UserTransactionType>?,
-        status: Transaction.Status?,
-        response: HttpServletResponse
-    ) {
-
+        status: Transaction.Status?
+    ): StatementData {
         val startDateTime = startDate?.atStartOfDay()
-                ?: transactionRepository.findFirstBySender_UserIdOrReceiver_UserIdOrderByCreatedAtAsc(
-                    userId,
-                    userId
-                )?.createdAt ?: LocalDateTime.now()
+            ?: transactionRepository.findFirstBySender_UserIdOrReceiver_UserIdOrderByCreatedAtAsc(
+                userId,
+                userId
+            )?.createdAt ?: LocalDateTime.now()
 
-        val endDateTime = endDate?.atTime(23, 59, 59, 59) ?: LocalDateTime.now()
+        val endDateTime = endDate?.atTime(23, 59, 59) ?: LocalDateTime.now()
 
-        val transactions = transactionRepository.findFilteredTransactions(
+        // Get first page to validate and extract metadata
+        val firstPage = transactionRepository.findFilteredTransactions(
             status = status,
             transactionTypes = types?.map { it.name },
             startDate = startDateTime,
             endDate = endDateTime,
-            pageable = Pageable.unpaged(),
+            pageable = PageRequest.of(0, PAGE_SIZE),
             currentUserId = userId
         )
 
-        if (transactions.isEmpty) {
-            response.status = HttpServletResponse.SC_NO_CONTENT
-            response.writer.write("No transactions found for the specified filters")
-            return
+        if (firstPage.isEmpty) {
+            throw NoTransactionsFoundException("No transactions found for the specified filters")
         }
-        val username = getUsername(transactions, userId)
 
-        val openingBalance = if(startDate == null) 0.0 else getOpeningBalance(userId, status, types, startDateTime)
-
-        val closingBalance = getClosingBalance(openingBalance, transactions, userId)
-
-        val templateData = mutableMapOf<String?, Any?>(
-            "userName" to username,
-            "fromFormatted" to startDateTime.formatHeaderDate(),
-            "toFormatted" to endDateTime.formatHeaderDate(),
-            "openingBalance" to String.format("%.2f", openingBalance),
-            "closingBalance" to String.format("%.2f", closingBalance),
-            "logoSvgInline" to getAppIconSvg(),
-            "transactions" to transactions.map { mapTransactionForTemplate(userId, it) }
+        val username = getUsername(firstPage, userId)
+        val openingBalance = if (startDate == null) 0.0 else calculateOpeningBalance(
+            userId, status, types, startDateTime
         )
 
-        setResponseHeaders(response, startDateTime, endDateTime)
+        // Calculate closing balance by iterating through all pages
+        val closingBalance = calculateClosingBalance(
+            userId = userId,
+            status = status,
+            types = types,
+            startDateTime = startDateTime,
+            endDateTime = endDateTime,
+            openingBalance = openingBalance,
+            totalPages = firstPage.totalPages
+        )
 
-        generatePdfFile(templateData, response)
-    }
-
-    private fun generatePdfFile(data: Map<String?, Any?>?, response: HttpServletResponse) {
-        val context = Context()
-        context.setVariables(data)
-
-        val htmlContent = templateEngine.process("statement", context)
-        val writer = PdfWriter(response.outputStream)
-        val pdf = PdfDocument(writer)
-
-        val converterProperties = ConverterProperties()
-
-        val fontProvider = FontProvider()
-        listOf(
-            "MadimiOne-Regular.ttf",
-            "Poppins-Regular.ttf",
-            "Poppins-Medium.ttf",
-            "Poppins-SemiBold.ttf"
-        ).forEach { fontPath ->
-            val resource = resourceLoader.getResource("classpath:fonts/$fontPath")
-            if (resource.exists()) {
-                resource.inputStream.use { inputStream ->
-                    fontProvider.addFont(inputStream.readAllBytes())
-                }
-            }
+        // Create a transaction provider function for pagination
+        val transactionProvider: (Int) -> List<Transaction> = { pageNum ->
+            transactionRepository.findFilteredTransactions(
+                status = status,
+                transactionTypes = types?.map { it.name },
+                startDate = startDateTime,
+                endDate = endDateTime,
+                pageable = PageRequest.of(pageNum, PAGE_SIZE),
+                currentUserId = userId
+            ).content
         }
 
-        converterProperties.fontProvider = fontProvider
-        converterProperties.isImmediateFlush = true
-
-        HtmlConverter.convertToPdf(htmlContent, pdf, converterProperties)
-
-        pdf.close()
+        return StatementData(
+            userId = userId,
+            username = username,
+            startDateTime = startDateTime,
+            endDateTime = endDateTime,
+            openingBalance = openingBalance,
+            closingBalance = closingBalance,
+            totalPages = firstPage.totalPages,
+            status = status,
+            types = types,
+            transactionProvider = transactionProvider
+        )
     }
 
-    private fun getUsername(
-        transactions: Page<Transaction>,
-        userId: UUID
-    ): String {
-        return transactions
-            .first { it.sender.userId == userId || it.receiver.userId == userId }
-            .let {
-                if (it.sender.userId == userId) it.sender.userName else it.receiver.userName
-            }
+    private fun calculateClosingBalance(
+        userId: UUID,
+        status: Transaction.Status?,
+        types: List<UserTransactionType>?,
+        startDateTime: LocalDateTime,
+        endDateTime: LocalDateTime,
+        openingBalance: Double,
+        totalPages: Int
+    ): Double {
+        var balance = openingBalance
+
+        for (pageNum in 0 until totalPages) {
+            val page = transactionRepository.findFilteredTransactions(
+                status = status,
+                transactionTypes = types?.map { it.name },
+                startDate = startDateTime,
+                endDate = endDateTime,
+                pageable = PageRequest.of(pageNum, PAGE_SIZE),
+                currentUserId = userId
+            )
+
+            balance += page.content.sumOf { transaction ->
+                if (userId == transaction.sender.userId) {
+                    transaction.amount.unaryMinus()
+                } else {
+                    transaction.amount
+                }
+            }.toDouble()
+        }
+
+        return balance
     }
 
-    private fun getOpeningBalance(
+    private fun calculateOpeningBalance(
         userId: UUID,
         status: Transaction.Status?,
         types: List<UserTransactionType>?,
@@ -137,86 +135,20 @@ class StatementService(
             startDate = LocalDate.ofEpochDay(0L).atStartOfDay(),
             endDate = startDate,
             pageable = Pageable.unpaged()
-        ).sumOf { if (userId == it.sender.userId) it.amount.unaryMinus() else it.amount }.toDouble()
+        ).sumOf {
+            if (userId == it.sender.userId) it.amount.unaryMinus() else it.amount
+        }.toDouble()
     }
 
-    private fun getClosingBalance(
-        openingBalance: Double,
-        transactions: Page<Transaction>,
-        userId: UUID
-    ): Double {
-        return openingBalance + transactions.sumOf { if (userId == it.sender.userId) it.amount.unaryMinus() else it.amount }
-            .toDouble()
-    }
-
-    private fun mapTransactionForTemplate(currentUserId: UUID, transaction: Transaction): Map<String, Any> {
-        return mapOf(
-            "id" to "TX-" + transaction.id.toString().substring(0, 6).uppercase(),
-            "date" to transaction.createdAt.formatRowItemDate(),
-            "time" to transaction.createdAt.formatRowItemTime(),
-            "typeHeader" to getTypeHeader(transaction, currentUserId),
-            "counterParty" to getCounterParty(transaction, currentUserId),
-            "amount" to getFormattedAmount(currentUserId, transaction),
-            "amountValue" to getAmountValue(currentUserId, transaction)
-        )
-    }
-
-    private fun getTypeHeader(transaction: Transaction, currentUserId: UUID): String {
-        return when {
-            transaction.type == Transaction.Type.P2P && currentUserId == transaction.receiver.userId -> "Received from"
-            transaction.type == Transaction.Type.P2P -> "Sent to"
-            transaction.type == Transaction.Type.ONLINE_PURCHASE -> "Purchase from"
-            else -> ""
-        }
-    }
-
-    private fun getCounterParty(transaction: Transaction, currentUserId: UUID): String {
-        return when {
-            transaction.type == Transaction.Type.P2P && currentUserId == transaction.receiver.userId -> transaction.sender.userName
-            transaction.type == Transaction.Type.P2P -> transaction.receiver.userName
-            transaction.type == Transaction.Type.ONLINE_PURCHASE -> transaction.receiver.dukanName ?: ""
-            else -> ""
-        }
-    }
-
-    private fun getFormattedAmount(currentUserId: UUID, transaction: Transaction): String {
-        return if (currentUserId == transaction.sender.userId) {
-            "-${String.format("%.2f", transaction.amount)}"
-        } else {
-            "+${String.format("%.2f", transaction.amount)}"
-        }
-    }
-
-    private fun getAmountValue(currentUserId: UUID, transaction: Transaction): BigDecimal {
-        return if (currentUserId == transaction.sender.userId) {
-            transaction.amount.unaryMinus()
-        } else {
-            transaction.amount
-        }
-    }
-
-    fun getAppIconSvg(): String {
-        return try {
-            resourceLoader.getResource("classpath:static/mena_logo.svg").inputStream.use { inputStream ->
-                inputStream.reader(Charsets.UTF_8)
-                    .readText()
-                    .replace("""<\?xml.*?\?>""".toRegex(), "")
-                    .trim()
+    private fun getUsername(transactions: Page<Transaction>, userId: UUID): String {
+        return transactions
+            .first { it.sender.userId == userId || it.receiver.userId == userId }
+            .let {
+                if (it.sender.userId == userId) it.sender.userName else it.receiver.userName
             }
-        } catch (_: Exception) {
-            ""
-        }
     }
 
-    private fun setResponseHeaders(response: HttpServletResponse, from: LocalDateTime, to: LocalDateTime) {
-        response.contentType = "application/pdf"
-        response.setHeader(
-            "Content-Disposition",
-            "attachment; filename=\"statement_${from.formatHeaderDate()}_to_${to.formatHeaderDate()}.pdf\""
-        )
+    private companion object {
+        const val PAGE_SIZE = 100
     }
-
-    private fun LocalDateTime.formatHeaderDate(): String = this.format(DateTimeFormatter.ofPattern("dd MMM yyyy"))
-    private fun LocalDateTime.formatRowItemDate(): String = this.format(DateTimeFormatter.ofPattern("yyyy/MM/dd"))
-    private fun LocalDateTime.formatRowItemTime(): String = this.format(DateTimeFormatter.ofPattern("HH:mm a"))
 }
