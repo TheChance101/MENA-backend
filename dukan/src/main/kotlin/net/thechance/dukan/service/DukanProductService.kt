@@ -8,10 +8,14 @@ import net.thechance.dukan.exception.dukan_product.ProductNameAlreadyTakenExcept
 import net.thechance.dukan.exception.dukan_product.ProductNotFoundException
 import net.thechance.dukan.repository.DukanProductRepository
 import net.thechance.dukan.service.model.DukanProductCreationParams
+import org.springframework.data.domain.Page
+import org.springframework.data.domain.Pageable
 import org.springframework.stereotype.Service
 import org.springframework.web.multipart.MultipartFile
 import java.lang.Exception
 import java.util.UUID
+import java.util.*
+
 
 @Service
 class DukanProductService(
@@ -67,6 +71,10 @@ class DukanProductService(
         } catch (_: EntityNotFoundException) {
             throw DukanProductCreationFailedException()
         }
+    }
+
+    fun getProductsByShelf(shelfId: UUID, pageable: Pageable): Page<DukanProduct> {
+        return dukanProductRepository.findAllByShelfId(shelfId, pageable)
     }
 
     companion object {

@@ -1,13 +1,10 @@
 package net.thechance.dukan.service
 
-import net.thechance.dukan.entity.Dukan
 import net.thechance.dukan.entity.DukanShelf
-import net.thechance.dukan.exception.DukanNotFoundException
 import net.thechance.dukan.exception.ShelfDeletionNotAllowedException
 import net.thechance.dukan.exception.ShelfNameAlreadyTakenException
 import net.thechance.dukan.exception.ShelfNotFoundException
 import net.thechance.dukan.repository.DukanProductRepository
-import net.thechance.dukan.repository.DukanRepository
 import net.thechance.dukan.repository.DukanShelfRepository
 import org.springframework.stereotype.Service
 import java.util.UUID
@@ -32,15 +29,22 @@ class DukanShelfService(
             )
         )
     }
+
     fun deleteShelf(shelfId: UUID, ownerId: UUID) {
         val shelf = getShelfById(shelfId,ownerId)
 
-        val products = dukanProductRepository.findAllByShelfId(shelf.id)
-        if (products.isNotEmpty()) {
+        if (dukanProductRepository.existsByShelfId(shelfId)) {
             throw ShelfDeletionNotAllowedException()
         }
 
         dukanShelfRepository.delete(shelf)
+    }
+
+    fun getDukanShelvesByOwnerId(ownerId: UUID): List<DukanShelf> {
+
+        val dukan = dukanService.getDukanByOwnerId(ownerId)
+
+        return dukanShelfRepository.findAllByDukanId(dukan.id)
     }
 
     fun getShelfById(shelfId: UUID, ownerId: UUID): DukanShelf {
