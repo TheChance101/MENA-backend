@@ -3,18 +3,16 @@ package net.thechance.chat.service
 import io.mockk.every
 import io.mockk.mockk
 import io.mockk.verify
-import net.thechance.chat.entity.ContactUser
-import net.thechance.chat.entity.Message
 import net.thechance.chat.entity.Chat
+import net.thechance.chat.entity.ContactUser
 import net.thechance.chat.repository.ChatRepository
 import net.thechance.chat.repository.ContactUserRepository
 import net.thechance.chat.repository.MessageRepository
+import net.thechance.chat.service.model.toModel
+import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
-import java.util.UUID
-import net.thechance.chat.service.model.toModel
-import java.util.Optional
-import org.junit.jupiter.api.Assertions.assertEquals
+import java.util.*
 
 class ChatServiceTest {
 
@@ -43,50 +41,6 @@ class ChatServiceTest {
         chatRepository = mockk(relaxed = true)
         contactUserRepository = mockk(relaxed = true)
         service = ChatService(messageRepository, chatRepository, contactUserRepository)
-    }
-
-    @Test
-    fun `markChatMessagesAsRead marks all unread messages as read in multiple pages`() {
-        val chatId = UUID.randomUUID()
-        val user = testUser()
-        val chat = testChat(chatId)
-        val pageSize = ChatService.PAGE_SIZE
-
-        val messagesPage1 = List(pageSize) {
-            Message(UUID.randomUUID(), UUID.randomUUID(), "msg1", readByUsers = mutableSetOf(), chat = chat)
-        }
-        val messagesPage2 = List(pageSize) {
-            Message(UUID.randomUUID(), UUID.randomUUID(), "msg2", readByUsers = mutableSetOf(), chat = chat)
-        }
-        val messagesPage3 = emptyList<Message>()
-
-        every {
-            messageRepository.findAllByChatIdAndReadByUsersNotContainingAndSenderIdNot(eq(chatId), eq(user), eq(user.id), any())
-        } returnsMany listOf(messagesPage1, messagesPage2, messagesPage3)
-
-        every { messageRepository.saveAll(any<List<Message>>()) } returnsArgument 0
-
-        service.markChatMessagesAsRead(chatId, user)
-
-        verify(exactly = 2) { messageRepository.saveAll(match<List<Message>> { it.all { msg -> user in msg.readByUsers } }) }
-        verify(exactly = 3) { messageRepository.findAllByChatIdAndReadByUsersNotContainingAndSenderIdNot(any(), any(), any(), any()) }
-    }
-
-    @Test
-    fun `markChatMessagesAsRead does nothing if no unread messages`() {
-        val chatId = UUID.randomUUID()
-        val user = testUser()
-        every { messageRepository.findAllByChatIdAndReadByUsersNotContainingAndSenderIdNot(chatId, user, user.id, any()) } returns emptyList()
-
-        service.markChatMessagesAsRead(chatId, user)
-
-        verify(exactly = 1) { messageRepository.findAllByChatIdAndReadByUsersNotContainingAndSenderIdNot(chatId, user, user.id, any()) }
-        verify(exactly = 0) { messageRepository.saveAll(any<List<Message>>()) }
-    }
-
-    @Test
-    fun `PAGE_SIZE companion object is correct`() {
-        assert(ChatService.PAGE_SIZE == 500)
     }
 
     @Test

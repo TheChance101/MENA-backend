@@ -1,14 +1,15 @@
 package net.thechance.chat.service
 
+import net.thechance.chat.api.dto.MessageDto
 import net.thechance.chat.entity.Chat
-import net.thechance.chat.entity.ContactUser
 import net.thechance.chat.entity.Message
 import net.thechance.chat.repository.ChatRepository
 import net.thechance.chat.repository.ContactUserRepository
 import net.thechance.chat.repository.MessageRepository
 import net.thechance.chat.service.model.ChatModel
-import net.thechance.chat.service.model.MessageModel
 import net.thechance.chat.service.model.toModel
+import org.springframework.data.domain.Page
+import org.springframework.data.domain.PageRequest
 import org.springframework.data.domain.Pageable
 import org.springframework.stereotype.Service
 import org.springframework.transaction.annotation.Transactional
@@ -51,6 +52,17 @@ class ChatService(
 
         val newChat = chatRepository.save(Chat(users = mutableSetOf(requester, otherUser)))
         return newChat.toModel(userId)
+    }
+
+    fun getAllChatMessages(
+        chatId: UUID,
+        pageable: Pageable,
+    ): Page<Message> {
+        return if (pageable.pageNumber <= 0 || pageable.pageSize <= 0) {
+            messageRepository.getAllByChatId(chatId, Pageable.unpaged())
+        } else {
+            messageRepository.getAllByChatId(chatId, PageRequest.of(pageable.pageNumber - 1, pageable.pageSize))
+        }
     }
 
     fun markChatMessagesAsRead(chatId: UUID, userId: UUID) {

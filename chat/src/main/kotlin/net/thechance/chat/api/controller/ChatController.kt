@@ -44,4 +44,17 @@ class ChatController(
         return chatService.getOrCreateConversationByParticipants(userId, receiverId)
     }
 
+    @GetMapping
+    fun getChatHistory(
+        @RequestParam chatId: UUID,
+        pageable: Pageable
+    ): ResponseEntity<PagedResponse<MessageDto>> {
+        return ResponseEntity.ok(
+            chatService.getAllChatMessages(
+                chatId = chatId,
+                pageable = pageable
+            ).toPagedResponse()
+        )
+    }
+
 }
