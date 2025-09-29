@@ -37,14 +37,14 @@ class TrendsGlobalExceptionHandler {
         return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(message)
     }
 
-    @ExceptionHandler(InvalidTrendInputException::class)
+    @ExceptionHandler(InvalidVideoException::class)
     fun handleInvalidVideoException(exception: InvalidVideoException): ResponseEntity<String> {
         val message = exception.localizedMessage
 
         return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(message)
     }
 
-    @ExceptionHandler(InvalidTrendInputException::class)
+    @ExceptionHandler(VideoUploadFailedException::class)
     fun handleVideoUploadFailedException(exception: VideoUploadFailedException): ResponseEntity<String> {
         val message = exception.localizedMessage
 
