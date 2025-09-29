@@ -1,4 +1,4 @@
-package net.thechance.wallet.service.helper
+package net.thechance.wallet.api.controller.helper
 
 import net.thechance.wallet.api.dto.transaction.StatementData
 import net.thechance.wallet.entity.Transaction
@@ -23,7 +23,7 @@ class StatementHtmlGenerator(
         transactionsPage: Page<Transaction>,
     ): String {
         val formattedTransactions = transactionsPage.content.map {
-            formatTransaction(it, statementData.userId) 
+            formatTransaction(it, statementData.userId)
         }
 
         val templateData = mapOf(
@@ -105,10 +105,10 @@ class StatementHtmlGenerator(
 
     private fun LocalDateTime.formatHeaderDate(): String =
         this.format(DateTimeFormatter.ofPattern("dd MMM yyyy"))
-    
-    private fun LocalDateTime.formatRowItemDate(): String = 
+
+    private fun LocalDateTime.formatRowItemDate(): String =
         this.format(DateTimeFormatter.ofPattern("yyyy/MM/dd"))
-    
-    private fun LocalDateTime.formatRowItemTime(): String = 
+
+    private fun LocalDateTime.formatRowItemTime(): String =
         this.format(DateTimeFormatter.ofPattern("HH:mm a"))
 }

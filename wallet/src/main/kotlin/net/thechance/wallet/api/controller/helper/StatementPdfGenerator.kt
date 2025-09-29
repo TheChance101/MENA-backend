@@ -10,7 +10,6 @@ import net.thechance.wallet.api.dto.transaction.StatementData
 import net.thechance.wallet.api.dto.transaction.UserTransactionType
 import net.thechance.wallet.service.StatementService
 import net.thechance.wallet.service.TransactionService
-import net.thechance.wallet.service.helper.StatementHtmlGenerator
 import org.springframework.core.io.ResourceLoader
 import org.springframework.stereotype.Component
 import java.time.LocalDate
