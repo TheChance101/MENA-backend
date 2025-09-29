@@ -8,8 +8,6 @@ import org.springframework.data.repository.query.Param
 import java.util.UUID
 
 interface ChatRepository : JpaRepository<Chat, UUID> {
-    fun findByUsers(users: Set<ContactUser>): Chat?
-
     @Query("""
         select c
         from Chat c
@@ -19,5 +17,5 @@ interface ChatRepository : JpaRepository<Chat, UUID> {
         having count(c) = :#{#userIds.size}
         """
     )
-    fun findPrivateChatBetweenUsers(@Param("userIds") userIds: Set<UUID>): Chat?
+    fun findPrivateChatBetweenUsers(userIds: Set<UUID>): Chat?
 }

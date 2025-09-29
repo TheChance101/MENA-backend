@@ -10,7 +10,7 @@ import java.util.UUID
 
 interface MessageRepository : JpaRepository<Message, UUID> {
 
-    fun getAllByChatIdOrderBySendAt(chatId: UUID, pageable: Pageable): Page<Message>
+    fun getAllByChatIdOrderBySentAt(chatId: UUID, pageable: Pageable): Page<Message>
 
     @Modifying
     @Query("UPDATE Message m SET m.isRead = true WHERE m.chat.id = :chatId AND m.senderId <> :userId AND m.isRead = false")

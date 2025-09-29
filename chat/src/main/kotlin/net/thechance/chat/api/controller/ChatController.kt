@@ -1,10 +1,7 @@
 package net.thechance.chat.api.controller
 
-import net.thechance.chat.api.dto.MessageDto
-import net.thechance.chat.api.dto.PagedResponse
-import net.thechance.chat.api.dto.toPagedMessageResponse
+import net.thechance.chat.api.dto.*
 import net.thechance.chat.service.ChatService
-import net.thechance.chat.service.model.ChatModel
 import org.springframework.data.domain.Pageable
 import org.springframework.http.ResponseEntity
 import org.springframework.messaging.handler.annotation.MessageMapping
@@ -39,8 +36,8 @@ class ChatController(
     fun getOrCreateConversation(
         @AuthenticationPrincipal userId: UUID,
         @RequestParam receiverId: UUID
-    ): ResponseEntity<ChatModel> {
-        return ResponseEntity.ok(chatService.getOrCreateConversationByParticipants(userId, receiverId))
+    ): ResponseEntity<ChatResponse> {
+        return ResponseEntity.ok(chatService.getOrCreateConversationByParticipants(userId, receiverId).toResponse(userId))
     }
 
     @GetMapping("/history")

@@ -21,7 +21,7 @@ fun Message.toDto(): MessageDto {
         senderId = this.senderId,
         chatId = this.chat.id,
         text = this.text,
-        sendAt = this.sendAt,
+        sendAt = this.sentAt,
         isRead = this.isRead
     )
 }
