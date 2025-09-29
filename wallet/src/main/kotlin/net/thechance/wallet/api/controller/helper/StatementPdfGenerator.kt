@@ -37,24 +37,22 @@ class StatementPdfGenerator(
         val pdf = PdfDocument(writer)
         val converterProperties = setupConverterProperties()
 
-        generatePages(userId, statementData, types, pdf, converterProperties)
+        generatePages(statementData, pdf, converterProperties)
 
         pdf.close()
         outputStream.flush()
     }
 
     private fun generatePages(
-        userId: UUID,
         statementData: StatementData,
-        types: List<UserTransactionType>?,
         pdf: PdfDocument,
         converterProperties: ConverterProperties
     ) {
         val firstPage = statementService.getTransactionsPage(
-            userId,
+            statementData.userId,
             statementData.startDateTime,
             statementData.endDateTime,
-            types,
+            statementData.types,
             0
         )
 
@@ -63,10 +61,10 @@ class StatementPdfGenerator(
                 firstPage
             } else {
                 statementService.getTransactionsPage(
-                    userId,
+                    statementData.userId,
                     statementData.startDateTime,
                     statementData.endDateTime,
-                    types,
+                    statementData.types,
                     pageNum
                 )
             }
