@@ -1,7 +1,5 @@
-package net.thechance.wallet.service.helper
+package net.thechance.wallet.api.dto.transaction
 
-import net.thechance.wallet.api.dto.transaction.UserTransactionType
-import net.thechance.wallet.entity.Transaction
 import java.time.LocalDateTime
 import java.util.*
 
@@ -12,7 +10,5 @@ data class StatementData(
     val endDateTime: LocalDateTime,
     val openingBalance: Double,
     val closingBalance: Double,
-    val totalPages: Int,
     val types: List<UserTransactionType>?,
-    val transactionProvider: (pageNum: Int) -> List<Transaction>
 )

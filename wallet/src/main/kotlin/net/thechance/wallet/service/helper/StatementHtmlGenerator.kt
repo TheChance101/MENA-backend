@@ -1,7 +1,9 @@
 package net.thechance.wallet.service.helper
 
+import net.thechance.wallet.api.dto.transaction.StatementData
 import net.thechance.wallet.entity.Transaction
 import org.springframework.core.io.ResourceLoader
+import org.springframework.data.domain.Page
 import org.springframework.stereotype.Component
 import org.thymeleaf.TemplateEngine
 import org.thymeleaf.context.Context
@@ -18,10 +20,9 @@ class StatementHtmlGenerator(
 
     fun generateForPage(
         statementData: StatementData,
-        transactions: List<Transaction>,
-        pageNum: Int
+        transactionsPage: Page<Transaction>,
     ): String {
-        val formattedTransactions = transactions.map { 
+        val formattedTransactions = transactionsPage.content.map {
             formatTransaction(it, statementData.userId) 
         }
 
@@ -33,8 +34,8 @@ class StatementHtmlGenerator(
             "closingBalance" to String.format("%.2f", statementData.closingBalance),
             "logoSvgInline" to getAppIconSvg(),
             "transactions" to formattedTransactions,
-            "isFirstPage" to (pageNum == 0),
-            "isLastPage" to (pageNum == statementData.totalPages - 1)
+            "isFirstPage" to (transactionsPage.pageable.pageNumber == 0),
+            "isLastPage" to (transactionsPage.pageable.pageNumber == transactionsPage.totalPages - 1)
         )
 
         val context = Context()

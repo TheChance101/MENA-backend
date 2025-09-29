@@ -4,7 +4,7 @@ import net.thechance.wallet.api.dto.transaction.UserTransactionType
 import net.thechance.wallet.entity.Transaction
 import net.thechance.wallet.exception.NoTransactionsFoundException
 import net.thechance.wallet.repository.TransactionRepository
-import net.thechance.wallet.service.helper.StatementData
+import net.thechance.wallet.repository.WalletUserRepository
 import org.springframework.data.domain.Page
 import org.springframework.data.domain.PageRequest
 import org.springframework.stereotype.Service
@@ -14,77 +14,55 @@ import java.util.*
 
 @Service
 class StatementService(
-    private val transactionRepository: TransactionRepository
+    private val transactionRepository: TransactionRepository,
+    private val walletUserRepository: WalletUserRepository,
 ) {
+    fun getUserName(userId: UUID): String {
+        return walletUserRepository.findById(userId)
+            .orElseThrow { IllegalArgumentException("User not found") }
+            .userName
+    }
 
-    fun prepareStatementData(
+    fun getOpeningBalance(userId: UUID, startDate: LocalDate?): Double {
+        val startDateTime = startDate?.atStartOfDay() ?: return 0.0
+
+        return transactionRepository.sumNetUserTransactions(
+            endDate = startDateTime,
+            currentUserId = userId
+        ) ?: 0.0
+    }
+
+    fun getClosingBalance(userId: UUID, endDate: LocalDate?): Double {
+        val endDateTime = endDate?.plusDays(1)?.atStartOfDay() ?: LocalDateTime.now()
+
+        return transactionRepository.sumNetUserTransactions(
+            endDate = endDateTime,
+            currentUserId = userId
+        ) ?: 0.0
+    }
+
+    fun getTransactionsPage(
         userId: UUID,
-        startDate: LocalDate?,
-        endDate: LocalDate?,
+        startDateTime: LocalDateTime,
+        endDateTime: LocalDateTime,
         types: List<UserTransactionType>?,
-    ): StatementData {
-        val startDateTime = startDate?.atStartOfDay()
-            ?: transactionRepository.findFirstBySender_UserIdOrReceiver_UserIdOrderByCreatedAtAsc(
-                userId,
-                userId
-            )?.createdAt ?: LocalDateTime.now()
+        pageNum: Int
+    ): Page<Transaction> {
 
-        val endDateTime = endDate?.atTime(23, 59, 59) ?: LocalDateTime.now()
-
-        val firstPage = transactionRepository.findFilteredTransactions(
+        val transactionsPage = transactionRepository.findFilteredTransactions(
             status = null,
             transactionTypes = types?.map { it.name },
             startDate = startDateTime,
             endDate = endDateTime,
-            pageable = PageRequest.of(0, PAGE_SIZE),
+            pageable = PageRequest.of(pageNum, PAGE_SIZE),
             currentUserId = userId
         )
 
-        if (firstPage.isEmpty) {
+        if (transactionsPage.content.isEmpty()) {
             throw NoTransactionsFoundException("No transactions found for the specified filters")
         }
 
-        val username = getUsername(firstPage, userId)
-        val openingBalance = if (startDate == null) 0.0 else transactionRepository.sumNetUserTransactions(
-            endDate = startDateTime,
-            currentUserId = userId
-        ) ?: 0.0
-
-        val closingBalance = transactionRepository.sumNetUserTransactions(
-            endDate = endDateTime,
-            currentUserId = userId
-        ) ?: 0.0
-
-        val transactionProvider: (Int) -> List<Transaction> = { pageNum ->
-            transactionRepository.findFilteredTransactions(
-                status = null,
-                transactionTypes = types?.map { it.name },
-                startDate = startDateTime,
-                endDate = endDateTime,
-                pageable = PageRequest.of(pageNum, PAGE_SIZE),
-                currentUserId = userId
-            ).content
-        }
-
-        return StatementData(
-            userId = userId,
-            username = username,
-            startDateTime = startDateTime,
-            endDateTime = endDateTime,
-            openingBalance = openingBalance,
-            closingBalance = closingBalance,
-            totalPages = firstPage.totalPages,
-            types = types,
-            transactionProvider = transactionProvider
-        )
-    }
-
-    private fun getUsername(transactions: Page<Transaction>, userId: UUID): String {
-        return transactions
-            .first { it.sender.userId == userId || it.receiver.userId == userId }
-            .let {
-                if (it.sender.userId == userId) it.sender.userName else it.receiver.userName
-            }
+        return transactionsPage
     }
 
     private companion object {

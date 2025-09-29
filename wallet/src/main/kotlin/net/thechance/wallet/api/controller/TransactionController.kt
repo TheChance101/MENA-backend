@@ -1,13 +1,12 @@
 package net.thechance.wallet.api.controller
 
 import jakarta.servlet.http.HttpServletResponse
-import net.thechance.wallet.api.controller.helper.PdfConverter
+import net.thechance.wallet.api.controller.helper.StatementPdfGenerator
 import net.thechance.wallet.api.dto.transaction.FirstTransactionDateResponse
 import net.thechance.wallet.api.dto.transaction.TransactionPageResponse
 import net.thechance.wallet.api.dto.transaction.UserTransactionType
 import net.thechance.wallet.api.dto.transaction.toResponse
 import net.thechance.wallet.entity.Transaction
-import net.thechance.wallet.service.StatementService
 import net.thechance.wallet.service.TransactionService
 import net.thechance.wallet.service.helper.TransactionFilterParams
 import org.springframework.data.domain.Pageable
@@ -18,7 +17,6 @@ import org.springframework.web.bind.annotation.RequestMapping
 import org.springframework.web.bind.annotation.RequestParam
 import org.springframework.web.bind.annotation.RestController
 import java.time.LocalDate
-import java.time.LocalDateTime
 import java.time.format.DateTimeFormatter
 import java.util.*
 
@@ -27,8 +25,7 @@ import java.util.*
 @RequestMapping("/wallet/transactions")
 class TransactionController(
     private val transactionService: TransactionService,
-    private val statementService: StatementService,
-    private val pdfConverter: PdfConverter,
+    private val statementPdfGenerator: StatementPdfGenerator,
 ) {
     @GetMapping
     fun getFilteredTransactions(
@@ -81,23 +78,22 @@ class TransactionController(
         @RequestParam(required = false) startDate: LocalDate?,
         @RequestParam(required = false) endDate: LocalDate?,
     ) {
-        val statementData = statementService.prepareStatementData(
-            userId = userId,
-            startDate = startDate,
-            endDate = endDate,
-            types = types,
-        )
-
         response.contentType = "application/pdf"
         response.setHeader(
             "Content-Disposition",
-            "attachment; filename=\"statement_${statementData.startDateTime.formatDate()}_to_${statementData.endDateTime.formatDate()}.pdf\""
+            "attachment; filename=\"statement${startDate.formatDate()}_to${endDate.formatDate()}.pdf\""
         )
 
-        pdfConverter.convertToPdfStream(statementData, response.outputStream)
+        statementPdfGenerator.generatePdf(
+            userId = userId,
+            types = types,
+            startDate = startDate,
+            endDate = endDate,
+            outputStream = response.outputStream
+        )
     }
 
-    private fun LocalDateTime.formatDate(): String =
-        this.format(DateTimeFormatter.ofPattern("dd_MMM_yyyy"))
+    private fun LocalDate?.formatDate(): String =
+        this?.format(DateTimeFormatter.ofPattern("_dd_MMM_yyyy"))?.lowercase() ?: ""
 }
 
