@@ -21,21 +21,6 @@ class ChatService(
     private val chatRepository: ChatRepository,
     private val contactUserRepository: ContactUserRepository
 ) {
-
-    fun saveMessage(message: MessageDto) {
-        chatRepository.findByIdIs(message.chatId)?.let { chat ->
-            Message(
-                id = message.id,
-                senderId = message.senderId,
-                chat = chat,
-                text = message.text,
-                sendAt = message.sendAt
-            ).let { message ->
-                messageRepository.save(message)
-            }
-        } ?: throw IllegalArgumentException("Chat with id ${message.chatId} not found")
-    }
-
     @Transactional
     fun getOrCreateConversationByParticipants(userId: UUID, receiverId: UUID): ChatModel {
         val userIds = setOf(userId, receiverId)
@@ -52,6 +37,20 @@ class ChatService(
 
         val newChat = chatRepository.save(Chat(users = mutableSetOf(requester, otherUser)))
         return newChat.toModel(userId)
+    }
+
+    fun saveMessage(message: MessageDto) {
+        chatRepository.findByIdIs(message.chatId)?.let { chat ->
+            Message(
+                id = message.id,
+                senderId = message.senderId,
+                chat = chat,
+                text = message.text,
+                sendAt = message.sendAt
+            ).let { message ->
+                messageRepository.save(message)
+            }
+        } ?: throw IllegalArgumentException("Chat with id ${message.chatId} not found")
     }
 
     fun getAllChatMessages(
