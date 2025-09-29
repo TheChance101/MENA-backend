@@ -8,7 +8,6 @@ import org.springframework.data.repository.query.Param
 import java.util.UUID
 
 interface ChatRepository : JpaRepository<Chat, UUID> {
-    fun findByIdIs(id: UUID): Chat?
     fun findByUsers(users: Set<ContactUser>): Chat?
 
     @Query("""

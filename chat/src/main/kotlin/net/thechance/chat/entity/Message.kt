@@ -14,13 +14,13 @@ import java.util.UUID
 data class Message(
     @Id @Column(columnDefinition = "uuid", updatable = false, nullable = false)
     val id: UUID = UUID.randomUUID(),
-    @Column(name = "sender_id", nullable = false)
+    @Column(nullable = false)
     val senderId: UUID,
-    @Column(name = "text", nullable = false)
+    @Column(nullable = false)
     val text: String,
-    @Column(name= "sendAt",nullable = false)
-    val sendAt: Instant = Instant.now(),
-    @Column(name = "is_read", nullable = false)
+    @Column(nullable = false)
+    val sentAt: Instant = Instant.now(),
+    @Column(nullable = false)
     val isRead: Boolean = false,
 
     @ManyToOne(optional = false)

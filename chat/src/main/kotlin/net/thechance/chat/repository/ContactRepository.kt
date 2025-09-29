@@ -20,7 +20,6 @@ interface ContactRepository : JpaRepository<Contact, UUID> {
                 c.firstName,
                 c.lastName,
                 c.phoneNumber,
-                CASE WHEN u IS NOT NULL THEN true ELSE false END,
                 CASE WHEN u IS NOT NULL THEN u.id ELSE null END,
                 CASE WHEN u IS NOT NULL THEN u.imageUrl ELSE null END
             )
