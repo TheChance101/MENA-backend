@@ -7,6 +7,7 @@ import net.thechance.dukan.exception.dukan_product.DukanProductCreationFailedExc
 import net.thechance.dukan.exception.dukan_product.ProductNameAlreadyTakenException
 import net.thechance.dukan.exception.dukan_product.ProductNotFoundException
 import net.thechance.dukan.repository.DukanProductRepository
+import net.thechance.dukan.repository.DukanShelfRepository
 import net.thechance.dukan.service.model.DukanProductCreationParams
 import org.springframework.data.domain.Page
 import org.springframework.data.domain.Pageable
@@ -14,14 +15,13 @@ import org.springframework.stereotype.Service
 import org.springframework.web.multipart.MultipartFile
 import java.lang.Exception
 import java.util.UUID
-import java.util.*
 
 
 @Service
 class DukanProductService(
     private val dukanProductRepository: DukanProductRepository,
+    private val dukanShelfRepository: DukanShelfRepository,
     private val dukanService: DukanService,
-    private val dukanShelfService: DukanShelfService,
     private val imageStorageService: ImageStorageService,
 ) {
     @Transactional
@@ -53,7 +53,7 @@ class DukanProductService(
     fun createProduct(params: DukanProductCreationParams): UUID {
         try {
             val dukan = dukanService.getDukanByOwnerId(params.ownerId)
-            val shelf = dukanShelfService.getShelfById(params.shelfId, params.ownerId)
+            val shelf = dukanShelfRepository.getReferenceById(params.shelfId)
             if (dukanProductRepository.existsByDukanIdAndNameIgnoreCase(dukan.id, params.name)) {
                 throw ProductNameAlreadyTakenException()
             }
@@ -63,7 +63,7 @@ class DukanProductService(
                     shelf = shelf,
                     dukan = dukan,
                     price = params.price,
-                    description = params.description,
+                    description = params.description.trim(),
                     imageUrls = emptyList() // Images will be uploaded using a different endpoint
                 )
             )
