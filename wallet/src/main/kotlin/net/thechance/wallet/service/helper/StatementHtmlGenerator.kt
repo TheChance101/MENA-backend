@@ -45,7 +45,7 @@ class StatementHtmlGenerator(
 
     private fun formatTransaction(transaction: Transaction, currentUserId: UUID): Map<String, Any> {
         return mapOf(
-            "id" to "TX-" + transaction.id.toString().substring(0, 6).uppercase(),
+            "id" to "TX-" + transaction.id.toString().substring(0, 8),
             "date" to transaction.createdAt.formatRowItemDate(),
             "time" to transaction.createdAt.formatRowItemTime(),
             "typeHeader" to getTypeHeader(transaction, currentUserId),

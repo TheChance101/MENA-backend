@@ -46,4 +46,28 @@ interface TransactionRepository : JpaRepository<Transaction, UUID> {
         senderId: UUID,
         receiverId: UUID
     ): Transaction?
+
+    @Query(
+        """
+        SELECT SUM(t.amount) FROM Transaction t
+        WHERE (t.sender.userId = :currentUserId OR t.receiver.userId = :currentUserId)
+          AND (:status IS NULL OR t.status = :status)
+          AND t.createdAt BETWEEN :startDate AND :endDate
+          AND (
+                :transactionTypes IS NULL
+            OR (
+                ('SENT' IN :transactionTypes AND t.type = 'P2P' AND t.sender.userId = :currentUserId)
+                OR ('RECEIVED' IN :transactionTypes AND t.type = 'P2P' AND t.receiver.userId = :currentUserId)
+                OR ('ONLINE_PURCHASE' IN :transactionTypes AND t.type = 'ONLINE_PURCHASE')
+            )
+        )
+     """
+    )
+    fun sumUserTransactions(
+        @Param("currentUserId") currentUserId: UUID,
+        @Param("status") status: Transaction.Status?,
+        @Param("transactionTypes") transactionTypes: List<String>?,
+        @Param("startDate") startDate: LocalDateTime?,
+        @Param("endDate") endDate: LocalDateTime?,
+    ): Double?
 }

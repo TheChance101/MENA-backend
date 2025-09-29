@@ -7,7 +7,6 @@ import net.thechance.wallet.repository.TransactionRepository
 import net.thechance.wallet.service.helper.StatementData
 import org.springframework.data.domain.Page
 import org.springframework.data.domain.PageRequest
-import org.springframework.data.domain.Pageable
 import org.springframework.stereotype.Service
 import java.time.LocalDate
 import java.time.LocalDateTime
@@ -33,7 +32,6 @@ class StatementService(
 
         val endDateTime = endDate?.atTime(23, 59, 59) ?: LocalDateTime.now()
 
-        // Get first page to validate and extract metadata
         val firstPage = transactionRepository.findFilteredTransactions(
             status = status,
             transactionTypes = types?.map { it.name },
@@ -48,22 +46,22 @@ class StatementService(
         }
 
         val username = getUsername(firstPage, userId)
-        val openingBalance = if (startDate == null) 0.0 else calculateOpeningBalance(
-            userId, status, types, startDateTime
-        )
-
-        // Calculate closing balance by iterating through all pages
-        val closingBalance = calculateClosingBalance(
-            userId = userId,
+        val openingBalance = if (startDate == null) 0.0 else transactionRepository.sumUserTransactions(
             status = status,
-            types = types,
-            startDateTime = startDateTime,
-            endDateTime = endDateTime,
-            openingBalance = openingBalance,
-            totalPages = firstPage.totalPages
-        )
+            transactionTypes = types?.map { it.name },
+            startDate = LocalDate.ofEpochDay(0L).atStartOfDay(),
+            endDate = startDateTime,
+            currentUserId = userId
+        ) ?: 0.0
 
-        // Create a transaction provider function for pagination
+        val closingBalance = transactionRepository.sumUserTransactions(
+            status = status,
+            transactionTypes = types?.map { it.name },
+            startDate = startDateTime,
+            endDate = endDateTime,
+            currentUserId = userId
+        ) ?: 0.0
+
         val transactionProvider: (Int) -> List<Transaction> = { pageNum ->
             transactionRepository.findFilteredTransactions(
                 status = status,
@@ -87,57 +85,6 @@ class StatementService(
             types = types,
             transactionProvider = transactionProvider
         )
-    }
-
-    private fun calculateClosingBalance(
-        userId: UUID,
-        status: Transaction.Status?,
-        types: List<UserTransactionType>?,
-        startDateTime: LocalDateTime,
-        endDateTime: LocalDateTime,
-        openingBalance: Double,
-        totalPages: Int
-    ): Double {
-        var balance = openingBalance
-
-        for (pageNum in 0 until totalPages) {
-            val page = transactionRepository.findFilteredTransactions(
-                status = status,
-                transactionTypes = types?.map { it.name },
-                startDate = startDateTime,
-                endDate = endDateTime,
-                pageable = PageRequest.of(pageNum, PAGE_SIZE),
-                currentUserId = userId
-            )
-
-            balance += page.content.sumOf { transaction ->
-                if (userId == transaction.sender.userId) {
-                    transaction.amount.unaryMinus()
-                } else {
-                    transaction.amount
-                }
-            }.toDouble()
-        }
-
-        return balance
-    }
-
-    private fun calculateOpeningBalance(
-        userId: UUID,
-        status: Transaction.Status?,
-        types: List<UserTransactionType>?,
-        startDate: LocalDateTime
-    ): Double {
-        return transactionRepository.findFilteredTransactions(
-            currentUserId = userId,
-            status = status,
-            transactionTypes = types?.map { it.name },
-            startDate = LocalDate.ofEpochDay(0L).atStartOfDay(),
-            endDate = startDate,
-            pageable = Pageable.unpaged()
-        ).sumOf {
-            if (userId == it.sender.userId) it.amount.unaryMinus() else it.amount
-        }.toDouble()
     }
 
     private fun getUsername(transactions: Page<Transaction>, userId: UUID): String {
