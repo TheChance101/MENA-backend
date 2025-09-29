@@ -1,8 +1,12 @@
 package net.thechance.chat.api.controller
 
+import net.thechance.chat.api.dto.MessageDto
+import net.thechance.chat.api.dto.PagedResponse
+import net.thechance.chat.api.dto.toPagedResponse
 import net.thechance.chat.service.ChatService
 import net.thechance.chat.service.model.ChatModel
-import net.thechance.chat.service.model.MessageModel
+import org.springframework.data.domain.Pageable
+import org.springframework.http.ResponseEntity
 import org.springframework.messaging.handler.annotation.MessageMapping
 import org.springframework.messaging.handler.annotation.Payload
 import org.springframework.messaging.simp.SimpMessagingTemplate
@@ -22,16 +26,14 @@ class ChatController(
 ) {
 
     @MessageMapping("/chat.privateMessage")
-    fun sendPrivateMessage(@Payload chatMessage: MessageModel) {
+    fun sendPrivateMessage(@Payload chatMessage: MessageDto) {
         chatService.saveMessage(chatMessage)
         messagingTemplate.convertAndSendToUser(
-            chatMessage.chatId.toString(),   //  recipientId
+            chatMessage.chatId.toString(),
             "/queue/messages",
             chatMessage
         )
     }
-
-
 
     @GetMapping
     @ResponseBody

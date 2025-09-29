@@ -21,35 +21,19 @@ class ChatService(
     private val contactUserRepository: ContactUserRepository
 ) {
 
-    fun saveMessage(chatMessage: MessageModel): Message {
-        return chatRepository.findByIdIs(chatMessage.chatId)?.let { chat ->
+    fun saveMessage(message: MessageDto) {
+        chatRepository.findByIdIs(message.chatId)?.let { chat ->
             Message(
-                id = chatMessage.id,
-                senderId = chatMessage.senderId,
+                id = message.id,
+                senderId = message.senderId,
                 chat = chat,
-                text = chatMessage.text,
-                sendAt = chatMessage.sendAt
+                text = message.text,
+                sendAt = message.sendAt
             ).let { message ->
                 messageRepository.save(message)
             }
-        } ?: throw IllegalArgumentException("Chat with id ${chatMessage.chatId} not found")
+        } ?: throw IllegalArgumentException("Chat with id ${message.chatId} not found")
     }
-
-/*    @Transactional
-    fun getOrCreateConversationByParticipants(requesterId: UUID, theOtherUserId: UUID): ChatModel {
-        val requester = contactUserRepository.findById(requesterId)
-            .orElseThrow { IllegalArgumentException("Requester with id $requesterId not found") }
-        val theOtherUser = contactUserRepository.findById(theOtherUserId)
-            .orElseThrow { IllegalArgumentException("User with id $theOtherUserId not found") }
-
-        chatRepository.findByUsersIdsAndGroupChatIsNull(setOf(requester.id, theOtherUser.id))
-            ?.let { return it.toModel(requesterId) }
-
-        val savedConversation = chatRepository.save(Chat(users = mutableSetOf(requester, theOtherUser)))
-
-        return chatRepository.findByIdIs(savedConversation.id)?.toModel(requesterId)
-            ?: throw IllegalStateException("Failed to retrieve the newly created conversation.")
-    }*/
 
     @Transactional
     fun getOrCreateConversationByParticipants(userId: UUID, receiverId: UUID): ChatModel {
