@@ -17,7 +17,7 @@ databaseChangeLog:
                     nullable: false
 
   - changeSet:
-      id: 9-chat
+      id: 8-chat
       author: omer-faris
       comment: create messages table
       changes:
@@ -70,7 +70,7 @@ databaseChangeLog:
             onDelete: CASCADE
 
   - changeSet:
-      id: 10-chat
+      id: 9-chat
       author: omer-faris
       comment: create chat_users join table
       changes:
