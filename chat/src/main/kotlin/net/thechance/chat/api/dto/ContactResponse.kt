@@ -8,7 +8,7 @@ data class ContactResponse(
     val firstName: String,
     val lastName: String,
     val phoneNumber: String,
-    val userId: UUID?,
+    val menaUserId: UUID?,
     val imageUrl: String?
 )
 
@@ -18,7 +18,7 @@ fun ContactModel.toResponse() : ContactResponse {
         firstName = this.firstName,
         lastName = this.lastName,
         phoneNumber = this.phoneNumber,
-        userId = this.userId,
+        menaUserId = this.menaUserId,
         imageUrl = this.imageUrl
     )
 }

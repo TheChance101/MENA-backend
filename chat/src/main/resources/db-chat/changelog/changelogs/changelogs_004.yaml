@@ -54,7 +54,7 @@ databaseChangeLog:
                   constraints:
                     nullable: false
               - column:
-                  name: send_at
+                  name: sent_at
                   type: TIMESTAMP
                   defaultValueComputed: NOW()
                   constraints:

@@ -7,6 +7,6 @@ data class ContactModel(
     val firstName: String,
     val lastName: String,
     val phoneNumber: String,
-    val userId: UUID?,
+    val menaUserId: UUID?,
     val imageUrl: String?
 )

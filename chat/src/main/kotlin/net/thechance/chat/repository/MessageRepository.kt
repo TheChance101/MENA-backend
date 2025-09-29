@@ -13,11 +13,11 @@ interface MessageRepository : JpaRepository<Message, UUID> {
 
     fun getAllByChatId(chatId: UUID, pageable: Pageable): List<Message>
 
-    fun getAllByChatIdAndIdAfterOrderBySendAtAsc(chatId: UUID, id: UUID, pageable: Pageable): List<Message>
+    fun getAllByChatIdAndIdAfterOrderBySentAtAsc(chatId: UUID, id: UUID, pageable: Pageable): List<Message>
 
-    fun getAllByChatIdAndIdBeforeOrderBySendAtAsc(chatId: UUID, id: UUID, pageable: Pageable): List<Message>
+    fun getAllByChatIdAndIdBeforeOrderBySentAtAsc(chatId: UUID, id: UUID, pageable: Pageable): List<Message>
 
-    fun getAllByChatIdAndSendAtAfterOrderBySendAtAsc(chatId: UUID, sendAt: Instant, pageable: Pageable): List<Message>
+    fun getAllByChatIdAndSentAtAfterOrderBySentAtAsc(chatId: UUID, sentAt: Instant, pageable: Pageable): List<Message>
 
     @Modifying
     @Query("UPDATE Message m SET m.isRead = true WHERE m.chat.id = :chatId AND m.senderId <> :userId AND m.isRead = false")

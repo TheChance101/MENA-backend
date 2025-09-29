@@ -9,7 +9,7 @@ class MessageResponse(
     val senderId: UUID,
     val chatId: UUID,
     val text: String,
-    val sendAt: Instant,
+    val sentAt: Instant,
     val isRead: Boolean
 )
 
@@ -18,6 +18,6 @@ fun Message.toResponse() = MessageResponse(
     senderId = senderId,
     chatId = chat.id,
     text = text,
-    sendAt = sendAt,
+    sentAt = sentAt,
     isRead = isRead
 )
