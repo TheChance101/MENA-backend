@@ -58,6 +58,11 @@ class ChatController(
         @AuthenticationPrincipal userId: UUID,
         @RequestParam chatId: UUID,
     ) {
+        messagingTemplate.convertAndSendToUser(
+            chatId.toString(),
+            "/queue/messages",
+            mapOf("readBy" to userId)
+        )
         chatService.markChatMessagesAsRead(chatId, userId)
     }
 }
