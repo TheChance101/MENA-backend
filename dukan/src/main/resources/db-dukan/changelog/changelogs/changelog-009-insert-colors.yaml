@@ -1,0 +1,68 @@
+databaseChangeLog:
+  - changeSet:
+      id: 009-dukan-insert-colors
+      author: haider
+      changes:
+        - insert:
+            tableName: dukan_colors
+            columns:
+              - column:
+                  name: id
+                  valueComputed: gen_random_uuid()
+              - column:
+                  name: hex_code
+                  value: "#000000"
+        - insert:
+            tableName: dukan_colors
+            columns:
+              - column:
+                  name: id
+                  valueComputed: gen_random_uuid()
+              - column:
+                  name: hex_code
+                  value: "#B37DFF"
+        - insert:
+            tableName: dukan_colors
+            columns:
+              - column:
+                  name: id
+                  valueComputed: gen_random_uuid()
+              - column:
+                  name: hex_code
+                  value: "#C30C30"
+        - insert:
+            tableName: dukan_colors
+            columns:
+              - column:
+                  name: id
+                  valueComputed: gen_random_uuid()
+              - column:
+                  name: hex_code
+                  value: "#F77053"
+        - insert:
+            tableName: dukan_colors
+            columns:
+              - column:
+                  name: id
+                  valueComputed: gen_random_uuid()
+              - column:
+                  name: hex_code
+                  value: "#F4C343"
+        - insert:
+            tableName: dukan_colors
+            columns:
+              - column:
+                  name: id
+                  valueComputed: gen_random_uuid()
+              - column:
+                  name: hex_code
+                  value: "#739E61"
+        - insert:
+            tableName: dukan_colors
+            columns:
+              - column:
+                  name: id
+                  valueComputed: gen_random_uuid()
+              - column:
+                  name: hex_code
+                  value: "#30ABE8"
