@@ -52,12 +52,12 @@ class ChatServiceTest {
 
         every { contactUserRepository.findById(requester.id) } returns Optional.of(requester)
         every { contactUserRepository.findById(theOtherUser.id) } returns Optional.of(theOtherUser)
-        every { chatRepository.findByUsersIdsAndGroupChatIsNull(setOf(requester.id, theOtherUser.id)) } returns chat
+        every { chatRepository.findPrivateChatBetweenUsers(setOf(requester.id, theOtherUser.id)) } returns chat
 
         val result = service.getOrCreateConversationByParticipants(requester.id, theOtherUser.id)
 
         assertEquals(chatModel, result)
-        verify { chatRepository.findByUsersIdsAndGroupChatIsNull(setOf(requester.id, theOtherUser.id)) }
+        verify { chatRepository.findPrivateChatBetweenUsers(setOf(requester.id, theOtherUser.id)) }
         verify(exactly = 0) { chatRepository.save(any()) }
     }
 
@@ -70,7 +70,7 @@ class ChatServiceTest {
 
         every { contactUserRepository.findById(requester.id) } returns Optional.of(requester)
         every { contactUserRepository.findById(theOtherUser.id) } returns Optional.of(theOtherUser)
-        every { chatRepository.findByUsersIdsAndGroupChatIsNull(setOf(requester.id, theOtherUser.id)) } returns null
+        every { chatRepository.findPrivateChatBetweenUsers(setOf(requester.id, theOtherUser.id)) } returns null
         every { chatRepository.save(any()) } returns newChat
         every { chatRepository.findByIdIs(newChat.id) } returns newChat
 

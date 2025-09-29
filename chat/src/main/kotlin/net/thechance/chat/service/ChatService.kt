@@ -25,7 +25,7 @@ class ChatService(
     fun getOrCreateConversationByParticipants(userId: UUID, receiverId: UUID): ChatModel {
         val userIds = setOf(userId, receiverId)
 
-        val existingChat = chatRepository.findPrivateChatBetweenUsers(userIds, userIds.size.toLong())
+        val existingChat = chatRepository.findPrivateChatBetweenUsers(userIds)
         if (existingChat != null) {
             return existingChat.toModel(userId)
         }
