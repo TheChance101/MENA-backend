@@ -5,7 +5,7 @@ import org.springframework.data.domain.Page
 import java.time.Instant
 import java.util.*
 
-class MessageDto(
+data class MessageDto(
     val id: UUID,
     val senderId: UUID,
     val chatId: UUID,

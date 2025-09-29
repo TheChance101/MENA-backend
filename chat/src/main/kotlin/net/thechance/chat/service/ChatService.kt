@@ -59,9 +59,12 @@ class ChatService(
         pageable: Pageable,
     ): Page<Message> {
         return if (pageable.pageNumber <= 0 || pageable.pageSize <= 0) {
-            messageRepository.getAllByChatId(chatId, Pageable.unpaged())
+            messageRepository.getAllByChatIdOrderBySendAt(chatId, Pageable.unpaged())
         } else {
-            messageRepository.getAllByChatId(chatId, PageRequest.of(pageable.pageNumber - 1, pageable.pageSize))
+            messageRepository.getAllByChatIdOrderBySendAt(
+                chatId,
+                PageRequest.of(pageable.pageNumber - 1, pageable.pageSize)
+            )
         }
     }
 

@@ -16,6 +16,7 @@ import org.springframework.web.bind.annotation.GetMapping
 import org.springframework.web.bind.annotation.RequestMapping
 import org.springframework.web.bind.annotation.RequestParam
 import org.springframework.web.bind.annotation.ResponseBody
+import java.time.Instant
 import java.util.*
 
 @RequestMapping("/chat")
@@ -27,11 +28,12 @@ class ChatController(
 
     @MessageMapping("/chat.privateMessage")
     fun sendPrivateMessage(@Payload chatMessage: MessageDto) {
-        chatService.saveMessage(chatMessage)
+        val updatedMessage = chatMessage.copy(sendAt = Instant.now())
+        chatService.saveMessage(updatedMessage)
         messagingTemplate.convertAndSendToUser(
             chatMessage.chatId.toString(),
             "/queue/messages",
-            chatMessage
+            updatedMessage
         )
     }
 
@@ -40,8 +42,8 @@ class ChatController(
     fun getOrCreateConversation(
         @AuthenticationPrincipal userId: UUID,
         @RequestParam receiverId: UUID
-    ): ChatModel {
-        return chatService.getOrCreateConversationByParticipants(userId, receiverId)
+    ): ResponseEntity<ChatModel> {
+        return ResponseEntity.ok(chatService.getOrCreateConversationByParticipants(userId, receiverId))
     }
 
     @GetMapping

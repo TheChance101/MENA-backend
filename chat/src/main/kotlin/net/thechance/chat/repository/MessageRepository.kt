@@ -11,7 +11,7 @@ import java.util.*
 
 interface MessageRepository : JpaRepository<Message, UUID> {
 
-    fun getAllByChatId(chatId: UUID, pageable: Pageable): Page<Message>
+    fun getAllByChatIdOrderBySendAt(chatId: UUID, pageable: Pageable): Page<Message>
     @Transactional
     @Modifying
     @Query("UPDATE Message m SET m.isRead = true WHERE m.chat.id = :chatId AND m.senderId <> :userId")
