@@ -76,8 +76,7 @@ class ReelsService(
             ownerId = currentUserId,
             videoUrl = videoUrl
         )
-        reelsRepository.save(reel)
-        return reel.id
+        return reelsRepository.save(reel).id
     }
 
     companion object {
