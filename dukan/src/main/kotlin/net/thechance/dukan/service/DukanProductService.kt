@@ -1,7 +1,7 @@
 package net.thechance.dukan.service
 
 import jakarta.transaction.Transactional
-import net.thechance.dukan.exception.dukan_product.ProductNotFoundException
+import net.thechance.dukan.exception.ProductNotFoundException
 import net.thechance.dukan.repository.DukanProductRepository
 import org.springframework.stereotype.Service
 import org.springframework.web.multipart.MultipartFile
