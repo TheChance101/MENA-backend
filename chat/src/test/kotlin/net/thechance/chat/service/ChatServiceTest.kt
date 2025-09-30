@@ -4,8 +4,8 @@ import com.google.common.truth.Truth.assertThat
 import io.mockk.every
 import io.mockk.mockk
 import io.mockk.verify
+import net.thechance.chat.api.dto.MessageDto
 import net.thechance.chat.entity.Chat
-import net.thechance.chat.entity.Contact
 import net.thechance.chat.entity.ContactUser
 import net.thechance.chat.repository.ChatRepository
 import net.thechance.chat.repository.ContactUserRepository
@@ -13,6 +13,8 @@ import net.thechance.chat.repository.MessageRepository
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.assertThrows
+import org.springframework.data.repository.findByIdOrNull
+import java.time.Instant
 import java.util.*
 
 class ChatServiceTest {
@@ -29,7 +31,6 @@ class ChatServiceTest {
         phoneNumber = "123456789"
     )
 
-    // Minimal Chat stub for Message entity
     private fun testChat(id: UUID = UUID.randomUUID()) = Chat(
         id = id,
         users = mutableSetOf(),
@@ -103,5 +104,62 @@ class ChatServiceTest {
             service.getOrCreateConversationByParticipants(requester.id, theOtherUserId)
         }
         assertThat(exception).hasMessageThat().contains("Other user not found")
+    }
+
+    @Test
+    fun `saveMessage saves message when chat exists`() {
+        val chat = testChat()
+        val messageDto = MessageDto(
+            id = UUID.randomUUID(),
+            chatId = chat.id,
+            senderId = UUID.randomUUID(),
+            text = "message 1",
+            sendAt = Instant.now(),
+            isRead = false
+        )
+
+        every { chatRepository.findByIdOrNull(chat.id) } returns chat
+        every { messageRepository.save(any()) } answers { firstArg() }
+
+        service.saveMessage(messageDto)
+
+        verify {
+            messageRepository.save(
+                withArg {
+                    assertThat(it.chat).isEqualTo(chat)
+                    assertThat(it.text).isEqualTo("message 1")
+                }
+            )
+        }
+    }
+
+
+    @Test
+    fun `saveMessage throws if chat not found`() {
+        val messageDto = MessageDto(
+            id = UUID.randomUUID(),
+            chatId = UUID.randomUUID(),
+            senderId = UUID.randomUUID(),
+            text = "message 1",
+            sendAt = Instant.now(),
+            isRead = false
+        )
+
+        every { chatRepository.findByIdOrNull(messageDto.chatId) } returns null
+
+        val exception = assertThrows<IllegalArgumentException> {
+            service.saveMessage(messageDto)
+        }
+        assertThat(exception).hasMessageThat().contains("Chat with id")
+    }
+
+    @Test
+    fun `markChatMessagesAsRead updates messages`() {
+        val chatId = UUID.randomUUID()
+        val userId = UUID.randomUUID()
+
+        service.markChatMessagesAsRead(chatId, userId)
+
+        verify { messageRepository.updateIsReadByChatIdAndSenderIdNot(chatId, userId) }
     }
 }
