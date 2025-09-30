@@ -42,6 +42,7 @@ kover.reports {
             packages("net.thechance.chat.api.dto*")
             packages("net.thechance.chat.entity*")
             packages("net.thechance.chat.service.model*")
+            packages("net.thechance.chat.api.config*")
         }
     }
 }

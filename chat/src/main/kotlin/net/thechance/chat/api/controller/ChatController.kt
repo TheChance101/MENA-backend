@@ -12,6 +12,7 @@ import org.springframework.messaging.simp.SimpMessagingTemplate
 import org.springframework.security.core.annotation.AuthenticationPrincipal
 import org.springframework.stereotype.Controller
 import org.springframework.web.bind.annotation.*
+import java.security.Principal
 import java.util.*
 
 @RequestMapping("/chat")
@@ -24,7 +25,8 @@ class ChatController(
 ) {
 
     @MessageMapping("/chat.privateMessage")
-    fun sendPrivateMessage(@Payload chatMessage: MessageRequestDto, @AuthenticationPrincipal senderId: UUID) {
+    fun sendPrivateMessage(@Payload chatMessage: MessageRequestDto, principal: Principal) {
+        val senderId = UUID.fromString(principal.name)
         val updatedMessage = chatMessage.toMessageDto(senderId = senderId)
         chatService.saveMessage(updatedMessage)
         messagingTemplate.convertAndSendToUser(
