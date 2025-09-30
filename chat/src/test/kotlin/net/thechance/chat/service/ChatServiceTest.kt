@@ -1,17 +1,18 @@
 package net.thechance.chat.service
 
+import com.google.common.truth.Truth.assertThat
 import io.mockk.every
 import io.mockk.mockk
 import io.mockk.verify
 import net.thechance.chat.entity.Chat
+import net.thechance.chat.entity.Contact
 import net.thechance.chat.entity.ContactUser
 import net.thechance.chat.repository.ChatRepository
 import net.thechance.chat.repository.ContactUserRepository
 import net.thechance.chat.repository.MessageRepository
-import net.thechance.chat.service.model.toModel
-import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
+import org.junit.jupiter.api.assertThrows
 import java.util.*
 
 class ChatServiceTest {
@@ -48,7 +49,6 @@ class ChatServiceTest {
         val requester = testUser()
         val theOtherUser = testUser()
         val chat = testChat().apply { users.addAll(listOf(requester, theOtherUser)) }
-        val chatModel = chat.toModel(requester.id)
 
         every { contactUserRepository.findById(requester.id) } returns Optional.of(requester)
         every { contactUserRepository.findById(theOtherUser.id) } returns Optional.of(theOtherUser)
@@ -56,7 +56,7 @@ class ChatServiceTest {
 
         val result = service.getOrCreateConversationByParticipants(requester.id, theOtherUser.id)
 
-        assertEquals(chatModel, result)
+        assertThat(chat).isEqualTo(result)
         verify { chatRepository.findPrivateChatBetweenUsers(setOf(requester.id, theOtherUser.id)) }
         verify(exactly = 0) { chatRepository.save(any()) }
     }
@@ -66,46 +66,42 @@ class ChatServiceTest {
         val requester = testUser()
         val theOtherUser = testUser()
         val newChat = testChat().apply { users.addAll(listOf(requester, theOtherUser)) }
-        val chatModel = newChat.toModel(requester.id)
 
         every { contactUserRepository.findById(requester.id) } returns Optional.of(requester)
         every { contactUserRepository.findById(theOtherUser.id) } returns Optional.of(theOtherUser)
         every { chatRepository.findPrivateChatBetweenUsers(setOf(requester.id, theOtherUser.id)) } returns null
         every { chatRepository.save(any()) } returns newChat
-        every { chatRepository.findByIdIs(newChat.id) } returns newChat
 
         val result = service.getOrCreateConversationByParticipants(requester.id, theOtherUser.id)
 
-        assertEquals(chatModel, result)
-        verify { chatRepository.findByIdIs(newChat.id) }
+        assertThat(newChat).isEqualTo(result)
+        verify { chatRepository.save(any()) }
     }
 
     @Test
     fun `getOrCreateConversationByParticipants throws if requester not found`() {
         val requesterId = UUID.randomUUID()
         val theOtherUser = testUser()
+        every { chatRepository.findPrivateChatBetweenUsers(any()) } returns null
         every { contactUserRepository.findById(requesterId) } returns Optional.empty()
 
-        try {
+        val exception = assertThrows<IllegalArgumentException> {
             service.getOrCreateConversationByParticipants(requesterId, theOtherUser.id)
-            assert(false) // Should not reach here
-        } catch (e: IllegalArgumentException) {
-            assert(e.message!!.contains("Requester with id"))
         }
+        assertThat(exception).hasMessageThat().contains("Requester not found")
     }
 
     @Test
     fun `getOrCreateConversationByParticipants throws if the other user not found`() {
         val requester = testUser()
         val theOtherUserId = UUID.randomUUID()
+        every { chatRepository.findPrivateChatBetweenUsers(any()) } returns null
         every { contactUserRepository.findById(requester.id) } returns Optional.of(requester)
         every { contactUserRepository.findById(theOtherUserId) } returns Optional.empty()
 
-        try {
+        val exception = assertThrows<IllegalArgumentException> {
             service.getOrCreateConversationByParticipants(requester.id, theOtherUserId)
-            assert(false) // Should not reach here
-        } catch (e: IllegalArgumentException) {
-            assert(e.message!!.contains("User with id"))
         }
+        assertThat(exception).hasMessageThat().contains("Other user not found")
     }
 }
