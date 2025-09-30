@@ -22,7 +22,7 @@ data class TrendsStorageProperties(
 @EnableConfigurationProperties(TrendsStorageProperties::class)
 class VideoStorageService(
     private val trendsS3Client: S3Client,
-    private val props: TrendsStorageProperties,
+    private val trendsStorageProperties: TrendsStorageProperties,
 ) {
     fun uploadVideo(
         file: MultipartFile,
@@ -31,20 +31,20 @@ class VideoStorageService(
     ): String {
         val mimeType = file.contentType ?: throw InvalidVideoException()
         val extension = allowedMimeTypes[mimeType] ?: throw InvalidVideoException()
-        try {
+        runCatching {
             val fileName = "${fileName}_${LocalDateTime.now()}.$extension"
             val key = "video/$folderName/$fileName"
             val putReq = createObjectRequest(key, mimeType)
             trendsS3Client.putObject(putReq, RequestBody.fromBytes(file.bytes))
-            return "${props.cdnEndpoint}/${props.bucket}/$key"
-        } catch (_: Exception) {
+            return "${trendsStorageProperties.cdnEndpoint}/${trendsStorageProperties.bucket}/$key"
+        }.getOrElse {
             throw VideoUploadFailedException()
         }
     }
 
     private fun createObjectRequest(key: String, contentType: String): PutObjectRequest? {
         return PutObjectRequest.builder()
-            .bucket(props.bucket)
+            .bucket(trendsStorageProperties.bucket)
             .key(key)
             .contentType(contentType)
             .acl(ObjectCannedACL.PUBLIC_READ)
