@@ -5,6 +5,11 @@ import org.springframework.data.domain.Page
 import java.time.Instant
 import java.util.*
 
+data class MessageRequestDto(
+    val chatId: UUID,
+    val text: String,
+)
+
 data class MessageDto(
     val id: UUID,
     val senderId: UUID,
@@ -26,6 +31,16 @@ fun Message.toDto(): MessageDto {
     )
 }
 
+fun MessageRequestDto.toMessageDto(senderId: UUID): MessageDto {
+    return MessageDto(
+        id = UUID.randomUUID(),
+        senderId = senderId,
+        chatId = this.chatId,
+        text = this.text,
+        sendAt = Instant.now(),
+        isRead = false
+    )
+}
 
 fun Page<Message>.toPagedMessageResponse(): PagedResponse<MessageDto> {
     return PagedResponse(
