@@ -17,24 +17,6 @@ class RateLimitManagerService(
     private val shortTermCaches: ConcurrentHashMap<String, Cache<String, AtomicLong>> = ConcurrentHashMap()
     private val longTermCaches: ConcurrentHashMap<String, Cache<String, AtomicLong>> = ConcurrentHashMap()
 
-    private fun getOrCreateShortTermCache(
-        endpointPath: String, config: RateLimitProperties.EndpointRateLimitConfig
-    ): Cache<String, AtomicLong> {
-        return shortTermCaches.computeIfAbsent(endpointPath) {
-            Caffeine.newBuilder().expireAfterWrite(config.shortTermWindowSeconds, TimeUnit.SECONDS)
-                .maximumSize(rateLimitProperties.globalMaxIpsToTrack).build()
-        }
-    }
-
-    private fun getOrCreateLongTermCache(
-        endpointPath: String, config: RateLimitProperties.EndpointRateLimitConfig
-    ): Cache<String, AtomicLong> {
-        return longTermCaches.computeIfAbsent(endpointPath) {
-            Caffeine.newBuilder().expireAfterWrite(config.longTermWindowSeconds, TimeUnit.SECONDS)
-                .maximumSize(rateLimitProperties.globalMaxIpsToTrack).build()
-        }
-    }
-
     fun isRequestAllowed(ip: String, requestPath: String): Boolean {
         val blockUntil = blockedIps[ip]
         if (blockUntil != null && blockUntil.isAfter(Instant.now())) {
@@ -45,8 +27,8 @@ class RateLimitManagerService(
 
         val config = rateLimitProperties.endpoints[requestPath] ?: return true
 
-        val shortTermEndpointCache = getOrCreateShortTermCache(requestPath, config)
-        val longTermEndpointCache = getOrCreateLongTermCache(requestPath, config)
+        val shortTermEndpointCache = getOrCreateCache(shortTermCaches, requestPath, config.shortTermWindowSeconds)
+        val longTermEndpointCache = getOrCreateCache(longTermCaches, requestPath, config.longTermWindowSeconds)
 
         val currentShortTermAttempts = shortTermEndpointCache.get(ip) { AtomicLong(0) }!!.incrementAndGet()
         val currentLongTermAttempts = longTermEndpointCache.get(ip) { AtomicLong(0) }!!.incrementAndGet()
@@ -64,5 +46,16 @@ class RateLimitManagerService(
         }
 
         return true
+    }
+
+    private fun getOrCreateCache(
+        caches: ConcurrentHashMap<String, Cache<String, AtomicLong>>,
+        endpointPath: String,
+        windowDurationInSeconds: Long
+    ): Cache<String, AtomicLong> {
+        return caches.computeIfAbsent(endpointPath) {
+            Caffeine.newBuilder().expireAfterWrite(windowDurationInSeconds, TimeUnit.SECONDS)
+                .maximumSize(rateLimitProperties.globalMaxIpsToTrack).build()
+        }
     }
 }
