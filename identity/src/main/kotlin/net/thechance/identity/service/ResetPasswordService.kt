@@ -43,13 +43,13 @@ class ResetPasswordService(
         return RequestOtpResponse(otpLog.sessionId.toString())
     }
 
-    fun verifyOtp(phoneNumber: String, otp: String, sessionId: String): VerifyOtpResponse {
+    fun verifyOtp(otp: String, sessionId: String): VerifyOtpResponse {
         val parsedSessionId = UUID.fromString(sessionId)
-        val otpLog = otpLogRepository.findByPhoneNumberAndOtpAndSessionId(phoneNumber, otp, parsedSessionId)
+        val otpLog = otpLogRepository.findByOtpAndSessionId(otp, parsedSessionId)
             ?: throw InvalidOtpException()
         if (otpLog.isVerified) throw InvalidOtpException()
         if (otpLog.expireAt.isBefore(Instant.now())) throw OtpExpiredException()
-        otpLogRepository.verifyOtp(phoneNumber, parsedSessionId)
+        otpLogRepository.verifyOtp(parsedSessionId)
         return VerifyOtpResponse("OTP verified successfully")
     }
 

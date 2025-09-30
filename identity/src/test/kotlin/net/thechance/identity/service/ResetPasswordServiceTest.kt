@@ -105,33 +105,33 @@ class ResetPasswordServiceTest {
 
     @Test
     fun `verifyOtp should throw InvalidOtpException when otp not found`() {
-        every { otpLogRepository.findByPhoneNumberAndOtpAndSessionId(any(), any(), any()) } returns null
+        every { otpLogRepository.findByOtpAndSessionId(any(), any()) } returns null
         assertThrows(InvalidOtpException::class.java) {
-            resetPasswordService.verifyOtp(PHONE_NUMBER, OTP, SESSION_ID)
+            resetPasswordService.verifyOtp(OTP, SESSION_ID)
         }
     }
 
     @Test
     fun `verifyOtp should throw InvalidOtpException when otp is already verified`() {
-        every { otpLogRepository.findByPhoneNumberAndOtpAndSessionId(any(), any(), any()) } returns verifiedOtpLog
+        every { otpLogRepository.findByOtpAndSessionId(any(), any()) } returns verifiedOtpLog
         assertThrows(InvalidOtpException::class.java) {
-            resetPasswordService.verifyOtp(PHONE_NUMBER, OTP, SESSION_ID)
+            resetPasswordService.verifyOtp(OTP, SESSION_ID)
         }
     }
 
     @Test
     fun `verifyOtp should throw OtpExpiredException when otp is expired`() {
-        every { otpLogRepository.findByPhoneNumberAndOtpAndSessionId(any(), any(), any()) } returns expiredOtpLog
+        every { otpLogRepository.findByOtpAndSessionId(any(), any()) } returns expiredOtpLog
         assertThrows(OtpExpiredException::class.java) {
-            resetPasswordService.verifyOtp(PHONE_NUMBER, OTP, SESSION_ID)
+            resetPasswordService.verifyOtp(OTP, SESSION_ID)
         }
     }
 
     @Test
     fun `verifyOtp should be verified when otp is and session id are valid`() {
-        every { otpLogRepository.findByPhoneNumberAndOtpAndSessionId(any(), any(), any()) } returns otpLog
-        every { otpLogRepository.verifyOtp(any(), any()) } just runs
-        resetPasswordService.verifyOtp(PHONE_NUMBER, OTP, SESSION_ID)
+        every { otpLogRepository.findByOtpAndSessionId(any(), any()) } returns otpLog
+        every { otpLogRepository.verifyOtp(any()) } just runs
+        resetPasswordService.verifyOtp(OTP, SESSION_ID)
     }
 
     companion object {

@@ -47,7 +47,7 @@ class IdentityController(
         @RequestBody @Valid request: VerifyOtpRequest,
         httpRequest: HttpServletRequest
     ): ResponseEntity<VerifyOtpResponse> {
-        val response = resetPasswordService.verifyOtp(request.phoneNumber, request.otp, request.sessionId)
+        val response = resetPasswordService.verifyOtp(request.otp, request.sessionId)
         return ResponseEntity.ok(response)
     }
 }

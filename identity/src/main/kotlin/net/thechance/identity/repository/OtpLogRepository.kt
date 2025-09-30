@@ -13,7 +13,7 @@ import java.util.UUID
 interface OtpLogRepository: JpaRepository<OtpLog, UUID> {
     fun findByPhoneNumberOrderByCreatedAtDesc(phoneNumber: String, pageable: Pageable): List<OtpLog>
 
-    fun findByPhoneNumberAndOtpAndSessionId(phoneNumber: String, otp: String, sessionId: UUID): OtpLog?
+    fun findByOtpAndSessionId(otp: String, sessionId: UUID): OtpLog?
 
     @Modifying
     @Transactional
@@ -33,11 +33,9 @@ interface OtpLogRepository: JpaRepository<OtpLog, UUID> {
     @Query("""
         UPDATE OtpLog o 
         SET o.isVerified = true
-        WHERE o.phoneNumber = :phoneNumber
-        AND o.sessionId = :sessionId
+        WHERE o.sessionId = :sessionId
     """)
     fun verifyOtp(
-        @Param("phoneNumber") phoneNumber: String,
         @Param("sessionId") sessionId: UUID
     )
 }
