@@ -2,22 +2,19 @@ package net.thechance.identity.service
 
 import net.thechance.identity.api.dto.RequestOtpResponse
 import net.thechance.identity.api.dto.VerifyOtpResponse
-import net.thechance.identity.entity.OtpLog
 import net.thechance.identity.exception.*
 import net.thechance.identity.repository.OtpLogRepository
 import net.thechance.identity.repository.UserRepository
-import net.thechance.identity.service.otpGenerator.OtpGeneratorService
 import net.thechance.identity.service.phoneNumberValidator.PhoneNumberValidatorService
 import net.thechance.identity.service.sms.SmsService
 import org.springframework.data.domain.PageRequest
 import org.springframework.stereotype.Service
 import java.time.Instant
-import java.util.UUID
 
 @Service
 class ResetPasswordService(
     private val phoneNumberValidatorService: PhoneNumberValidatorService,
-    private val otpGeneratorService: OtpGeneratorService,
+    private val otpService: OtpService,
     private val smsService: SmsService,
     private val otpLogRepository: OtpLogRepository,
     private val userRepository: UserRepository
@@ -26,39 +23,23 @@ class ResetPasswordService(
         val validatedPhoneNumber = phoneNumberValidatorService.validateAndParse(phoneNumber, defaultRegion)
         checkPhoneNumberExistence(phoneNumber)
         checkRequestLimitByPhoneNumber(phoneNumber)
-        expireOldActiveOtpByPhoneNumber(phoneNumber)
-        val otp = otpGeneratorService.generateOtp()
-        val otpLog = OtpLog(
-            phoneNumber = phoneNumber,
-            otp = otp,
-            expireAt = Instant.now().plusSeconds(OTP_EXPIRY_SECONDS),
-        )
-        otpLogRepository.save(otpLog)
+        val otpLog = otpService.createOtp(validatedPhoneNumber.phoneNumber)
         smsService.sendSms(
             validatedPhoneNumber.countryCode,
             validatedPhoneNumber.carrierPrefixHeuristic,
             validatedPhoneNumber.phoneNumber,
-            otp,
+            otpLog.otp,
         )
         return RequestOtpResponse(otpLog.sessionId.toString())
     }
 
     fun verifyOtp(otp: String, sessionId: String): VerifyOtpResponse {
-        val parsedSessionId = UUID.fromString(sessionId)
-        val otpLog = otpLogRepository.findByOtpAndSessionId(otp, parsedSessionId)
-            ?: throw InvalidOtpException()
-        if (otpLog.isVerified) throw InvalidOtpException()
-        if (otpLog.expireAt.isBefore(Instant.now())) throw OtpExpiredException()
-        otpLogRepository.verifyOtp(parsedSessionId)
+        otpService.verifyOtp(otp, sessionId)
         return VerifyOtpResponse("OTP verified successfully")
     }
 
     private fun checkPhoneNumberExistence(phoneNumber: String) {
         userRepository.findByPhoneNumber(phoneNumber) ?: throw UserNotFoundException("User not found")
-    }
-
-    private fun expireOldActiveOtpByPhoneNumber(phoneNumber: String) {
-        otpLogRepository.updateExpirationByPhoneNumber(phoneNumber)
     }
 
     private fun checkRequestLimitByPhoneNumber(phoneNumber: String) {
@@ -74,7 +55,6 @@ class ResetPasswordService(
     }
 
     companion object {
-        private const val OTP_EXPIRY_SECONDS = 3 * 60L
         private const val MIN_OTP_RESEND_GAP_SECONDS = 60L
         private const val MAX_RETRIES_PER_WINDOW = 5
         private const val WINDOW_DURATION_IN_SECONDS = 10 * 60L
