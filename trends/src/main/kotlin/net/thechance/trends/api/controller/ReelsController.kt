@@ -94,4 +94,13 @@ class ReelsController(
 
         return ResponseEntity.ok(updatedReel.toResponse())
     }
+
+    @PostMapping
+    fun uploadReel(
+        @AuthenticationPrincipal currentUserId: UUID,
+        @RequestParam video: MultipartFile,
+    ): ResponseEntity<UploadReelResponse> {
+        val reelId = reelsService.uploadReel(currentUserId, video)
+        return ResponseEntity.ok(UploadReelResponse(reelId = reelId))
+    }
 }

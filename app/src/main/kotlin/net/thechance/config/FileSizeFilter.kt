@@ -11,22 +11,9 @@ import org.springframework.web.filter.OncePerRequestFilter
 
 @Component
 @Order(Ordered.HIGHEST_PRECEDENCE)
-class FileSizeFilter : OncePerRequestFilter() {
-
-    @Value("\${dukan-maxSize:5}")
-    private var dukanMaxSize: Int = 5
-
-    @Value("\${trends-maxSize:5}")
-    private var trendsMaxSize: Int = 5
-
-    @Value("\${identity-maxSize:5}")
-    private var identityMaxSize: Int = 5
-
-    @Value("\${faith-maxSize:5}")
-    private var faithMaxSize: Int = 5
-
-    @Value("\${chat-maxSize:5}")
-    private var chatMaxSize: Int = 5
+class FileSizeFilter(
+    private val fileSizeProperties: FileSizeProperties
+) : OncePerRequestFilter() {
 
     override fun doFilterInternal(
         request: HttpServletRequest,
@@ -53,16 +40,7 @@ class FileSizeFilter : OncePerRequestFilter() {
 
     private fun getMaxSizeForPath(path: String): Long {
         val module = path.trim('/').split('/').firstOrNull() ?: ""
-
-        val maxSizeMB = when (module) {
-            "dukan" -> dukanMaxSize
-            "trends" -> trendsMaxSize
-            "identity" -> identityMaxSize
-            "faith" -> faithMaxSize
-            "chat" -> chatMaxSize
-            else -> 5
-        }
-
+        val maxSizeMB = fileSizeProperties.getMaxSize(module)
         return maxSizeMB * 1024L * 1024L
     }
 }
