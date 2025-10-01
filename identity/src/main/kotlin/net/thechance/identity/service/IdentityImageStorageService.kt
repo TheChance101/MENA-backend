@@ -12,7 +12,7 @@ import software.amazon.awssdk.services.s3.model.ObjectCannedACL
 import software.amazon.awssdk.services.s3.model.PutObjectRequest
 import java.time.LocalDateTime
 
-@ConfigurationProperties(prefix = "storage.identity")
+@ConfigurationProperties(prefix = "storage.mena")
 data class IdentityStorageProperties(
     val bucket: String,
     val cdnEndpoint: String
@@ -21,7 +21,7 @@ data class IdentityStorageProperties(
 @Service
 @EnableConfigurationProperties(IdentityStorageProperties::class)
 class IdentityImageStorageService(
-    private val identityS3Client: S3Client,
+    private val menaS3Client: S3Client,
     private val identityStorageProperties: IdentityStorageProperties,
 ) {
     fun uploadImage(
@@ -35,7 +35,7 @@ class IdentityImageStorageService(
             val fileName = "${fileName}_${LocalDateTime.now()}.$extension"
             val key = "images/$folderName/$fileName"
             val putReq = createObjectRequest(key, mimeType)
-            identityS3Client.putObject(putReq, RequestBody.fromBytes(file.bytes))
+            menaS3Client.putObject(putReq, RequestBody.fromBytes(file.bytes))
             return "${identityStorageProperties.cdnEndpoint}/$key"
         } catch (e: Exception) {
             throw UnknownErrorException(e.message ?: "Unknown error occurred")

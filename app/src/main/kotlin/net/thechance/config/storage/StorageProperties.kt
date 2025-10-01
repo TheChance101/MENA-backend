@@ -7,8 +7,7 @@ data class AllStorageProperties(
     val mena: StorageProperties,
     val dukan: StorageProperties,
     val trends: StorageProperties,
-    val wallet: StorageProperties,
-    val identity: StorageProperties
+    val wallet: StorageProperties
 )
 
 data class StorageProperties(
