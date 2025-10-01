@@ -6,6 +6,8 @@ import net.thechance.dukan.exception.ImageUploadingFailedException
 import net.thechance.dukan.exception.InvalidPictureException
 import net.thechance.dukan.exception.ShelfDeletionNotAllowedException
 import net.thechance.dukan.exception.ShelfNotFoundException
+import net.thechance.dukan.exception.dukan_product.ProductNameAlreadyTakenException
+import net.thechance.dukan.exception.dukan_product.ProductNotFoundException
 import org.springframework.http.HttpStatus
 import org.springframework.http.ResponseEntity
 import org.springframework.web.bind.MethodArgumentNotValidException
@@ -54,5 +56,17 @@ class DukanExceptionHandler {
     fun handleShelfNotFoundException(ex: ShelfNotFoundException): ResponseEntity<String> {
         //TODO: once other team find a way to handle exceptions globally we will do the same
         return ResponseEntity.status(HttpStatus.NOT_FOUND).body(ex.message)
+    }
+
+    @ExceptionHandler(ProductNotFoundException::class)
+    fun handleProductNotFoundException(ex: ProductNotFoundException): ResponseEntity<String> {
+        //TODO: once other team find a way to handle exceptions globally we will do the same
+        return ResponseEntity.status(HttpStatus.NOT_FOUND).body(ex.message)
+    }
+
+    @ExceptionHandler(ProductNameAlreadyTakenException::class)
+    fun handleProductNameAlreadyTakenException(ex: ProductNameAlreadyTakenException): ResponseEntity<String> {
+        //TODO: once other team find a way to handle exceptions globally we will do the same
+        return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(ex.message)
     }
 }

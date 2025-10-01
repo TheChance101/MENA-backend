@@ -24,5 +24,4 @@ data class ContactUser(
 
     @Column(nullable = true)
     val imageUrl: String? = null,
-
 )
