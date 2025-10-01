@@ -1,6 +1,6 @@
 package net.thechance.wallet.api.controller
 
-import net.thechance.events.UserCreatedEvent
+import net.thechance.events.identity.UserCreatedEvent
 import net.thechance.wallet.api.dto.BalanceResponse
 import net.thechance.wallet.service.WalletService
 import org.springframework.context.event.EventListener

@@ -1,7 +1,7 @@
 package net.thechance.identity.service
 
-import net.thechance.events.MenaEventPublisher
-import net.thechance.events.UserCreatedEvent
+import net.thechance.events.identity.UserCreatedEvent
+import net.thechance.events.publisher.MenaEventPublisher
 import net.thechance.identity.api.dto.AuthResponse
 import net.thechance.identity.entity.User
 import net.thechance.identity.entity.LoginLog
@@ -32,7 +32,13 @@ class AuthenticationService(
         }
         val user = userService.findByPhoneNumber(phoneNumber)
         println("testKarrar: publish event")
-        eventPublisher.publish(UserCreatedEvent(phoneNumber = user.phoneNumber, firstName = "karrar", lastName = "testKarrar123"))
+        eventPublisher.publish(
+            UserCreatedEvent(
+                phoneNumber = user.phoneNumber,
+                firstName = "karrar",
+                lastName = "testKarrar123"
+            )
+        )
         println("testKarrar: publish event finished")
         val isPasswordCorrect = passwordEncoder.matches(password, user.password)
         addUserToLogs(user = user, isSuccess = isPasswordCorrect, ipAddress = ipAddress)
