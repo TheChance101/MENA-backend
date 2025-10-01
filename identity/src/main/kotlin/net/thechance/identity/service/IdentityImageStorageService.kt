@@ -33,7 +33,7 @@ class IdentityImageStorageService(
         val extension = allowedMimeTypes[mimeType] ?: throw InvalidImageException(mimeType)
         try {
             val fileName = "${fileName}_${LocalDateTime.now()}.$extension"
-            val key = "images/$folderName/$fileName"
+            val key = "images/identity/$folderName/$fileName"
             val putReq = createObjectRequest(key, mimeType)
             menaS3Client.putObject(putReq, RequestBody.fromBytes(file.bytes))
             return "${identityStorageProperties.cdnEndpoint}/$key"
