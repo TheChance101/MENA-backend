@@ -11,7 +11,7 @@ import org.junit.Test
 import java.math.BigDecimal
 import java.time.LocalDateTime
 import java.util.UUID
-import kotlin.test.fail
+import org.junit.Assert.assertThrows
 
 class TransactionServiceTest {
 
@@ -40,13 +40,11 @@ class TransactionServiceTest {
             )
         } returns null
 
-        try {
+        val exception = assertThrows(EntityNotFoundException::class.java) {
             transactionService.getTransactionDetails(transactionId)
-            fail("Expected EntityNotFoundException was not thrown")
-        } catch (e: EntityNotFoundException) {
-            assertThat(e).isInstanceOf(EntityNotFoundException::class.java)
-            assertThat(e.message).isEqualTo("Transaction with ID $transactionId not found or access denied.")
         }
+
+        assertThat(exception.message).isEqualTo("Transaction with ID $transactionId not found or access denied.")
     }
 
     @Test
