@@ -46,10 +46,10 @@ databaseChangeLog:
   - changeSet:
       id: 4-identity
       author: eslam-99
-      comment: Create otp_log table for identity
+      comment: Create otp_logs table for identity
       changes:
         - sql:
-              create table identity.otp_log
+              create table identity.otp_logs
               (
               id           UUID PRIMARY KEY NOT NULL,
               phone_number VARCHAR(255) NOT NULL,
@@ -61,5 +61,5 @@ databaseChangeLog:
               );
 
         - sql:
-              CREATE INDEX idx_otp_log_phone_number
-              ON identity.otp_log (phone_number);
+              CREATE INDEX idx_otp_logs_phone_number
+              ON identity.otp_logs (phone_number);

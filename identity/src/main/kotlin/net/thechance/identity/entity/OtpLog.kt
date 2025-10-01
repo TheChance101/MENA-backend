@@ -8,7 +8,7 @@ import java.time.Instant
 import java.util.UUID
 
 @Entity
-@Table(name = "otp_log", schema = "identity")
+@Table(name = "otp_logs", schema = "identity")
 class OtpLog(
     @Id
     @Column(columnDefinition = "uuid", updatable = false, nullable = false)
