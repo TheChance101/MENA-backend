@@ -1,5 +1,6 @@
 package net.thechance.dukan.exception
 
+import net.thechance.dukan.api.dto.ErrorCode
 import net.thechance.dukan.api.dto.ErrorResponse
 import org.hibernate.validator.internal.util.logging.LoggerFactory
 import org.springframework.core.annotation.Order
@@ -9,6 +10,7 @@ import org.springframework.web.bind.MethodArgumentNotValidException
 import org.springframework.web.bind.annotation.ExceptionHandler
 import org.springframework.web.bind.annotation.RestControllerAdvice
 
+@Suppress("NO_REFLECTION_IN_CLASS_PATH")
 @RestControllerAdvice(basePackages = ["net.thechance.dukan.api.controller"])
 @Order(1)
 class DukanExceptionHandler {
@@ -37,15 +39,17 @@ class DukanExceptionHandler {
 
     @ExceptionHandler(Exception::class)
     fun handleAll(ex: Exception): ResponseEntity<ErrorResponse> {
-        val messageKey = ex.message ?: "server error"
-        val (code, status) = ExceptionErrorCodes.businessErrorMap[ex::class]
-            ?: (500 to HttpStatus.INTERNAL_SERVER_ERROR)
+        val errorCodeAnnotation = ex::class.annotations.filterIsInstance<ErrorCode>().firstOrNull()
+
+        val code = errorCodeAnnotation?.code ?: 500
+        val status = errorCodeAnnotation?.status ?: HttpStatus.INTERNAL_SERVER_ERROR
 
         val response = ErrorResponse(
-            message = ex.message ?: messageKey,
+            message = ex.message ?: "server error",
             errorCode = code
         )
         return ResponseEntity(response, status)
     }
+
 
 }
