@@ -10,7 +10,7 @@ import java.util.concurrent.TimeUnit
 import java.util.concurrent.atomic.AtomicLong
 
 @Service
-class RateLimitManagerService(
+class IpRateLimitManagerService(
     private val rateLimitProperties: RateLimitProperties
 ) {
     private val blockedIps: ConcurrentHashMap<String, Instant> = ConcurrentHashMap()

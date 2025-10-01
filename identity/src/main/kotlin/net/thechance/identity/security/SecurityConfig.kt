@@ -16,7 +16,7 @@ import org.springframework.security.web.authentication.UsernamePasswordAuthentic
 class SecurityConfig(
     private val jwtFilter: JwtFilter,
     private val authenticationEntryPoint: CustomAuthenticationEntryPoint,
-    private val ipRateLimitingFilter: IpRateLimitingFilter
+    private val ipRateLimitFilter: IpRateLimitFilter
     ) {
 
     @Bean
@@ -28,7 +28,7 @@ class SecurityConfig(
                 it.anyRequest().authenticated()
             }
             .sessionManagement { it.sessionCreationPolicy(SessionCreationPolicy.STATELESS) }
-            .addFilterBefore(ipRateLimitingFilter, AuthorizationFilter::class.java)
+            .addFilterBefore(ipRateLimitFilter, AuthorizationFilter::class.java)
             .addFilterBefore(jwtFilter, UsernamePasswordAuthenticationFilter::class.java)
             .exceptionHandling { exception ->
                 exception.authenticationEntryPoint(authenticationEntryPoint)
