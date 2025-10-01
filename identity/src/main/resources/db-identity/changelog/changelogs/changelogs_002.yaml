@@ -1,6 +1,6 @@
 databaseChangeLog:
   - changeSet:
-      id: 6-identity
+      id: 4-identity
       author: nabil
       comment: drop previous users from the database
       changes:
@@ -15,7 +15,7 @@ databaseChangeLog:
             tableName: users
 
   - changeSet:
-      id: 7-identity
+      id: 5-identity
       author: nabil
       comment: Add new columns for identity.user table for identity schema
       changes:
@@ -46,7 +46,7 @@ databaseChangeLog:
                     nullable: false
 
   - changeSet:
-      id: 8-identity
+      id: 6-identity
       author: nabil
       comment: Add unique constraint to users table on username and phone number for identity schema
       changes:
@@ -58,7 +58,7 @@ databaseChangeLog:
 
 
   - changeSet:
-      id: 9-identity
+      id: 7-identity
       author: nabil
       comment: insert test users for development
       changes:
