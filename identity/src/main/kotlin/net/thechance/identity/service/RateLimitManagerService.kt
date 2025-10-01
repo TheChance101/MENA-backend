@@ -27,8 +27,8 @@ class RateLimitManagerService(
 
         val config = rateLimitProperties.endpoints[requestPath] ?: return true
 
-        val shortTermEndpointCache = getOrCreateCache(shortTermCaches, requestPath, config.shortTermWindowSeconds)
-        val longTermEndpointCache = getOrCreateCache(longTermCaches, requestPath, config.longTermWindowSeconds)
+        val shortTermEndpointCache = shortTermCaches.getOrCreateCache(requestPath, config.shortTermWindowSeconds)
+        val longTermEndpointCache = longTermCaches.getOrCreateCache(requestPath, config.longTermWindowSeconds)
 
         val currentShortTermAttempts = shortTermEndpointCache.get(ip) { AtomicLong(0) }!!.incrementAndGet()
         val currentLongTermAttempts = longTermEndpointCache.get(ip) { AtomicLong(0) }!!.incrementAndGet()
@@ -48,12 +48,11 @@ class RateLimitManagerService(
         return true
     }
 
-    private fun getOrCreateCache(
-        caches: ConcurrentHashMap<String, Cache<String, AtomicLong>>,
+    private fun ConcurrentHashMap<String, Cache<String, AtomicLong>>.getOrCreateCache(
         endpointPath: String,
         windowDurationInSeconds: Long
     ): Cache<String, AtomicLong> {
-        return caches.computeIfAbsent(endpointPath) {
+        return computeIfAbsent(endpointPath) {
             Caffeine.newBuilder().expireAfterWrite(windowDurationInSeconds, TimeUnit.SECONDS)
                 .maximumSize(rateLimitProperties.globalMaxIpsToTrack).build()
         }
