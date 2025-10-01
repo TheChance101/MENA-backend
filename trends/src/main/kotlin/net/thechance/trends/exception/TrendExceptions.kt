@@ -1,4 +1,4 @@
-package net.thechance.trends.api.controller.exception
+package net.thechance.trends.exception
 
 
 open class TrendExceptions(messages: String): Exception(messages)
@@ -10,3 +10,7 @@ class TrendUserNotFoundException: TrendExceptions("User not found")
 class TrendCategoryNotFoundException: TrendExceptions("Category not found")
 
 class InvalidTrendInputException: TrendExceptions("Invalid input")
+
+class InvalidVideoException: TrendExceptions("Invalid video")
+
+class VideoUploadFailedException: TrendExceptions("Video upload failed")

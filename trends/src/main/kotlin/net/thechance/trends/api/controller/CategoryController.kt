@@ -1,16 +1,15 @@
-package net.thechance.trends.api.controller.category
+package net.thechance.trends.api.controller
 
-import net.thechance.trends.api.controller.Constants
-import net.thechance.trends.api.dto.category.GetAllCategoriesResponse
-import net.thechance.trends.api.dto.category.toCategoryResponse
 import jakarta.validation.Valid
+import net.thechance.trends.api.dto.category.GetAllCategoriesResponse
 import net.thechance.trends.api.dto.category.SubmitUserCategoriesRequest
 import net.thechance.trends.api.dto.category.SubmitUserCategoriesResponse
+import net.thechance.trends.api.dto.category.toCategoryResponse
 import net.thechance.trends.service.CategoryService
 import net.thechance.trends.service.TrendUserService
 import org.springframework.http.ResponseEntity
-import org.springframework.web.bind.annotation.GetMapping
 import org.springframework.security.core.annotation.AuthenticationPrincipal
+import org.springframework.web.bind.annotation.GetMapping
 import org.springframework.web.bind.annotation.PostMapping
 import org.springframework.web.bind.annotation.RequestBody
 import org.springframework.web.bind.annotation.RequestMapping
