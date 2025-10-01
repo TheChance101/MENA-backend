@@ -42,7 +42,7 @@ class IdentityController(
         return ResponseEntity.ok(response)
     }
 
-    @PostMapping("/verify-otp")
+    @PostMapping("/verify-reset-password-otp")
     fun verifyOtp(
         @RequestBody @Valid request: VerifyOtpRequest,
         httpRequest: HttpServletRequest
