@@ -42,4 +42,5 @@ dependencies {
     implementation ("org.springframework.boot:spring-boot-starter-security")
     
     runtimeOnly("org.liquibase:liquibase-core")
+    annotationProcessor("org.springframework.boot:spring-boot-configuration-processor")
 }
