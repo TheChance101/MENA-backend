@@ -7,7 +7,9 @@ import net.thechance.wallet.entity.Transaction
 import net.thechance.wallet.service.TransactionService
 import net.thechance.wallet.service.helper.TransactionFilterParams
 import net.thechance.wallet.service.helper.UserTransactionType
+import org.springframework.data.domain.PageRequest
 import org.springframework.data.domain.Pageable
+import org.springframework.data.domain.Sort
 import org.springframework.http.ResponseEntity
 import org.springframework.security.core.annotation.AuthenticationPrincipal
 import org.springframework.web.bind.annotation.*
@@ -40,7 +42,11 @@ class TransactionController(
                     startDate = startDate,
                     endDate = endDate
                 ),
-                pageable = pageable,
+                pageable = PageRequest.of(
+                    pageable.pageNumber,
+                    pageable.pageSize,
+                    Sort.by(Sort.Direction.ASC, Transaction::createdAt.name)
+                ),
                 currentUserId = userId
             )
                 .map { it.toResponse(currentUserId = userId) }
