@@ -32,6 +32,10 @@ class StorageConfig(
         buildClient(props.wallet.endpoint, walletCreds)
 
     @Bean
+    fun identityS3Client(identityCreds: StaticCredentialsProvider): S3Client =
+        buildClient(props.identity.endpoint, identityCreds)
+
+    @Bean
     fun menaCreds(): StaticCredentialsProvider {
         return StaticCredentialsProvider.create(AwsBasicCredentials.create(props.mena.key, props.mena.secret))
     }
@@ -49,6 +53,11 @@ class StorageConfig(
     @Bean
     fun walletCreds(): StaticCredentialsProvider {
         return StaticCredentialsProvider.create(AwsBasicCredentials.create(props.wallet.key, props.wallet.secret))
+    }
+
+    @Bean
+    fun identityCreds(): StaticCredentialsProvider {
+        return StaticCredentialsProvider.create(AwsBasicCredentials.create(props.identity.key, props.identity.secret))
     }
 
     private fun buildClient(
