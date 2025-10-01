@@ -50,7 +50,7 @@ class TransactionServiceTest {
     @Test
     fun `getUserFirstTransactionDate should return date when transactions exist`() {
         every {
-            transactionRepository.findFirstBySender_UserIdOrReceiver_UserIdOrderByCreatedAtAsc(
+            transactionRepository.findFirstBySenderUserIdOrReceiverUserIdOrderByCreatedAtAsc(
                 senderId = USER_ID, receiverId = USER_ID
             )
         } returns FAKE_TRANSACTION
@@ -63,7 +63,7 @@ class TransactionServiceTest {
     @Test
     fun `getUserFirstTransactionDate should return null when no transactions exist`() {
         every {
-            transactionRepository.findFirstBySender_UserIdOrReceiver_UserIdOrderByCreatedAtAsc(
+            transactionRepository.findFirstBySenderUserIdOrReceiverUserIdOrderByCreatedAtAsc(
                 senderId = USER_ID,
                 receiverId = USER_ID
             )

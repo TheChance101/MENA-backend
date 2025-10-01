@@ -19,7 +19,8 @@ interface TransactionRepository : JpaRepository<Transaction, UUID> {
     @Query(
         """
         SELECT t FROM Transaction t
-        WHERE (t.sender.userId = :currentUserId OR t.receiver.userId = :currentUserId)
+        WHERE (t.sender.userId = :currentUserId
+                OR (t.receiver.userId = :currentUserId AND t.status = 'SUCCESS'))
           AND (:status IS NULL OR t.status = :status)
           AND t.createdAt BETWEEN :startDate AND :endDate
           AND (
@@ -30,7 +31,6 @@ interface TransactionRepository : JpaRepository<Transaction, UUID> {
                 OR ('ONLINE_PURCHASE' IN :transactionTypes AND t.type = 'ONLINE_PURCHASE')
             )
         )
-        ORDER BY t.createdAt DESC
      """
     )
     fun findFilteredTransactions(
@@ -43,7 +43,7 @@ interface TransactionRepository : JpaRepository<Transaction, UUID> {
     ): Page<Transaction>
 
 
-    fun findFirstBySender_UserIdOrReceiver_UserIdOrderByCreatedAtAsc(
+    fun findFirstBySenderUserIdOrReceiverUserIdOrderByCreatedAtAsc(
         senderId: UUID,
         receiverId: UUID
     ): Transaction?

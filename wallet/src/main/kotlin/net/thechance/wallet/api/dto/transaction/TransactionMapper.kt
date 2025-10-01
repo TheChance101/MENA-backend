@@ -1,6 +1,7 @@
 package net.thechance.wallet.api.dto.transaction
 
 import net.thechance.wallet.entity.Transaction
+import net.thechance.wallet.service.helper.UserTransactionType
 import java.util.*
 
 fun Transaction.toResponse(currentUserId: UUID): TransactionResponse {
@@ -9,7 +10,10 @@ fun Transaction.toResponse(currentUserId: UUID): TransactionResponse {
             if (sender.userId == currentUserId) UserTransactionType.SENT
             else UserTransactionType.RECEIVED
         }
-        Transaction.Type.ONLINE_PURCHASE -> UserTransactionType.ONLINE_PURCHASE
+        Transaction.Type.ONLINE_PURCHASE -> {
+            if (sender.userId == currentUserId) UserTransactionType.ONLINE_PURCHASE
+            else UserTransactionType.RECEIVED
+        }
     }
 
     val actualReceiverName =
