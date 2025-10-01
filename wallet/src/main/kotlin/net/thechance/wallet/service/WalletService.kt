@@ -17,4 +17,8 @@ class WalletService(
 
         return totalReceived - totalSent
     }
+
+    fun doSomething() {
+        println("Handling the user created event")
+    }
 }
