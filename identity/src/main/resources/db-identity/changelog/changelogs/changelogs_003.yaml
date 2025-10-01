@@ -1,0 +1,189 @@
+databaseChangeLog:
+  - changeSet:
+      id: 6-identity
+      author: nabil
+      comment: drop previous users from the database
+      changes:
+        - delete:
+            schemaName: identity
+            tableName: refresh_tokens
+        - delete:
+            schemaName: identity
+            tableName: login_log
+        - delete:
+            schemaName: identity
+            tableName: users
+
+  - changeSet:
+      id: 7-identity
+      author: nabil
+      comment: Add new columns for identity.user table for identity schema
+      changes:
+        - addColumn:
+            schemaName: identity
+            tableName: users
+            columns:
+              - column:
+                  name: image_url
+                  type: varchar(2083)
+                  constraints:
+                    nullable: true
+              - column:
+                  name: first_name
+                  type: varchar(255)
+                  constraints:
+                    nullable: false
+              - column:
+                  name: last_name
+                  type: varchar(255)
+                  constraints:
+                    nullable: false
+              - column:
+                  name: username
+                  type: varchar(255)
+                  constraints:
+                    unique: true
+                    nullable: false
+
+  - changeSet:
+      id: 8-identity
+      author: nabil
+      comment: Add unique constraint to users table on username and phone number for identity schema
+      changes:
+        - addUniqueConstraint:
+            tableName: users
+            columnNames: phone_number
+            constraintName: users_phone_number_unique
+            schemaName: identity
+
+
+  - changeSet:
+      id: 9-identity
+      author: nabil
+      comment: insert test users for development
+      changes:
+        - insert:
+            schemaName: identity
+            tableName: users
+            columns:
+              - column:
+                  name: id
+                  valueComputed: gen_random_uuid()
+              - column:
+                  name: phone_number
+                  value: '+9647844440001'
+              - column:
+                  name: password
+                  value: '$2a$10$of0UmJbAArQ2vekojlgOKuZMkYXOZljDRQAu5FBrLjXX2IVaYhjPO'
+              - column:
+                  name: image_url
+                  value: 'https://placehold.co/600x400?text=User1'
+              - column:
+                  name: first_name
+                  value: 'Test'
+              - column:
+                  name: last_name
+                  value: 'User1'
+              - column:
+                  name: username
+                  value: 'testuser1'
+        - insert:
+            schemaName: identity
+            tableName: users
+            columns:
+              - column:
+                  name: id
+                  valueComputed: gen_random_uuid()
+              - column:
+                  name: phone_number
+                  value: '+9647844440002'
+              - column:
+                  name: password
+                  value: '$2a$10$of0UmJbAArQ2vekojlgOKuZMkYXOZljDRQAu5FBrLjXX2IVaYhjPO'
+              - column:
+                  name: image_url
+                  value: 'https://placehold.co/600x400?text=User2'
+              - column:
+                  name: first_name
+                  value: 'Test'
+              - column:
+                  name: last_name
+                  value: 'User2'
+              - column:
+                  name: username
+                  value: 'testuser2'
+        - insert:
+            schemaName: identity
+            tableName: users
+            columns:
+              - column:
+                  name: id
+                  valueComputed: gen_random_uuid()
+              - column:
+                  name: phone_number
+                  value: '+9647844440003'
+              - column:
+                  name: password
+                  value: '$2a$10$of0UmJbAArQ2vekojlgOKuZMkYXOZljDRQAu5FBrLjXX2IVaYhjPO'
+              - column:
+                  name: image_url
+                  value: 'https://placehold.co/600x400?text=User3'
+              - column:
+                  name: first_name
+                  value: 'Test'
+              - column:
+                  name: last_name
+                  value: 'User3'
+              - column:
+                  name: username
+                  value: 'testuser3'
+        - insert:
+            schemaName: identity
+            tableName: users
+            columns:
+              - column:
+                  name: id
+                  valueComputed: gen_random_uuid()
+              - column:
+                  name: phone_number
+                  value: '+201044440001'
+              - column:
+                  name: password
+                  value: '$2a$10$of0UmJbAArQ2vekojlgOKuZMkYXOZljDRQAu5FBrLjXX2IVaYhjPO'
+              - column:
+                  name: image_url
+                  value: 'https://placehold.co/600x400?text=User4'
+              - column:
+                  name: first_name
+                  value: 'Test'
+              - column:
+                  name: last_name
+                  value: 'User4'
+              - column:
+                  name: username
+                  value: 'testuser4'
+        - insert:
+            schemaName: identity
+            tableName: users
+            columns:
+              - column:
+                  name: id
+                  valueComputed: gen_random_uuid()
+              - column:
+                  name: phone_number
+                  value: '+201044440002'
+              - column:
+                  name: password
+                  value: '$2a$10$of0UmJbAArQ2vekojlgOKuZMkYXOZljDRQAu5FBrLjXX2IVaYhjPO'
+              - column:
+                  name: image_url
+                  value: 'https://placehold.co/600x400?text=User5'
+              - column:
+                  name: first_name
+                  value: 'Test'
+              - column:
+                  name: last_name
+                  value: 'User5'
+              - column:
+                  name: username
+                  value: 'testuser5'
