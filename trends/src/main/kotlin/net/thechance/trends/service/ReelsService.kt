@@ -3,6 +3,7 @@ package net.thechance.trends.service
 import net.thechance.trends.exception.ReelNotFoundException
 import net.thechance.trends.exception.TrendCategoryNotFoundException
 import net.thechance.trends.entity.Reel
+import net.thechance.trends.exception.InvalidFileTypeException
 import net.thechance.trends.repository.CategoryRepository
 import net.thechance.trends.repository.ReelsRepository
 import org.springframework.data.domain.Page
@@ -18,7 +19,7 @@ import java.util.*
 class ReelsService(
     private val reelsRepository: ReelsRepository,
     private val categoryRepository: CategoryRepository,
-    private val videoStorageService: VideoStorageService,
+    private val fileStorageService: FileStorageService,
 ) {
     fun getAllReelsByUserId(
         pageable: Pageable,
@@ -67,7 +68,7 @@ class ReelsService(
 
 
     fun uploadReel(currentUserId: UUID, file: MultipartFile): UUID {
-        val videoUrl = videoStorageService.uploadVideo(
+        val videoUrl = fileStorageService.uploadVideo(
             file = file,
             fileName = file.originalFilename ?: "Untitled",
             folderName = TRENDS_FOLDER_NAME
@@ -77,6 +78,30 @@ class ReelsService(
             videoUrl = videoUrl
         )
         return reelsRepository.save(reel).id
+    }
+
+    @Transactional
+    fun uploadThumbnail(
+        reelId: UUID,
+        ownerId: UUID,
+        thumbnailFile: MultipartFile
+    ): Reel {
+        val existingReel = reelsRepository.findByIdAndOwnerId(id = reelId, ownerId = ownerId)
+            ?: throw ReelNotFoundException()
+
+        if (thumbnailFile.contentType?.startsWith("image/")!!.not()) {
+            throw InvalidFileTypeException()
+        }
+
+        val thumbnailUrl = fileStorageService.uploadThumbnail( // TODO: handle image
+            file = thumbnailFile,
+            fileName = thumbnailFile.originalFilename ?: "thumbnail",
+            folderName = "$TRENDS_FOLDER_NAME/thumbnails"
+        )
+
+        val updatedReel = existingReel.copy(thumbnailUrl = thumbnailUrl)
+
+        return reelsRepository.save(updatedReel)
     }
 
     companion object {
