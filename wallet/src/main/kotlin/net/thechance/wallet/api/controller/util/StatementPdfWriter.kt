@@ -7,7 +7,7 @@ import com.itextpdf.kernel.pdf.PdfWriter
 import com.itextpdf.layout.font.FontProvider
 import jakarta.servlet.ServletOutputStream
 import net.thechance.wallet.api.dto.transaction.StatementData
-import net.thechance.wallet.api.dto.transaction.UserTransactionType
+import net.thechance.wallet.service.helper.UserTransactionType
 import net.thechance.wallet.service.StatementService
 import net.thechance.wallet.service.TransactionService
 import org.springframework.core.io.ResourceLoader

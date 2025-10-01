@@ -6,6 +6,7 @@ import net.thechance.wallet.api.dto.transaction.*
 import net.thechance.wallet.entity.Transaction
 import net.thechance.wallet.service.TransactionService
 import net.thechance.wallet.service.helper.TransactionFilterParams
+import net.thechance.wallet.service.helper.UserTransactionType
 import org.springframework.data.domain.Pageable
 import org.springframework.http.ResponseEntity
 import org.springframework.security.core.annotation.AuthenticationPrincipal

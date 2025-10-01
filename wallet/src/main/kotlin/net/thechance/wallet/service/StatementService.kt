@@ -1,6 +1,6 @@
 package net.thechance.wallet.service
 
-import net.thechance.wallet.api.dto.transaction.UserTransactionType
+import net.thechance.wallet.service.helper.UserTransactionType
 import net.thechance.wallet.entity.Transaction
 import net.thechance.wallet.exception.NoTransactionsFoundException
 import net.thechance.wallet.repository.TransactionRepository
