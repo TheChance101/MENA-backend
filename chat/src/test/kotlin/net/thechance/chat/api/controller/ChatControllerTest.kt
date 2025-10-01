@@ -5,6 +5,8 @@ import io.mockk.every
 import io.mockk.justRun
 import io.mockk.mockk
 import io.mockk.verify
+import net.thechance.chat.api.dto.MarkAsReadRequest
+import net.thechance.chat.api.dto.MarkAsReadResponse
 import net.thechance.chat.api.dto.MessageRequestDto
 import net.thechance.chat.entity.Chat
 import net.thechance.chat.entity.Contact
@@ -123,17 +125,20 @@ class ChatControllerTest {
     fun `markMessagesAsRead should send read event and update service`() {
         val chatId = UUID.randomUUID()
         val userId = UUID.randomUUID()
+        val principal = mockk<Principal>()
+        val markAsReadRequest = MarkAsReadRequest(chatId)
 
+        every { principal.name } returns userId.toString()
         justRun { messagingTemplate.convertAndSendToUser(any(), any(), any()) }
         justRun { chatService.markChatMessagesAsRead(chatId, userId) }
 
-        controller.markMessagesAsRead(userId, chatId)
+        controller.markMessagesAsRead(markAsReadRequest, principal)
 
         verify {
             messagingTemplate.convertAndSendToUser(
                 chatId.toString(),
                 "/queue/messages",
-                mapOf("readBy" to userId)
+                MarkAsReadResponse(userId)
             )
         }
         verify { chatService.markChatMessagesAsRead(chatId, userId) }

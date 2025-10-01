@@ -60,16 +60,17 @@ class ChatController(
         )
     }
 
-    @PatchMapping
+    @MessageMapping("/chat.markAsRead")
     fun markMessagesAsRead(
-        @AuthenticationPrincipal userId: UUID,
-        @RequestParam chatId: UUID,
+        @Payload markAsReadRequest: MarkAsReadRequest,
+        principal: Principal
     ) {
+        val userId = UUID.fromString(principal.name)
         messagingTemplate.convertAndSendToUser(
-            chatId.toString(),
+            markAsReadRequest.chatId.toString(),
             "/queue/messages",
-            mapOf("readBy" to userId)
+            MarkAsReadResponse(userId)
         )
-        chatService.markChatMessagesAsRead(chatId, userId)
+        chatService.markChatMessagesAsRead(markAsReadRequest.chatId, userId)
     }
 }
