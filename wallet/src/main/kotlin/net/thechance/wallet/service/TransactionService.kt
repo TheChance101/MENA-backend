@@ -5,7 +5,9 @@ import net.thechance.wallet.entity.Transaction
 import net.thechance.wallet.repository.TransactionRepository
 import net.thechance.wallet.service.helper.TransactionFilterParams
 import org.springframework.data.domain.Page
+import org.springframework.data.domain.PageRequest
 import org.springframework.data.domain.Pageable
+import org.springframework.data.domain.Sort
 import org.springframework.stereotype.Service
 import java.time.LocalDateTime
 import java.util.*
@@ -33,7 +35,11 @@ class TransactionService(
             transactionTypes = transactionFilterParams.types?.map{ it.name},
             startDate = startDate,
             endDate = endDate,
-            pageable = pageable,
+            pageable = PageRequest.of(
+                pageable.pageNumber,
+                pageable.pageSize,
+                Sort.by(Sort.Direction.DESC, Transaction::createdAt.name)
+            ),
             currentUserId = currentUserId
         )
     }

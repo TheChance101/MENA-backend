@@ -7,6 +7,7 @@ import net.thechance.wallet.repository.TransactionRepository
 import net.thechance.wallet.repository.WalletUserRepository
 import org.springframework.data.domain.Page
 import org.springframework.data.domain.PageRequest
+import org.springframework.data.domain.Sort
 import org.springframework.stereotype.Service
 import java.time.LocalDate
 import java.time.LocalDateTime
@@ -54,7 +55,11 @@ class StatementService(
             transactionTypes = types?.map { it.name },
             startDate = startDateTime,
             endDate = endDateTime,
-            pageable = PageRequest.of(pageNum, PAGE_SIZE),
+            pageable = PageRequest.of(
+                pageNum,
+                PAGE_SIZE,
+                Sort.by(Sort.Direction.ASC, Transaction::createdAt.name)
+            ),
             currentUserId = userId
         )
 

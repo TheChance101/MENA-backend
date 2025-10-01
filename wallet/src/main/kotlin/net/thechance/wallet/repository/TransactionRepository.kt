@@ -31,7 +31,6 @@ interface TransactionRepository : JpaRepository<Transaction, UUID> {
                 OR ('ONLINE_PURCHASE' IN :transactionTypes AND t.type = 'ONLINE_PURCHASE')
             )
         )
-        ORDER BY t.createdAt DESC
      """
     )
     fun findFilteredTransactions(
