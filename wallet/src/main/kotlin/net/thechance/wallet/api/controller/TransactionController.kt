@@ -1,5 +1,6 @@
 package net.thechance.wallet.api.controller
 
+import net.thechance.wallet.api.dto.transaction.*
 import jakarta.servlet.http.HttpServletResponse
 import net.thechance.wallet.api.controller.helper.StatementPdfGenerator
 import net.thechance.wallet.api.dto.transaction.FirstTransactionDateResponse
@@ -12,10 +13,7 @@ import net.thechance.wallet.service.helper.TransactionFilterParams
 import org.springframework.data.domain.Pageable
 import org.springframework.http.ResponseEntity
 import org.springframework.security.core.annotation.AuthenticationPrincipal
-import org.springframework.web.bind.annotation.GetMapping
-import org.springframework.web.bind.annotation.RequestMapping
-import org.springframework.web.bind.annotation.RequestParam
-import org.springframework.web.bind.annotation.RestController
+import org.springframework.web.bind.annotation.*
 import java.time.LocalDate
 import java.time.format.DateTimeFormatter
 import java.util.*
@@ -68,6 +66,15 @@ class TransactionController(
 
         val date = transactionService.getUserFirstTransactionDate(currentUserId = userId)?.toLocalDate()
         return ResponseEntity.ok(FirstTransactionDateResponse(firstTransactionDate = date))
+    }
+
+    @GetMapping("/{transactionId}")
+    fun getTransactionDetails(
+        @AuthenticationPrincipal userId: UUID,
+        @PathVariable transactionId: UUID
+    ): ResponseEntity<TransactionResponse> {
+        val transactionDetails = transactionService.getTransactionDetails(transactionId)
+        return ResponseEntity.ok(transactionDetails.toResponse(userId))
     }
 
     @GetMapping("/statement")
