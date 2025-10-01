@@ -45,7 +45,7 @@ class TransactionController(
                 pageable = PageRequest.of(
                     pageable.pageNumber,
                     pageable.pageSize,
-                    Sort.by(Sort.Direction.ASC, Transaction::createdAt.name)
+                    Sort.by(Sort.Direction.DESC, Transaction::createdAt.name)
                 ),
                 currentUserId = userId
             )
