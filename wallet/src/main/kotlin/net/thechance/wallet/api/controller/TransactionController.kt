@@ -1,12 +1,8 @@
 package net.thechance.wallet.api.controller
 
-import net.thechance.wallet.api.dto.transaction.*
 import jakarta.servlet.http.HttpServletResponse
-import net.thechance.wallet.api.controller.helper.StatementPdfGenerator
-import net.thechance.wallet.api.dto.transaction.FirstTransactionDateResponse
-import net.thechance.wallet.api.dto.transaction.TransactionPageResponse
-import net.thechance.wallet.api.dto.transaction.UserTransactionType
-import net.thechance.wallet.api.dto.transaction.toResponse
+import net.thechance.wallet.api.controller.util.StatementPdfWriter
+import net.thechance.wallet.api.dto.transaction.*
 import net.thechance.wallet.entity.Transaction
 import net.thechance.wallet.service.TransactionService
 import net.thechance.wallet.service.helper.TransactionFilterParams
@@ -23,7 +19,7 @@ import java.util.*
 @RequestMapping("/wallet/transactions")
 class TransactionController(
     private val transactionService: TransactionService,
-    private val statementPdfGenerator: StatementPdfGenerator,
+    private val statementPdfWriter: StatementPdfWriter,
 ) {
     @GetMapping
     fun getFilteredTransactions(
@@ -91,7 +87,7 @@ class TransactionController(
             "attachment; filename=\"statement${startDate.formatDate()}_to${endDate.formatDate()}.pdf\""
         )
 
-        statementPdfGenerator.generatePdf(
+        statementPdfWriter.writePdfToStream(
             userId = userId,
             types = types,
             startDate = startDate,

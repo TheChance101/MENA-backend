@@ -1,4 +1,4 @@
-package net.thechance.wallet.api.controller.helper
+package net.thechance.wallet.api.controller.util
 
 import com.itextpdf.html2pdf.ConverterProperties
 import com.itextpdf.html2pdf.HtmlConverter
@@ -17,13 +17,13 @@ import java.time.LocalDateTime
 import java.util.*
 
 @Component
-class StatementPdfGenerator(
+class StatementPdfWriter(
     private val resourceLoader: ResourceLoader,
     private val statementHtmlGenerator: StatementHtmlGenerator,
     private val statementService: StatementService,
     private val transactionService: TransactionService,
 ) {
-    fun generatePdf(
+    fun writePdfToStream(
         userId: UUID,
         types: List<UserTransactionType>?,
         startDate: LocalDate?,
@@ -36,42 +36,35 @@ class StatementPdfGenerator(
         val pdf = PdfDocument(writer)
         val converterProperties = setupConverterProperties()
 
-        generatePages(statementData, pdf, converterProperties)
+        writePages(statementData, pdf, converterProperties)
 
         pdf.close()
         outputStream.flush()
     }
 
-    private fun generatePages(
+    private fun writePages(
         statementData: StatementData,
         pdf: PdfDocument,
         converterProperties: ConverterProperties
     ) {
-        val firstPage = statementService.getTransactionsPage(
-            statementData.userId,
-            statementData.startDateTime,
-            statementData.endDateTime,
-            statementData.types,
-            0
-        )
+        var pageNum = 0
+        var totalPages: Int
 
-        for (pageNum in 0 until firstPage.totalPages) {
-            val page = if (pageNum == 0) {
-                firstPage
-            } else {
-                statementService.getTransactionsPage(
-                    statementData.userId,
-                    statementData.startDateTime,
-                    statementData.endDateTime,
-                    statementData.types,
-                    pageNum
-                )
-            }
+        do {
+            val page = statementService.getTransactionsPage(
+                statementData.userId,
+                statementData.startDateTime,
+                statementData.endDateTime,
+                statementData.types,
+                pageNum
+            )
 
             val htmlContent = statementHtmlGenerator.generateForPage(statementData, page)
-
             HtmlConverter.convertToPdf(htmlContent, pdf, converterProperties)
-        }
+
+            totalPages = page.totalPages
+            pageNum++
+        } while (pageNum < totalPages)
     }
 
     fun getStatementData(

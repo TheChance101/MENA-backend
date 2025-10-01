@@ -1,4 +1,4 @@
-package net.thechance.wallet.api.controller.helper
+package net.thechance.wallet.api.controller.util
 
 import net.thechance.wallet.api.dto.transaction.StatementData
 import net.thechance.wallet.entity.Transaction
