@@ -10,10 +10,10 @@ import java.time.LocalDateTime
 import java.util.*
 
 interface TransactionRepository : JpaRepository<Transaction, UUID> {
-    @Query("SELECT SUM(t.amount) FROM Transaction t WHERE t.receiver.userId = :receiverId")
+    @Query("SELECT SUM(t.amount) FROM Transaction t WHERE t.receiver.userId = :receiverId AND t.status = 'SUCCESS'")
     fun sumAmountByReceiverId(@Param("receiverId") receiverId: UUID): Double?
 
-    @Query("SELECT SUM(t.amount) FROM Transaction t WHERE t.sender.userId = :senderId")
+    @Query("SELECT SUM(t.amount) FROM Transaction t WHERE t.sender.userId = :senderId AND t.status = 'SUCCESS'")
     fun sumAmountBySenderId(@Param("senderId") senderId: UUID): Double?
 
     @Query(
@@ -23,17 +23,20 @@ interface TransactionRepository : JpaRepository<Transaction, UUID> {
           AND (:status IS NULL OR t.status = :status)
           AND t.createdAt BETWEEN :startDate AND :endDate
           AND (
-                :transactionType IS NULL
-             OR (:transactionType = 'SENT' AND t.type = 'P2P' AND t.sender.userId = :currentUserId)
-             OR (:transactionType = 'RECEIVED' AND t.type = 'P2P' AND t.receiver.userId = :currentUserId)
-             OR (:transactionType = 'ONLINE_PURCHASE' AND t.type = 'ONLINE_PURCHASE')
-      )
+                :transactionTypes IS NULL
+            OR (
+                ('SENT' IN :transactionTypes AND t.type = 'P2P' AND t.sender.userId = :currentUserId)
+                OR ('RECEIVED' IN :transactionTypes AND t.type = 'P2P' AND t.receiver.userId = :currentUserId)
+                OR ('ONLINE_PURCHASE' IN :transactionTypes AND t.type = 'ONLINE_PURCHASE')
+            )
+        )
+        ORDER BY t.createdAt DESC
      """
     )
     fun findFilteredTransactions(
         @Param("currentUserId") currentUserId: UUID,
         @Param("status") status: Transaction.Status?,
-        @Param("transactionType") transactionType: String?,
+        @Param("transactionTypes") transactionTypes: List<String>?,
         @Param("startDate") startDate: LocalDateTime?,
         @Param("endDate") endDate: LocalDateTime?,
         pageable: Pageable
@@ -49,4 +52,24 @@ interface TransactionRepository : JpaRepository<Transaction, UUID> {
     fun findTransactionById(
         transactionId: UUID,
     ): Transaction?
+
+    @Query(
+        """
+    SELECT SUM(
+        CASE 
+            WHEN t.sender.userId = :currentUserId THEN -t.amount
+            WHEN t.receiver.userId = :currentUserId THEN t.amount
+            ELSE 0
+        END
+    )
+    FROM Transaction t
+    WHERE (t.sender.userId = :currentUserId OR t.receiver.userId = :currentUserId)
+      AND t.createdAt < :endDate
+      AND t.status = 'SUCCESS'
+    """
+    )
+    fun sumNetUserTransactions(
+        @Param("currentUserId") currentUserId: UUID,
+        @Param("endDate") endDate: LocalDateTime?,
+    ): Double?
 }

@@ -34,7 +34,7 @@ class TransactionService(
 
         return transactionRepository.findFilteredTransactions(
             status = transactionFilterParams.status,
-            transactionType = transactionFilterParams.type?.name,
+            transactionTypes = transactionFilterParams.types?.map{ it.name},
             startDate = startDate,
             endDate = endDate,
             pageable = pageable,
