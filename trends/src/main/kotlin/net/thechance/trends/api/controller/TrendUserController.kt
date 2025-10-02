@@ -1,6 +1,5 @@
-package net.thechance.trends.api.controller.user
+package net.thechance.trends.api.controller
 
-import net.thechance.trends.api.controller.Constants
 import net.thechance.trends.api.dto.trendUser.DoesUserHaveCategoriesResponse
 import net.thechance.trends.service.TrendUserService
 import org.springframework.http.ResponseEntity

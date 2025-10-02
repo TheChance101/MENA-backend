@@ -1,4 +1,4 @@
-package net.thechance.trends.api.dto
+package net.thechance.trends.api.dto.reel
 
 import jakarta.validation.constraints.NotEmpty
 import java.util.*
