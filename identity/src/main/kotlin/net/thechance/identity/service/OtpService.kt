@@ -33,12 +33,27 @@ class OtpService(
         val otpLog = otpLogRepository.findByOtpAndSessionId(otp, parsedSessionId)
             ?: throw InvalidOtpException()
         if (otpLog.isVerified) throw InvalidOtpException()
-        if (otpLog.expireAt.isBefore(Instant.now())) throw OtpExpiredException()
+        checkOtpExpiration(otpLog)
         otpLogRepository.verifyOtp(parsedSessionId)
     }
 
-    fun getLastOtpByPhoneNumber(phoneNumber: String): OtpLog {
-        return otpLogRepository.findFirstByPhoneNumberOrderByCreatedAtDesc(phoneNumber) ?: throw UnauthorizedException()
+    fun getLatestNotExpiredOtpBySessionId(sessionId: String): OtpLog {
+        val otpLog = getLatestOtpBySessionId(sessionId)
+        checkOtpExpiration(otpLog)
+        return otpLog
+    }
+
+    fun expireLatestOtpBySessionId(sessionId: String) {
+        otpLogRepository.expireLatestOtpBySessionId(UUID.fromString(sessionId))
+    }
+
+    private fun getLatestOtpBySessionId(sessionId: String): OtpLog {
+        return otpLogRepository.findFirstBySessionIdOrderByCreatedAtDesc(UUID.fromString(sessionId))
+            ?: throw UnauthorizedException()
+    }
+
+    private fun checkOtpExpiration(otpLog: OtpLog) {
+        if (otpLog.expireAt.isBefore(Instant.now())) throw OtpExpiredException()
     }
 
     private fun expireOldActiveOtpByPhoneNumber(phoneNumber: String) {

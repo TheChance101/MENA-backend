@@ -2,10 +2,8 @@ package net.thechance.identity.service
 
 import net.thechance.identity.api.dto.RequestOtpResponse
 import net.thechance.identity.api.dto.VerifyOtpResponse
-import net.thechance.identity.exception.PasswordMismatchException
-import net.thechance.identity.exception.PasswordNotUpdatedException
-import net.thechance.identity.exception.UnauthorizedException
-import net.thechance.identity.exception.UserNotFoundException
+import net.thechance.identity.entity.OtpLog
+import net.thechance.identity.exception.*
 import net.thechance.identity.service.phoneNumberValidator.PhoneNumberValidatorService
 import net.thechance.identity.service.sms.SmsService
 import org.springframework.security.crypto.password.PasswordEncoder
@@ -39,13 +37,22 @@ class ResetPasswordService(
         return VerifyOtpResponse("OTP verified successfully")
     }
 
-    fun resetPassword(phoneNumber: String, newPassword: String, confirmPassword: String, sessionId: String) {
-        val lastCreatedOtp = otpService.getLastOtpByPhoneNumber(phoneNumber = phoneNumber)
-        if (lastCreatedOtp.sessionId.toString() != sessionId || !lastCreatedOtp.isVerified) throw UnauthorizedException()
+    fun resetPassword(newPassword: String, confirmPassword: String, sessionId: String) {
+        val latestOtp = getLatestNotExpiredOtp(sessionId)
+        if (latestOtp.sessionId.toString() != sessionId || !latestOtp.isVerified) throw UnauthorizedException()
         if (newPassword != confirmPassword) throw PasswordMismatchException()
         val encodedPassword = passwordEncoder.encode(newPassword)
-        val isPasswordUpdated = userService.updatePasswordByPhoneNumber(phoneNumber, encodedPassword)
+        val isPasswordUpdated = userService.updatePasswordByPhoneNumber(latestOtp.phoneNumber, encodedPassword)
         if (!isPasswordUpdated) throw PasswordNotUpdatedException()
+        otpService.expireLatestOtpBySessionId(sessionId)
+    }
+
+    private fun getLatestNotExpiredOtp(sessionId: String): OtpLog {
+        try {
+            return otpService.getLatestNotExpiredOtpBySessionId(sessionId)
+        } catch (_: OtpExpiredException) {
+            throw UnauthorizedException()
+        }
     }
 
     private fun checkPhoneNumberExistence(phoneNumber: String) {
