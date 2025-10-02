@@ -33,11 +33,8 @@ class GooglePhoneNumberValidatorService : PhoneNumberValidatorService {
         val regionCode = phoneNumberUtil.getRegionCodeForNumber(parsedNumber)
 
         val nationalNumberString = parsedNumber.nationalNumber.toString()
-        val carrierPrefix = if (nationalNumberString.length >= 3) {
-            nationalNumberString.substring(0, 3)
-        } else {
-            nationalNumberString
-        }
+        val nationalDestinationCodeLength = phoneNumberUtil.getLengthOfNationalDestinationCode(parsedNumber)
+        val carrierPrefix = nationalNumberString.substring(0, nationalDestinationCodeLength)
 
         return ValidatedPhoneNumber(
             phoneNumber = e164Format,
