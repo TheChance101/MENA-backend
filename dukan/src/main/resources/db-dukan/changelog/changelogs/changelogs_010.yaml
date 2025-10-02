@@ -1,6 +1,6 @@
 databaseChangeLog:
   - changeSet:
-      id: 009-insert-dukan-categories
+      id: 010-dukan
       author: haider
       changes:
         - insert:
