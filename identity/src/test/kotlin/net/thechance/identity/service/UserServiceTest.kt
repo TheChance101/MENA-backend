@@ -6,10 +6,12 @@ import io.mockk.mockk
 import io.mockk.verify
 import net.thechance.identity.exception.InvalidCredentialsException
 import net.thechance.identity.exception.PasswordNotUpdatedException
+import net.thechance.identity.exception.UserNotFoundException
 import net.thechance.identity.repository.UserRepository
 import net.thechance.identity.utils.createUser
 import org.junit.Assert.assertThrows
 import org.junit.Test
+import org.springframework.data.repository.findByIdOrNull
 
 class UserServiceTest {
     private val userRepository: UserRepository = mockk(relaxed = true)
@@ -38,6 +40,31 @@ class UserServiceTest {
         userService.findByPhoneNumber(phoneNumber)
 
         verify(exactly = 1) { userRepository.findByPhoneNumber(any()) }
+    }
+
+    @Test
+    fun `findById() should return User when user exists`() {
+        every { userRepository.findByIdOrNull(user.id) } returns user
+
+        val resultUser = userService.findById(user.id)
+
+        assertThat(resultUser).isNotNull()
+    }
+
+    @Test
+    fun `findById() should throw UserNotFoundException when user not exists`() {
+        every { userRepository.findByIdOrNull(any()) } returns null
+
+        assertThrows(UserNotFoundException::class.java) { userService.findById(user.id) }
+    }
+
+    @Test
+    fun `findById() should call findByIdOrNull in userRepository one time when called`() {
+        every { userRepository.findByIdOrNull(any()) } returns user
+
+        userService.findById(user.id)
+
+        verify(exactly = 1) { userRepository.findByIdOrNull(any()) }
     }
 
     @Test
