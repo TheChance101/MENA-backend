@@ -54,4 +54,36 @@ class IdentityControllerAdvice {
 			.status(HttpStatus.NOT_FOUND)
 			.body(ErrorResponse("User not found"))
 	}
+
+    @ExceptionHandler(InvalidPhoneNumberException::class)
+    fun handleInvalidPhoneNumberException(exception: InvalidPhoneNumberException): ResponseEntity<ErrorResponse?> {
+        logger.error("Invalid phone number: ${exception.message}", exception)
+        return ResponseEntity
+            .status(HttpStatus.BAD_REQUEST)
+            .body(ErrorResponse(exception.message ?: "Invalid phone number"))
+    }
+
+    @ExceptionHandler(FrequentOtpRequestException::class)
+    fun handleFrequentOtpRequestException(exception: FrequentOtpRequestException): ResponseEntity<ErrorResponse> {
+        logger.error("Frequent otp request: ${exception.message}", exception)
+        return ResponseEntity
+            .status(HttpStatus.TOO_MANY_REQUESTS)
+            .body(ErrorResponse(exception.message ?: "Frequent otp requests, try again later"))
+    }
+
+    @ExceptionHandler(InvalidOtpException::class)
+    fun handleInvalidOtpException(exception: InvalidOtpException): ResponseEntity<ErrorResponse?> {
+        logger.error("OTP is invalid: ${exception.message}", exception)
+        return ResponseEntity
+            .status(HttpStatus.UNAUTHORIZED)
+            .body(ErrorResponse(exception.message ?: "OTP is invalid"))
+    }
+
+    @ExceptionHandler(OtpExpiredException::class)
+    fun handleOtpExpiredException(exception: OtpExpiredException): ResponseEntity<ErrorResponse?> {
+        logger.error("OTP is expired: ${exception.message}", exception)
+        return ResponseEntity
+            .status(HttpStatus.BAD_REQUEST)
+            .body(ErrorResponse(exception.message ?: "OTP is expired"))
+    }
 }
