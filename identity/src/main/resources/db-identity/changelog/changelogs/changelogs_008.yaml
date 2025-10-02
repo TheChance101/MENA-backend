@@ -1,6 +1,6 @@
 databaseChangeLog:
   - changeSet:
-      id: 6-identity
+      id: 8-identity
       author: eslam-99
       comment: Create otp_logs table for identity
       changes:
@@ -15,7 +15,3 @@ databaseChangeLog:
               expire_at    TIMESTAMP WITH TIME ZONE NOT NULL,
               created_at   TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT NOW()
               );
-
-        - sql:
-              CREATE INDEX idx_otp_logs_phone_number
-              ON identity.otp_logs (phone_number);
