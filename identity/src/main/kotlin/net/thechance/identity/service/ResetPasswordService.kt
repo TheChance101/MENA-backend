@@ -1,7 +1,6 @@
 package net.thechance.identity.service
 
 import net.thechance.identity.api.dto.RequestOtpResponse
-import net.thechance.identity.api.dto.VerifyOtpResponse
 import net.thechance.identity.entity.OtpLog
 import net.thechance.identity.exception.OtpExpiredException
 import net.thechance.identity.exception.PasswordMismatchException
@@ -36,9 +35,8 @@ class ResetPasswordService(
         return RequestOtpResponse(otpLog.sessionId.toString())
     }
 
-    fun verifyOtp(otp: String, sessionId: UUID): VerifyOtpResponse {
+    fun verifyOtp(otp: String, sessionId: UUID) {
         otpService.verifyOtp(otp, sessionId)
-        return VerifyOtpResponse("OTP verified successfully")
     }
 
     fun resetPassword(newPassword: String, confirmPassword: String, sessionId: UUID) {
