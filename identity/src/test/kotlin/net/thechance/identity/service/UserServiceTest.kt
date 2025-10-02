@@ -7,7 +7,7 @@ import io.mockk.verify
 import net.thechance.identity.exception.InvalidCredentialsException
 import net.thechance.identity.exception.PasswordNotUpdatedException
 import net.thechance.identity.repository.UserRepository
-import net.thechance.identity.utils.DummyUsers
+import net.thechance.identity.utils.createUser
 import org.junit.Assert.assertThrows
 import org.junit.Test
 
@@ -72,7 +72,7 @@ class UserServiceTest {
         every { userRepository.findByPhoneNumber(any()) } returns user
         every { userRepository.save(any()) } returns updatedUser
 
-        val isPasswordUpdated = userService.updatePasswordByPhoneNumber(phoneNumber, password)
+        val isPasswordUpdated = userService.updatePasswordByPhoneNumber(phoneNumber, PASSWORD)
 
         assertThat(isPasswordUpdated).isTrue()
     }
@@ -82,7 +82,7 @@ class UserServiceTest {
         every { userRepository.findByPhoneNumber(any()) } returns user
         every { userRepository.save(any()) } returns user
 
-        val isPasswordUpdated = userService.updatePasswordByPhoneNumber(phoneNumber, password)
+        val isPasswordUpdated = userService.updatePasswordByPhoneNumber(phoneNumber, PASSWORD)
 
         assertThat(isPasswordUpdated).isFalse()
     }
@@ -93,7 +93,7 @@ class UserServiceTest {
         every { userRepository.save(any()) } returns null
 
         assertThrows(PasswordNotUpdatedException::class.java) {
-            userService.updatePasswordByPhoneNumber(phoneNumber, password)
+            userService.updatePasswordByPhoneNumber(phoneNumber, PASSWORD)
         }
     }
 
@@ -102,13 +102,15 @@ class UserServiceTest {
         every { userRepository.findByPhoneNumber(any()) } returns null
 
         assertThrows(InvalidCredentialsException::class.java) {
-            userService.updatePasswordByPhoneNumber(phoneNumber, password)
+            userService.updatePasswordByPhoneNumber(phoneNumber, PASSWORD)
         }
     }
-}
 
-private val user = DummyUsers.validUser1
-private val phoneNumber = user.phoneNumber
-private val id = user.id
-private val password = DummyUsers.validUser2.password
-private val updatedUser = user.copy(password = password)
+    companion object {
+        private val user = createUser()
+        private val phoneNumber = user.phoneNumber
+        private val id = user.id
+        private const val PASSWORD = "00000000"
+        private val updatedUser = user.copy(password = PASSWORD)
+    }
+}
