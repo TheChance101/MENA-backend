@@ -38,7 +38,7 @@ class VideoStorageService(
             val key = "video/$folderName/$fileName"
             val putReq = createObjectRequest(key, mimeType)
             trendsS3Client.putObject(putReq, RequestBody.fromBytes(file.bytes))
-            return "${trendsStorageProperties.cdnEndpoint}/${trendsStorageProperties.bucket}/$key"
+            return "${trendsStorageProperties.cdnEndpoint}/$key"
         }.getOrElse {
             throw VideoUploadFailedException()
         }
@@ -54,7 +54,7 @@ class VideoStorageService(
     }
 
     fun deleteVideo(videoUrl: String): Boolean {
-        val prefix = "${trendsStorageProperties.cdnEndpoint}/${trendsStorageProperties.bucket}/"
+        val prefix = trendsStorageProperties.cdnEndpoint
         if (!videoUrl.startsWith(prefix)) {
             throw InvalidTrendInputException()
         }
