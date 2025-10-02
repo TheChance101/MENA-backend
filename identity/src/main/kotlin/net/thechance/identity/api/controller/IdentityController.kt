@@ -11,6 +11,7 @@ import org.springframework.web.bind.annotation.PostMapping
 import org.springframework.web.bind.annotation.RequestBody
 import org.springframework.web.bind.annotation.RequestMapping
 import org.springframework.web.bind.annotation.RestController
+import java.util.UUID
 
 @RestController
 @RequestMapping("/identity/authentication")
@@ -47,13 +48,13 @@ class IdentityController(
         @RequestBody @Valid request: VerifyOtpRequest,
         httpRequest: HttpServletRequest
     ): ResponseEntity<VerifyOtpResponse> {
-        val response = resetPasswordService.verifyOtp(request.otp, request.sessionId)
+        val response = resetPasswordService.verifyOtp(request.otp, UUID.fromString(request.sessionId))
         return ResponseEntity.ok(response)
     }
 
     @PostMapping("/reset-password")
     fun resetPassword(@RequestBody @Valid request: ResetPasswordRequest): ResponseEntity<String> {
-        resetPasswordService.resetPassword(request.newPassword, request.confirmPassword, request.sessionId)
+        resetPasswordService.resetPassword(request.newPassword, request.confirmPassword, UUID.fromString(request.sessionId))
         return ResponseEntity.ok("Password reset successfully")
     }
 }

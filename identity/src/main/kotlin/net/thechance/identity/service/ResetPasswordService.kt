@@ -11,6 +11,7 @@ import net.thechance.identity.service.phoneNumberValidator.PhoneNumberValidatorS
 import net.thechance.identity.service.sms.SmsService
 import org.springframework.security.crypto.password.PasswordEncoder
 import org.springframework.stereotype.Service
+import java.util.UUID
 
 @Service
 class ResetPasswordService(
@@ -35,12 +36,12 @@ class ResetPasswordService(
         return RequestOtpResponse(otpLog.sessionId.toString())
     }
 
-    fun verifyOtp(otp: String, sessionId: String): VerifyOtpResponse {
+    fun verifyOtp(otp: String, sessionId: UUID): VerifyOtpResponse {
         otpService.verifyOtp(otp, sessionId)
         return VerifyOtpResponse("OTP verified successfully")
     }
 
-    fun resetPassword(newPassword: String, confirmPassword: String, sessionId: String) {
+    fun resetPassword(newPassword: String, confirmPassword: String, sessionId: UUID) {
         if (newPassword != confirmPassword) throw PasswordMismatchException()
         val latestOtp = getLatestNotExpiredOtp(sessionId)
         if (!latestOtp.isVerified) throw UnauthorizedException()
@@ -49,7 +50,7 @@ class ResetPasswordService(
         otpService.expireOtpBySessionId(sessionId)
     }
 
-    private fun getLatestNotExpiredOtp(sessionId: String): OtpLog {
+    private fun getLatestNotExpiredOtp(sessionId: UUID): OtpLog {
         try {
             return otpService.getLatestNotExpiredOtpBySessionId(sessionId)
         } catch (_: OtpExpiredException) {

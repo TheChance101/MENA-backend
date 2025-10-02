@@ -11,6 +11,7 @@ import org.junit.Assert.assertThrows
 import org.junit.Test
 import org.springframework.security.crypto.password.PasswordEncoder
 import java.time.Instant
+import java.util.UUID
 
 class ResetPasswordServiceTest {
     private val phoneNumberValidatorService: PhoneNumberValidatorService = mockk(relaxed = true)
@@ -204,8 +205,8 @@ class ResetPasswordServiceTest {
         private const val PHONE_NUMBER = "+201122334455"
         private const val DEFAULT_REGION = "EG"
         private const val OTP = "000000"
-        private const val SESSION_ID = "1b3ed35d-94b7-45e4-974c-9da921a27d1c"
-        private const val WRONG_SESSION_ID = "1b3ed35d-94b7-4599-974c-9da921a27d1c"
+        private val SESSION_ID = UUID.fromString("1b3ed35d-94b7-45e4-974c-9da921a27d1c")
+        private val WRONG_SESSION_ID = UUID.fromString("1b3ed35d-94b7-4599-974c-9da921a27d1c")
 
         private const val NEW_PASSWORD = "test12300"
         private const val CONFIRM_PASSWORD = "test12300"

@@ -28,27 +28,26 @@ class OtpService(
         return otpLog
     }
 
-    fun verifyOtp(otp: String, sessionId: String) {
-        val parsedSessionId = UUID.fromString(sessionId)
-        val otpLog = otpLogRepository.findByOtpAndSessionId(otp, parsedSessionId)
+    fun verifyOtp(otp: String, sessionId: UUID) {
+        val otpLog = otpLogRepository.findByOtpAndSessionId(otp, sessionId)
             ?: throw InvalidOtpException()
         if (otpLog.isVerified) throw InvalidOtpException()
         checkOtpExpiration(otpLog)
-        otpLogRepository.verifyOtp(parsedSessionId)
+        otpLogRepository.verifyOtp(sessionId)
     }
 
-    fun getLatestNotExpiredOtpBySessionId(sessionId: String): OtpLog {
+    fun getLatestNotExpiredOtpBySessionId(sessionId: UUID): OtpLog {
         val otpLog = getLatestOtpBySessionId(sessionId)
         checkOtpExpiration(otpLog)
         return otpLog
     }
 
-    fun expireOtpBySessionId(sessionId: String) {
-        otpLogRepository.expireOtpBySessionId(UUID.fromString(sessionId))
+    fun expireOtpBySessionId(sessionId: UUID) {
+        otpLogRepository.expireOtpBySessionId(sessionId)
     }
 
-    private fun getLatestOtpBySessionId(sessionId: String): OtpLog {
-        return otpLogRepository.findFirstBySessionIdOrderByCreatedAtDesc(UUID.fromString(sessionId))
+    private fun getLatestOtpBySessionId(sessionId: UUID): OtpLog {
+        return otpLogRepository.findFirstBySessionIdOrderByCreatedAtDesc(sessionId)
             ?: throw UnauthorizedException()
     }
 
