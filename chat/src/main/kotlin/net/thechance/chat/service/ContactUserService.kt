@@ -9,5 +9,6 @@ import java.util.UUID
 class ContactUserService(
     private val contactUserRepository: ContactUserRepository
 ) {
-    fun getPhoneNumberByIdOrNull(id: UUID) = contactUserRepository.findByIdOrNull(id)?.phoneNumber
+    fun getPhoneNumberByUserId(id: UUID) = getUserById(id).phoneNumber
+    fun getUserById(id: UUID) = contactUserRepository.findByIdOrNull(id) ?: throw IllegalArgumentException("User not found")
 }

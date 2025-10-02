@@ -5,6 +5,7 @@ import io.mockk.every
 import io.mockk.justRun
 import io.mockk.mockk
 import io.mockk.verify
+import net.thechance.chat.api.controller.ChatController.Companion.QUEUE_MESSAGES
 import net.thechance.chat.api.dto.MarkAsReadRequest
 import net.thechance.chat.api.dto.MarkAsReadResponse
 import net.thechance.chat.api.dto.MessageRequestDto
@@ -69,7 +70,7 @@ class ChatControllerTest {
 
         every { contactUserService.getPhoneNumberByIdOrNull(receiverId) } returns "777777777"
 
-        every { contactService.getContactByOwnerIdAndPhoneNumber(userId, "777777777") } returns Contact(
+        every { contactService.getContactByOwnerIdAndContactUserId(userId, "777777777") } returns Contact(
             id = UUID.randomUUID(),
             firstName = "Ali",
             lastName = "Ahmed",
@@ -137,7 +138,7 @@ class ChatControllerTest {
         verify {
             messagingTemplate.convertAndSendToUser(
                 chatId.toString(),
-                "/queue/messages",
+                QUEUE_MESSAGES,
                 MarkAsReadResponse(userId)
             )
         }

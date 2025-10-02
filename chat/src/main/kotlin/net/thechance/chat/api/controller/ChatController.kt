@@ -3,7 +3,6 @@ package net.thechance.chat.api.controller
 import net.thechance.chat.api.dto.*
 import net.thechance.chat.service.ChatService
 import net.thechance.chat.service.ContactService
-import net.thechance.chat.service.ContactUserService
 import org.springframework.data.domain.Pageable
 import org.springframework.http.ResponseEntity
 import org.springframework.messaging.handler.annotation.MessageMapping
@@ -21,18 +20,16 @@ class ChatController(
     private val messagingTemplate: SimpMessagingTemplate,
     private val chatService: ChatService,
     private val contactService: ContactService,
-    private val contactUserService: ContactUserService
 ) {
 
     @MessageMapping("/chat.privateMessage")
     fun sendPrivateMessage(@Payload chatMessage: MessageRequestDto, principal: Principal) {
         val senderId = UUID.fromString(principal.name)
-        val updatedMessage = chatMessage.toMessageDto(senderId = senderId)
-        chatService.saveMessage(updatedMessage)
-        messagingTemplate.convertAndSendToUser(
-            chatMessage.chatId.toString(),
-            "/queue/messages",
-            updatedMessage
+        val createdMessage = chatMessage.toCreateMessageArgs(senderId = senderId)
+        chatService.saveMessage(createdMessage)
+        sendMessageToUser(
+            user = chatMessage.chatId.toString(),
+            message = createdMessage
         )
     }
 
@@ -42,9 +39,10 @@ class ChatController(
         @AuthenticationPrincipal userId: UUID,
         @RequestParam receiverId: UUID
     ): ResponseEntity<ChatResponse> {
-        val receiverPhone = contactUserService.getPhoneNumberByIdOrNull(receiverId) ?: throw IllegalArgumentException("Receiver not found")
-        val contact = contactService.getContactByOwnerIdAndPhoneNumber(userId, receiverPhone)
-        return ResponseEntity.ok(chatService.getOrCreateConversationByParticipants(userId, receiverId).toResponse(userId, contact))
+        val contact = contactService.getContactByOwnerIdAndContactUserId(userId, receiverId)
+        val chat = chatService.getOrCreateConversationByParticipants(userId, receiverId)
+            .toResponse(userId, contact)
+        return ResponseEntity.ok(chat)
     }
 
     @GetMapping("/history")
@@ -53,10 +51,7 @@ class ChatController(
         pageable: Pageable
     ): ResponseEntity<PagedResponse<MessageDto>> {
         return ResponseEntity.ok(
-            chatService.getAllChatMessages(
-                chatId = chatId,
-                pageable = pageable
-            ).toPagedMessageResponse()
+            chatService.getAllChatMessages(chatId,pageable).toPagedMessageResponse()
         )
     }
 
@@ -66,11 +61,22 @@ class ChatController(
         principal: Principal
     ) {
         val userId = UUID.fromString(principal.name)
-        messagingTemplate.convertAndSendToUser(
-            markAsReadRequest.chatId.toString(),
-            "/queue/messages",
-            MarkAsReadResponse(userId)
+        sendMessageToUser(
+            user = markAsReadRequest.chatId.toString(),
+            message = MarkAsReadResponse(userId)
         )
         chatService.markChatMessagesAsRead(markAsReadRequest.chatId, userId)
+    }
+
+    private fun sendMessageToUser(user: String, message: Any) {
+        messagingTemplate.convertAndSendToUser(
+            user,
+            QUEUE_MESSAGES,
+            message
+        )
+    }
+
+    companion object {
+        const val QUEUE_MESSAGES = "/queue/messages"
     }
 }

@@ -1,6 +1,7 @@
 package net.thechance.chat.api.dto
 
 import net.thechance.chat.entity.Message
+import net.thechance.chat.service.args.CreateMessageArgs
 import org.springframework.data.domain.Page
 import java.time.Instant
 import java.util.*
@@ -31,8 +32,8 @@ fun Message.toDto(): MessageDto {
     )
 }
 
-fun MessageRequestDto.toMessageDto(senderId: UUID): MessageDto {
-    return MessageDto(
+fun MessageRequestDto.toCreateMessageArgs(senderId: UUID): CreateMessageArgs {
+    return CreateMessageArgs(
         id = UUID.randomUUID(),
         senderId = senderId,
         chatId = this.chatId,
@@ -45,7 +46,7 @@ fun MessageRequestDto.toMessageDto(senderId: UUID): MessageDto {
 fun Page<Message>.toPagedMessageResponse(): PagedResponse<MessageDto> {
     return PagedResponse(
         data = this.content.map { it.toDto() },
-        pageNumber = this.number + 1,
+        pageNumber = this.number,
         pageSize = this.size,
         totalItems = this.totalElements,
         totalPages = this.totalPages

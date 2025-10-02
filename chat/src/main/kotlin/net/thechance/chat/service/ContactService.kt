@@ -12,21 +12,15 @@ import java.util.UUID
 
 @Service
 class ContactService(
-    private val contactRepository: ContactRepository
+    private val contactRepository: ContactRepository,
+    private val contactUserService: ContactUserService,
 ) {
 
     fun getPagedContactByUserId(userId: UUID, pageable: Pageable): Page<ContactModel> {
-        return if (pageable.pageNumber <= 0 || pageable.pageSize <= 0) {
-            contactRepository.findAllContactModelsByContactOwnerId(
-                userId,
-                Pageable.unpaged(Sort.by("firstName").ascending())
-            )
-        } else {
-            contactRepository.findAllContactModelsByContactOwnerId(
-                userId,
-                PageRequest.of(pageable.pageNumber - 1, pageable.pageSize, Sort.by("firstName").ascending())
-            )
-        }
+        return contactRepository.findAllContactModelsByContactOwnerId(
+            userId,
+            PageRequest.of(pageable.pageNumber, pageable.pageSize, Sort.by("firstName").ascending())
+        )
     }
 
     fun syncContacts(userId: UUID, contactRequests: List<Contact>) {
@@ -41,7 +35,8 @@ class ContactService(
         contactRepository.bulkUpsert(userId, phones, firstNames, lastNames)
     }
 
-    fun getContactByOwnerIdAndPhoneNumber(ownerId: UUID, phoneNumber: String): Contact? {
-        return contactRepository.findByContactOwnerIdAndPhoneNumber(ownerId, phoneNumber)
+    fun getContactByOwnerIdAndContactUserId(ownerId: UUID, contactUserId: UUID): Contact? {
+        val userPhone = contactUserService.getPhoneNumberByUserId(contactUserId)
+        return contactRepository.findByContactOwnerIdAndPhoneNumber(ownerId, userPhone)
     }
 }
