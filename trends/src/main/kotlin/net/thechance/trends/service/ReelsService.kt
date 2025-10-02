@@ -43,8 +43,7 @@ class ReelsService(
             ?: throw ReelNotFoundException()
 
         runCatching {
-            reelsRepository.deleteById(id)
-            videoStorageService.deleteVideo(reel.videoUrl)
+            if (videoStorageService.deleteVideo(reel.videoUrl)) reelsRepository.deleteById(id)
         }.onFailure {
             throw VideoDeleteFailedException()
         }

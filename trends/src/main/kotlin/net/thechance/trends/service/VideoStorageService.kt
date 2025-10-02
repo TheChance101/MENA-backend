@@ -53,8 +53,7 @@ class VideoStorageService(
             .build()
     }
 
-    fun deleteVideo(videoUrl: String) {
-
+    fun deleteVideo(videoUrl: String): Boolean {
         val prefix = "${trendsStorageProperties.cdnEndpoint}/${trendsStorageProperties.bucket}/"
         if (!videoUrl.startsWith(prefix)) {
             throw InvalidTrendInputException()
@@ -67,7 +66,9 @@ class VideoStorageService(
             .key(key)
             .build()
 
-        trendsS3Client.deleteObject(deleteRequest)
+        val response = trendsS3Client.deleteObject(deleteRequest)
+
+        return response.sdkHttpResponse().isSuccessful
     }
 
     private companion object {
