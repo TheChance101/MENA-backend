@@ -1,8 +1,6 @@
 package net.thechance.dukan.exception
 
-import net.thechance.dukan.api.dto.ErrorCode
 import net.thechance.dukan.api.dto.ErrorResponse
-import org.hibernate.validator.internal.util.logging.LoggerFactory
 import org.springframework.core.annotation.Order
 import org.springframework.http.HttpStatus
 import org.springframework.http.ResponseEntity
