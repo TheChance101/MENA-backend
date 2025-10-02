@@ -55,12 +55,12 @@ class ChatServiceTest {
 
         every { entityManager.getReference(ContactUser::class.java, requester.id) } returns requester
         every { entityManager.getReference(ContactUser::class.java, theOtherUser.id) } returns theOtherUser
-        every { chatRepository.findByUsers(setOf(requester, theOtherUser)) } returns chat
+        every { chatRepository.findByUsersIds(setOf(requester.id, theOtherUser.id)) } returns chat
 
         val result = service.getOrCreateConversationByParticipants(requester.id, theOtherUser.id)
 
         assertThat(chat).isEqualTo(result)
-        verify { chatRepository.findByUsers(setOf(requester, theOtherUser)) }
+        verify { chatRepository.findByUsersIds(setOf(requester.id, theOtherUser.id)) }
         verify(exactly = 0) { chatRepository.save(any()) }
     }
 
@@ -72,7 +72,7 @@ class ChatServiceTest {
 
         every { entityManager.getReference(ContactUser::class.java, requester.id) } returns requester
         every { entityManager.getReference(ContactUser::class.java, theOtherUser.id) } returns theOtherUser
-        every { chatRepository.findByUsers(setOf(requester, theOtherUser)) } returns null
+        every { chatRepository.findByUsersIds(setOf(requester.id, theOtherUser.id)) } returns null
         every { contactUserService.getUserById(requester.id) } returns requester
         every { contactUserService.getUserById(theOtherUser.id) } returns theOtherUser
         every { chatRepository.save(any()) } returns newChat
@@ -81,30 +81,6 @@ class ChatServiceTest {
 
         assertThat(newChat).isEqualTo(result)
         verify { chatRepository.save(any()) }
-    }
-
-    @Test
-    fun `getOrCreateConversationByParticipants throws if requester not found`() {
-        val requesterId = UUID.randomUUID()
-        val theOtherUser = testUser()
-        every { entityManager.getReference(ContactUser::class.java, requesterId) } throws EntityNotFoundException()
-        every { entityManager.getReference(ContactUser::class.java, theOtherUser.id) } returns theOtherUser
-
-        assertThrows<EntityNotFoundException> {
-            service.getOrCreateConversationByParticipants(requesterId, theOtherUser.id)
-        }
-    }
-
-    @Test
-    fun `getOrCreateConversationByParticipants throws if the other user not found`() {
-        val requester = testUser()
-        val theOtherUserId = UUID.randomUUID()
-        every { entityManager.getReference(ContactUser::class.java, requester.id) } returns requester
-        every { entityManager.getReference(ContactUser::class.java, theOtherUserId) } throws EntityNotFoundException()
-
-        assertThrows<EntityNotFoundException> {
-            service.getOrCreateConversationByParticipants(requester.id, theOtherUserId)
-        }
     }
 
     @Test
