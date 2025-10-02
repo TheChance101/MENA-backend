@@ -53,7 +53,7 @@ class IdentityController(
 
     @PostMapping("/reset-password")
     fun resetPassword(@RequestBody @Valid request: ResetPasswordRequest): ResponseEntity<String> {
-        resetPasswordService.resetPassword(request.phoneNumber, request.newPassword, request.confirmPassword)
+        resetPasswordService.resetPassword(request.phoneNumber, request.newPassword, request.confirmPassword, request.sessionId)
         return ResponseEntity.ok("Password reset successfully")
     }
 }
