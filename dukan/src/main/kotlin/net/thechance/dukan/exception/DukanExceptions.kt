@@ -1,9 +1,18 @@
 package net.thechance.dukan.exception
 
+import net.thechance.dukan.exception.ErrorCodes.DUKAN_CREATION_FAILED
+import net.thechance.dukan.exception.ErrorCodes.DUKAN_NOT_FOUND
 import org.springframework.http.HttpStatus
 
-@ErrorCode(code = 1101, status = HttpStatus.BAD_REQUEST)
-class DukanCreationFailedException() : Exception("Dukan creation failed")
 
-@ErrorCode(code = 1102, status = HttpStatus.NOT_FOUND)
-class DukanNotFoundException() : Exception("Dukan not found")
+class DukanCreationFailedException() : DukanException(
+    code = DUKAN_CREATION_FAILED,
+    status = HttpStatus.BAD_REQUEST,
+    message = "Dukan creation failed"
+)
+
+class DukanNotFoundException() : DukanException(
+    code = DUKAN_NOT_FOUND,
+    status = HttpStatus.NOT_FOUND,
+    message = "Dukan not found"
+)

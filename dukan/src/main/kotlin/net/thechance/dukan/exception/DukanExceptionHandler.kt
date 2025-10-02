@@ -35,19 +35,13 @@ class DukanExceptionHandler {
         return ResponseEntity(response, HttpStatus.BAD_REQUEST)
     }
 
-    @ExceptionHandler(Exception::class)
-    fun handleAll(ex: Exception): ResponseEntity<ErrorResponse> {
-        val errorCodeAnnotation = ex::class.annotations.filterIsInstance<ErrorCode>().firstOrNull()
-
-        val code = errorCodeAnnotation?.code ?: 500
-        val status = errorCodeAnnotation?.status ?: HttpStatus.INTERNAL_SERVER_ERROR
-
+    @ExceptionHandler(DukanException::class)
+    fun handleDukanException(dukanException: DukanException): ResponseEntity<ErrorResponse> {
         val response = ErrorResponse(
-            message = ex.message ?: "server error",
-            errorCode = code
+            message = dukanException.message,
+            errorCode = dukanException.code
         )
-        return ResponseEntity(response, status)
+        return ResponseEntity(response, dukanException.status)
     }
-
 
 }

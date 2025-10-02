@@ -1,12 +1,24 @@
 package net.thechance.dukan.exception
 
+import net.thechance.dukan.exception.ErrorCodes.DUKAN_PRODUCT_CREATION_FAILED
+import net.thechance.dukan.exception.ErrorCodes.PRODUCT_NAME_ALREADY_TAKEN
+import net.thechance.dukan.exception.ErrorCodes.PRODUCT_NOT_FOUND
 import org.springframework.http.HttpStatus
 
-@ErrorCode(code = 1301, status = HttpStatus.NOT_FOUND)
-class ProductNotFoundException() : Exception("Product not found")
+class ProductNotFoundException() : DukanException(
+    code = PRODUCT_NOT_FOUND,
+    status = HttpStatus.NOT_FOUND,
+    message = "Product not found"
+)
 
-@ErrorCode(code = 1302, status = HttpStatus.BAD_REQUEST)
-class DukanProductCreationFailedException : Exception("Product creation failed")
+class DukanProductCreationFailedException : DukanException(
+    code = DUKAN_PRODUCT_CREATION_FAILED,
+    status = HttpStatus.BAD_REQUEST,
+    message = "Product creation failed"
+)
 
-@ErrorCode(code = 1303, status = HttpStatus.CONFLICT)
-class ProductNameAlreadyTakenException : Exception("Product name already taken")
+class ProductNameAlreadyTakenException : DukanException(
+    code = PRODUCT_NAME_ALREADY_TAKEN,
+    status = HttpStatus.CONFLICT,
+    message = "Product name already taken"
+)
