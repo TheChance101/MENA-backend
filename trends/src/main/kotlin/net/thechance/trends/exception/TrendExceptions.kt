@@ -14,3 +14,5 @@ class InvalidTrendInputException: TrendExceptions("Invalid input")
 class InvalidVideoException: TrendExceptions("Invalid video")
 
 class VideoUploadFailedException: TrendExceptions("Video upload failed")
+
+class VideoDeleteFailedException: TrendExceptions("Failed to delete video from storage")
