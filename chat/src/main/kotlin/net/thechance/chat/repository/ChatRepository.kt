@@ -6,5 +6,5 @@ import org.springframework.data.jpa.repository.JpaRepository
 import java.util.UUID
 
 interface ChatRepository : JpaRepository<Chat, UUID> {
-    fun findByUsersIs(users: Set<ContactUser>): Chat?
+    fun findByUsers(users: Set<ContactUser>): Chat?
 }
