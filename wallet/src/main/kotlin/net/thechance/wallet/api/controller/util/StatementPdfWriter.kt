@@ -1,0 +1,128 @@
+package net.thechance.wallet.api.controller.util
+
+import com.itextpdf.html2pdf.ConverterProperties
+import com.itextpdf.html2pdf.HtmlConverter
+import com.itextpdf.kernel.pdf.PdfDocument
+import com.itextpdf.kernel.pdf.PdfWriter
+import com.itextpdf.layout.font.FontProvider
+import jakarta.servlet.ServletOutputStream
+import net.thechance.wallet.api.dto.transaction.StatementData
+import net.thechance.wallet.service.helper.UserTransactionType
+import net.thechance.wallet.service.StatementService
+import net.thechance.wallet.service.TransactionService
+import org.springframework.core.io.ResourceLoader
+import org.springframework.stereotype.Component
+import java.time.LocalDate
+import java.time.LocalDateTime
+import java.util.*
+
+@Component
+class StatementPdfWriter(
+    private val resourceLoader: ResourceLoader,
+    private val statementHtmlGenerator: StatementHtmlGenerator,
+    private val statementService: StatementService,
+    private val transactionService: TransactionService,
+) {
+    fun writePdfToStream(
+        userId: UUID,
+        types: List<UserTransactionType>?,
+        startDate: LocalDate?,
+        endDate: LocalDate?,
+        outputStream: ServletOutputStream
+    ) {
+        val statementData = getStatementData(userId, types, startDate, endDate)
+
+        val writer = PdfWriter(outputStream)
+        val pdf = PdfDocument(writer)
+        val converterProperties = setupConverterProperties()
+
+        writePages(statementData, pdf, converterProperties)
+
+        pdf.close()
+        outputStream.flush()
+    }
+
+    private fun writePages(
+        statementData: StatementData,
+        pdf: PdfDocument,
+        converterProperties: ConverterProperties
+    ) {
+        var pageNum = 0
+        var totalPages: Int
+
+        do {
+            val page = statementService.getTransactionsPage(
+                statementData.userId,
+                statementData.startDateTime,
+                statementData.endDateTime,
+                statementData.types,
+                pageNum
+            )
+
+            val htmlContent = statementHtmlGenerator.generateForPage(statementData, page)
+            HtmlConverter.convertToPdf(htmlContent, pdf, converterProperties)
+
+            totalPages = page.totalPages
+            pageNum++
+        } while (pageNum < totalPages)
+    }
+
+    fun getStatementData(
+        userId: UUID,
+        types: List<UserTransactionType>?,
+        startDate: LocalDate?,
+        endDate: LocalDate?,
+    ) : StatementData {
+        val startDateTime = getStartDateTime(startDate, userId)
+        val endDateTime = getEndDateTime(endDate)
+
+        val openingBalance = statementService.getOpeningBalance(userId, startDate)
+        val closingBalance = statementService.getClosingBalance(userId, endDate)
+
+        return StatementData(
+            userId = userId,
+            username = statementService.getUserName(userId),
+            startDateTime = startDateTime,
+            endDateTime = endDateTime,
+            openingBalance = openingBalance,
+            closingBalance = closingBalance,
+            types = types
+        )
+    }
+
+    private fun getStartDateTime(startDate: LocalDate?, userId: UUID): LocalDateTime {
+        return startDate?.atStartOfDay() ?: transactionService.getUserFirstTransactionDate(userId)
+            ?: LocalDateTime.now()
+    }
+
+    private fun getEndDateTime(endDate: LocalDate?): LocalDateTime {
+        return endDate?.plusDays(1)?.atStartOfDay() ?: LocalDateTime.now()
+    }
+
+    private fun setupConverterProperties(): ConverterProperties {
+        val converterProperties = ConverterProperties()
+        val fontProvider = FontProvider()
+
+        listOf(
+            "MadimiOne-Regular.ttf",
+            "Poppins-Regular.ttf",
+            "Poppins-Medium.ttf",
+            "Poppins-SemiBold.ttf"
+        ).forEach { fontPath ->
+            val resource = resourceLoader.getResource("classpath:fonts/$fontPath")
+            if (resource.exists()) {
+                resource.inputStream.use { inputStream ->
+                    fontProvider.addFont(inputStream.readAllBytes())
+                }
+            }
+        }
+
+        converterProperties.fontProvider = fontProvider
+        converterProperties.isImmediateFlush = true
+        return converterProperties
+    }
+
+    private companion object {
+        const val PAGE_SIZE = 100
+    }
+}

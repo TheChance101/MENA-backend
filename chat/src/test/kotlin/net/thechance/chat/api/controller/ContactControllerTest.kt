@@ -24,7 +24,7 @@ class ContactControllerTest {
     fun `getPagedContact should return paged contacts when called with valid user id and pageable`() {
         val userId = UUID.randomUUID()
         val pageable: Pageable = PageRequest.of(0, 10)
-        val contactsModels = listOf(ContactModel(UUID.randomUUID(), "John", "Doe", "123456789", true, null))
+        val contactsModels = listOf(ContactModel(UUID.randomUUID(), "John", "Doe", "123456789", UUID.randomUUID(), null))
         val page = PageImpl(contactsModels, pageable, contactsModels.size.toLong())
         every { contactService.getPagedContactByUserId(any(), any()) } returns page
 

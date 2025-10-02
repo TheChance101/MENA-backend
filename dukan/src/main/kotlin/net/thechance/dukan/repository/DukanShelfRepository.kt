@@ -8,4 +8,6 @@ import java.util.UUID
 @Repository
 interface DukanShelfRepository : JpaRepository<DukanShelf, UUID> {
     fun existsByTitleAndDukanId(title: String, dukanId: UUID): Boolean
+    fun findAllByDukanId(dukanId: UUID): List<DukanShelf>
+    fun findByIdAndDukanId(id: UUID, dukanId: UUID): DukanShelf?
 }
