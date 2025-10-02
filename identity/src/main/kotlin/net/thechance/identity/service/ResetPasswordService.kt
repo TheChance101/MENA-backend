@@ -17,7 +17,6 @@ class ResetPasswordService(
     private val phoneNumberRateLimitService: PhoneNumberRateLimitService,
     private val otpService: OtpService,
     private val smsService: SmsService,
-    private val userRepository: UserRepository,
     private val userService: UserService,
     private val passwordEncoder: PasswordEncoder
 ) {
@@ -48,6 +47,10 @@ class ResetPasswordService(
     }
 
     private fun checkPhoneNumberExistence(phoneNumber: String) {
-        userRepository.findByPhoneNumber(phoneNumber) ?: throw UserNotFoundException("User not found")
+        try {
+            userService.findByPhoneNumber(phoneNumber)
+        } catch (_: Exception) {
+            throw UserNotFoundException("User not found")
+        }
     }
 }
