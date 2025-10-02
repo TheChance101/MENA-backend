@@ -33,7 +33,7 @@ class UserService(
             val savedUser = userRepository.save(userWithNewPassword)
             savedUser.password == newPassword
         } catch (exception: Exception) {
-            throw PasswordNotUpdatedException(exception.message.toString())
+            throw PasswordNotUpdatedException()
         }
     }
 

@@ -91,15 +91,23 @@ class IdentityControllerAdvice {
     fun handlePasswordMismatchException(exception: PasswordMismatchException): ResponseEntity<ErrorResponse?> {
         logger.error("Password mismatch: ${exception.message}", exception)
         return ResponseEntity
-            .badRequest()
-            .body(ErrorResponse("Password and Confirm Password do not match"))
+            .status(HttpStatus.BAD_REQUEST)
+            .body(ErrorResponse(exception.message ?: "Password and Confirm Password do not match"))
     }
 
     @ExceptionHandler(PasswordNotUpdatedException::class)
     fun handlePasswordNotUpdatedException(exception: PasswordNotUpdatedException): ResponseEntity<ErrorResponse?> {
         logger.error("Password not updated: ${exception.message}", exception)
         return ResponseEntity
-            .badRequest()
-            .body(ErrorResponse("Password not updated"))
+            .status(HttpStatus.INTERNAL_SERVER_ERROR)
+            .body(ErrorResponse(exception.message ?: "Password not updated"))
+    }
+
+    @ExceptionHandler(UnauthorizedException::class)
+    fun handleUnauthorizedException(exception: UnauthorizedException): ResponseEntity<ErrorResponse?> {
+        logger.error("Unauthorized: ${exception.message}", exception)
+        return ResponseEntity
+            .status(HttpStatus.UNAUTHORIZED)
+            .body(ErrorResponse(exception.message ?: "Unauthorized"))
     }
 }
