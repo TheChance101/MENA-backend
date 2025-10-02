@@ -19,9 +19,7 @@ class ContactService(
     fun getPagedContactByUserId(userId: UUID, pageable: Pageable): Page<ContactModel> {
         return contactRepository.findAllContactModelsByContactOwnerId(
             userId,
-            if (pageable.pageNumber <= 0) Pageable.unpaged()
-            else
-                PageRequest.of(pageable.pageNumber, pageable.pageSize, Sort.by("firstName").ascending())
+            PageRequest.of(pageable.pageNumber, pageable.pageSize, Sort.by("firstName").ascending())
         )
     }
 

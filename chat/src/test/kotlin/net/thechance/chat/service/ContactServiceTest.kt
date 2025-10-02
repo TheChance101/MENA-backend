@@ -40,24 +40,6 @@ class ContactServiceTest {
         }
     }
 
-    @Test
-    fun `getPagedContactByUserId should return all contacts when pageable pageNumber is less than or equal to zero`() {
-        val userId = UUID.randomUUID()
-        val pageable: Pageable = PageRequest.of(0, 5)
-        val contactsModels = listOf(ContactModel(UUID.randomUUID(), "Jane", "Smith", "987654321", UUID.randomUUID(), null))
-        val page = PageImpl(contactsModels)
-        every { contactRepository.findAllContactModelsByContactOwnerId(userId, any()) } returns page
-
-        val result = contactService.getPagedContactByUserId(userId, pageable)
-        assertThat(result.content).hasSize(contactsModels.size)
-        assertThat(result.content.first().firstName).isEqualTo("Jane")
-        verify {
-            contactRepository.findAllContactModelsByContactOwnerId(
-                userId,
-                match { it.isUnpaged }
-            )
-        }
-    }
 
     @Test
     fun `syncContacts should save unique contacts and update existing ones`() {
@@ -88,22 +70,39 @@ class ContactServiceTest {
     }
 
     @Test
-    fun `getPagedContactByUserId should fetch all contacts unpaged when pageNumber or pageSize is zero`() {
-        val userId = UUID.randomUUID()
-        val pageable: Pageable = PageRequest.of(0, 5)
-        val contactsModels = listOf(ContactModel(UUID.randomUUID(), "Alice", "Wonder", "555", UUID.randomUUID(), null))
-        val page = PageImpl(contactsModels)
-        every { contactRepository.findAllContactModelsByContactOwnerId(userId, any()) } returns page
+    fun `getContactByOwnerIdAndContactUserId should return contact when found`() {
+        val ownerId = UUID.randomUUID()
+        val contactUserId = UUID.randomUUID()
+        val phoneNumber = "123456789"
+        val contact = Contact(UUID.randomUUID(), "John", "Doe", phoneNumber, ownerId)
 
-        val result = contactService.getPagedContactByUserId(userId, pageable)
+        every { contactUserService.getPhoneNumberByUserId(contactUserId) } returns phoneNumber
+        every { contactRepository.findByContactOwnerIdAndPhoneNumber(ownerId, phoneNumber) } returns contact
 
-        assertThat(result.content).hasSize(contactsModels.size)
-        assertThat(result.content.first().firstName).isEqualTo("Alice")
+        val result = contactService.getContactByOwnerIdAndContactUserId(ownerId, contactUserId)
+
+        assertThat(result).isEqualTo(contact)
         verify {
-            contactRepository.findAllContactModelsByContactOwnerId(
-                userId,
-                match { it.isUnpaged }
-            )
+            contactUserService.getPhoneNumberByUserId(contactUserId)
+            contactRepository.findByContactOwnerIdAndPhoneNumber(ownerId, phoneNumber)
+        }
+    }
+
+    @Test
+    fun `getContactByOwnerIdAndContactUserId should return null when contact not found`() {
+        val ownerId = UUID.randomUUID()
+        val contactUserId = UUID.randomUUID()
+        val phoneNumber = "987654321"
+
+        every { contactUserService.getPhoneNumberByUserId(contactUserId) } returns phoneNumber
+        every { contactRepository.findByContactOwnerIdAndPhoneNumber(ownerId, phoneNumber) } returns null
+
+        val result = contactService.getContactByOwnerIdAndContactUserId(ownerId, contactUserId)
+
+        assertThat(result).isNull()
+        verify {
+            contactUserService.getPhoneNumberByUserId(contactUserId)
+            contactRepository.findByContactOwnerIdAndPhoneNumber(ownerId, phoneNumber)
         }
     }
 }
