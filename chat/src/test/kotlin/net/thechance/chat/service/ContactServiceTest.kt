@@ -11,18 +11,21 @@ import org.junit.jupiter.api.Test
 import org.springframework.data.domain.PageImpl
 import org.springframework.data.domain.PageRequest
 import org.springframework.data.domain.Pageable
-import java.util.UUID
+import java.util.*
 
 class ContactServiceTest {
 
     private val contactRepository: ContactRepository = mockk(relaxed = true)
-    private val contactService = ContactService(contactRepository)
+    private val contactUserService: ContactUserService = mockk(relaxed = true)
+
+    private val contactService = ContactService(contactRepository, contactUserService)
 
     @Test
     fun `getPagedContactByUserId should return paged contacts when called with valid user id and pageable`() {
         val userId = UUID.randomUUID()
         val pageable: Pageable = PageRequest.of(1, 10)
-        val contactsModels = listOf(ContactModel(UUID.randomUUID(), "John", "Doe", "123456789", UUID.randomUUID(), null))
+        val contactsModels =
+            listOf(ContactModel(UUID.randomUUID(), "John", "Doe", "123456789", UUID.randomUUID(), null))
         val page = PageImpl(contactsModels, pageable, contactsModels.size.toLong())
         every { contactRepository.findAllContactModelsByContactOwnerId(userId, any()) } returns page
 
@@ -32,7 +35,7 @@ class ContactServiceTest {
         verify {
             contactRepository.findAllContactModelsByContactOwnerId(
                 userId,
-                match { it.pageNumber == 0 && it.pageSize == 10 }
+                match { it.pageNumber == 1 && it.pageSize == 10 }
             )
         }
     }

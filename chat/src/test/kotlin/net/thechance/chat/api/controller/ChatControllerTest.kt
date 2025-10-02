@@ -15,7 +15,6 @@ import net.thechance.chat.entity.ContactUser
 import net.thechance.chat.entity.Message
 import net.thechance.chat.service.ChatService
 import net.thechance.chat.service.ContactService
-import net.thechance.chat.service.ContactUserService
 import org.junit.jupiter.api.Test
 import org.springframework.data.domain.PageImpl
 import org.springframework.data.domain.PageRequest
@@ -31,14 +30,12 @@ class ChatControllerTest {
     private val messagingTemplate: SimpMessagingTemplate = mockk(relaxed = true)
     private val chatService: ChatService = mockk()
     private val contactService: ContactService = mockk()
-    private val contactUserService: ContactUserService = mockk()
 
     private val controller by lazy {
         ChatController(
             messagingTemplate,
             chatService,
             contactService,
-            contactUserService
         )
     }
 
@@ -61,16 +58,13 @@ class ChatControllerTest {
     }
 
 
-
     @Test
     fun `getOrCreateConversation should return conversation`() {
         val userId = UUID.randomUUID()
         val receiverId = UUID.randomUUID()
         val chatId = UUID.randomUUID()
 
-        every { contactUserService.getPhoneNumberByIdOrNull(receiverId) } returns "777777777"
-
-        every { contactService.getContactByOwnerIdAndContactUserId(userId, "777777777") } returns Contact(
+        every { contactService.getContactByOwnerIdAndContactUserId(userId, receiverId) } returns Contact(
             id = UUID.randomUUID(),
             firstName = "Ali",
             lastName = "Ahmed",
@@ -131,7 +125,7 @@ class ChatControllerTest {
 
         every { principal.name } returns userId.toString()
         justRun { messagingTemplate.convertAndSendToUser(any(), any(), any()) }
-        justRun { chatService.markChatMessagesAsRead(chatId, userId) }
+        every { chatService.markChatMessagesAsRead(chatId, userId) } returns 1
 
         controller.markMessagesAsRead(markAsReadRequest, principal)
 

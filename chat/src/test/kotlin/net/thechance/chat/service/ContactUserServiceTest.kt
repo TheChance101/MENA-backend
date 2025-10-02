@@ -3,11 +3,12 @@ package net.thechance.chat.service
 import com.google.common.truth.Truth.assertThat
 import io.mockk.every
 import io.mockk.mockk
-import org.junit.jupiter.api.Test
-import org.springframework.data.repository.findByIdOrNull
-import java.util.UUID
-import net.thechance.chat.repository.ContactUserRepository
 import net.thechance.chat.entity.ContactUser
+import net.thechance.chat.repository.ContactUserRepository
+import org.junit.jupiter.api.Test
+import org.junit.jupiter.api.assertThrows
+import org.springframework.data.repository.findByIdOrNull
+import java.util.*
 
 class ContactUserServiceTest {
 
@@ -27,19 +28,18 @@ class ContactUserServiceTest {
 
         every { contactUserRepository.findByIdOrNull(userId) } returns user
 
-        val result = service.getPhoneNumberByIdOrNull(userId)
+        val result = service.getPhoneNumberByUserId(userId)
 
         assertThat(result).isEqualTo("+967775074564")
     }
 
     @Test
-    fun `getPhoneNumberByIdOrNull returns null when user does not exist`() {
+    fun `getPhoneNumberByIdOrNull throws IllegalArgumentException when user does not exist`() {
         val userId = UUID.randomUUID()
 
         every { contactUserRepository.findByIdOrNull(userId) } returns null
 
-        val result = service.getPhoneNumberByIdOrNull(userId)
-
-        assertThat(result).isNull()
+        val exception = assertThrows<IllegalArgumentException> { service.getPhoneNumberByUserId(userId) }
+        assertThat(exception).hasMessageThat().contains("User not found")
     }
 }

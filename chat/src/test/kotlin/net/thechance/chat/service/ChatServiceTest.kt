@@ -4,16 +4,16 @@ import com.google.common.truth.Truth.assertThat
 import io.mockk.every
 import io.mockk.mockk
 import io.mockk.verify
-import net.thechance.chat.api.dto.MessageDto
+import jakarta.persistence.EntityNotFoundException
 import net.thechance.chat.entity.Chat
 import net.thechance.chat.entity.ContactUser
 import net.thechance.chat.repository.ChatRepository
 import net.thechance.chat.repository.ContactUserRepository
 import net.thechance.chat.repository.MessageRepository
+import net.thechance.chat.service.args.CreateMessageArgs
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.assertThrows
-import org.springframework.data.repository.findByIdOrNull
 import java.time.Instant
 import java.util.*
 
@@ -22,6 +22,7 @@ class ChatServiceTest {
     private lateinit var messageRepository: MessageRepository
     private lateinit var chatRepository: ChatRepository
     private lateinit var contactUserRepository: ContactUserRepository
+    private lateinit var contactUserService: ContactUserService
     private lateinit var service: ChatService
 
     private fun testUser(id: UUID = UUID.randomUUID()) = ContactUser(
@@ -42,7 +43,8 @@ class ChatServiceTest {
         messageRepository = mockk(relaxed = true)
         chatRepository = mockk(relaxed = true)
         contactUserRepository = mockk(relaxed = true)
-        service = ChatService(messageRepository, chatRepository, contactUserRepository)
+        contactUserService = mockk(relaxed = true)
+        service = ChatService(messageRepository, chatRepository, contactUserRepository, contactUserService)
     }
 
     @Test
@@ -51,14 +53,14 @@ class ChatServiceTest {
         val theOtherUser = testUser()
         val chat = testChat().apply { users.addAll(listOf(requester, theOtherUser)) }
 
-        every { contactUserRepository.findById(requester.id) } returns Optional.of(requester)
-        every { contactUserRepository.findById(theOtherUser.id) } returns Optional.of(theOtherUser)
-        every { chatRepository.findPrivateChatBetweenUsers(setOf(requester.id, theOtherUser.id)) } returns chat
+        every { contactUserRepository.getReferenceById(requester.id) } returns requester
+        every { contactUserRepository.getReferenceById(theOtherUser.id) } returns theOtherUser
+        every { chatRepository.findByUsers(setOf(requester, theOtherUser)) } returns chat
 
         val result = service.getOrCreateConversationByParticipants(requester.id, theOtherUser.id)
 
         assertThat(chat).isEqualTo(result)
-        verify { chatRepository.findPrivateChatBetweenUsers(setOf(requester.id, theOtherUser.id)) }
+        verify { chatRepository.findByUsers(setOf(requester, theOtherUser)) }
         verify(exactly = 0) { chatRepository.save(any()) }
     }
 
@@ -68,9 +70,9 @@ class ChatServiceTest {
         val theOtherUser = testUser()
         val newChat = testChat().apply { users.addAll(listOf(requester, theOtherUser)) }
 
-        every { contactUserRepository.findById(requester.id) } returns Optional.of(requester)
-        every { contactUserRepository.findById(theOtherUser.id) } returns Optional.of(theOtherUser)
-        every { chatRepository.findPrivateChatBetweenUsers(setOf(requester.id, theOtherUser.id)) } returns null
+        every { contactUserRepository.getReferenceById(requester.id) } returns requester
+        every { contactUserRepository.getReferenceById(theOtherUser.id) } returns theOtherUser
+        every { chatRepository.findByUsers(setOf(requester, theOtherUser)) } returns null
         every { chatRepository.save(any()) } returns newChat
 
         val result = service.getOrCreateConversationByParticipants(requester.id, theOtherUser.id)
@@ -83,33 +85,34 @@ class ChatServiceTest {
     fun `getOrCreateConversationByParticipants throws if requester not found`() {
         val requesterId = UUID.randomUUID()
         val theOtherUser = testUser()
-        every { chatRepository.findPrivateChatBetweenUsers(any()) } returns null
+        every { chatRepository.findByUsers(any()) } returns null
         every { contactUserRepository.findById(requesterId) } returns Optional.empty()
+        every { contactUserRepository.getReferenceById(requesterId) } throws EntityNotFoundException()
 
-        val exception = assertThrows<IllegalArgumentException> {
+        assertThrows<EntityNotFoundException> {
             service.getOrCreateConversationByParticipants(requesterId, theOtherUser.id)
         }
-        assertThat(exception).hasMessageThat().contains("Requester not found")
     }
 
     @Test
     fun `getOrCreateConversationByParticipants throws if the other user not found`() {
         val requester = testUser()
         val theOtherUserId = UUID.randomUUID()
-        every { chatRepository.findPrivateChatBetweenUsers(any()) } returns null
+        every { chatRepository.findByUsers(any()) } returns null
         every { contactUserRepository.findById(requester.id) } returns Optional.of(requester)
         every { contactUserRepository.findById(theOtherUserId) } returns Optional.empty()
+        every {  contactUserRepository.getReferenceById(requester.id) } returns requester
+        every {  contactUserRepository.getReferenceById(theOtherUserId) } throws EntityNotFoundException()
 
-        val exception = assertThrows<IllegalArgumentException> {
+        assertThrows<EntityNotFoundException> {
             service.getOrCreateConversationByParticipants(requester.id, theOtherUserId)
         }
-        assertThat(exception).hasMessageThat().contains("Other user not found")
     }
 
     @Test
     fun `saveMessage saves message when chat exists`() {
         val chat = testChat()
-        val messageDto = MessageDto(
+        val messageDto = CreateMessageArgs(
             id = UUID.randomUUID(),
             chatId = chat.id,
             senderId = UUID.randomUUID(),
@@ -118,7 +121,7 @@ class ChatServiceTest {
             isRead = false
         )
 
-        every { chatRepository.findByIdOrNull(chat.id) } returns chat
+        every { chatRepository.getReferenceById(chat.id) } returns chat
         every { messageRepository.save(any()) } answers { firstArg() }
 
         service.saveMessage(messageDto)
@@ -136,7 +139,7 @@ class ChatServiceTest {
 
     @Test
     fun `saveMessage throws if chat not found`() {
-        val messageDto = MessageDto(
+        val messageDto = CreateMessageArgs(
             id = UUID.randomUUID(),
             chatId = UUID.randomUUID(),
             senderId = UUID.randomUUID(),
@@ -145,12 +148,11 @@ class ChatServiceTest {
             isRead = false
         )
 
-        every { chatRepository.findByIdOrNull(messageDto.chatId) } returns null
+        every { chatRepository.getReferenceById(messageDto.chatId) } throws EntityNotFoundException()
 
-        val exception = assertThrows<IllegalArgumentException> {
+        assertThrows<EntityNotFoundException> {
             service.saveMessage(messageDto)
         }
-        assertThat(exception).hasMessageThat().contains("Chat with id")
     }
 
     @Test
