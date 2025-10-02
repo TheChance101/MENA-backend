@@ -1,32 +1,35 @@
 package net.thechance.identity.service
 
-import io.mockk.*
+import io.mockk.every
+import io.mockk.just
+import io.mockk.mockk
+import io.mockk.runs
 import net.thechance.identity.entity.OtpLog
 import net.thechance.identity.entity.User
-import net.thechance.identity.exception.*
-import net.thechance.identity.repository.OtpLogRepository
+import net.thechance.identity.exception.FrequentOtpRequestException
+import net.thechance.identity.exception.InvalidPhoneNumberException
+import net.thechance.identity.exception.UserNotFoundException
 import net.thechance.identity.repository.UserRepository
 import net.thechance.identity.service.model.ValidatedPhoneNumber
-import net.thechance.identity.service.otpGenerator.OtpGeneratorService
 import net.thechance.identity.service.phoneNumberValidator.PhoneNumberValidatorService
 import net.thechance.identity.service.sms.SmsService
 import org.junit.Assert.assertThrows
 import org.junit.Test
 import java.time.Instant
-import java.util.UUID
+import java.util.*
 
 class ResetPasswordServiceTest {
     private val phoneNumberValidatorService: PhoneNumberValidatorService = mockk(relaxed = true)
-    private val otpGeneratorService: OtpGeneratorService = mockk(relaxed = true)
+    private val phoneNumberRateLimitService: PhoneNumberRateLimitService = mockk(relaxed = true)
+    private val otpService: OtpService = mockk(relaxed = true)
     private val smsService: SmsService = mockk(relaxed = true)
-    private val otpLogRepository: OtpLogRepository = mockk(relaxed = true)
     private val userRepository: UserRepository = mockk(relaxed = true)
 
     private val resetPasswordService = ResetPasswordService(
         phoneNumberValidatorService = phoneNumberValidatorService,
-        otpGeneratorService = otpGeneratorService,
+        phoneNumberRateLimitService = phoneNumberRateLimitService,
+        otpService = otpService,
         smsService = smsService,
-        otpLogRepository = otpLogRepository,
         userRepository = userRepository,
     )
 
@@ -51,7 +54,7 @@ class ResetPasswordServiceTest {
     fun `requestOtp should throw FrequentOtpRequestException when user request otp more than 1 time in a minute`() {
         every { phoneNumberValidatorService.validateAndParse(any(), any()) } returns validatedPhoneNumber
         every { userRepository.findByPhoneNumber(any()) } returns user
-        every { otpLogRepository.findByPhoneNumberOrderByCreatedAtDesc(any(), any()) } returns shortTermFrequentOtpLogs
+        every { phoneNumberRateLimitService.checkRequestLimit(any()) } throws FrequentOtpRequestException()
         assertThrows(FrequentOtpRequestException::class.java) {
             resetPasswordService.requestOtp(PHONE_NUMBER, DEFAULT_REGION)
         }
@@ -61,7 +64,7 @@ class ResetPasswordServiceTest {
     fun `requestOtp should throw FrequentOtpRequestException when user request otp more than 5 time in 10 minute`() {
         every { phoneNumberValidatorService.validateAndParse(any(), any()) } returns validatedPhoneNumber
         every { userRepository.findByPhoneNumber(any()) } returns user
-        every { otpLogRepository.findByPhoneNumberOrderByCreatedAtDesc(any(), any()) } returns longTermFrequentOtpLogs
+        every { phoneNumberRateLimitService.checkRequestLimit(any()) } throws FrequentOtpRequestException()
         assertThrows(FrequentOtpRequestException::class.java) {
             resetPasswordService.requestOtp(PHONE_NUMBER, DEFAULT_REGION)
         }
@@ -71,10 +74,8 @@ class ResetPasswordServiceTest {
     fun `requestOtp should send otp to user via sms when limit is not exceeded`() {
         every { phoneNumberValidatorService.validateAndParse(any(), any()) } returns validatedPhoneNumber
         every { userRepository.findByPhoneNumber(any()) } returns user
-        every { otpLogRepository.findByPhoneNumberOrderByCreatedAtDesc(any(), any()) } returns otpLogs
-        every { otpLogRepository.updateExpirationByPhoneNumber(any()) } just runs
-        every { otpGeneratorService.generateOtp() } returns OTP
-        every { otpLogRepository.save(any()) } returns otpLog
+        every { phoneNumberRateLimitService.checkRequestLimit(any()) } just runs
+        every { otpService.createOtp(any()) } returns otpLog
         every { smsService.sendSms(any(), any(), any(), any()) } just runs
         resetPasswordService.requestOtp(PHONE_NUMBER, DEFAULT_REGION)
     }
@@ -83,10 +84,8 @@ class ResetPasswordServiceTest {
     fun `requestOtp should send otp to user via sms when limit of long term is not exceeded`() {
         every { phoneNumberValidatorService.validateAndParse(any(), any()) } returns validatedPhoneNumber
         every { userRepository.findByPhoneNumber(any()) } returns user
-        every { otpLogRepository.findByPhoneNumberOrderByCreatedAtDesc(any(), any()) } returns longTermValidOtpLogs
-        every { otpLogRepository.updateExpirationByPhoneNumber(any()) } just runs
-        every { otpGeneratorService.generateOtp() } returns OTP
-        every { otpLogRepository.save(any()) } returns otpLog
+        every { phoneNumberRateLimitService.checkRequestLimit(any()) } just runs
+        every { otpService.createOtp(any()) } returns otpLog
         every { smsService.sendSms(any(), any(), any(), any()) } just runs
         resetPasswordService.requestOtp(PHONE_NUMBER, DEFAULT_REGION)
     }
@@ -95,42 +94,15 @@ class ResetPasswordServiceTest {
     fun `requestOtp should send otp to user via sms when input is valid`() {
         every { phoneNumberValidatorService.validateAndParse(any(), any()) } returns validatedPhoneNumber
         every { userRepository.findByPhoneNumber(any()) } returns user
-        every { otpLogRepository.findByPhoneNumberOrderByCreatedAtDesc(any(), any()) } returns emptyList()
-        every { otpLogRepository.updateExpirationByPhoneNumber(any()) } just runs
-        every { otpGeneratorService.generateOtp() } returns OTP
-        every { otpLogRepository.save(any()) } returns otpLog
+        every { phoneNumberRateLimitService.checkRequestLimit(any()) } just runs
+        every { otpService.createOtp(any()) } returns otpLog
         every { smsService.sendSms(any(), any(), any(), any()) } just runs
         resetPasswordService.requestOtp(PHONE_NUMBER, DEFAULT_REGION)
     }
 
     @Test
-    fun `verifyOtp should throw InvalidOtpException when otp not found`() {
-        every { otpLogRepository.findByOtpAndSessionId(any(), any()) } returns null
-        assertThrows(InvalidOtpException::class.java) {
-            resetPasswordService.verifyOtp(OTP, SESSION_ID)
-        }
-    }
-
-    @Test
-    fun `verifyOtp should throw InvalidOtpException when otp is already verified`() {
-        every { otpLogRepository.findByOtpAndSessionId(any(), any()) } returns verifiedOtpLog
-        assertThrows(InvalidOtpException::class.java) {
-            resetPasswordService.verifyOtp(OTP, SESSION_ID)
-        }
-    }
-
-    @Test
-    fun `verifyOtp should throw OtpExpiredException when otp is expired`() {
-        every { otpLogRepository.findByOtpAndSessionId(any(), any()) } returns expiredOtpLog
-        assertThrows(OtpExpiredException::class.java) {
-            resetPasswordService.verifyOtp(OTP, SESSION_ID)
-        }
-    }
-
-    @Test
     fun `verifyOtp should be verified when otp is and session id are valid`() {
-        every { otpLogRepository.findByOtpAndSessionId(any(), any()) } returns otpLog
-        every { otpLogRepository.verifyOtp(any()) } just runs
+        every { otpService.verifyOtp(any(), any()) } just runs
         resetPasswordService.verifyOtp(OTP, SESSION_ID)
     }
 
@@ -156,65 +128,10 @@ class ResetPasswordServiceTest {
             imageUrl = null,
         )
 
-        private val shortTermFrequentOtpLogs = listOf(
-            OtpLog(
-                phoneNumber = PHONE_NUMBER,
-                otp = "000000",
-                expireAt = Instant.now().plusSeconds(60L),
-                createdAt = Instant.now(),
-            ),
-            OtpLog(
-                phoneNumber = PHONE_NUMBER,
-                otp = "000000",
-                expireAt = Instant.now().plusSeconds(60L),
-                createdAt = Instant.now().minusSeconds(10L),
-            )
-        )
-
-        private val longTermFrequentOtpLogs = List(5) { index ->
-            OtpLog(
-                phoneNumber = PHONE_NUMBER,
-                otp = "000000",
-                expireAt = Instant.now().minusSeconds((5 - index) * 60L),
-                createdAt = Instant.now().minusSeconds((4 - index) * 60L),
-            )
-        }
-
-        private val longTermValidOtpLogs = List(5) { index ->
-            OtpLog(
-                phoneNumber = PHONE_NUMBER,
-                otp = "000000",
-                expireAt = Instant.now().minusSeconds((index + 11) * 60L),
-                createdAt = Instant.now().minusSeconds((index + 10) * 60L),
-            )
-        }
-
-        private val otpLogs = listOf(
-            OtpLog(
-                phoneNumber = PHONE_NUMBER,
-                otp = "000000",
-                expireAt = Instant.now().plusSeconds(60L),
-                createdAt = Instant.now().minusSeconds(120L),
-            )
-        )
-
         private val otpLog = OtpLog(
             phoneNumber = PHONE_NUMBER,
             otp = OTP,
             expireAt = Instant.now().plusSeconds(180L),
-        )
-
-        private val verifiedOtpLog = OtpLog(
-            phoneNumber = PHONE_NUMBER,
-            otp = OTP,
-            isVerified = true,
-            expireAt = Instant.now().plusSeconds(180L),
-        )
-
-        private val expiredOtpLog = OtpLog(
-            phoneNumber = PHONE_NUMBER,
-            otp = OTP,
-            expireAt = Instant.now().minusSeconds(180L),
         )
     }
 }
