@@ -48,7 +48,7 @@ interface OtpLogRepository: JpaRepository<OtpLog, UUID> {
         SET o.expireAt = :now
         WHERE o.sessionId = :sessionId
     """)
-    fun expireLatestOtpBySessionId(
+    fun expireOtpBySessionId(
         @Param("sessionId") sessionId: UUID,
         @Param("now") now: Instant = Instant.now()
     )

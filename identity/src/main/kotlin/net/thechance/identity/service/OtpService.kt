@@ -43,8 +43,8 @@ class OtpService(
         return otpLog
     }
 
-    fun expireLatestOtpBySessionId(sessionId: String) {
-        otpLogRepository.expireLatestOtpBySessionId(UUID.fromString(sessionId))
+    fun expireOtpBySessionId(sessionId: String) {
+        otpLogRepository.expireOtpBySessionId(UUID.fromString(sessionId))
     }
 
     private fun getLatestOtpBySessionId(sessionId: String): OtpLog {

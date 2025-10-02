@@ -44,7 +44,7 @@ class ResetPasswordService(
         val encodedPassword = passwordEncoder.encode(newPassword)
         val isPasswordUpdated = userService.updatePasswordByPhoneNumber(latestOtp.phoneNumber, encodedPassword)
         if (!isPasswordUpdated) throw PasswordNotUpdatedException()
-        otpService.expireLatestOtpBySessionId(sessionId)
+        otpService.expireOtpBySessionId(sessionId)
     }
 
     private fun getLatestNotExpiredOtp(sessionId: String): OtpLog {
