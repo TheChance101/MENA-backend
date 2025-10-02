@@ -20,3 +20,5 @@ class VideoUploadFailedException: TrendExceptions("Video upload failed")
 class InvalidThumbnailException: TrendExceptions("Invalid Image")
 
 class ThumbnailUploadFailedException: TrendExceptions("Thumbnail upload failed")
+
+class VideoDeleteFailedException: TrendExceptions("Failed to delete video from storage")

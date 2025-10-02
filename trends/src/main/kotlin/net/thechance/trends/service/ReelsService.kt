@@ -1,9 +1,10 @@
 package net.thechance.trends.service
 
+import net.thechance.trends.entity.Reel
 import net.thechance.trends.exception.ReelNotFoundException
 import net.thechance.trends.exception.TrendCategoryNotFoundException
-import net.thechance.trends.entity.Reel
 import net.thechance.trends.exception.InvalidFileTypeException
+import net.thechance.trends.exception.VideoDeleteFailedException
 import net.thechance.trends.repository.CategoryRepository
 import net.thechance.trends.repository.ReelsRepository
 import org.springframework.data.domain.Page
@@ -37,12 +38,16 @@ class ReelsService(
         return body
     }
 
+    @Transactional
     fun deleteReelById(id: UUID, currentUserId: UUID) {
-        val isReelExists = reelsRepository.existsByIdAndOwnerId(id , currentUserId)
+        val reel = reelsRepository.findByIdAndOwnerId(id, currentUserId)
+            ?: throw ReelNotFoundException()
 
-        if (!isReelExists) throw ReelNotFoundException()
-
-        reelsRepository.deleteById(id)
+        runCatching {
+            if (fileStorageService.deleteVideo(reel.videoUrl)) reelsRepository.deleteById(id)
+        }.onFailure {
+            throw VideoDeleteFailedException()
+        }
     }
 
     @Transactional
