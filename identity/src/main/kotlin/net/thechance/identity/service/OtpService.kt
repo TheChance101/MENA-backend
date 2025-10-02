@@ -5,9 +5,10 @@ import net.thechance.identity.exception.InvalidOtpException
 import net.thechance.identity.exception.OtpExpiredException
 import net.thechance.identity.repository.OtpLogRepository
 import net.thechance.identity.service.otpGenerator.OtpGeneratorService
+import org.springframework.scheduling.annotation.Scheduled
 import org.springframework.stereotype.Service
 import java.time.Instant
-import java.util.UUID
+import java.util.*
 
 @Service
 class OtpService(
@@ -37,6 +38,11 @@ class OtpService(
 
     private fun expireOldActiveOtpByPhoneNumber(phoneNumber: String) {
         otpLogRepository.updateExpirationByPhoneNumber(phoneNumber)
+    }
+
+    @Scheduled(cron = "0 0 0 * * *")
+    private fun deleteExpiredOtp() {
+        otpLogRepository.deleteExpiredOtpBefore(Instant.now())
     }
 
     companion object {

@@ -38,4 +38,14 @@ interface OtpLogRepository: JpaRepository<OtpLog, UUID> {
     fun verifyOtp(
         @Param("sessionId") sessionId: UUID
     )
+
+    @Modifying
+    @Transactional
+    @Query("""
+        DELETE FROM OtpLog o 
+        WHERE o.expireAt < :now
+    """)
+    fun deleteExpiredOtpBefore(
+        @Param("now") now: Instant
+    )
 }
