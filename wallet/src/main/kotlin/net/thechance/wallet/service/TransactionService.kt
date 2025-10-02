@@ -1,5 +1,6 @@
 package net.thechance.wallet.service
 
+import jakarta.persistence.EntityNotFoundException
 import net.thechance.wallet.entity.Transaction
 import net.thechance.wallet.repository.TransactionRepository
 import net.thechance.wallet.service.helper.TransactionFilterParams
@@ -22,14 +23,14 @@ class TransactionService(
 
         val startDate =
             transactionFilterParams.startDate?.atStartOfDay()
-                ?: transactionRepository.findFirstBySender_UserIdOrReceiver_UserIdOrderByCreatedAtAsc(currentUserId, currentUserId)?.createdAt
+                ?: getUserFirstTransactionDate(currentUserId = currentUserId)
                 ?: LocalDateTime.now()
 
         val endDate = transactionFilterParams.endDate?.atTime(23, 59, 59, 59) ?: LocalDateTime.now()
 
         return transactionRepository.findFilteredTransactions(
             status = transactionFilterParams.status,
-            transactionType = transactionFilterParams.type?.name,
+            transactionTypes = transactionFilterParams.types?.map{ it.name},
             startDate = startDate,
             endDate = endDate,
             pageable = pageable,
@@ -38,6 +39,13 @@ class TransactionService(
     }
 
     fun getUserFirstTransactionDate(currentUserId: UUID): LocalDateTime? {
-        return transactionRepository.findFirstBySender_UserIdOrReceiver_UserIdOrderByCreatedAtAsc(currentUserId, currentUserId)?.createdAt
+        return transactionRepository.findFirstBySenderUserIdOrReceiverUserIdOrderByCreatedAtAsc(currentUserId, currentUserId)?.createdAt
     }
+
+    fun getTransactionDetails(transactionId: UUID): Transaction {
+        return transactionRepository.findTransactionById(
+            transactionId,
+        ) ?: throw EntityNotFoundException("Transaction with ID $transactionId not found or access denied.")
+    }
+
 }

@@ -1,0 +1,211 @@
+databaseChangeLog:
+  - changeSet:
+      id: 010-dukan
+      author: haider
+      changes:
+        - insert:
+            tableName: dukan_categories
+            schemaName: dukan
+            columns:
+              - column: { name: id, valueComputed: gen_random_uuid() }
+              - column: { name: arabic_title, value: "ملابس" }
+              - column: { name: english_title, value: "Clothes" }
+              - column: { name: icon_url, value: "https://mena-dukan.fra1.cdn.digitaloceanspaces.com/categories/clothes.png" }
+
+        - insert:
+            tableName: dukan_categories
+            schemaName: dukan
+            columns:
+              - column: { name: id, valueComputed: gen_random_uuid() }
+              - column: { name: arabic_title, value: "أحذية" }
+              - column: { name: english_title, value: "Shoes" }
+              - column: { name: icon_url, value: "https://mena-dukan.fra1.cdn.digitaloceanspaces.com/categories/shoes.png" }
+
+        - insert:
+            tableName: dukan_categories
+            schemaName: dukan
+            columns:
+              - column: { name: id, valueComputed: gen_random_uuid() }
+              - column: { name: arabic_title, value: "مكياج" }
+              - column: { name: english_title, value: "Makeup" }
+              - column: { name: icon_url, value: "https://mena-dukan.fra1.cdn.digitaloceanspaces.com/categories/makeup.png" }
+
+        - insert:
+            tableName: dukan_categories
+            schemaName: dukan
+            columns:
+              - column: { name: id, valueComputed: gen_random_uuid() }
+              - column: { name: arabic_title, value: "إكسسوارات" }
+              - column: { name: english_title, value: "Accessories" }
+              - column: { name: icon_url, value: "https://mena-dukan.fra1.cdn.digitaloceanspaces.com/categories/accessories.png" }
+
+        - insert:
+            tableName: dukan_categories
+            schemaName: dukan
+            columns:
+              - column: { name: id, valueComputed: gen_random_uuid() }
+              - column: { name: arabic_title, value: "أثاث" }
+              - column: { name: english_title, value: "Furniture" }
+              - column: { name: icon_url, value: "https://mena-dukan.fra1.cdn.digitaloceanspaces.com/categories/furniture.png" }
+
+        - insert:
+            tableName: dukan_categories
+            schemaName: dukan
+            columns:
+              - column: { name: id, valueComputed: gen_random_uuid() }
+              - column: { name: arabic_title, value: "إلكترونيات" }
+              - column: { name: english_title, value: "Electronics" }
+              - column: { name: icon_url, value: "https://mena-dukan.fra1.cdn.digitaloceanspaces.com/categories/electronics.png" }
+
+        - insert:
+            tableName: dukan_categories
+            schemaName: dukan
+            columns:
+              - column: { name: id, valueComputed: gen_random_uuid() }
+              - column: { name: arabic_title, value: "مطبخ" }
+              - column: { name: english_title, value: "Kitchen" }
+              - column: { name: icon_url, value: "https://mena-dukan.fra1.cdn.digitaloceanspaces.com/categories/kitchen.png" }
+
+        - insert:
+            tableName: dukan_categories
+            schemaName: dukan
+            columns:
+              - column: { name: id, valueComputed: gen_random_uuid() }
+              - column: { name: arabic_title, value: "أدوات حديقة" }
+              - column: { name: english_title, value: "Garden Tools" }
+              - column: { name: icon_url, value: "https://mena-dukan.fra1.cdn.digitaloceanspaces.com/categories/garden_tools.png" }
+
+        - insert:
+            tableName: dukan_categories
+            schemaName: dukan
+            columns:
+              - column: { name: id, valueComputed: gen_random_uuid() }
+              - column: { name: arabic_title, value: "ألعاب" }
+              - column: { name: english_title, value: "Toys" }
+              - column: { name: icon_url, value: "https://mena-dukan.fra1.cdn.digitaloceanspaces.com/categories/toys.png" }
+
+        - insert:
+            tableName: dukan_categories
+            schemaName: dukan
+            columns:
+              - column: { name: id, valueComputed: gen_random_uuid() }
+              - column: { name: arabic_title, value: "مكتبة" }
+              - column: { name: english_title, value: "Library" }
+              - column: { name: icon_url, value: "https://mena-dukan.fra1.cdn.digitaloceanspaces.com/categories/library.png" }
+
+        - insert:
+            tableName: dukan_categories
+            schemaName: dukan
+            columns:
+              - column: { name: id, valueComputed: gen_random_uuid() }
+              - column: { name: arabic_title, value: "عطور" }
+              - column: { name: english_title, value: "Perfume" }
+              - column: { name: icon_url, value: "https://mena-dukan.fra1.cdn.digitaloceanspaces.com/categories/perfume.png" }
+
+        - insert:
+            tableName: dukan_categories
+            schemaName: dukan
+            columns:
+              - column: { name: id, valueComputed: gen_random_uuid() }
+              - column: { name: arabic_title, value: "مكيف هواء" }
+              - column: { name: english_title, value: "Air Conditioner" }
+              - column: { name: icon_url, value: "https://mena-dukan.fra1.cdn.digitaloceanspaces.com/categories/air_conditioner.png" }
+
+        - insert:
+            tableName: dukan_categories
+            schemaName: dukan
+            columns:
+              - column: { name: id, valueComputed: gen_random_uuid() }
+              - column: { name: arabic_title, value: "أدوات إلكترونية" }
+              - column: { name: english_title, value: "Electronic Tools" }
+              - column: { name: icon_url, value: "https://mena-dukan.fra1.cdn.digitaloceanspaces.com/categories/electric_tools.png" }
+
+        - insert:
+            tableName: dukan_categories
+            schemaName: dukan
+            columns:
+              - column: { name: id, valueComputed: gen_random_uuid() }
+              - column: { name: arabic_title, value: "حقائب" }
+              - column: { name: english_title, value: "Bags" }
+              - column: { name: icon_url, value: "https://mena-dukan.fra1.cdn.digitaloceanspaces.com/categories/bags.png" }
+
+        - insert:
+            tableName: dukan_categories
+            schemaName: dukan
+            columns:
+              - column: { name: id, valueComputed: gen_random_uuid() }
+              - column: { name: arabic_title, value: "نظارات" }
+              - column: { name: english_title, value: "Glasses" }
+              - column: { name: icon_url, value: "https://mena-dukan.fra1.cdn.digitaloceanspaces.com/categories/glasses.png" }
+
+        - insert:
+            tableName: dukan_categories
+            schemaName: dukan
+            columns:
+              - column: { name: id, valueComputed: gen_random_uuid() }
+              - column: { name: arabic_title, value: "أدوات طلاء" }
+              - column: { name: english_title, value: "Paint Tools" }
+              - column: { name: icon_url, value: "https://mena-dukan.fra1.cdn.digitaloceanspaces.com/categories/paint-board.png" }
+
+        - insert:
+            tableName: dukan_categories
+            schemaName: dukan
+            columns:
+              - column: { name: id, valueComputed: gen_random_uuid() }
+              - column: { name: arabic_title, value: "مناشف" }
+              - column: { name: english_title, value: "Towels" }
+              - column: { name: icon_url, value: "https://mena-dukan.fra1.cdn.digitaloceanspaces.com/categories/towels.png" }
+
+        - insert:
+            tableName: dukan_categories
+            schemaName: dukan
+            columns:
+              - column: { name: id, valueComputed: gen_random_uuid() }
+              - column: { name: arabic_title, value: "معدات رياضية" }
+              - column: { name: english_title, value: "Sports Equipment" }
+              - column: { name: icon_url, value: "https://mena-dukan.fra1.cdn.digitaloceanspaces.com/categories/sports_equipment.png" }
+
+        - insert:
+            tableName: dukan_categories
+            schemaName: dukan
+            columns:
+              - column: { name: id, valueComputed: gen_random_uuid() }
+              - column: { name: arabic_title, value: "ستائر" }
+              - column: { name: english_title, value: "Curtains" }
+              - column: { name: icon_url, value: "https://mena-dukan.fra1.cdn.digitaloceanspaces.com/categories/curtains.png" }
+
+        - insert:
+            tableName: dukan_categories
+            schemaName: dukan
+            columns:
+              - column: { name: id, valueComputed: gen_random_uuid() }
+              - column: { name: arabic_title, value: "إضاءات" }
+              - column: { name: english_title, value: "Lights" }
+              - column: { name: icon_url, value: "https://mena-dukan.fra1.cdn.digitaloceanspaces.com/categories/lights.png" }
+
+        - insert:
+            tableName: dukan_categories
+            schemaName: dukan
+            columns:
+              - column: { name: id, valueComputed: gen_random_uuid() }
+              - column: { name: arabic_title, value: "حمامات" }
+              - column: { name: english_title, value: "Toilet" }
+              - column: { name: icon_url, value: "https://mena-dukan.fra1.cdn.digitaloceanspaces.com/categories/toiletpng.png" }
+
+        - insert:
+            tableName: dukan_categories
+            schemaName: dukan
+            columns:
+              - column: { name: id, valueComputed: gen_random_uuid() }
+              - column: { name: arabic_title, value: "ألواح شمسية" }
+              - column: { name: english_title, value: "Solar Panel" }
+              - column: { name: icon_url, value: "https://mena-dukan.fra1.cdn.digitaloceanspaces.com/categories/solar_panel.png" }
+
+        - insert:
+            tableName: dukan_categories
+            schemaName: dukan
+            columns:
+              - column: { name: id, valueComputed: gen_random_uuid() }
+              - column: { name: arabic_title, value: "ساعات" }
+              - column: { name: english_title, value: "Watches" }
+              - column: { name: icon_url, value: "https://mena-dukan.fra1.cdn.digitaloceanspaces.com/categories/watches.png" }
