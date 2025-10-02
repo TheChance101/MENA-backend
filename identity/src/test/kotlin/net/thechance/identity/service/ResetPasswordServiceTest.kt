@@ -103,65 +103,74 @@ class ResetPasswordServiceTest {
 
     @Test
     fun `resetPassword() should throw UnauthorizedException when session id not matches with the otp session id`() {
-        every { otpService.getLastOtpByPhoneNumber(any()) } returns otpLog
+        every { otpService.getLatestNotExpiredOtpBySessionId(any()) } returns otpLog
 
         assertThrows(UnauthorizedException::class.java) {
-            resetPasswordService.resetPassword(PHONE_NUMBER, NEW_PASSWORD, WRONG_CONFIRM_PASSWORD, WRONG_SESSION_ID)
+            resetPasswordService.resetPassword(NEW_PASSWORD, WRONG_CONFIRM_PASSWORD, WRONG_SESSION_ID)
         }
     }
 
     @Test
     fun `resetPassword() should throw UnauthorizedException when otp not verified`() {
-        every { otpService.getLastOtpByPhoneNumber(any()) } returns otpLog
+        every { otpService.getLatestNotExpiredOtpBySessionId(any()) } returns otpLog
 
         assertThrows(UnauthorizedException::class.java) {
-            resetPasswordService.resetPassword(PHONE_NUMBER, NEW_PASSWORD, WRONG_CONFIRM_PASSWORD, SESSION_ID)
+            resetPasswordService.resetPassword(NEW_PASSWORD, WRONG_CONFIRM_PASSWORD, SESSION_ID)
+        }
+    }
+
+    @Test
+    fun `resetPassword() should throw UnauthorizedException when otp expired`() {
+        every { otpService.getLatestNotExpiredOtpBySessionId(any()) } throws OtpExpiredException()
+
+        assertThrows(UnauthorizedException::class.java) {
+            resetPasswordService.resetPassword(NEW_PASSWORD, WRONG_CONFIRM_PASSWORD, SESSION_ID)
         }
     }
 
     @Test
     fun `resetPassword() should throw PasswordMismatchException when password and confirm password do not match`() {
-        every { otpService.getLastOtpByPhoneNumber(any()) } returns verifiedOtpLog
+        every { otpService.getLatestNotExpiredOtpBySessionId(any()) } returns verifiedOtpLog
 
         assertThrows(PasswordMismatchException::class.java) {
-            resetPasswordService.resetPassword(PHONE_NUMBER, NEW_PASSWORD, WRONG_CONFIRM_PASSWORD, SESSION_ID)
+            resetPasswordService.resetPassword(NEW_PASSWORD, WRONG_CONFIRM_PASSWORD, SESSION_ID)
         }
     }
 
     @Test
     fun `resetPassword() should update password and not throwing exceptions when updatePasswordByPhoneNumber returns true`() {
-        every { otpService.getLastOtpByPhoneNumber(any()) } returns verifiedOtpLog
+        every { otpService.getLatestNotExpiredOtpBySessionId(any()) } returns verifiedOtpLog
         every { passwordEncoder.encode(any()) } returns NEW_PASSWORD
         every { userService.updatePasswordByPhoneNumber(PHONE_NUMBER, NEW_PASSWORD) } returns true
 
-        resetPasswordService.resetPassword(PHONE_NUMBER, NEW_PASSWORD, CONFIRM_PASSWORD, SESSION_ID)
+        resetPasswordService.resetPassword(NEW_PASSWORD, CONFIRM_PASSWORD, SESSION_ID)
     }
 
     @Test
     fun `resetPassword() should call updatePasswordByPhoneNumber one time when called with correct data`() {
-        every { otpService.getLastOtpByPhoneNumber(any()) } returns verifiedOtpLog
+        every { otpService.getLatestNotExpiredOtpBySessionId(any()) } returns verifiedOtpLog
         every { passwordEncoder.encode(any()) } returns NEW_PASSWORD
         every { userService.updatePasswordByPhoneNumber(PHONE_NUMBER, NEW_PASSWORD) } returns true
 
-        resetPasswordService.resetPassword(PHONE_NUMBER, NEW_PASSWORD, CONFIRM_PASSWORD, SESSION_ID)
+        resetPasswordService.resetPassword(NEW_PASSWORD, CONFIRM_PASSWORD, SESSION_ID)
 
         verify(exactly = 1) { userService.updatePasswordByPhoneNumber(PHONE_NUMBER, NEW_PASSWORD) }
     }
 
     @Test
     fun `resetPassword() should call encode one time when called with correct data`() {
-        every { otpService.getLastOtpByPhoneNumber(any()) } returns verifiedOtpLog
+        every { otpService.getLatestNotExpiredOtpBySessionId(any()) } returns verifiedOtpLog
         every { passwordEncoder.encode(any()) } returns NEW_PASSWORD
         every { userService.updatePasswordByPhoneNumber(PHONE_NUMBER, NEW_PASSWORD) } returns true
 
-        resetPasswordService.resetPassword(PHONE_NUMBER, NEW_PASSWORD, CONFIRM_PASSWORD, SESSION_ID)
+        resetPasswordService.resetPassword(NEW_PASSWORD, CONFIRM_PASSWORD, SESSION_ID)
 
         verify(exactly = 1) { passwordEncoder.encode(any()) }
     }
 
     @Test
     fun `resetPassword() should throw InvalidCredentialsException when updatePasswordByPhoneNumber throws`() {
-        every { otpService.getLastOtpByPhoneNumber(any()) } returns verifiedOtpLog
+        every { otpService.getLatestNotExpiredOtpBySessionId(any()) } returns verifiedOtpLog
         every { passwordEncoder.encode(any()) } returns NEW_PASSWORD
         every {
             userService.updatePasswordByPhoneNumber(
@@ -171,18 +180,18 @@ class ResetPasswordServiceTest {
         } throws InvalidCredentialsException("")
 
         assertThrows(InvalidCredentialsException::class.java) {
-            resetPasswordService.resetPassword(PHONE_NUMBER, NEW_PASSWORD, CONFIRM_PASSWORD, SESSION_ID)
+            resetPasswordService.resetPassword(NEW_PASSWORD, CONFIRM_PASSWORD, SESSION_ID)
         }
     }
 
     @Test
     fun `resetPassword() should throw PasswordNotUpdatedException when updatePasswordByPhoneNumber returns false`() {
-        every { otpService.getLastOtpByPhoneNumber(any()) } returns verifiedOtpLog
+        every { otpService.getLatestNotExpiredOtpBySessionId(any()) } returns verifiedOtpLog
         every { passwordEncoder.encode(any()) } returns NEW_PASSWORD
         every { userService.updatePasswordByPhoneNumber(PHONE_NUMBER, NEW_PASSWORD) } returns false
 
         assertThrows(PasswordNotUpdatedException::class.java) {
-            resetPasswordService.resetPassword(PHONE_NUMBER, NEW_PASSWORD, CONFIRM_PASSWORD, SESSION_ID)
+            resetPasswordService.resetPassword(NEW_PASSWORD, CONFIRM_PASSWORD, SESSION_ID)
         }
     }
 
