@@ -7,7 +7,6 @@ import net.thechance.wallet.service.helper.TransactionFilterParams
 import org.springframework.data.domain.Page
 import org.springframework.data.domain.Pageable
 import org.springframework.stereotype.Service
-import java.nio.file.AccessDeniedException
 import java.time.LocalDateTime
 import java.util.*
 
@@ -24,17 +23,14 @@ class TransactionService(
 
         val startDate =
             transactionFilterParams.startDate?.atStartOfDay()
-                ?: transactionRepository.findFirstBySender_UserIdOrReceiver_UserIdOrderByCreatedAtAsc(
-                    senderId = currentUserId,
-                    receiverId = currentUserId
-                )?.createdAt
+                ?: getUserFirstTransactionDate(currentUserId = currentUserId)
                 ?: LocalDateTime.now()
 
         val endDate = transactionFilterParams.endDate?.atTime(23, 59, 59, 59) ?: LocalDateTime.now()
 
         return transactionRepository.findFilteredTransactions(
             status = transactionFilterParams.status,
-            transactionType = transactionFilterParams.type?.name,
+            transactionTypes = transactionFilterParams.types?.map{ it.name},
             startDate = startDate,
             endDate = endDate,
             pageable = pageable,
@@ -43,10 +39,7 @@ class TransactionService(
     }
 
     fun getUserFirstTransactionDate(currentUserId: UUID): LocalDateTime? {
-        return transactionRepository.findFirstBySender_UserIdOrReceiver_UserIdOrderByCreatedAtAsc(
-            senderId = currentUserId,
-            receiverId = currentUserId
-        )?.createdAt
+        return transactionRepository.findFirstBySenderUserIdOrReceiverUserIdOrderByCreatedAtAsc(currentUserId, currentUserId)?.createdAt
     }
 
     fun getTransactionDetails(transactionId: UUID): Transaction {

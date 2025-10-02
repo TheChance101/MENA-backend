@@ -10,7 +10,7 @@ import org.springframework.http.ResponseEntity
 import org.springframework.web.bind.annotation.ExceptionHandler
 import org.springframework.web.bind.annotation.RestControllerAdvice
 
-@RestControllerAdvice(assignableTypes = [IdentityController::class, ProfileController::class])
+@RestControllerAdvice(assignableTypes = [IdentityController::class])
 @Order(1)
 class IdentityControllerAdvice {
 	private val logger: Logger = LoggerFactory.getLogger(IdentityController::class.java)

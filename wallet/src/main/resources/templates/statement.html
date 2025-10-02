@@ -1,0 +1,257 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <style>
+
+        * {
+            font-family: Poppins, sans-serif;
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        .header-container {
+            position: running(header);
+            width: 100%;
+            margin-top: 24pt;
+        }
+
+        .header-container table {
+            width: 100%;
+            border: none;
+        }
+
+        .header-container td {
+            border: none;
+            vertical-align: top;
+            padding: 0;
+        }
+
+        .left-section {
+            width: 60%;
+        }
+
+        .right-section {
+            width: 40%;
+            text-align: right;
+        }
+
+        @page {
+            margin: 90pt 32pt 74pt;
+
+            @top-left {
+                content: element(header);
+                width: 100%;
+            }
+
+            @bottom-center {
+                content: "Page " counter(page) " of " counter(pages);
+                font-size: 12pt;
+                font-weight: 400;
+                color: #3E4252;
+            }
+        }
+
+        .table-container {
+            max-width: 900pt;
+            border: 1pt solid #EAECF0;
+            border-radius: 8pt;
+            background-color: white;
+            overflow: hidden;
+            page-break-inside: auto;
+            margin-top: 24pt;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: separate;
+            border-spacing: 0;
+            background-color: transparent;
+        }
+
+        thead tr {
+            background-color: #EAECF0;
+        }
+
+        thead tr:first-child th:first-child {
+            border-top-left-radius: 6pt;
+        }
+
+        thead tr:first-child th:last-child {
+            border-top-right-radius: 6pt;
+        }
+
+        th {
+            padding: 9pt 16pt;
+            text-align: left;
+            font-weight: 500;
+            color: #3E4252;
+            font-size: 12pt;
+            line-height: 22pt;
+            border: none;
+        }
+
+        td {
+            padding: 8pt 16pt;
+            vertical-align: top;
+            border: none;
+            border-radius: 0 0 8pt 8pt;
+            page-break-inside: avoid !important;
+            break-inside: avoid !important;
+        }
+
+        tbody tr.table-row:not(:first-child) td {
+            border-top: 1pt solid #EAECF0;
+        }
+
+        tbody {
+            display: table-row-group;
+        }
+
+        tbody tr {
+            position: relative;
+            display: table-row;
+            background-color: white;
+            page-break-inside: avoid !important;
+            break-inside: avoid !important;
+        }
+
+        .date-cell,
+        .transaction-cell,
+        .id-cell,
+        .amount-cell {
+            font-size: 12pt;
+            line-height: 22pt;
+            text-align: left;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            page-break-inside: avoid !important;
+            break-inside: avoid !important;
+        }
+
+        .transaction-cell {
+            max-width: 160pt;
+            color: #3E4252;
+        }
+
+        .date-cell {
+            color: #3E4252;
+        }
+
+        .id-cell {
+            font-weight: 400;
+            color: #3E4252;
+        }
+
+        .amount-cell {
+            font-weight: 500;
+        }
+
+        .amount-positive {
+            color: #19A44A;
+        }
+
+        .amount-negative {
+            color: #B42318;
+        }
+
+        .amount-header {
+            white-space: nowrap;
+            color: #374151;
+        }
+
+        .amount-header .plus {
+            color: #19A44A;
+        }
+
+        .amount-header .minus {
+            color: #B42318;
+        }
+
+        .user-name {
+            color: #3E4252;
+            font-weight: 600;
+            font-size: 20pt;
+            line-height: 22pt;
+            margin-bottom: 12pt;
+        }
+
+        .balance {
+            color: #3E4252;
+            font-weight: 400;
+            font-size: 12pt;
+            line-height: 22pt;
+        }
+
+        @media print {
+            tbody tr,
+            td {
+                page-break-inside: avoid !important;
+                break-inside: avoid !important;
+            }
+
+            .date-cell br,
+            .transaction-cell br {
+                page-break-before: avoid !important;
+                page-break-after: avoid !important;
+            }
+        }
+    </style>
+</head>
+<body>
+
+<div class="header-container">
+    <table>
+        <tr>
+            <td class="left-section">
+                <p style="color: #0E1017; font-weight: 600; font-size: 14pt;">Statement Period</p>
+                <p style="color: #3E4252; font-weight: 400; font-size: 12pt; margin-top: 4pt"
+                   th:text="${fromFormatted} + ' – ' + ${toFormatted}">01 Jan 2024 – 31 Jan 2024</p>
+            </td>
+            <td class="right-section">
+                <span th:utext="${logoSvgInline}"></span>
+                <p style="font-family: 'Madimi One',cursive; font-weight: 400; color: #27374D; font-size: 14pt; line-height:2pt; letter-spacing:0.56pt;">
+                    MENA
+                </p>
+            </td>
+        </tr>
+    </table>
+</div>
+
+<div>
+    <p class="user-name" style="margin-top: 24pt;" th:text="${userName}">John Doe</p>
+    <p class="balance" th:text="'Opening Balance: ' + ${openingBalance} + ' Silvers'">Opening Balance: 1,000 Silvers</p>
+    <p class="balance" style = "margin-top: 4pt" th:text="'Closing Balance: ' + ${closingBalance} + ' Silvers'">Closing Balance: 1,250 Silvers</p>
+</div>
+
+<div class="table-container">
+    <table>
+        <thead>
+        <tr>
+            <th>Date</th>
+            <th>Transaction</th>
+            <th class="amount-header">Amount <span class="plus">+In</span>/<span class="minus">-Out</span></th>
+            <th style="text-align: center;">ID</th>
+        </tr>
+        </thead>
+        <tbody>
+        <tr class="table-row" th:each="transaction : ${transactions}">
+            <td class="date-cell">
+                <span th:text="${transaction.date}">15 Jan 2024</span><br/>
+                <span th:text="${transaction.time}">14:30</span>
+            </td>
+            <td class="transaction-cell">
+                <span style="font-weight:400;" th:text="${transaction.typeHeader}">Transfer</span><br/>
+                <span style="font-weight:500;" th:text="${transaction.counterParty}">Alice Smith</span>
+            </td>
+            <td th:class="${transaction.amountValue >= 0 ? 'amount-cell amount-positive' : 'amount-cell amount-negative'}"
+                th:text="${transaction.amount} + ' Silvers'">+250 Silvers</td>
+            <td class="id-cell" th:text="${transaction.id}">TXN123456</td>
+        </tr>
+        </tbody>
+    </table>
+</div>
+</body>
+</html>

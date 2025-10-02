@@ -1,4 +1,4 @@
-package net.thechance.wallet.api.dto.transaction
+package net.thechance.wallet.service.helper
 
 enum class UserTransactionType {
     SENT,

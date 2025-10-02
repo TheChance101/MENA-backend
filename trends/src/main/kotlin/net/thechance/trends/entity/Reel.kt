@@ -12,12 +12,12 @@ data class Reel(
     val id: UUID = UUID.randomUUID(),
     @Column(name = "owner_id", nullable = false)
     val ownerId: UUID,
-    @Column(name = "thumbnail_url", nullable = false)
-    val thumbnailUrl: String,
+    @Column(name = "thumbnail_url", nullable = true)
+    val thumbnailUrl: String? = null,
     @Column(name = "video_url", nullable = false)
     val videoUrl: String,
     @Column(name = "description", nullable = false)
-    val description: String,
+    val description: String = "",
     @Column(name = "likes_count", nullable = false)
     val likesCount: Int = 0,
     @Column(name = "views_count", nullable = false)
