@@ -1,15 +1,13 @@
 package net.thechance.trends.service
 
-import net.thechance.trends.exception.InvalidThumbnailException
-import net.thechance.trends.exception.InvalidVideoException
-import net.thechance.trends.exception.ThumbnailUploadFailedException
-import net.thechance.trends.exception.VideoUploadFailedException
+import net.thechance.trends.exception.*
 import org.springframework.boot.context.properties.ConfigurationProperties
 import org.springframework.boot.context.properties.EnableConfigurationProperties
 import org.springframework.stereotype.Service
 import org.springframework.web.multipart.MultipartFile
 import software.amazon.awssdk.core.sync.RequestBody
 import software.amazon.awssdk.services.s3.S3Client
+import software.amazon.awssdk.services.s3.model.DeleteObjectRequest
 import software.amazon.awssdk.services.s3.model.ObjectCannedACL
 import software.amazon.awssdk.services.s3.model.PutObjectRequest
 import java.time.LocalDateTime
@@ -60,6 +58,24 @@ class FileStorageService(
         }.getOrElse {
             throw ThumbnailUploadFailedException()
         }
+    }
+
+    fun deleteVideo(videoUrl: String): Boolean {
+        val prefix = trendsStorageProperties.cdnEndpoint
+        if (!videoUrl.startsWith(prefix)) {
+            throw InvalidTrendInputException()
+        }
+
+        val key = videoUrl.removePrefix(prefix)
+
+        val deleteRequest = DeleteObjectRequest.builder()
+            .bucket(trendsStorageProperties.bucket)
+            .key(key)
+            .build()
+
+        val response = trendsS3Client.deleteObject(deleteRequest)
+
+        return response.sdkHttpResponse().isSuccessful
     }
 
     private fun createObjectRequest(key: String, contentType: String): PutObjectRequest? {
