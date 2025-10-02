@@ -3,7 +3,10 @@ package net.thechance.identity.service
 import net.thechance.identity.api.dto.RequestOtpResponse
 import net.thechance.identity.api.dto.VerifyOtpResponse
 import net.thechance.identity.entity.OtpLog
-import net.thechance.identity.exception.*
+import net.thechance.identity.exception.OtpExpiredException
+import net.thechance.identity.exception.PasswordMismatchException
+import net.thechance.identity.exception.UnauthorizedException
+import net.thechance.identity.exception.UserNotFoundException
 import net.thechance.identity.service.phoneNumberValidator.PhoneNumberValidatorService
 import net.thechance.identity.service.sms.SmsService
 import org.springframework.security.crypto.password.PasswordEncoder
@@ -38,9 +41,9 @@ class ResetPasswordService(
     }
 
     fun resetPassword(newPassword: String, confirmPassword: String, sessionId: String) {
-        val latestOtp = getLatestNotExpiredOtp(sessionId)
-        if (latestOtp.sessionId.toString() != sessionId || !latestOtp.isVerified) throw UnauthorizedException()
         if (newPassword != confirmPassword) throw PasswordMismatchException()
+        val latestOtp = getLatestNotExpiredOtp(sessionId)
+        if (!latestOtp.isVerified) throw UnauthorizedException()
         val encodedPassword = passwordEncoder.encode(newPassword)
         userService.updatePasswordByPhoneNumber(latestOtp.phoneNumber, encodedPassword)
         otpService.expireOtpBySessionId(sessionId)
