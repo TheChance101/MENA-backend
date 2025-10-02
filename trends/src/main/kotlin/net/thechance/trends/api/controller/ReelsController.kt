@@ -72,7 +72,7 @@ class ReelsController(
         return ResponseEntity.ok(UploadReelResponse(reelId = reelId))
     }
 
-    @PostMapping("/{id}/thumbnail")
+    @PutMapping("/thumbnail/{id}")
     fun uploadThumbnail(
         @PathVariable id: UUID,
         @AuthenticationPrincipal currentUserId: UUID,

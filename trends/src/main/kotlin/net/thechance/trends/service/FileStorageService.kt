@@ -54,7 +54,7 @@ class FileStorageService(
             val key = "thumbnail/$folderName/$newFileName"
             val putReq = createObjectRequest(key, mimeType)
             trendsS3Client.putObject(putReq, RequestBody.fromBytes(file.bytes))
-            return "${trendsStorageProperties.cdnEndpoint}/${trendsStorageProperties.bucket}/$key"
+            return "${trendsStorageProperties.cdnEndpoint}/$key"
         }.getOrElse {
             throw ThumbnailUploadFailedException()
         }
@@ -96,6 +96,7 @@ class FileStorageService(
 
         val allowedImageMimeTypes = mapOf(
             "image/jpeg" to "jpg",
+            "image/jpg" to "jpg",
             "image/png" to "png",
             "image/webp" to "webp"
         )

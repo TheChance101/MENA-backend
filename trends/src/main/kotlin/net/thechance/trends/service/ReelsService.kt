@@ -94,14 +94,14 @@ class ReelsService(
         val existingReel = reelsRepository.findByIdAndOwnerId(id = reelId, ownerId = ownerId)
             ?: throw ReelNotFoundException()
 
-        if (thumbnailFile.contentType?.startsWith("image/")!!.not()) {
+        if (thumbnailFile.contentType?.startsWith("image/") == false) {
             throw InvalidFileTypeException()
         }
 
-        val thumbnailUrl = fileStorageService.uploadThumbnail( // TODO: handle image
+        val thumbnailUrl = fileStorageService.uploadThumbnail(
             file = thumbnailFile,
             fileName = thumbnailFile.originalFilename ?: "thumbnail",
-            folderName = "$TRENDS_FOLDER_NAME/thumbnails"
+            folderName = TRENDS_FOLDER_NAME
         )
 
         val updatedReel = existingReel.copy(thumbnailUrl = thumbnailUrl)
