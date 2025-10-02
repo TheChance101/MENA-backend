@@ -3,6 +3,7 @@ package net.thechance.identity.service
 import net.thechance.identity.entity.OtpLog
 import net.thechance.identity.exception.InvalidOtpException
 import net.thechance.identity.exception.OtpExpiredException
+import net.thechance.identity.exception.UnauthorizedException
 import net.thechance.identity.repository.OtpLogRepository
 import net.thechance.identity.service.otpGenerator.OtpGeneratorService
 import org.springframework.scheduling.annotation.Scheduled
@@ -34,6 +35,10 @@ class OtpService(
         if (otpLog.isVerified) throw InvalidOtpException()
         if (otpLog.expireAt.isBefore(Instant.now())) throw OtpExpiredException()
         otpLogRepository.verifyOtp(parsedSessionId)
+    }
+
+    fun getLastOtpByPhoneNumber(phoneNumber: String): OtpLog {
+        return otpLogRepository.findFirstByPhoneNumberOrderByCreatedAtDesc(phoneNumber) ?: throw UnauthorizedException()
     }
 
     private fun expireOldActiveOtpByPhoneNumber(phoneNumber: String) {

@@ -15,6 +15,8 @@ interface OtpLogRepository: JpaRepository<OtpLog, UUID> {
 
     fun findByOtpAndSessionId(otp: String, sessionId: UUID): OtpLog?
 
+    fun findFirstByPhoneNumberOrderByCreatedAtDesc(phoneNumber: String): OtpLog?
+
     @Modifying
     @Transactional
     @Query("""
