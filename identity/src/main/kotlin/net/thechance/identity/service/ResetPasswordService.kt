@@ -42,8 +42,7 @@ class ResetPasswordService(
         if (latestOtp.sessionId.toString() != sessionId || !latestOtp.isVerified) throw UnauthorizedException()
         if (newPassword != confirmPassword) throw PasswordMismatchException()
         val encodedPassword = passwordEncoder.encode(newPassword)
-        val isPasswordUpdated = userService.updatePasswordByPhoneNumber(latestOtp.phoneNumber, encodedPassword)
-        if (!isPasswordUpdated) throw PasswordNotUpdatedException()
+        userService.updatePasswordByPhoneNumber(latestOtp.phoneNumber, encodedPassword)
         otpService.expireOtpBySessionId(sessionId)
     }
 
