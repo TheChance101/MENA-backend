@@ -34,10 +34,7 @@ class IpRateLimitManagerService(
         val currentLongTermAttempts = longTermEndpointCache.get(ip) { AtomicLong(0) }!!.incrementAndGet()
 
         if (currentLongTermAttempts > config.longTermLimit) {
-            if (currentLongTermAttempts >= config.longTermLimit + 1) {
-                blockedIps[ip] = Instant.now().plusSeconds(config.blockDurationSeconds)
-                return false
-            }
+            blockedIps[ip] = Instant.now().plusSeconds(config.blockDurationSeconds)
             return false
         }
 
