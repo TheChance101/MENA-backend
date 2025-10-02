@@ -1,7 +1,9 @@
 package net.thechance.chat.service
 
+import jakarta.persistence.EntityManager
 import net.thechance.chat.api.dto.MessageDto
 import net.thechance.chat.entity.Chat
+import net.thechance.chat.entity.ContactUser
 import net.thechance.chat.entity.Message
 import net.thechance.chat.repository.ChatRepository
 import net.thechance.chat.repository.ContactUserRepository
@@ -16,14 +18,14 @@ import java.util.*
 class ChatService(
     private val messageRepository: MessageRepository,
     private val chatRepository: ChatRepository,
-    private val contactUserRepository: ContactUserRepository,
     private val contactUserService: ContactUserService,
+    private val entityManager: EntityManager
 ) {
     @Transactional
     fun getOrCreateConversationByParticipants(userId: UUID, receiverId: UUID): Chat {
         val users = setOf(
-            contactUserRepository.getReferenceById(userId),
-            contactUserRepository.getReferenceById(receiverId)
+            entityManager.getReference(ContactUser::class.java, userId),
+            entityManager.getReference(ContactUser::class.java, receiverId)
         )
 
         val existingChat = chatRepository.findByUsers(users)
@@ -36,7 +38,7 @@ class ChatService(
     }
 
     fun saveMessage(message: CreateMessageArgs) {
-        val chat = chatRepository.getReferenceById(message.chatId)
+        val chat = entityManager.getReference(Chat::class.java, message.chatId)
         messageRepository.save(
             Message(
                 id = message.id,

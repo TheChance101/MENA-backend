@@ -4,11 +4,11 @@ import com.google.common.truth.Truth.assertThat
 import io.mockk.every
 import io.mockk.mockk
 import io.mockk.verify
+import jakarta.persistence.EntityManager
 import jakarta.persistence.EntityNotFoundException
 import net.thechance.chat.entity.Chat
 import net.thechance.chat.entity.ContactUser
 import net.thechance.chat.repository.ChatRepository
-import net.thechance.chat.repository.ContactUserRepository
 import net.thechance.chat.repository.MessageRepository
 import net.thechance.chat.service.args.CreateMessageArgs
 import org.junit.jupiter.api.BeforeEach
@@ -21,8 +21,8 @@ class ChatServiceTest {
 
     private lateinit var messageRepository: MessageRepository
     private lateinit var chatRepository: ChatRepository
-    private lateinit var contactUserRepository: ContactUserRepository
     private lateinit var contactUserService: ContactUserService
+    private lateinit var entityManager: EntityManager
     private lateinit var service: ChatService
 
     private fun testUser(id: UUID = UUID.randomUUID()) = ContactUser(
@@ -42,9 +42,9 @@ class ChatServiceTest {
     fun setUp() {
         messageRepository = mockk(relaxed = true)
         chatRepository = mockk(relaxed = true)
-        contactUserRepository = mockk(relaxed = true)
         contactUserService = mockk(relaxed = true)
-        service = ChatService(messageRepository, chatRepository, contactUserRepository, contactUserService)
+        entityManager = mockk(relaxed = true)
+        service = ChatService(messageRepository, chatRepository, contactUserService, entityManager)
     }
 
     @Test
@@ -53,8 +53,8 @@ class ChatServiceTest {
         val theOtherUser = testUser()
         val chat = testChat().apply { users.addAll(listOf(requester, theOtherUser)) }
 
-        every { contactUserRepository.getReferenceById(requester.id) } returns requester
-        every { contactUserRepository.getReferenceById(theOtherUser.id) } returns theOtherUser
+        every { entityManager.getReference(ContactUser::class.java, requester.id) } returns requester
+        every { entityManager.getReference(ContactUser::class.java, theOtherUser.id) } returns theOtherUser
         every { chatRepository.findByUsers(setOf(requester, theOtherUser)) } returns chat
 
         val result = service.getOrCreateConversationByParticipants(requester.id, theOtherUser.id)
@@ -70,9 +70,11 @@ class ChatServiceTest {
         val theOtherUser = testUser()
         val newChat = testChat().apply { users.addAll(listOf(requester, theOtherUser)) }
 
-        every { contactUserRepository.getReferenceById(requester.id) } returns requester
-        every { contactUserRepository.getReferenceById(theOtherUser.id) } returns theOtherUser
+        every { entityManager.getReference(ContactUser::class.java, requester.id) } returns requester
+        every { entityManager.getReference(ContactUser::class.java, theOtherUser.id) } returns theOtherUser
         every { chatRepository.findByUsers(setOf(requester, theOtherUser)) } returns null
+        every { contactUserService.getUserById(requester.id) } returns requester
+        every { contactUserService.getUserById(theOtherUser.id) } returns theOtherUser
         every { chatRepository.save(any()) } returns newChat
 
         val result = service.getOrCreateConversationByParticipants(requester.id, theOtherUser.id)
@@ -85,9 +87,8 @@ class ChatServiceTest {
     fun `getOrCreateConversationByParticipants throws if requester not found`() {
         val requesterId = UUID.randomUUID()
         val theOtherUser = testUser()
-        every { chatRepository.findByUsers(any()) } returns null
-        every { contactUserRepository.findById(requesterId) } returns Optional.empty()
-        every { contactUserRepository.getReferenceById(requesterId) } throws EntityNotFoundException()
+        every { entityManager.getReference(ContactUser::class.java, requesterId) } throws EntityNotFoundException()
+        every { entityManager.getReference(ContactUser::class.java, theOtherUser.id) } returns theOtherUser
 
         assertThrows<EntityNotFoundException> {
             service.getOrCreateConversationByParticipants(requesterId, theOtherUser.id)
@@ -98,11 +99,8 @@ class ChatServiceTest {
     fun `getOrCreateConversationByParticipants throws if the other user not found`() {
         val requester = testUser()
         val theOtherUserId = UUID.randomUUID()
-        every { chatRepository.findByUsers(any()) } returns null
-        every { contactUserRepository.findById(requester.id) } returns Optional.of(requester)
-        every { contactUserRepository.findById(theOtherUserId) } returns Optional.empty()
-        every {  contactUserRepository.getReferenceById(requester.id) } returns requester
-        every {  contactUserRepository.getReferenceById(theOtherUserId) } throws EntityNotFoundException()
+        every { entityManager.getReference(ContactUser::class.java, requester.id) } returns requester
+        every { entityManager.getReference(ContactUser::class.java, theOtherUserId) } throws EntityNotFoundException()
 
         assertThrows<EntityNotFoundException> {
             service.getOrCreateConversationByParticipants(requester.id, theOtherUserId)
@@ -121,7 +119,7 @@ class ChatServiceTest {
             isRead = false
         )
 
-        every { chatRepository.getReferenceById(chat.id) } returns chat
+        every { entityManager.getReference(Chat::class.java, chat.id) } returns chat
         every { messageRepository.save(any()) } answers { firstArg() }
 
         service.saveMessage(messageDto)
@@ -136,7 +134,6 @@ class ChatServiceTest {
         }
     }
 
-
     @Test
     fun `saveMessage throws if chat not found`() {
         val messageDto = CreateMessageArgs(
@@ -148,7 +145,7 @@ class ChatServiceTest {
             isRead = false
         )
 
-        every { chatRepository.getReferenceById(messageDto.chatId) } throws EntityNotFoundException()
+        every { entityManager.getReference(Chat::class.java, messageDto.chatId) } throws EntityNotFoundException()
 
         assertThrows<EntityNotFoundException> {
             service.saveMessage(messageDto)
