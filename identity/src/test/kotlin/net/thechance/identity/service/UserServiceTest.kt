@@ -95,23 +95,22 @@ class UserServiceTest {
     }
 
     @Test
-    fun `updatePasswordByPhoneNumber() should return true when user updated`() {
+    fun `updatePasswordByPhoneNumber() should return runs with no exceptions when password updated`() {
         every { userRepository.findByPhoneNumber(any()) } returns user
         every { userRepository.save(any()) } returns updatedUser
 
-        val isPasswordUpdated = userService.updatePasswordByPhoneNumber(phoneNumber, PASSWORD)
-
-        assertThat(isPasswordUpdated).isTrue()
+        userService.updatePasswordByPhoneNumber(phoneNumber, PASSWORD)
     }
 
     @Test
-    fun `updatePasswordByPhoneNumber() should return false when user not updated`() {
+    fun `updatePasswordByPhoneNumber() should throw PasswordNotUpdatedException when password not updated`() {
         every { userRepository.findByPhoneNumber(any()) } returns user
         every { userRepository.save(any()) } returns user
 
-        val isPasswordUpdated = userService.updatePasswordByPhoneNumber(phoneNumber, PASSWORD)
+        assertThrows(PasswordNotUpdatedException::class.java) {
+            userService.updatePasswordByPhoneNumber(phoneNumber, PASSWORD)
+        }
 
-        assertThat(isPasswordUpdated).isFalse()
     }
 
     @Test
