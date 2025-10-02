@@ -55,12 +55,12 @@ class ChatServiceTest {
 
         every { entityManager.getReference(ContactUser::class.java, requester.id) } returns requester
         every { entityManager.getReference(ContactUser::class.java, theOtherUser.id) } returns theOtherUser
-        every { chatRepository.findByUsers(setOf(requester, theOtherUser)) } returns chat
+        every { chatRepository.findByUsersIs(setOf(requester, theOtherUser)) } returns chat
 
         val result = service.getOrCreateConversationByParticipants(requester.id, theOtherUser.id)
 
         assertThat(chat).isEqualTo(result)
-        verify { chatRepository.findByUsers(setOf(requester, theOtherUser)) }
+        verify { chatRepository.findByUsersIs(setOf(requester, theOtherUser)) }
         verify(exactly = 0) { chatRepository.save(any()) }
     }
 
@@ -72,7 +72,7 @@ class ChatServiceTest {
 
         every { entityManager.getReference(ContactUser::class.java, requester.id) } returns requester
         every { entityManager.getReference(ContactUser::class.java, theOtherUser.id) } returns theOtherUser
-        every { chatRepository.findByUsers(setOf(requester, theOtherUser)) } returns null
+        every { chatRepository.findByUsersIs(setOf(requester, theOtherUser)) } returns null
         every { contactUserService.getUserById(requester.id) } returns requester
         every { contactUserService.getUserById(theOtherUser.id) } returns theOtherUser
         every { chatRepository.save(any()) } returns newChat

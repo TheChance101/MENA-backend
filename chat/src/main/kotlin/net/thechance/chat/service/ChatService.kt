@@ -1,12 +1,10 @@
 package net.thechance.chat.service
 
 import jakarta.persistence.EntityManager
-import net.thechance.chat.api.dto.MessageDto
 import net.thechance.chat.entity.Chat
 import net.thechance.chat.entity.ContactUser
 import net.thechance.chat.entity.Message
 import net.thechance.chat.repository.ChatRepository
-import net.thechance.chat.repository.ContactUserRepository
 import net.thechance.chat.repository.MessageRepository
 import net.thechance.chat.service.args.CreateMessageArgs
 import org.springframework.data.domain.Pageable
@@ -28,7 +26,7 @@ class ChatService(
             entityManager.getReference(ContactUser::class.java, receiverId)
         )
 
-        val existingChat = chatRepository.findByUsers(users)
+        val existingChat = chatRepository.findByUsersIs(users)
         if (existingChat != null) return existingChat
 
         val requester = contactUserService.getUserById(userId)
