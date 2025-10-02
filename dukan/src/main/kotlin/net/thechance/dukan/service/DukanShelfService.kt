@@ -7,7 +7,7 @@ import net.thechance.dukan.exception.ShelfNotFoundException
 import net.thechance.dukan.repository.DukanProductRepository
 import net.thechance.dukan.repository.DukanShelfRepository
 import org.springframework.stereotype.Service
-import java.util.UUID
+import java.util.*
 
 @Service
 class DukanShelfService(

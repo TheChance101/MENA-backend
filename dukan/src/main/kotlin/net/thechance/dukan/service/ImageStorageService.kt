@@ -1,7 +1,7 @@
 package net.thechance.dukan.service
 
-import net.thechance.dukan.exception.ImageUploadingFailedException
-import net.thechance.dukan.exception.InvalidPictureException
+import net.thechance.dukan.exception.ImageUploadFailedException
+import net.thechance.dukan.exception.InvalidImageFormatException
 import org.springframework.boot.context.properties.ConfigurationProperties
 import org.springframework.boot.context.properties.EnableConfigurationProperties
 import org.springframework.stereotype.Service
@@ -29,8 +29,8 @@ class ImageStorageService(
         fileName: String,
         folderName: String,
     ): String {
-        val mimeType = file.contentType ?: throw InvalidPictureException()
-        val extension = allowedMimeTypes[mimeType] ?: throw InvalidPictureException()
+        val mimeType = file.contentType ?: throw InvalidImageFormatException()
+        val extension = allowedMimeTypes[mimeType] ?: throw InvalidImageFormatException()
         try {
             val fileName = "${fileName}_${LocalDateTime.now()}.$extension"
             val key = "images/$folderName/$fileName"
@@ -38,7 +38,7 @@ class ImageStorageService(
             dukanS3Client.putObject(putReq, RequestBody.fromBytes(file.bytes))
             return "${props.cdnEndpoint}/$key"
         } catch (_: Exception) {
-            throw ImageUploadingFailedException()
+            throw ImageUploadFailedException()
         }
     }
 

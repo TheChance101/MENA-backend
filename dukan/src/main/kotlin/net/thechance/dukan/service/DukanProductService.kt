@@ -3,9 +3,9 @@ package net.thechance.dukan.service
 import jakarta.persistence.EntityNotFoundException
 import jakarta.transaction.Transactional
 import net.thechance.dukan.entity.DukanProduct
-import net.thechance.dukan.exception.dukan_product.DukanProductCreationFailedException
-import net.thechance.dukan.exception.dukan_product.ProductNameAlreadyTakenException
-import net.thechance.dukan.exception.dukan_product.ProductNotFoundException
+import net.thechance.dukan.exception.DukanProductCreationFailedException
+import net.thechance.dukan.exception.ProductNameAlreadyTakenException
+import net.thechance.dukan.exception.ProductNotFoundException
 import net.thechance.dukan.repository.DukanProductRepository
 import net.thechance.dukan.repository.DukanShelfRepository
 import net.thechance.dukan.service.model.DukanProductCreationParams
