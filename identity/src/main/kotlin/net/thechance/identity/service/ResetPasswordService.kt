@@ -2,12 +2,12 @@ package net.thechance.identity.service
 
 import net.thechance.identity.api.dto.RequestOtpResponse
 import net.thechance.identity.api.dto.VerifyOtpResponse
-import net.thechance.identity.exception.UserNotFoundException
-import net.thechance.identity.repository.UserRepository
-import net.thechance.identity.service.phoneNumberValidator.PhoneNumberValidatorService
-import net.thechance.identity.service.sms.SmsService
 import net.thechance.identity.exception.PasswordMismatchException
 import net.thechance.identity.exception.PasswordNotUpdatedException
+import net.thechance.identity.exception.UnauthorizedException
+import net.thechance.identity.exception.UserNotFoundException
+import net.thechance.identity.service.phoneNumberValidator.PhoneNumberValidatorService
+import net.thechance.identity.service.sms.SmsService
 import org.springframework.security.crypto.password.PasswordEncoder
 import org.springframework.stereotype.Service
 
@@ -39,7 +39,9 @@ class ResetPasswordService(
         return VerifyOtpResponse("OTP verified successfully")
     }
 
-    fun resetPassword(phoneNumber: String, newPassword: String, confirmPassword: String) {
+    fun resetPassword(phoneNumber: String, newPassword: String, confirmPassword: String, sessionId: String) {
+        val lastCreatedOtp = otpService.getLastOtpByPhoneNumber(phoneNumber = phoneNumber)
+        if (lastCreatedOtp.sessionId.toString() != sessionId || !lastCreatedOtp.isVerified) throw UnauthorizedException()
         if (newPassword != confirmPassword) throw PasswordMismatchException()
         val encodedPassword = passwordEncoder.encode(newPassword)
         val isPasswordUpdated = userService.updatePasswordByPhoneNumber(phoneNumber, encodedPassword)
