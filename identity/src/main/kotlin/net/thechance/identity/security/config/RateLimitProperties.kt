@@ -11,12 +11,12 @@ class RateLimitProperties {
     val endpoints: ConcurrentHashMap<String, EndpointRateLimitConfig> = ConcurrentHashMap()
 
     data class EndpointRateLimitConfig(
-        var shortTermLimit: Long = 5,
-        var shortTermWindowSeconds: Long = 60,
+        val shortTermLimit: Long = 5,
+        val shortTermWindowSeconds: Long = 60,
 
-        var longTermLimit: Long = 5,
-        var longTermWindowSeconds: Long = 60,
+        val longTermLimit: Long = 5,
+        val longTermWindowSeconds: Long = 60,
 
-        var blockDurationSeconds: Long = 900
+        val blockDurationSeconds: Long = 900
     )
 }
