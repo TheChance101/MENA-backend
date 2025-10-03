@@ -15,7 +15,7 @@ data class PagedResponse<T>(
 fun Page<ContactModel>.toResponse(): PagedResponse<ContactResponse>{
     return PagedResponse(
         data = this.content.map { it.toResponse() },
-        pageNumber = this.number + 1,
+        pageNumber = this.number,
         pageSize = this.size,
         totalItems = this.totalElements,
         totalPages = this.totalPages
