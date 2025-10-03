@@ -42,7 +42,7 @@ class FileStorageService(
         }
     }
 
-    fun uploadThumbnail(
+    fun uploadImage(
         file: MultipartFile,
         fileName: String,
         folderName: String,

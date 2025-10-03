@@ -3,7 +3,6 @@ package net.thechance.trends.service
 import net.thechance.trends.entity.Reel
 import net.thechance.trends.exception.ReelNotFoundException
 import net.thechance.trends.exception.TrendCategoryNotFoundException
-import net.thechance.trends.exception.InvalidFileTypeException
 import net.thechance.trends.exception.VideoDeleteFailedException
 import net.thechance.trends.repository.CategoryRepository
 import net.thechance.trends.repository.ReelsRepository
@@ -94,11 +93,7 @@ class ReelsService(
         val existingReel = reelsRepository.findByIdAndOwnerId(id = reelId, ownerId = ownerId)
             ?: throw ReelNotFoundException()
 
-        if (thumbnailFile.contentType?.startsWith("image/") == false) {
-            throw InvalidFileTypeException()
-        }
-
-        val thumbnailUrl = fileStorageService.uploadThumbnail(
+        val thumbnailUrl = fileStorageService.uploadImage(
             file = thumbnailFile,
             fileName = thumbnailFile.originalFilename ?: "thumbnail",
             folderName = TRENDS_FOLDER_NAME

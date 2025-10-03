@@ -72,14 +72,14 @@ class ReelsController(
         return ResponseEntity.ok(UploadReelResponse(reelId = reelId))
     }
 
-    @PutMapping("/thumbnail/{id}")
+    @PutMapping("/thumbnail/{reelId}")
     fun uploadThumbnail(
-        @PathVariable id: UUID,
+        @PathVariable reelId: UUID,
         @AuthenticationPrincipal currentUserId: UUID,
         @RequestParam("thumbnail") thumbnail: MultipartFile
     ): ResponseEntity<ReelResponse> {
         val updatedReel = reelsService.uploadThumbnail(
-            reelId = id,
+            reelId = reelId,
             ownerId = currentUserId,
             thumbnailFile = thumbnail
         )
