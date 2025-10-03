@@ -1,8 +1,6 @@
 package net.thechance.trends.service
 
-import net.thechance.trends.exception.InvalidTrendInputException
-import net.thechance.trends.exception.InvalidVideoException
-import net.thechance.trends.exception.VideoUploadFailedException
+import net.thechance.trends.exception.*
 import org.springframework.boot.context.properties.ConfigurationProperties
 import org.springframework.boot.context.properties.EnableConfigurationProperties
 import org.springframework.stereotype.Service
@@ -22,7 +20,7 @@ data class TrendsStorageProperties(
 
 @Service
 @EnableConfigurationProperties(TrendsStorageProperties::class)
-class VideoStorageService(
+class FileStorageService(
     private val trendsS3Client: S3Client,
     private val trendsStorageProperties: TrendsStorageProperties,
 ) {
@@ -32,10 +30,10 @@ class VideoStorageService(
         folderName: String,
     ): String {
         val mimeType = file.contentType ?: throw InvalidVideoException()
-        val extension = allowedMimeTypes[mimeType] ?: throw InvalidVideoException()
+        val extension = allowedVideoMimeTypes[mimeType] ?: throw InvalidVideoException()
         runCatching {
-            val fileName = "${fileName}_${LocalDateTime.now()}.$extension"
-            val key = "video/$folderName/$fileName"
+            val newFileName = "${fileName}_${LocalDateTime.now()}.$extension"
+            val key = "video/$folderName/$newFileName"
             val putReq = createObjectRequest(key, mimeType)
             trendsS3Client.putObject(putReq, RequestBody.fromBytes(file.bytes))
             return "${trendsStorageProperties.cdnEndpoint}/$key"
@@ -44,13 +42,22 @@ class VideoStorageService(
         }
     }
 
-    private fun createObjectRequest(key: String, contentType: String): PutObjectRequest? {
-        return PutObjectRequest.builder()
-            .bucket(trendsStorageProperties.bucket)
-            .key(key)
-            .contentType(contentType)
-            .acl(ObjectCannedACL.PUBLIC_READ)
-            .build()
+    fun uploadImage(
+        file: MultipartFile,
+        fileName: String,
+        folderName: String,
+    ): String {
+        val mimeType = file.contentType ?: throw InvalidThumbnailException()
+        val extension = allowedImageMimeTypes[mimeType] ?: throw InvalidThumbnailException()
+        runCatching {
+            val newFileName = "${fileName}_${LocalDateTime.now()}.$extension"
+            val key = "thumbnail/$folderName/$newFileName"
+            val putReq = createObjectRequest(key, mimeType)
+            trendsS3Client.putObject(putReq, RequestBody.fromBytes(file.bytes))
+            return "${trendsStorageProperties.cdnEndpoint}/$key"
+        }.getOrElse {
+            throw ThumbnailUploadFailedException()
+        }
     }
 
     fun deleteVideo(videoUrl: String): Boolean {
@@ -71,11 +78,27 @@ class VideoStorageService(
         return response.sdkHttpResponse().isSuccessful
     }
 
+    private fun createObjectRequest(key: String, contentType: String): PutObjectRequest? {
+        return PutObjectRequest.builder()
+            .bucket(trendsStorageProperties.bucket)
+            .key(key)
+            .contentType(contentType)
+            .acl(ObjectCannedACL.PUBLIC_READ)
+            .build()
+    }
+
     private companion object {
-        val allowedMimeTypes = mapOf(
+        val allowedVideoMimeTypes = mapOf(
             "video/mp4" to "mp4",
             "video/quicktime" to "mov",
             "video/x-matroska" to "mkv"
+        )
+
+        val allowedImageMimeTypes = mapOf(
+            "image/jpeg" to "jpg",
+            "image/jpg" to "jpg",
+            "image/png" to "png",
+            "image/webp" to "webp"
         )
     }
 }

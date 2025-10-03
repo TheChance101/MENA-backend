@@ -11,8 +11,14 @@ class TrendCategoryNotFoundException: TrendExceptions("Category not found")
 
 class InvalidTrendInputException: TrendExceptions("Invalid input")
 
+class InvalidFileTypeException: TrendExceptions("Invalid file type")
+
 class InvalidVideoException: TrendExceptions("Invalid video")
 
 class VideoUploadFailedException: TrendExceptions("Video upload failed")
+
+class InvalidThumbnailException: TrendExceptions("Invalid Image")
+
+class ThumbnailUploadFailedException: TrendExceptions("Thumbnail upload failed")
 
 class VideoDeleteFailedException: TrendExceptions("Failed to delete video from storage")

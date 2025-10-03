@@ -19,7 +19,7 @@ import java.util.*
 class ReelsService(
     private val reelsRepository: ReelsRepository,
     private val categoryRepository: CategoryRepository,
-    private val videoStorageService: VideoStorageService,
+    private val fileStorageService: FileStorageService,
 ) {
     fun getAllReelsByUserId(
         pageable: Pageable,
@@ -43,7 +43,7 @@ class ReelsService(
             ?: throw ReelNotFoundException()
 
         runCatching {
-            if (videoStorageService.deleteVideo(reel.videoUrl)) reelsRepository.deleteById(id)
+            if (fileStorageService.deleteVideo(reel.videoUrl)) reelsRepository.deleteById(id)
         }.onFailure {
             throw VideoDeleteFailedException()
         }
@@ -72,7 +72,7 @@ class ReelsService(
 
 
     fun uploadReel(currentUserId: UUID, file: MultipartFile): UUID {
-        val videoUrl = videoStorageService.uploadVideo(
+        val videoUrl = fileStorageService.uploadVideo(
             file = file,
             fileName = file.originalFilename ?: "Untitled",
             folderName = TRENDS_FOLDER_NAME
@@ -82,6 +82,26 @@ class ReelsService(
             videoUrl = videoUrl
         )
         return reelsRepository.save(reel).id
+    }
+
+    @Transactional
+    fun uploadThumbnail(
+        reelId: UUID,
+        ownerId: UUID,
+        thumbnailFile: MultipartFile
+    ): Reel {
+        val existingReel = reelsRepository.findByIdAndOwnerId(id = reelId, ownerId = ownerId)
+            ?: throw ReelNotFoundException()
+
+        val thumbnailUrl = fileStorageService.uploadImage(
+            file = thumbnailFile,
+            fileName = thumbnailFile.originalFilename ?: "thumbnail",
+            folderName = TRENDS_FOLDER_NAME
+        )
+
+        val updatedReel = existingReel.copy(thumbnailUrl = thumbnailUrl)
+
+        return reelsRepository.save(updatedReel)
     }
 
     companion object {

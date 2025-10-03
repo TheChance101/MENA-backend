@@ -37,6 +37,13 @@ class TrendsGlobalExceptionHandler {
         return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(message)
     }
 
+    @ExceptionHandler(InvalidFileTypeException::class)
+    fun handleInvalidFileTypeException(exception: InvalidFileTypeException): ResponseEntity<String> {
+        val message = exception.localizedMessage
+
+        return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(message)
+    }
+
     @ExceptionHandler(InvalidVideoException::class)
     fun handleInvalidVideoException(exception: InvalidVideoException): ResponseEntity<String> {
         val message = exception.localizedMessage
@@ -46,6 +53,20 @@ class TrendsGlobalExceptionHandler {
 
     @ExceptionHandler(VideoUploadFailedException::class)
     fun handleVideoUploadFailedException(exception: VideoUploadFailedException): ResponseEntity<String> {
+        val message = exception.localizedMessage
+
+        return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(message)
+    }
+
+    @ExceptionHandler(InvalidThumbnailException::class)
+    fun handleInvalidThumbnailException(exception: InvalidThumbnailException): ResponseEntity<String> {
+        val message = exception.localizedMessage
+
+        return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(message)
+    }
+
+    @ExceptionHandler(ThumbnailUploadFailedException::class)
+    fun handleThumbnailUploadFailedException(exception: ThumbnailUploadFailedException): ResponseEntity<String> {
         val message = exception.localizedMessage
 
         return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(message)

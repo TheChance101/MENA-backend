@@ -10,17 +10,9 @@ import net.thechance.trends.service.ReelsService
 import org.springframework.data.domain.Pageable
 import org.springframework.http.ResponseEntity
 import org.springframework.security.core.annotation.AuthenticationPrincipal
-import org.springframework.web.bind.annotation.DeleteMapping
-import org.springframework.web.bind.annotation.GetMapping
-import org.springframework.web.bind.annotation.PathVariable
-import org.springframework.web.bind.annotation.PostMapping
-import org.springframework.web.bind.annotation.PutMapping
-import org.springframework.web.bind.annotation.RequestBody
-import org.springframework.web.bind.annotation.RequestMapping
-import org.springframework.web.bind.annotation.RequestParam
-import org.springframework.web.bind.annotation.RestController
+import org.springframework.web.bind.annotation.*
 import org.springframework.web.multipart.MultipartFile
-import java.util.UUID
+import java.util.*
 
 @RestController
 @RequestMapping("/trends/reels")
@@ -74,9 +66,24 @@ class ReelsController(
     @PostMapping
     fun uploadReel(
         @AuthenticationPrincipal currentUserId: UUID,
-        @RequestParam video: MultipartFile,
+        @RequestParam("video") video: MultipartFile,
     ): ResponseEntity<UploadReelResponse> {
         val reelId = reelsService.uploadReel(currentUserId, video)
         return ResponseEntity.ok(UploadReelResponse(reelId = reelId))
+    }
+
+    @PutMapping("/thumbnail/{reelId}")
+    fun uploadThumbnail(
+        @PathVariable reelId: UUID,
+        @AuthenticationPrincipal currentUserId: UUID,
+        @RequestParam("thumbnail") thumbnail: MultipartFile
+    ): ResponseEntity<ReelResponse> {
+        val updatedReel = reelsService.uploadThumbnail(
+            reelId = reelId,
+            ownerId = currentUserId,
+            thumbnailFile = thumbnail
+        )
+
+        return ResponseEntity.ok(updatedReel.toResponse())
     }
 }
