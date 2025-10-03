@@ -3,6 +3,7 @@ package net.thechance.identity.service
 import net.thechance.identity.entity.OtpLog
 import net.thechance.identity.exception.InvalidOtpException
 import net.thechance.identity.exception.OtpExpiredException
+import net.thechance.identity.exception.UnauthorizedException
 import net.thechance.identity.repository.OtpLogRepository
 import net.thechance.identity.service.otpGenerator.OtpGeneratorService
 import org.springframework.scheduling.annotation.Scheduled
@@ -27,13 +28,31 @@ class OtpService(
         return otpLog
     }
 
-    fun verifyOtp(otp: String, sessionId: String) {
-        val parsedSessionId = UUID.fromString(sessionId)
-        val otpLog = otpLogRepository.findByOtpAndSessionId(otp, parsedSessionId)
+    fun verifyOtp(otp: String, sessionId: UUID) {
+        val otpLog = otpLogRepository.findByOtpAndSessionId(otp, sessionId)
             ?: throw InvalidOtpException()
         if (otpLog.isVerified) throw InvalidOtpException()
+        checkOtpExpiration(otpLog)
+        otpLogRepository.verifyOtp(sessionId)
+    }
+
+    fun getLatestNotExpiredOtpBySessionId(sessionId: UUID): OtpLog {
+        val otpLog = getLatestOtpBySessionId(sessionId)
+        checkOtpExpiration(otpLog)
+        return otpLog
+    }
+
+    fun expireOtpBySessionId(sessionId: UUID) {
+        otpLogRepository.expireOtpBySessionId(sessionId)
+    }
+
+    private fun getLatestOtpBySessionId(sessionId: UUID): OtpLog {
+        return otpLogRepository.findFirstBySessionIdOrderByCreatedAtDesc(sessionId)
+            ?: throw UnauthorizedException()
+    }
+
+    private fun checkOtpExpiration(otpLog: OtpLog) {
         if (otpLog.expireAt.isBefore(Instant.now())) throw OtpExpiredException()
-        otpLogRepository.verifyOtp(parsedSessionId)
     }
 
     private fun expireOldActiveOtpByPhoneNumber(phoneNumber: String) {

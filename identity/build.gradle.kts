@@ -38,6 +38,7 @@ kover.reports {
         excludes {
             packages("net.thechance.identity.api.dto*")
             packages("net.thechance.identity.entity*")
+            packages("net.thechance.identity.exception*")
         }
     }
 }

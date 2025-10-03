@@ -15,6 +15,8 @@ interface OtpLogRepository: JpaRepository<OtpLog, UUID> {
 
     fun findByOtpAndSessionId(otp: String, sessionId: UUID): OtpLog?
 
+    fun findFirstBySessionIdOrderByCreatedAtDesc(sessionId: UUID): OtpLog?
+
     @Modifying
     @Transactional
     @Query("""
@@ -37,6 +39,18 @@ interface OtpLogRepository: JpaRepository<OtpLog, UUID> {
     """)
     fun verifyOtp(
         @Param("sessionId") sessionId: UUID
+    )
+
+    @Modifying
+    @Transactional
+    @Query("""
+        UPDATE OtpLog o 
+        SET o.expireAt = :now
+        WHERE o.sessionId = :sessionId
+    """)
+    fun expireOtpBySessionId(
+        @Param("sessionId") sessionId: UUID,
+        @Param("now") now: Instant = Instant.now()
     )
 
     @Modifying

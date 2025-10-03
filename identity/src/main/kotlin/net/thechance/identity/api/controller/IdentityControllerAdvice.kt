@@ -7,13 +7,27 @@ import org.slf4j.LoggerFactory
 import org.springframework.core.annotation.Order
 import org.springframework.http.HttpStatus
 import org.springframework.http.ResponseEntity
+import org.springframework.web.bind.MethodArgumentNotValidException
 import org.springframework.web.bind.annotation.ExceptionHandler
+import org.springframework.web.bind.annotation.ResponseStatus
 import org.springframework.web.bind.annotation.RestControllerAdvice
 
 @RestControllerAdvice(assignableTypes = [IdentityController::class])
 @Order(1)
 class IdentityControllerAdvice {
 	private val logger: Logger = LoggerFactory.getLogger(IdentityController::class.java)
+
+    @ExceptionHandler(MethodArgumentNotValidException::class)
+    @ResponseStatus(HttpStatus.BAD_REQUEST)
+    fun handleValidationExceptions(exception: MethodArgumentNotValidException): ResponseEntity<Map<String, String?>> {
+        val errors = exception.bindingResult.fieldErrors.associate {
+            it.field to it.defaultMessage
+        }
+        logger.error("Validation failed: $errors", exception)
+        return ResponseEntity
+            .status(HttpStatus.BAD_REQUEST)
+            .body(errors)
+    }
 
 	@ExceptionHandler(UserIsBlockedException::class)
 	fun handleUserIsBlockedException(exception: UserIsBlockedException): ResponseEntity<ErrorResponse?> {
@@ -85,5 +99,29 @@ class IdentityControllerAdvice {
         return ResponseEntity
             .status(HttpStatus.BAD_REQUEST)
             .body(ErrorResponse(exception.message ?: "OTP is expired"))
+    }
+
+    @ExceptionHandler(PasswordMismatchException::class)
+    fun handlePasswordMismatchException(exception: PasswordMismatchException): ResponseEntity<ErrorResponse?> {
+        logger.error("Password mismatch: ${exception.message}", exception)
+        return ResponseEntity
+            .status(HttpStatus.BAD_REQUEST)
+            .body(ErrorResponse(exception.message ?: "Password and Confirm Password do not match"))
+    }
+
+    @ExceptionHandler(PasswordNotUpdatedException::class)
+    fun handlePasswordNotUpdatedException(exception: PasswordNotUpdatedException): ResponseEntity<ErrorResponse?> {
+        logger.error("Password not updated: ${exception.message}", exception)
+        return ResponseEntity
+            .status(HttpStatus.INTERNAL_SERVER_ERROR)
+            .body(ErrorResponse(exception.message ?: "Password not updated"))
+    }
+
+    @ExceptionHandler(UnauthorizedException::class)
+    fun handleUnauthorizedException(exception: UnauthorizedException): ResponseEntity<ErrorResponse?> {
+        logger.error("Unauthorized: ${exception.message}", exception)
+        return ResponseEntity
+            .status(HttpStatus.UNAUTHORIZED)
+            .body(ErrorResponse(exception.message ?: "Unauthorized"))
     }
 }
