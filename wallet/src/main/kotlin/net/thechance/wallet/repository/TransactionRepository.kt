@@ -28,7 +28,8 @@ interface TransactionRepository : JpaRepository<Transaction, UUID> {
             OR (
                 ('SENT' IN :transactionTypes AND t.type = 'P2P' AND t.sender.userId = :currentUserId)
                 OR ('RECEIVED' IN :transactionTypes AND t.type = 'P2P' AND t.receiver.userId = :currentUserId)
-                OR ('ONLINE_PURCHASE' IN :transactionTypes AND t.type = 'ONLINE_PURCHASE')
+                OR ('ONLINE_PURCHASE' IN :transactionTypes AND t.type = 'ONLINE_PURCHASE' AND t.sender.userId = :currentUserId)
+                OR ('RECEIVED' IN :transactionTypes AND t.type = 'ONLINE_PURCHASE' AND t.receiver.userId = :currentUserId)
             )
         )
      """
