@@ -31,13 +31,23 @@ class FileStorageService(
     ): String {
         val mimeType = file.contentType ?: throw InvalidVideoException()
         val extension = allowedVideoMimeTypes[mimeType] ?: throw InvalidVideoException()
-        runCatching {
-            val newFileName = "${fileName}_${LocalDateTime.now()}.$extension"
-            val key = "video/$folderName/$newFileName"
-            val putReq = createObjectRequest(key, mimeType)
-            trendsS3Client.putObject(putReq, RequestBody.fromBytes(file.bytes))
-            return "${trendsStorageProperties.cdnEndpoint}/$key"
-        }.getOrElse {
+
+        val newFileName = "${fileName}_${LocalDateTime.now()}.$extension"
+        val key = "video/$folderName/$newFileName"
+
+        val putRequest = createObjectRequest(key, mimeType)
+
+        return try {
+            file.inputStream.use { inputStream ->
+                trendsS3Client.putObject(
+                    putRequest,
+                    RequestBody.fromInputStream(inputStream, file.size)
+                )
+            }
+
+            "${trendsStorageProperties.cdnEndpoint}/$key"
+        } catch (ex: Exception) {
+            ex.printStackTrace()
             throw VideoUploadFailedException()
         }
     }
