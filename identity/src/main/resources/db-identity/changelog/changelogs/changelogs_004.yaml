@@ -1,6 +1,6 @@
 databaseChangeLog:
   - changeSet:
-      id: 8-identity
+      id: 4-identity
       author: eslam-99
       comment: Create otp_logs table for identity
       changes:
