@@ -16,5 +16,12 @@ data class WalletUser(
     @Column(nullable = false)
     val userName: String,
 
-    val dukanName: String? = null
+    val dukanName: String? = null,
+
+    @Column(nullable = false)
+    val firstName: String,
+    @Column(nullable = false)
+    val lastName: String,
+    @Column(nullable = true)
+    val imageUrl: String?
 )
