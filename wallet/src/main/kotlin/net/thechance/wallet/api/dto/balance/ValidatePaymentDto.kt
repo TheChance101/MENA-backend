@@ -11,7 +11,7 @@ data class PaymentAmountValidationResponse(
 
 data class PaymentAmountValidationRequest(
     val amount: Double,
-    val recipientAccountId: UUID
+    val recipientId: UUID
 )
 
 fun PaymentAmountValidationResult.toResponse(): PaymentAmountValidationResponse =
