@@ -3,14 +3,25 @@ package net.thechance.wallet.service
 import com.google.common.truth.Truth.assertThat
 import io.mockk.every
 import io.mockk.mockk
+import net.thechance.wallet.entity.user.WalletUser
 import net.thechance.wallet.repository.TransactionRepository
+import net.thechance.wallet.repository.WalletUserRepository
+import org.junit.Assert.assertThrows
 import org.junit.Test
-import java.math.BigDecimal
 import java.util.*
 
 class WalletServiceTest {
     private val transactionRepository = mockk<TransactionRepository>()
-    private val walletService = WalletService(transactionRepository = transactionRepository)
+    private val walletUserRepository = mockk<WalletUserRepository>()
+    private val walletService = WalletService(transactionRepository = transactionRepository, walletUserRepository = walletUserRepository)
+
+    private val userId = UUID.randomUUID()
+    private val recipientId = UUID.randomUUID()
+    private val recipient = mockk<WalletUser> {
+        every { firstName } returns "John"
+        every { lastName } returns "Doe"
+        every { imageUrl } returns "http://image.url"
+    }
 
     @Test
     fun `getUserBalance should return total user balance when it is called`() {
@@ -30,6 +41,52 @@ class WalletServiceTest {
         val result = walletService.getUserBalance(USER_ID)
 
         assertThat(result).isEqualTo(0.0)
+    }
+
+    @Test
+    fun `validatePaymentAmount returns valid result for sufficient balance`() {
+        every { walletUserRepository.findById(recipientId) } returns Optional.of(recipient)
+        every { transactionRepository.sumAmountByReceiverId(userId) } returns 100.0
+        every { transactionRepository.sumAmountBySenderId(userId) } returns 20.0
+
+        val result = walletService.validatePaymentAmount(userId, 50.0, recipientId)
+
+        assert(result.isValid)
+        assert(result.recipientName == "John Doe")
+        assert(result.recipientImageUrl == "http://image.url")
+    }
+
+    @Test
+    fun `validatePaymentAmount returns invalid for insufficient balance`() {
+        every { walletUserRepository.findById(recipientId) } returns Optional.of(recipient)
+        every { transactionRepository.sumAmountByReceiverId(userId) } returns 30.0
+        every { transactionRepository.sumAmountBySenderId(userId) } returns 20.0
+
+        val result = walletService.validatePaymentAmount(userId, 20.0, recipientId)
+
+        assert(!result.isValid)
+    }
+
+    @Test
+    fun `validatePaymentAmount returns invalid for zero or negative amount`() {
+        every { walletUserRepository.findById(recipientId) } returns Optional.of(recipient)
+        every { transactionRepository.sumAmountByReceiverId(userId) } returns 100.0
+        every { transactionRepository.sumAmountBySenderId(userId) } returns 10.0
+
+        val resultZero = walletService.validatePaymentAmount(userId, 0.0, recipientId)
+        val resultNegative = walletService.validatePaymentAmount(userId, -5.0, recipientId)
+
+        assert(!resultZero.isValid)
+        assert(!resultNegative.isValid)
+    }
+
+    @Test
+    fun `validatePaymentAmount throws when recipient not found`() {
+        every { walletUserRepository.findById(recipientId) } returns Optional.empty()
+
+        assertThrows(IllegalArgumentException::class.java) {
+            walletService.validatePaymentAmount(userId, 10.0, recipientId)
+        }
     }
 
     companion object {
