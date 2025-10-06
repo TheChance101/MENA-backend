@@ -30,7 +30,7 @@ class BalanceController(
         return ResponseEntity.ok(response)
     }
 
-    @PostMapping("/validate-payment-amount")
+    @PostMapping("/validate-payment")
     fun validatePayment(
         @AuthenticationPrincipal userId: UUID,
         @RequestBody paymentAmountValidationRequest: PaymentAmountValidationRequest
