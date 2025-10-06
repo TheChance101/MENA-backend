@@ -13,7 +13,7 @@ class PaymentService(
 
     fun validatePaymentAmount(userId: UUID, amount: Double, receiverId: UUID): PaymentAmountValidationResult {
         val receiver = walletUserRepository.findById(receiverId)
-            .orElseThrow { IllegalArgumentException("Recipient not found") }
+            .orElseThrow { IllegalArgumentException("Receiver not found") }
 
         val currentBalance = walletService.getUserBalance(userId)
         val isValid = amount > 0 && amount <= currentBalance
