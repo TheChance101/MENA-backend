@@ -5,6 +5,7 @@ import java.util.UUID
 
 data class PaymentAmountValidationResponse(
     val isValid: Boolean,
+    val currentBalance: Double,
     val recipientName: String,
     val recipientImageUrl: String?
 )
@@ -17,6 +18,7 @@ data class PaymentAmountValidationRequest(
 fun PaymentAmountValidationResult.toResponse(): PaymentAmountValidationResponse =
     PaymentAmountValidationResponse(
         isValid = isValid,
+        currentBalance = currentBalance,
         recipientName = recipientName,
         recipientImageUrl = recipientImageUrl
     )

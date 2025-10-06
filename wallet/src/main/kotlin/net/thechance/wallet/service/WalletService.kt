@@ -25,9 +25,11 @@ class WalletService(
         val recipient = walletUserRepository.findById(recipientId)
             .orElseThrow { IllegalArgumentException("Recipient not found") }
 
-        val isValid = amount > 0 && amount <= getUserBalance(userId)
+        val currentBalance = getUserBalance(userId)
+        val isValid = amount > 0 && amount <= currentBalance
         return PaymentAmountValidationResult(
             isValid = isValid,
+            currentBalance = currentBalance,
             recipientName = recipient.firstName + " " + recipient.lastName,
             recipientImageUrl = recipient.imageUrl
         )
