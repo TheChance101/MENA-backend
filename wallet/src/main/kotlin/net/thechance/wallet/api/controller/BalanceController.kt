@@ -39,7 +39,7 @@ class BalanceController(
         val validationResult = walletService.validatePaymentAmount(
             userId = userId,
             amount = paymentAmountValidationRequest.amount,
-            recipientId = paymentAmountValidationRequest.recipientId
+            receiverId = paymentAmountValidationRequest.receiverId
         )
 
         return ResponseEntity.ok(validationResult.toResponse())

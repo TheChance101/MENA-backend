@@ -21,8 +21,8 @@ class WalletService(
         return totalReceived - totalSent
     }
 
-    fun validatePaymentAmount(userId: UUID, amount: Double, recipientId: UUID): PaymentAmountValidationResult {
-        val recipient = walletUserRepository.findById(recipientId)
+    fun validatePaymentAmount(userId: UUID, amount: Double, receiverId: UUID): PaymentAmountValidationResult {
+        val receiver = walletUserRepository.findById(receiverId)
             .orElseThrow { IllegalArgumentException("Recipient not found") }
 
         val currentBalance = getUserBalance(userId)
@@ -30,8 +30,8 @@ class WalletService(
         return PaymentAmountValidationResult(
             isValid = isValid,
             currentBalance = currentBalance,
-            recipientName = recipient.firstName + " " + recipient.lastName,
-            recipientImageUrl = recipient.imageUrl
+            receiverName = receiver.firstName + " " + receiver.lastName,
+            receiverImageUrl = receiver.imageUrl
         )
     }
 }
