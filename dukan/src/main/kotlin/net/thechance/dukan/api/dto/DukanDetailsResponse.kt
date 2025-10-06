@@ -1,0 +1,17 @@
+package net.thechance.dukan.api.dto
+
+import net.thechance.dukan.entity.Dukan.Style
+import net.thechance.dukan.entity.DukanColor
+import java.util.*
+
+data class DukanDetailsResponse(
+    val id: UUID,
+    val ownerId: UUID,
+    val name: String,
+    val imageUrl: String? = null,
+    val address: String,
+    val latitude: Double,
+    val longitude: Double,
+    val color: DukanColor,
+    val style: Style,
+)
