@@ -10,10 +10,12 @@ import org.springframework.data.domain.Page
 import org.springframework.data.domain.PageRequest
 import org.springframework.data.domain.Pageable
 import org.springframework.data.domain.Sort
+import org.springframework.data.repository.findByIdOrNull
 import org.springframework.stereotype.Service
 import org.springframework.transaction.annotation.Transactional
 import org.springframework.web.multipart.MultipartFile
 import java.util.*
+import kotlin.jvm.optionals.getOrNull
 
 @Service
 class ReelsService(
@@ -35,6 +37,12 @@ class ReelsService(
             )
         )
         return body
+    }
+
+    fun getReelById(
+        reelId: UUID
+    ): Reel {
+        return reelsRepository.findByIdOrNull(reelId) ?: throw ReelNotFoundException()
     }
 
     @Transactional

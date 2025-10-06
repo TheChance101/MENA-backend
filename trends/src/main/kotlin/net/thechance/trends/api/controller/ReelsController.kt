@@ -2,10 +2,7 @@ package net.thechance.trends.api.controller
 
 import jakarta.validation.Valid
 import net.thechance.trends.api.dto.PagingResponse
-import net.thechance.trends.api.dto.reel.ReelResponse
-import net.thechance.trends.api.dto.reel.UpdateReelRequest
-import net.thechance.trends.api.dto.reel.UploadReelResponse
-import net.thechance.trends.api.dto.reel.toResponse
+import net.thechance.trends.api.dto.reel.*
 import net.thechance.trends.service.ReelsService
 import org.springframework.data.domain.Pageable
 import org.springframework.http.ResponseEntity
@@ -25,8 +22,12 @@ class ReelsController(
         pageable: Pageable,
         @AuthenticationPrincipal currentUserId: UUID
     ): ResponseEntity<PagingResponse<ReelResponse>> {
-
-        val reels = reelsService.getAllReelsByUserId(pageable, currentUserId).content.toResponse()
+        val reels = reelsService.getAllReelsByUserId(pageable, currentUserId).content.map { reel ->
+            reel.toResponse().withOwnership(
+                currentUserId = currentUserId,
+                ownerId = reel.ownerId
+            )
+        }
 
         val result = PagingResponse(
             pageNumber = pageable.pageNumber,
@@ -37,12 +38,21 @@ class ReelsController(
         return ResponseEntity.ok(result)
     }
 
+    @GetMapping("/{id}")
+    fun getReelById(
+        @PathVariable id: UUID,
+        @AuthenticationPrincipal currentUserId: UUID
+    ): ResponseEntity<ReelResponse> {
+        return reelsService
+            .getReelById(id)
+            .getResponseEntity(currentUserId)
+    }
+
     @DeleteMapping("/{id}")
     fun deleteReelById(
         @PathVariable id: UUID,
         @AuthenticationPrincipal currentUserId: UUID
     ): ResponseEntity<Unit> {
-
         reelsService.deleteReelById(id, currentUserId)
         return ResponseEntity.noContent().build()
     }

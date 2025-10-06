@@ -2,6 +2,7 @@ package net.thechance.trends.api.dto.reel
 
 import net.thechance.trends.entity.Category
 import net.thechance.trends.entity.Reel
+import org.springframework.http.ResponseEntity
 import java.time.LocalDateTime
 import java.util.*
 
@@ -13,6 +14,7 @@ data class ReelResponse(
     val createdAt: LocalDateTime,
     val likesCount: Int,
     val viewsCount: Int,
+    val isCurrentUserOwner: Boolean,
     val categories: Set<Category> = emptySet()
 )
 
@@ -25,9 +27,21 @@ fun Reel.toResponse(): ReelResponse {
         createdAt = createdAt,
         likesCount = likesCount,
         viewsCount = viewsCount,
-        categories = categories
+        isCurrentUserOwner = false,
+        categories = categories,
     )
 }
 
+fun ReelResponse.withOwnership(currentUserId: UUID, ownerId: UUID): ReelResponse {
+    return this.copy(isCurrentUserOwner = currentUserId == ownerId)
+}
 
-fun List<Reel>.toResponse() = map { it.toResponse() }
+fun Reel.getResponseEntity(currentUserId: UUID): ResponseEntity<ReelResponse> {
+    return ResponseEntity.ok(
+        this.toResponse()
+            .withOwnership(
+                currentUserId = currentUserId,
+                ownerId = this.ownerId
+            )
+    )
+}
