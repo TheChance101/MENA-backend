@@ -1,8 +1,12 @@
 package net.thechance.wallet.api.controller
 
 import jakarta.servlet.http.HttpServletResponse
+import net.thechance.wallet.api.controller.util.StatementMetadata
 import net.thechance.wallet.api.controller.util.StatementPdfWriter
-import net.thechance.wallet.api.dto.transaction.*
+import net.thechance.wallet.api.dto.transaction.FirstTransactionDateResponse
+import net.thechance.wallet.api.dto.transaction.TransactionPageResponse
+import net.thechance.wallet.api.dto.transaction.TransactionResponse
+import net.thechance.wallet.api.dto.transaction.toResponse
 import net.thechance.wallet.entity.Transaction
 import net.thechance.wallet.service.TransactionService
 import net.thechance.wallet.service.helper.TransactionFilterParams
@@ -13,6 +17,7 @@ import org.springframework.data.domain.Sort
 import org.springframework.http.ResponseEntity
 import org.springframework.security.core.annotation.AuthenticationPrincipal
 import org.springframework.web.bind.annotation.*
+import java.io.ByteArrayOutputStream
 import java.time.LocalDate
 import java.time.format.DateTimeFormatter
 import java.util.*
@@ -88,19 +93,35 @@ class TransactionController(
         @RequestParam(required = false) startDate: LocalDate?,
         @RequestParam(required = false) endDate: LocalDate?,
     ) {
+        val buffer = ByteArrayOutputStream()
+
+        val metadata = statementPdfWriter.writePdfToStream(
+            userId = userId,
+            types = types,
+            startDate = startDate,
+            endDate = endDate,
+            outputStream = buffer
+        )
+
         response.contentType = "application/pdf"
         response.setHeader(
             "Content-Disposition",
             "attachment; filename=\"statement${startDate.formatDate()}_to${endDate.formatDate()}.pdf\""
         )
 
-        statementPdfWriter.writePdfToStream(
-            userId = userId,
-            types = types,
-            startDate = startDate,
-            endDate = endDate,
-            outputStream = response.outputStream
-        )
+        setMetadataHeaders(response, metadata)
+
+        buffer.writeTo(response.outputStream)
+    }
+
+    private fun setMetadataHeaders(
+        response: HttpServletResponse,
+        metadata: StatementMetadata
+    ) {
+        response.setHeader("X-Statement-Total-Inflows", metadata.totalInflows.toString())
+        response.setHeader("X-Statement-Total-Outflows", metadata.totalOutflows.toString())
+        response.setHeader("X-Statement-Start-Date", metadata.startDate.toString())
+        response.setHeader("X-Statement-End-Date", metadata.endDate.toString())
     }
 
     private fun LocalDate?.formatDate(): String =
