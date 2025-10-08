@@ -17,4 +17,7 @@ interface MessageRepository : JpaRepository<Message, UUID> {
     @Transactional
     @Query("UPDATE Message m SET m.isRead = true WHERE m.chat.id = :chatId AND m.senderId <> :userId AND m.isRead = false")
     fun updateIsReadByChatIdAndSenderIdNot(chatId: UUID, userId: UUID): Int
+
+    fun findTopByChatIdOrderBySentAtDesc(chatId: UUID): Message?
+    fun countByChatIdAndSenderIdNotAndIsReadFalse(chatId: UUID, userId: UUID): Int
 }
