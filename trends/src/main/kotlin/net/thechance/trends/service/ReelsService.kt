@@ -37,6 +37,21 @@ class ReelsService(
         return body
     }
 
+    fun getAllReelsForFeed(
+        pageable: Pageable,
+        currentUserId: UUID,
+    ): Page<Reel> {
+        val body = reelsRepository.getReelFeedForUser(
+            currentUserId,
+            PageRequest.of(
+                maxOf(0, pageable.pageNumber - 1),
+                10,
+                pageable.getSortOr(Sort.by(Sort.Direction.DESC, "createdAt"))
+            )
+        )
+        return body
+    }
+
     @Transactional
     fun deleteReelById(id: UUID, currentUserId: UUID) {
         val reel = reelsRepository.findByIdAndOwnerId(id, currentUserId)
@@ -59,12 +74,13 @@ class ReelsService(
         val existingReel = reelsRepository.findByIdAndOwnerId(id = reelId, ownerId = ownerId)
             ?: throw ReelNotFoundException()
 
-        val categories = categoryIds.map { categoryRepository.getReferenceById(it) }.toSet()
+        val categories = categoryIds.map { categoryRepository.getReferenceById(it) }.toMutableSet()
         if (categories.isEmpty()) throw TrendCategoryNotFoundException()
 
         val updatedReel = existingReel.copy(
             description = newDescription,
-            categories = categories
+            categories = categories,
+            isPublished = true
         )
 
         return reelsRepository.save(updatedReel)
