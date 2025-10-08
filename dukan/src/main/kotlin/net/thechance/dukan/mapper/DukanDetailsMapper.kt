@@ -3,7 +3,7 @@ package net.thechance.dukan.mapper
 import net.thechance.dukan.api.dto.DukanDetailsResponse
 import net.thechance.dukan.entity.Dukan
 
-fun Dukan.toDukanDetails(): DukanDetailsResponse{
+fun Dukan.toResponse(): DukanDetailsResponse{
     return DukanDetailsResponse(
         id = id,
         ownerId = ownerId,

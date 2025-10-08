@@ -7,7 +7,7 @@ import net.thechance.dukan.entity.Dukan
 import net.thechance.dukan.mapper.DukanLanguage
 import net.thechance.dukan.mapper.toDto
 import net.thechance.dukan.mapper.toDukanCreationParams
-import net.thechance.dukan.mapper.toDukanDetails
+import net.thechance.dukan.mapper.toResponse
 import net.thechance.dukan.mapper.toDukanStyleResponse
 import net.thechance.dukan.service.DukanService
 import org.springframework.http.ResponseEntity
@@ -77,9 +77,9 @@ class DukanController(
         return ResponseEntity.ok(DukanStatuesResponse(dukan.name, dukan.status))
     }
 
-    @GetMapping("details/{dukanId}")
+    @GetMapping("/{dukanId}")
     fun getDukanDetailsById(@PathVariable("dukanId") dukanId: UUID): ResponseEntity<DukanDetailsResponse> {
-        val dukanDetails = dukanService.getDukanDetailsById(dukanId).toDukanDetails()
+        val dukanDetails = dukanService.getDukanDetailsById(dukanId).toResponse()
         return ResponseEntity.ok(dukanDetails)
     }
 }
