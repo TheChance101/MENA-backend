@@ -44,7 +44,12 @@ class ReelsController(
         pageable: Pageable,
         @AuthenticationPrincipal currentUserId: UUID
     ): ResponseEntity<PagingResponse<ReelResponse>> {
-        val reels = reelsService.getAllReelsForFeed(pageable, currentUserId).content.toResponse()
+        val reels = reelsService.getAllReelsForFeed(pageable, currentUserId).content.map { reel ->
+            reel.toResponse().withOwnership(
+                currentUserId = currentUserId,
+                ownerId = reel.ownerId
+            )
+        }
 
         val result = PagingResponse(
             pageNumber = pageable.pageNumber,
