@@ -1,13 +1,8 @@
 package net.thechance.chat.entity
 
-import jakarta.persistence.Column
-import jakarta.persistence.Entity
-import jakarta.persistence.Id
-import jakarta.persistence.Table
-import jakarta.persistence.ManyToOne
-import jakarta.persistence.JoinColumn
+import jakarta.persistence.*
 import java.time.Instant
-import java.util.UUID
+import java.util.*
 
 @Entity
 @Table(name = "messages", schema = "chat")
@@ -16,12 +11,15 @@ data class Message(
     val id: UUID = UUID.randomUUID(),
     @Column(nullable = false)
     val senderId: UUID,
-    @Column(nullable = false)
-    val text: String,
+    @Column(columnDefinition = "TEXT", nullable = true)
+    val text: String? = null,
     @Column(nullable = false)
     val sentAt: Instant = Instant.now(),
     @Column(nullable = false)
     val isRead: Boolean = false,
+
+    @OneToMany(mappedBy = "message", cascade = [CascadeType.ALL], orphanRemoval = true)
+    val messageAttachment: MutableSet<MessageAttachment> = mutableSetOf(),
 
     @ManyToOne(optional = false)
     @JoinColumn(name = "chat_id", referencedColumnName = "id", nullable = false)

@@ -1,0 +1,18 @@
+package net.thechance.chat.entity
+
+import jakarta.persistence.*
+import java.util.*
+
+@Entity
+@Table(name = "message_attachments", schema = "chat")
+data class MessageAttachment(
+    @Id @Column(columnDefinition = "uuid", updatable = false, nullable = false)
+    val id: UUID = UUID.randomUUID(),
+
+    @Column(nullable = false)
+    val url: String,
+
+    @ManyToOne(optional = false)
+    @JoinColumn(name = "message_id", referencedColumnName = "id", nullable = false)
+    val message: Message
+)
