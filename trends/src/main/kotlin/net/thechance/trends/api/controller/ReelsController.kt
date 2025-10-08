@@ -37,6 +37,22 @@ class ReelsController(
         return ResponseEntity.ok(result)
     }
 
+    @GetMapping("/feed")
+    fun getAllReelsForFeed(
+        pageable: Pageable,
+        @AuthenticationPrincipal currentUserId: UUID
+    ): ResponseEntity<PagingResponse<ReelResponse>> {
+        val reels = reelsService.getAllReelsForFeed(pageable, currentUserId).content.toResponse()
+
+        val result = PagingResponse(
+            pageNumber = pageable.pageNumber,
+            results = reels,
+            totalResults = reels.size
+        )
+
+        return ResponseEntity.ok(result)
+    }
+
     @DeleteMapping("/{id}")
     fun deleteReelById(
         @PathVariable id: UUID,
