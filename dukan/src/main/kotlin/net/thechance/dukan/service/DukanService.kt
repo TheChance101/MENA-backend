@@ -12,6 +12,7 @@ import net.thechance.dukan.repository.DukanCategoryRepository
 import net.thechance.dukan.repository.DukanColorRepository
 import net.thechance.dukan.repository.DukanRepository
 import net.thechance.dukan.service.model.DukanCreationParams
+import org.springframework.data.repository.findByIdOrNull
 import org.springframework.stereotype.Service
 import org.springframework.web.multipart.MultipartFile
 import java.util.*
@@ -67,6 +68,10 @@ class DukanService(
             )
         dukanRepository.save(dukan.copy(imageUrl = imageUrl))
         return imageUrl
+    }
+
+    fun getDukanDetailsById(dukanId: UUID): Dukan {
+        return dukanRepository.findByIdOrNull(dukanId) ?: throw DukanNotFoundException()
     }
 
     private fun validateDukanCreation(params: DukanCreationParams) {

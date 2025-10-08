@@ -13,6 +13,7 @@ data class ReelResponse(
     val createdAt: LocalDateTime,
     val likesCount: Int,
     val viewsCount: Int,
+    val isCurrentUserOwner: Boolean,
     val categories: Set<Category> = emptySet()
 )
 
@@ -25,9 +26,11 @@ fun Reel.toResponse(): ReelResponse {
         createdAt = createdAt,
         likesCount = likesCount,
         viewsCount = viewsCount,
-        categories = categories
+        categories = categories,
+        isCurrentUserOwner = false
     )
 }
 
-
-fun List<Reel>.toResponse() = map { it.toResponse() }
+fun ReelResponse.withOwnership(currentUserId: UUID, ownerId: UUID): ReelResponse {
+    return this.copy(isCurrentUserOwner = currentUserId == ownerId)
+}
