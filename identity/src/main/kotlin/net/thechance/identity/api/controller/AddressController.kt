@@ -16,15 +16,14 @@ import java.util.*
 class AddressController(
     private val addressService: AddressService
 ) {
-
     @PutMapping("/{id}")
     fun updateAddressById(
         @AuthenticationPrincipal userId: UUID,
         @PathVariable id: UUID,
         @Valid @RequestBody request: UpdateAddressRequest
     ): ResponseEntity<AddressResponse> {
-        val updateAddressResponse = addressService.updateAddress(userId, id, request)
-        return ResponseEntity.ok(updateAddressResponse.toResponse())
+        val updateAddressResponse = addressService.updateAddressById(id, userId, request).toResponse()
+        return ResponseEntity.ok(updateAddressResponse)
     }
 
     @PostMapping
@@ -32,8 +31,8 @@ class AddressController(
         @AuthenticationPrincipal userId: UUID,
         @Valid @RequestBody request: CreateAddressRequest
     ): ResponseEntity<AddressResponse> {
-        val createAddressResponse = addressService.addAddress(userId, request)
-        return ResponseEntity.ok(createAddressResponse.toResponse())
+        val createAddressResponse = addressService.addAddress(userId, request).toResponse()
+        return ResponseEntity.ok(createAddressResponse)
     }
 
     @GetMapping("/{id}")
@@ -41,8 +40,8 @@ class AddressController(
         @AuthenticationPrincipal userId: UUID,
         @PathVariable id: UUID
     ): ResponseEntity<AddressResponse> {
-        val getAddressResponse = addressService.getAddressById(userId, id)
-        return ResponseEntity.ok(getAddressResponse.toResponse())
+        val getAddressResponse = addressService.getAddressById(id, userId).toResponse()
+        return ResponseEntity.ok(getAddressResponse)
     }
 
     @GetMapping
@@ -58,6 +57,6 @@ class AddressController(
         @AuthenticationPrincipal userId: UUID,
         @PathVariable id: UUID
     ): ResponseEntity<Unit> {
-        return ResponseEntity.ok(addressService.deleteAddressById(userId, id))
+        return ResponseEntity.ok(addressService.deleteAddressById(id, userId))
     }
 }

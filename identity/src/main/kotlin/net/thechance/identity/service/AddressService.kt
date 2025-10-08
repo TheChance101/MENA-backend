@@ -4,6 +4,7 @@ import jakarta.transaction.Transactional
 import net.thechance.identity.api.dto.CreateAddressRequest
 import net.thechance.identity.api.dto.UpdateAddressRequest
 import net.thechance.identity.entity.Address
+import net.thechance.identity.entity.User
 import net.thechance.identity.entity.copy
 import net.thechance.identity.exception.*
 import net.thechance.identity.repository.AddressRepository
@@ -18,39 +19,22 @@ class AddressService(
 ) {
 
     @Transactional
-    fun addAddress(userId: UUID, request: CreateAddressRequest): Address {
+    fun addAddress(userId: UUID, addressToAdd: CreateAddressRequest): Address {
         val user = userService.findById(userId)
-        val newAddress = Address(
-            user = user,
-            latitude = request.latitude,
-            longitude = request.longitude,
-            addressLine = request.addressLine,
-            addressType = request.addressType,
-        )
         return try {
-            addressRepository.save(newAddress)
-        } catch (exception: Exception) {
+            addressRepository.save(createAddress(user, addressToAdd))
+        } catch (_: Exception) {
             throw AddressNotAddedException()
         }
     }
 
     @Transactional
-    fun updateAddress(userId: UUID, addressId: UUID, request: UpdateAddressRequest): Address {
+    fun updateAddressById(addressId: UUID, userId: UUID, addressToUpdate: UpdateAddressRequest): Address {
         val existingAddress = addressRepository.findByIdAndUserId(addressId, userId) ?: throw AddressNotFoundException()
-        if (!isThereNewValues(existingAddress, request)) return existingAddress
-
-        val updatedAddress = existingAddress.copy(
-            latitude = request.latitude ?: existingAddress.latitude,
-            longitude = request.longitude ?: existingAddress.longitude,
-            addressLine = request.addressLine ?: existingAddress.addressLine,
-            addressType = request.addressType ?: existingAddress.addressType,
-            isActive = request.isActive ?: existingAddress.isActive,
-            updatedAt = Instant.now()
-        )
-
+        if (!isThereNewValues(existingAddress, addressToUpdate)) return existingAddress
         return try {
-            addressRepository.save(updatedAddress)
-        } catch (exception: Exception) {
+            addressRepository.save(getUpdatedAddress(existingAddress, addressToUpdate))
+        } catch (_: Exception) {
             throw AddressNotUpdatedException()
         }
     }
@@ -60,7 +44,7 @@ class AddressService(
     }
 
     @Transactional
-    fun deleteAddressById(userId: UUID, addressId: UUID) {
+    fun deleteAddressById(addressId: UUID, userId: UUID) {
         if (isActiveAddress(userId, addressId)) putOldestAddressToBeActive(userId)
         try {
             addressRepository.deleteById(addressId)
@@ -69,16 +53,37 @@ class AddressService(
         }
     }
 
-    fun getAddressById(userId: UUID, addressId: UUID): Address {
+    fun getAddressById(addressId: UUID, userId: UUID): Address {
         return addressRepository.findByIdAndUserId(addressId, userId) ?: throw AddressNotFoundException()
     }
 
-    private fun isThereNewValues(existingAddress: Address, request: UpdateAddressRequest): Boolean {
-        return existingAddress.latitude != request.latitude
-                || existingAddress.longitude != request.longitude
-                || existingAddress.addressLine != request.addressLine
-                || existingAddress.addressType != request.addressType
-                || existingAddress.isActive != request.isActive
+    private fun createAddress(user: User, addressToAdd: CreateAddressRequest): Address {
+        return Address(
+            user = user,
+            latitude = addressToAdd.latitude,
+            longitude = addressToAdd.longitude,
+            addressLine = addressToAdd.addressLine,
+            addressType = addressToAdd.addressType,
+        )
+    }
+
+    private fun isThereNewValues(existingAddress: Address, addressToUpdate: UpdateAddressRequest): Boolean {
+        return existingAddress.latitude != addressToUpdate.latitude
+                || existingAddress.longitude != addressToUpdate.longitude
+                || existingAddress.addressLine != addressToUpdate.addressLine
+                || existingAddress.addressType != addressToUpdate.addressType
+                || existingAddress.isActive != addressToUpdate.isActive
+    }
+
+    private fun getUpdatedAddress(existingAddress: Address, addressToUpdate: UpdateAddressRequest): Address {
+        return existingAddress.copy(
+            latitude = addressToUpdate.latitude ?: existingAddress.latitude,
+            longitude = addressToUpdate.longitude ?: existingAddress.longitude,
+            addressLine = addressToUpdate.addressLine ?: existingAddress.addressLine,
+            addressType = addressToUpdate.addressType ?: existingAddress.addressType,
+            isActive = addressToUpdate.isActive ?: existingAddress.isActive,
+            updatedAt = Instant.now()
+        )
     }
 
     private fun isActiveAddress(userId: UUID, addressId: UUID): Boolean {
