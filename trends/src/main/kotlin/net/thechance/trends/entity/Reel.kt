@@ -3,6 +3,7 @@ package net.thechance.trends.entity
 import jakarta.persistence.*
 import java.time.LocalDateTime
 import java.util.*
+import java.util.Collections.emptySet
 
 @Table(name = "reels", schema = "trends")
 @Entity
@@ -31,5 +32,7 @@ data class Reel(
         inverseJoinColumns = [JoinColumn(name = "category_id")],
         schema = "trends"
     )
-    val categories: Set<Category> = emptySet()
+    val categories: MutableSet<Category> = emptySet(),
+    @Column(name = "is_published")
+    var isPublished: Boolean = false,
 )
