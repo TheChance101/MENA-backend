@@ -7,8 +7,8 @@ import net.thechance.dukan.entity.Dukan
 import net.thechance.dukan.mapper.DukanLanguage
 import net.thechance.dukan.mapper.toDto
 import net.thechance.dukan.mapper.toDukanCreationParams
-import net.thechance.dukan.mapper.toDukanStyleResponse
 import net.thechance.dukan.mapper.toResponse
+import net.thechance.dukan.mapper.toDukanStyleResponse
 import net.thechance.dukan.service.DukanService
 import org.springframework.data.domain.Page
 import org.springframework.data.domain.Pageable
@@ -87,5 +87,11 @@ class DukanController(
         @PageableDefault(size = 10, page = 0, sort = ["createdAt"], direction = Sort.Direction.DESC) pageable: Pageable
     ): ResponseEntity<Page<DukanResponse>> {
         return ResponseEntity.ok(dukanService.getAllByCategoryId(categoryId, pageable).map(Dukan::toResponse))
+    }
+
+    @GetMapping("/{dukanId}")
+    fun getDukanDetailsById(@PathVariable("dukanId") dukanId: UUID): ResponseEntity<DukanDetailsResponse> {
+        val dukanDetails = dukanService.getDukanDetailsById(dukanId).toResponse()
+        return ResponseEntity.ok(dukanDetails)
     }
 }
