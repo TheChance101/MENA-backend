@@ -51,6 +51,7 @@ class ChatService(
         )
     }
 
+    @Transactional
     private fun saveMessageAttachments(message: CreateMessageArgs): List<MessageAttachment> {
         val messageAttachments = mutableListOf<MessageAttachment>()
         message.attachments?.forEach { attachment ->
@@ -61,7 +62,6 @@ class ChatService(
             )
             val attachment = MessageAttachment(
                 id = UUID.randomUUID(),
-                message = entityManager.getReference(Message::class.java, message.id),
                 url = imageUrl
             )
             messageAttachmentRepository.save(attachment)
@@ -72,7 +72,7 @@ class ChatService(
 
 
     fun getAllChatMessages(chatId: UUID, pageable: Pageable) =
-        messageRepository.getAllByChatIdOrderBySentAt(chatId, pageable)
+        messageRepository.getAllByChatIdOrderBySentAtDes(chatId, pageable)
 
 
     fun markChatMessagesAsRead(chatId: UUID, userId: UUID) =

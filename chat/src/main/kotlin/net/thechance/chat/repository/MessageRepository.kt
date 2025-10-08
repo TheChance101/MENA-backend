@@ -7,11 +7,11 @@ import org.springframework.data.jpa.repository.JpaRepository
 import org.springframework.data.jpa.repository.Modifying
 import org.springframework.data.jpa.repository.Query
 import org.springframework.transaction.annotation.Transactional
-import java.util.UUID
+import java.util.*
 
 interface MessageRepository : JpaRepository<Message, UUID> {
 
-    fun getAllByChatIdOrderBySentAt(chatId: UUID, pageable: Pageable): Page<Message>
+    fun getAllByChatIdOrderBySentAtDes(chatId: UUID, pageable: Pageable): Page<Message>
 
     @Modifying
     @Transactional

@@ -10,7 +10,10 @@ import org.springframework.messaging.handler.annotation.Payload
 import org.springframework.messaging.simp.SimpMessagingTemplate
 import org.springframework.security.core.annotation.AuthenticationPrincipal
 import org.springframework.stereotype.Controller
-import org.springframework.web.bind.annotation.*
+import org.springframework.web.bind.annotation.GetMapping
+import org.springframework.web.bind.annotation.RequestMapping
+import org.springframework.web.bind.annotation.RequestParam
+import org.springframework.web.bind.annotation.ResponseBody
 import java.security.Principal
 import java.util.*
 
@@ -49,7 +52,7 @@ class ChatController(
     fun getChatHistory(
         @RequestParam chatId: UUID,
         pageable: Pageable
-    ): ResponseEntity<PagedResponse<MessageDto>> {
+    ): ResponseEntity<PagedResponse<MessageResponseDto>> {
         return ResponseEntity.ok(
             chatService.getAllChatMessages(chatId,pageable).toPagedMessageResponse()
         )
