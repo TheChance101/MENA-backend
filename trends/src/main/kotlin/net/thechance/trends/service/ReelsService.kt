@@ -26,8 +26,9 @@ class ReelsService(
         currentUserId: UUID
     ): Page<Reel> {
 
-        val body = reelsRepository.findByOwnerId(
+        val body = reelsRepository.findByOwnerIdAndIsPublished(
             currentUserId,
+            true,
             PageRequest.of(
                 maxOf(0, pageable.pageNumber - 1),
                 10,
