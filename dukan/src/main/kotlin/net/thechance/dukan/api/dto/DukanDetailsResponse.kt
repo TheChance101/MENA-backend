@@ -8,7 +8,7 @@ data class DukanDetailsResponse(
     val id: UUID,
     val ownerId: UUID,
     val name: String,
-    val imageUrl: String? = null,
+    val imageUrl: String,
     val address: String,
     val latitude: Double,
     val longitude: Double,

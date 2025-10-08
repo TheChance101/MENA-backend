@@ -8,7 +8,7 @@ fun Dukan.toResponse(): DukanDetailsResponse{
         id = id,
         ownerId = ownerId,
         name = name,
-        imageUrl =imageUrl,
+        imageUrl = imageUrl!!,
         address = address,
         latitude = latitude,
         longitude = longitude,
