@@ -13,7 +13,7 @@ data class MessageRequestDto(
     val attachments: List<MultipartFile>?
 )
 
-data class MessageDto(
+data class MessageResponseDto(
     val id: UUID,
     val senderId: UUID,
     val chatId: UUID,
@@ -24,8 +24,8 @@ data class MessageDto(
 )
 
 
-fun Message.toDto(): MessageDto {
-    return MessageDto(
+fun Message.toDto(): MessageResponseDto {
+    return MessageResponseDto(
         id = this.id,
         senderId = this.senderId,
         chatId = this.chat.id,
@@ -48,7 +48,7 @@ fun MessageRequestDto.toCreateMessageArgs(senderId: UUID): CreateMessageArgs {
     )
 }
 
-fun Page<Message>.toPagedMessageResponse(): PagedResponse<MessageDto> {
+fun Page<Message>.toPagedMessageResponse(): PagedResponse<MessageResponseDto> {
     return PagedResponse(
         data = this.content.map { it.toDto() },
         pageNumber = this.number,
