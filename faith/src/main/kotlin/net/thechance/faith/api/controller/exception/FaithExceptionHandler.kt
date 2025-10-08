@@ -15,11 +15,18 @@ class FaithExceptionHandler {
             status = HttpStatus.NOT_FOUND.value(),
         )
 
+    @ExceptionHandler(CannotGetPrayerTimesException::class)
+    fun onCannotGetPrayerTimesError(exception: CannotGetPrayerTimesException): ResponseEntity<ApiErrorResponse> =
+        createErrorResponse(
+            exception = exception,
+            status = HttpStatus.SERVICE_UNAVAILABLE.value(),
+        )
+
     private fun createErrorResponse(
         exception: Exception, status: Int
     ): ResponseEntity<ApiErrorResponse> {
         val apiError = ApiErrorResponse(
-            status = status, message = exception.message ?: "Bookmark not found"
+            status = status, message = exception.message ?: ""
         )
         return ResponseEntity(apiError, HttpStatus.valueOf(status))
     }
