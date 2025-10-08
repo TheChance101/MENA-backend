@@ -1,0 +1,18 @@
+package net.thechance.dukan.mapper
+
+import net.thechance.dukan.api.dto.DukanDetailsResponse
+import net.thechance.dukan.entity.Dukan
+
+fun Dukan.toDukanDetails(): DukanDetailsResponse{
+    return DukanDetailsResponse(
+        id = id,
+        ownerId = ownerId,
+        name = name,
+        imageUrl =imageUrl,
+        address = address,
+        latitude = latitude,
+        longitude = longitude,
+        color = color,
+        style =style
+    )
+}
