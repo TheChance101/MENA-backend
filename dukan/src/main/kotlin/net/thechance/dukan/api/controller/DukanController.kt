@@ -7,9 +7,14 @@ import net.thechance.dukan.entity.Dukan
 import net.thechance.dukan.mapper.DukanLanguage
 import net.thechance.dukan.mapper.toDto
 import net.thechance.dukan.mapper.toDukanCreationParams
-import net.thechance.dukan.mapper.toResponse
+import net.thechance.dukan.mapper.toDukanResponse
 import net.thechance.dukan.mapper.toDukanStyleResponse
+import net.thechance.dukan.mapper.toResponse
 import net.thechance.dukan.service.DukanService
+import org.springframework.data.domain.Page
+import org.springframework.data.domain.Pageable
+import org.springframework.data.domain.Sort
+import org.springframework.data.web.PageableDefault
 import org.springframework.http.ResponseEntity
 import org.springframework.security.core.annotation.AuthenticationPrincipal
 import org.springframework.web.bind.annotation.*
@@ -75,6 +80,14 @@ class DukanController(
     ): ResponseEntity<DukanStatuesResponse> {
         val dukan = dukanService.getDukanByOwnerId(userId)
         return ResponseEntity.ok(DukanStatuesResponse(dukan.name, dukan.status))
+    }
+
+    @GetMapping("/categories/{categoryId}")
+    fun getAllByCategoryId(
+        @PathVariable("categoryId") categoryId: UUID,
+        @PageableDefault(size = 10, page = 0, sort = ["createdAt"], direction = Sort.Direction.DESC) pageable: Pageable
+    ): ResponseEntity<Page<DukanResponse>> {
+        return ResponseEntity.ok(dukanService.getAllByCategoryId(categoryId, pageable).map(Dukan::toDukanResponse))
     }
 
     @GetMapping("/{dukanId}")
