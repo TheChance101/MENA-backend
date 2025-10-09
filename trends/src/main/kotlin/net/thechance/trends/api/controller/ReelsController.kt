@@ -39,15 +39,16 @@ class ReelsController(
         return ResponseEntity.ok(result)
     }
 
-    @GetMapping("/feed")
+    @GetMapping("/feed","/feed/{reelId}" )
     fun getAllReelsForFeed(
         pageable: Pageable,
+        @PathVariable(required = false) reelId: UUID? = null,
         @AuthenticationPrincipal currentUserId: UUID
     ): ResponseEntity<PagingResponse<ReelResponse>> {
-        val reels = reelsService.getAllReelsForFeed(pageable, currentUserId).content.map { reel ->
+        val reels = reelsService.getAllReelsForFeed(pageable, currentUserId, reelId).content.map { reel ->
             reel.toResponse().withOwnership(
                 currentUserId = currentUserId,
-                ownerId = reel.ownerId
+                ownerId = reel.ownerId,
             )
         }
 

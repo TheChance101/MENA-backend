@@ -7,6 +7,7 @@ import net.thechance.trends.exception.VideoDeleteFailedException
 import net.thechance.trends.repository.CategoryRepository
 import net.thechance.trends.repository.ReelsRepository
 import org.springframework.data.domain.Page
+import org.springframework.data.domain.PageImpl
 import org.springframework.data.domain.PageRequest
 import org.springframework.data.domain.Pageable
 import org.springframework.data.domain.Sort
@@ -41,16 +42,43 @@ class ReelsService(
     fun getAllReelsForFeed(
         pageable: Pageable,
         currentUserId: UUID,
+        reelId: UUID? = null,
     ): Page<Reel> {
-        val body = reelsRepository.getReelFeedForUser(
-            currentUserId,
-            PageRequest.of(
-                maxOf(0, pageable.pageNumber - 1),
-                10,
-                pageable.getSortOr(Sort.by(Sort.Direction.DESC, "createdAt"))
-            )
+        val adjustedPageable = PageRequest.of(
+            maxOf(0, pageable.pageNumber - 1),
+            10,
+            pageable.getSortOr(Sort.by(Sort.Direction.DESC, "createdAt"))
         )
-        return body
+
+        val body = reelsRepository.getReelFeedForUser(currentUserId, adjustedPageable)
+
+        if (reelId == null || pageable.pageNumber != 0) {
+            return body
+        }
+
+        val reels = body.content.toMutableList()
+
+        val prioritizedReel = reels.find { it.id == reelId }
+
+        if (prioritizedReel != null) {
+            reels.remove(prioritizedReel)
+            reels.add(0, prioritizedReel)
+        } else {
+            reelsRepository.findById(reelId).ifPresent { reel ->
+                if (reel.isPublished && reelsRepository.isReelInUserFeed(currentUserId, reelId)) {
+                    reels.add(0, reel)
+                    if (reels.size > adjustedPageable.pageSize) {
+                        reels.removeAt(reels.size - 1)
+                    }
+                }
+            }
+        }
+
+        return PageImpl(
+            reels,
+            adjustedPageable,
+            body.totalElements
+        )
     }
 
     @Transactional
