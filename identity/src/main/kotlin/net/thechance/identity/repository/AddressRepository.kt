@@ -7,7 +7,7 @@ import java.util.*
 interface AddressRepository : JpaRepository<Address, UUID> {
     fun findByIdAndUserId(id: UUID, userId: UUID): Address?
 
-    fun findFirstByUserIdOrderByCreatedAtAsc(userId: UUID): Address?
+    fun findByIsActiveAndUserId(isActive: Boolean, userId: UUID): Address?
 
     fun findByUserIdOrderByCreatedAtAsc(userId: UUID): List<Address>
 }

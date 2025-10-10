@@ -22,7 +22,9 @@ class AddressService(
     fun addAddress(userId: UUID, addressToAdd: CreateAddressRequest): Address {
         val user = userService.findById(userId)
         return try {
-            addressRepository.save(createAddress(user, addressToAdd))
+            val address = if (addressRepository.findAll().isEmpty()) createAddress(user, addressToAdd, true)
+            else createAddress(user, addressToAdd)
+            addressRepository.save(address)
         } catch (_: Exception) {
             throw AddressNotAddedException()
         }
@@ -33,16 +35,19 @@ class AddressService(
         if (isAllAddressValuesNull(addressToUpdate)) throw AtLeastAddressValueNeededException()
         val existingAddress = addressRepository.findByIdAndUserId(addressId, userId) ?: throw AddressNotFoundException()
         if (!isThereNewValues(existingAddress, addressToUpdate)) return existingAddress
-        return try {
-            addressRepository.save(getUpdatedAddress(existingAddress, addressToUpdate))
+        if (addressToUpdate.isActive == false && existingAddress.isActive) {
+            throw AddressCanNotBeUpdatedException()
+        }
+
+        try {
+            val updatedAddress = getUpdatedAddress(existingAddress, addressToUpdate)
+            if (addressToUpdate.isActive == true && !existingAddress.isActive) {
+                disableActiveAddress(userId)
+            }
+            return addressRepository.save(updatedAddress)
         } catch (_: Exception) {
             throw AddressNotUpdatedException()
         }
-    }
-
-    private fun isAllAddressValuesNull(address: UpdateAddressRequest): Boolean {
-        return address.latitude == null && address.longitude == null && address.addressLine == null
-                && address.addressType == null && address.isActive == null
     }
 
     fun getAllAddresses(userId: UUID): List<Address> {
@@ -63,13 +68,14 @@ class AddressService(
         return addressRepository.findByIdAndUserId(addressId, userId) ?: throw AddressNotFoundException()
     }
 
-    private fun createAddress(user: User, addressToAdd: CreateAddressRequest): Address {
+    private fun createAddress(user: User, addressToAdd: CreateAddressRequest, isActive: Boolean = false): Address {
         return Address(
             user = user,
             latitude = addressToAdd.latitude,
             longitude = addressToAdd.longitude,
             addressLine = addressToAdd.addressLine,
             addressType = addressToAdd.addressType,
+            isActive = isActive
         )
     }
 
@@ -81,18 +87,35 @@ class AddressService(
                 || existingAddress.isActive != addressToUpdate.isActive
     }
 
-    private fun getUpdatedAddress(existingAddress: Address, addressToUpdate: UpdateAddressRequest): Address {
+    private fun getUpdatedAddress(
+        existingAddress: Address,
+        addressToUpdate: UpdateAddressRequest
+    ): Address {
+        var isActive = existingAddress.isActive
+        if (addressToUpdate.isActive == true && !existingAddress.isActive) {
+            isActive = addressToUpdate.isActive
+        }
         return existingAddress.copy(
             latitude = addressToUpdate.latitude ?: existingAddress.latitude,
             longitude = addressToUpdate.longitude ?: existingAddress.longitude,
             addressLine = addressToUpdate.addressLine ?: existingAddress.addressLine,
             addressType = addressToUpdate.addressType ?: existingAddress.addressType,
-            isActive = addressToUpdate.isActive ?: existingAddress.isActive,
+            isActive = isActive,
             updatedAt = Instant.now()
         )
     }
 
     private fun isActiveAddress(userId: UUID, addressId: UUID): Boolean {
         return addressRepository.findByIdAndUserId(addressId, userId)?.isActive ?: throw AddressNotFoundException()
+    }
+
+    private fun disableActiveAddress(userId: UUID) {
+        val address = addressRepository.findByIsActiveAndUserId(true, userId) ?: return
+        addressRepository.save(addressRepository.save(address.copy(isActive = false)))
+    }
+
+    private fun isAllAddressValuesNull(address: UpdateAddressRequest): Boolean {
+        return address.latitude == null && address.longitude == null && address.addressLine == null
+                && address.addressType == null && address.isActive == null
     }
 }

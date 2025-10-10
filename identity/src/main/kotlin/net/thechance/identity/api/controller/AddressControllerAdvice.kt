@@ -74,6 +74,14 @@ class AddressControllerAdvice {
         logger.error(exception.message)
         return ResponseEntity
             .status(HttpStatus.BAD_REQUEST)
-            .body(ErrorResponse(exception.message ?: "At least value need to be provided to update"))
+            .body(ErrorResponse(exception.message ?: "At least one value needed to update"))
+    }
+
+    @ExceptionHandler(AddressCanNotBeUpdatedException::class)
+    fun handleAddressCanNotBeUpdatedException(exception: AddressCanNotBeUpdatedException): ResponseEntity<ErrorResponse?> {
+        logger.error(exception.message)
+        return ResponseEntity
+            .status(HttpStatus.FORBIDDEN)
+            .body(ErrorResponse(exception.message ?: "Address Can Not Be Updated"))
     }
 }
