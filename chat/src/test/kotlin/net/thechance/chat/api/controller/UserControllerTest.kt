@@ -5,7 +5,7 @@ import io.mockk.every
 import io.mockk.mockk
 import net.thechance.chat.entity.ContactUser
 import net.thechance.chat.service.ContactUserService
-import net.thechance.chat.service.model.UserModel
+import net.thechance.chat.api.dto.UserDto
 import org.junit.jupiter.api.assertThrows
 import java.util.UUID
 import kotlin.test.Test
@@ -38,7 +38,7 @@ class UserControllerTest {
     companion object{
         val userId = "451e4d6c-0380-41ed-95e6-275793c404c6"
         val invalidUserId = "451e4d6c-0380-41ed-95e6-275793c404c8"
-        val user = UserModel(
+        val user = UserDto(
             firstName = "omer",
             lastName = "faris",
             phoneNumber = "+9647710222244",

@@ -1,8 +1,8 @@
 package net.thechance.chat.api.controller
 
 import net.thechance.chat.service.ContactUserService
-import net.thechance.chat.service.model.UserModel
-import net.thechance.chat.service.model.toModel
+import net.thechance.chat.api.dto.UserDto
+import net.thechance.chat.api.dto.toDto
 import org.springframework.http.ResponseEntity
 import org.springframework.web.bind.annotation.GetMapping
 import org.springframework.web.bind.annotation.RequestMapping
@@ -19,8 +19,8 @@ class UserController (
     @GetMapping
     fun getUserById(
         @RequestParam id: String
-    ):  ResponseEntity<UserModel>{
+    ):  ResponseEntity<UserDto>{
         val userId = UUID.fromString(id)
-        return ResponseEntity.ok(contactUserService.getUserById(userId).toModel())
+        return ResponseEntity.ok(contactUserService.getUserById(userId).toDto())
     }
 }
