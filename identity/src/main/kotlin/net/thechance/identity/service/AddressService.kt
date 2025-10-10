@@ -38,7 +38,6 @@ class AddressService(
         if (addressToUpdate.isActive == false && existingAddress.isActive) {
             throw AddressCanNotBeUpdatedException()
         }
-
         try {
             val updatedAddress = getUpdatedAddress(existingAddress, addressToUpdate)
             if (addressToUpdate.isActive == true && !existingAddress.isActive) {
@@ -80,11 +79,15 @@ class AddressService(
     }
 
     private fun isThereNewValues(existingAddress: Address, addressToUpdate: UpdateAddressRequest): Boolean {
-        return existingAddress.latitude != addressToUpdate.latitude
-                || existingAddress.longitude != addressToUpdate.longitude
-                || existingAddress.addressLine != addressToUpdate.addressLine
-                || existingAddress.addressType != addressToUpdate.addressType
-                || existingAddress.isActive != addressToUpdate.isActive
+        return isUpdatedAndNotNull(existingAddress.latitude, addressToUpdate.latitude) ||
+                isUpdatedAndNotNull(existingAddress.longitude, addressToUpdate.longitude) ||
+                isUpdatedAndNotNull(existingAddress.addressLine, addressToUpdate.addressLine) ||
+                isUpdatedAndNotNull(existingAddress.addressType, addressToUpdate.addressType) ||
+                isUpdatedAndNotNull(existingAddress.isActive, addressToUpdate.isActive)
+    }
+
+    private fun <T> isUpdatedAndNotNull(existing: T, new: T?): Boolean {
+        return new != null && existing != new
     }
 
     private fun getUpdatedAddress(
