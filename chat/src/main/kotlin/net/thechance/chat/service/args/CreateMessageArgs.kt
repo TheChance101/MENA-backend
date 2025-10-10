@@ -9,7 +9,7 @@ data class CreateMessageArgs(
     val senderId: UUID,
     val chatId: UUID,
     val text: String?,
-    val attachments: List<MultipartFile>?,
+    val images: List<MultipartFile>?,
     val sendAt: Instant,
     val isRead: Boolean
 )

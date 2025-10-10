@@ -10,7 +10,7 @@ import java.util.*
 data class MessageRequestDto(
     val chatId: UUID,
     val text: String?,
-    val attachments: List<MultipartFile>?
+    val images: List<MultipartFile>?
 )
 
 data class MessageResponseDto(
@@ -18,7 +18,7 @@ data class MessageResponseDto(
     val senderId: UUID,
     val chatId: UUID,
     val text: String?,
-    val attachments: List<String>?,
+    val images: List<String>,
     val sendAt: Instant,
     val isRead: Boolean
 )
@@ -30,7 +30,7 @@ fun Message.toDto(): MessageResponseDto {
         senderId = this.senderId,
         chatId = this.chat.id,
         text = this.text,
-        attachments = this.messageAttachment.map { it.url },
+        images = this.images.map { it.url },
         sendAt = this.sentAt,
         isRead = this.isRead
     )
@@ -42,7 +42,7 @@ fun MessageRequestDto.toCreateMessageArgs(senderId: UUID): CreateMessageArgs {
         senderId = senderId,
         chatId = this.chatId,
         text = this.text,
-        attachments = this.attachments,
+        images = this.images,
         sendAt = Instant.now(),
         isRead = false
     )

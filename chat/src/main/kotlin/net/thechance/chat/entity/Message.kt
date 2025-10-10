@@ -19,7 +19,7 @@ data class Message(
     val isRead: Boolean = false,
 
     @OneToMany(mappedBy = "message", cascade = [CascadeType.ALL], orphanRemoval = true, fetch = FetchType.EAGER)
-    val messageAttachment: List<MessageAttachment> = emptyList(),
+    val images: List<MessageAttachment> = emptyList(),
 
     @ManyToOne(optional = false)
     @JoinColumn(name = "chat_id", referencedColumnName = "id", nullable = false)

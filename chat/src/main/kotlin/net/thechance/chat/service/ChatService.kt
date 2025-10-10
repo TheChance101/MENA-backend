@@ -38,13 +38,13 @@ class ChatService(
     @Transactional
     fun saveMessage(message: CreateMessageArgs) {
         val chat = entityManager.getReference(Chat::class.java, message.chatId)
-        val attachments = saveMessageAttachments(message)
+        val images = saveMessageImages(message)
         messageRepository.save(
             Message(
                 id = message.id,
                 senderId = message.senderId,
                 chat = chat,
-                messageAttachment = attachments,
+                images = images,
                 text = message.text,
                 sentAt = message.sendAt,
             )
@@ -52,9 +52,9 @@ class ChatService(
     }
 
     @Transactional
-    private fun saveMessageAttachments(message: CreateMessageArgs): List<MessageAttachment> {
-        val messageAttachments = mutableListOf<MessageAttachment>()
-        message.attachments?.forEach { attachment ->
+    private fun saveMessageImages(message: CreateMessageArgs): List<MessageAttachment> {
+        val messageImages = mutableListOf<MessageAttachment>()
+        message.images?.forEach { attachment ->
             val imageUrl = attachmentStorageService.uploadImage(
                 file = attachment,
                 fileName = "${message.id}-$attachment",
@@ -65,9 +65,9 @@ class ChatService(
                 url = imageUrl
             )
             messageAttachmentRepository.save(attachment)
-            messageAttachments.add(attachment)
+            messageImages.add(attachment)
         }
-        return messageAttachments
+        return messageImages
     }
 
 
