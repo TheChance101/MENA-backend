@@ -18,7 +18,7 @@ data class Message(
     @Column(nullable = false)
     val isRead: Boolean = false,
 
-    @OneToMany(cascade = [CascadeType.ALL], orphanRemoval = true, fetch = FetchType.EAGER)
+    @OneToMany(mappedBy = "message", cascade = [CascadeType.ALL], orphanRemoval = true, fetch = FetchType.EAGER)
     val images: List<MessageImages> = emptyList(),
 
     @ManyToOne(optional = false)

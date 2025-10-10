@@ -1,9 +1,6 @@
 package net.thechance.chat.entity
 
-import jakarta.persistence.Column
-import jakarta.persistence.Entity
-import jakarta.persistence.Id
-import jakarta.persistence.Table
+import jakarta.persistence.*
 import java.util.*
 
 @Entity
@@ -14,4 +11,8 @@ data class MessageImages(
 
     @Column(nullable = false)
     val url: String,
+
+    @ManyToOne(optional = false)
+    @JoinColumn(name = "message_id", referencedColumnName = "id", nullable = false)
+    val message: Message
 )

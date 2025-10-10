@@ -3,14 +3,12 @@ package net.thechance.chat.api.dto
 import net.thechance.chat.entity.Message
 import net.thechance.chat.service.args.CreateMessageArgs
 import org.springframework.data.domain.Page
-import org.springframework.web.multipart.MultipartFile
 import java.time.Instant
 import java.util.*
 
 data class MessageRequestDto(
     val chatId: UUID,
-    val text: String?,
-    val images: List<MultipartFile>?
+    val text: String
 )
 
 data class MessageResponseDto(
@@ -42,7 +40,6 @@ fun MessageRequestDto.toCreateMessageArgs(senderId: UUID): CreateMessageArgs {
         senderId = senderId,
         chatId = this.chatId,
         text = this.text,
-        images = this.images,
         sendAt = Instant.now(),
         isRead = false
     )
