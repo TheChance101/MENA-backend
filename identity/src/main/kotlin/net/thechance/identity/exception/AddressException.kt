@@ -6,3 +6,4 @@ class AddressCanNotBeDeletedException(message: String = "Address Can Not Be Dele
 class AddressNotAddedException(message: String = "Address Not Added"): AddressException(message)
 class AddressNotUpdatedException(message: String = "Address Not Updated"): AddressException(message)
 class AddressNotDeletedException(message: String = "Address Not Deleted"): AddressException(message)
+class AtLeastAddressValueNeededException(message: String = "At least value need to be provided to update"): AddressException(message)

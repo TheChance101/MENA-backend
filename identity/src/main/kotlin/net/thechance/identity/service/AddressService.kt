@@ -30,6 +30,7 @@ class AddressService(
 
     @Transactional
     fun updateAddressById(addressId: UUID, userId: UUID, addressToUpdate: UpdateAddressRequest): Address {
+        if (isAllAddressValuesNull(addressToUpdate)) throw AtLeastAddressValueNeededException()
         val existingAddress = addressRepository.findByIdAndUserId(addressId, userId) ?: throw AddressNotFoundException()
         if (!isThereNewValues(existingAddress, addressToUpdate)) return existingAddress
         return try {
@@ -37,6 +38,11 @@ class AddressService(
         } catch (_: Exception) {
             throw AddressNotUpdatedException()
         }
+    }
+
+    private fun isAllAddressValuesNull(address: UpdateAddressRequest): Boolean {
+        return address.latitude == null && address.longitude == null && address.addressLine == null
+                && address.addressType == null && address.isActive == null
     }
 
     fun getAllAddresses(userId: UUID): List<Address> {

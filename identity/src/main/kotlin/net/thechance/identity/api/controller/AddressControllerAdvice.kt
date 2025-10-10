@@ -68,4 +68,12 @@ class AddressControllerAdvice {
             .status(HttpStatus.NOT_MODIFIED)
             .body(ErrorResponse(exception.message ?: "Address Not Deleted"))
     }
+
+    @ExceptionHandler(AtLeastAddressValueNeededException::class)
+    fun handleAtLeastAddressValueNeededException(exception: AtLeastAddressValueNeededException): ResponseEntity<ErrorResponse?> {
+        logger.error(exception.message)
+        return ResponseEntity
+            .status(HttpStatus.BAD_REQUEST)
+            .body(ErrorResponse(exception.message ?: "At least value need to be provided to update"))
+    }
 }
