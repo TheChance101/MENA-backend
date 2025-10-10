@@ -1,6 +1,8 @@
 package net.thechance.chat.service
 
 import jakarta.persistence.EntityManager
+import net.thechance.chat.api.dto.MessageImagesRequestDto
+import net.thechance.chat.api.dto.toMessageArgs
 import net.thechance.chat.entity.Chat
 import net.thechance.chat.entity.Message
 import net.thechance.chat.entity.MessageImages
@@ -36,38 +38,38 @@ class ChatService(
     }
 
     @Transactional
-    fun saveMessage(message: CreateMessageArgs) {
+    fun saveMessage(message: CreateMessageArgs): Message {
         val chat = entityManager.getReference(Chat::class.java, message.chatId)
-        val images = saveMessageImages(message)
-        messageRepository.save(
-            Message(
-                id = message.id,
-                senderId = message.senderId,
-                chat = chat,
-                images = images,
-                text = message.text,
-                sentAt = message.sendAt,
-            )
+        val message = Message(
+            id = message.id,
+            senderId = message.senderId,
+            chat = chat,
+            text = message.text,
+            sentAt = message.sendAt,
         )
+        messageRepository.save(message)
+        return message
     }
 
     @Transactional
-    private fun saveMessageImages(message: CreateMessageArgs): List<MessageImages> {
+    fun saveMessageImages(senderId: UUID, request: MessageImagesRequestDto): Message {
+        val message = saveMessage(request.toMessageArgs(senderId))
         val messageImages = mutableListOf<MessageImages>()
-        message.images?.forEach { attachment ->
+        request.images.forEach { image ->
             val imageUrl = attachmentStorageService.uploadImage(
-                file = attachment,
-                fileName = "${message.id}-$attachment",
+                file = image,
+                fileName = "${message.id}-$image",
                 folderName = FOLDER_NAME
             )
-            val images = MessageImages(
+            val image = MessageImages(
                 id = UUID.randomUUID(),
-                url = imageUrl
+                url = imageUrl,
+                message = message
             )
-            messageImagesRepository.save(images)
-            messageImages.add(images)
+            messageImagesRepository.save(image)
+            messageImages.add(image)
         }
-        return messageImages
+        return message.copy(images = messageImages)
     }
 
 
