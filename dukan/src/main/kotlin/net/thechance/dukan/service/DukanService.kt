@@ -77,7 +77,7 @@ class DukanService(
     }
 
     fun getAllByCategoryId(categoryId: UUID, pageable: Pageable): Page<Dukan> {
-        return dukanRepository.findAllByCategoriesId(categoryId, pageable)
+        return dukanRepository.findApprovedDukansWithProductsByCategory(categoryId, pageable)
     }
 
     fun getAllEditorPicksDukan(userId: UUID?, pageable: Pageable): Page<Dukan> {
