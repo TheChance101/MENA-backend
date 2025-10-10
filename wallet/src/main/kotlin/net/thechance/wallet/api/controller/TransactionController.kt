@@ -109,12 +109,12 @@ class TransactionController(
             "attachment; filename=\"statement${startDate.formatDate()}_to${endDate.formatDate()}.pdf\""
         )
 
-        setMetadataHeaders(response, metadata)
+        setStatementMetadataHeaders(response, metadata)
 
         buffer.writeTo(response.outputStream)
     }
 
-    private fun setMetadataHeaders(
+    private fun setStatementMetadataHeaders(
         response: HttpServletResponse,
         metadata: StatementMetadata
     ) {
