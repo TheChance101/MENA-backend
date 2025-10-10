@@ -45,7 +45,7 @@ class AddressService(
 
     @Transactional
     fun deleteAddressById(addressId: UUID, userId: UUID) {
-        if (isActiveAddress(userId, addressId)) putOldestAddressToBeActive(userId)
+        if (isActiveAddress(userId, addressId)) throw AddressCanNotBeDeletedException()
         try {
             addressRepository.deleteById(addressId)
         } catch (_: Exception) {
@@ -88,13 +88,5 @@ class AddressService(
 
     private fun isActiveAddress(userId: UUID, addressId: UUID): Boolean {
         return addressRepository.findByIdAndUserId(addressId, userId)?.isActive ?: throw AddressNotFoundException()
-    }
-
-    @Transactional
-    private fun putOldestAddressToBeActive(userId: UUID) {
-        val oldestAddress =
-            addressRepository.findFirstByUserIdOrderByCreatedAtAsc(userId) ?: throw AddressCanNotBeDeletedException()
-        val updatedAddress = oldestAddress.copy(isActive = true)
-        addressRepository.save(updatedAddress)
     }
 }
