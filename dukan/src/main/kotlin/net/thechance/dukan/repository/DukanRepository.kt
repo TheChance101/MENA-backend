@@ -20,11 +20,13 @@ interface DukanRepository : JpaRepository<Dukan, UUID> {
     FROM Dukan d
     WHERE d.status = net.thechance.dukan.entity.Dukan.Status.APPROVED
     AND EXISTS (
-        SELECT s FROM DukanShelf s
+        SELECT 1 
+        FROM DukanShelf s
         WHERE s.dukan = d
     )
     AND EXISTS (
-        SELECT p FROM DukanProduct p
+        SELECT 1
+        FROM DukanProduct p
         WHERE p.dukan = d
     )
     ORDER BY d.createdAt DESC
