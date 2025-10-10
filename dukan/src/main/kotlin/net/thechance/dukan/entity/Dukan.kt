@@ -1,6 +1,7 @@
 package net.thechance.dukan.entity
 
 import jakarta.persistence.*
+import java.time.Instant
 import java.util.*
 
 @Table(name = "dukans", schema = "dukan")
@@ -39,7 +40,9 @@ data class Dukan(
     @Column(name = "status", nullable = false)
     val status: Status = Status.PENDING,
     @OneToMany(mappedBy = "dukan", cascade = [CascadeType.ALL])
-    val shelves: Set<DukanShelf> = emptySet()
+    val shelves: Set<DukanShelf> = emptySet(),
+    @Column(name = "createdAt")
+    val createdAt: Instant = Instant.now()
 ) {
     enum class Status {
         APPROVED,
