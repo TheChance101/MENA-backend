@@ -72,7 +72,7 @@ class AddressServiceTest {
         assertThat(result.addressLine).isEqualTo("456 New Ave")
         assertThat(result.addressType).isEqualTo("Work")
         assertThat(result.isActive).isTrue()
-        verify(exactly = 1) { addressRepository.save(any()) }
+        verify(exactly = 2) { addressRepository.save(any()) }
     }
 
     @Test
@@ -304,7 +304,7 @@ class AddressServiceTest {
                 Arguments.of("Longitude changed", updateAddressRequest.copy(longitude = 0.1), 1),
                 Arguments.of("Address line changed", updateAddressRequest.copy(addressLine = "New Address"), 1),
                 Arguments.of("Address type changed", updateAddressRequest.copy(addressType = "Work"), 1),
-                Arguments.of("IsActive changed", updateAddressRequest.copy(isActive = true), 1)
+                Arguments.of("IsActive changed", updateAddressRequest.copy(isActive = true), 2)
             )
         }
 

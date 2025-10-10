@@ -114,7 +114,7 @@ class AddressService(
 
     private fun disableActiveAddress(userId: UUID) {
         val address = addressRepository.findByIsActiveAndUserId(true, userId) ?: return
-        addressRepository.save(addressRepository.save(address.copy(isActive = false)))
+        addressRepository.save(address.copy(isActive = false))
     }
 
     private fun isAllAddressValuesNull(address: UpdateAddressRequest): Boolean {
