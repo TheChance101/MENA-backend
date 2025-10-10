@@ -3,9 +3,9 @@ package net.thechance.chat.service
 import jakarta.persistence.EntityManager
 import net.thechance.chat.entity.Chat
 import net.thechance.chat.entity.Message
-import net.thechance.chat.entity.MessageAttachment
+import net.thechance.chat.entity.MessageImages
 import net.thechance.chat.repository.ChatRepository
-import net.thechance.chat.repository.MessageAttachmentRepository
+import net.thechance.chat.repository.MessageImagesRepository
 import net.thechance.chat.repository.MessageRepository
 import net.thechance.chat.service.args.CreateMessageArgs
 import org.springframework.data.domain.Pageable
@@ -16,7 +16,7 @@ import java.util.*
 @Service
 class ChatService(
     private val messageRepository: MessageRepository,
-    private val messageAttachmentRepository: MessageAttachmentRepository,
+    private val messageImagesRepository: MessageImagesRepository,
     private val chatRepository: ChatRepository,
     private val contactUserService: ContactUserService,
     private val attachmentStorageService: AttachmentStorageService,
@@ -52,27 +52,27 @@ class ChatService(
     }
 
     @Transactional
-    private fun saveMessageImages(message: CreateMessageArgs): List<MessageAttachment> {
-        val messageImages = mutableListOf<MessageAttachment>()
+    private fun saveMessageImages(message: CreateMessageArgs): List<MessageImages> {
+        val messageImages = mutableListOf<MessageImages>()
         message.images?.forEach { attachment ->
             val imageUrl = attachmentStorageService.uploadImage(
                 file = attachment,
                 fileName = "${message.id}-$attachment",
                 folderName = FOLDER_NAME
             )
-            val attachment = MessageAttachment(
+            val images = MessageImages(
                 id = UUID.randomUUID(),
                 url = imageUrl
             )
-            messageAttachmentRepository.save(attachment)
-            messageImages.add(attachment)
+            messageImagesRepository.save(images)
+            messageImages.add(images)
         }
         return messageImages
     }
 
 
     fun getAllChatMessages(chatId: UUID, pageable: Pageable) =
-        messageRepository.getAllByChatIdOrderBySentAtDes(chatId, pageable)
+        messageRepository.getAllByChatIdOrderBySentAtDesc(chatId, pageable)
 
 
     fun markChatMessagesAsRead(chatId: UUID, userId: UUID) =

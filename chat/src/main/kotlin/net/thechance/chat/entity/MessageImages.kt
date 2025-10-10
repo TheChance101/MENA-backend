@@ -7,8 +7,8 @@ import jakarta.persistence.Table
 import java.util.*
 
 @Entity
-@Table(name = "message_attachments", schema = "chat")
-data class MessageAttachment(
+@Table(name = "message_images", schema = "chat")
+data class MessageImages(
     @Id @Column(columnDefinition = "uuid", updatable = false, nullable = false)
     val id: UUID = UUID.randomUUID(),
 

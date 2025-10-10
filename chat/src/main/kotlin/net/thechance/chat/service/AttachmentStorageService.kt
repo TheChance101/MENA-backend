@@ -22,7 +22,7 @@ data class ChatStorageProperties(
 @Service
 @EnableConfigurationProperties(ChatStorageProperties::class)
 class AttachmentStorageService(
-    private val s3Client: S3Client,
+    private val menaS3Client: S3Client,
     private val props: ChatStorageProperties,
 ) {
     fun uploadImage(
@@ -36,7 +36,7 @@ class AttachmentStorageService(
             val fileName = "${fileName}_${LocalDateTime.now()}.$extension"
             val key = "images/$folderName/$fileName"
             val putReq = createObjectRequest(key, mimeType)
-            s3Client.putObject(putReq, RequestBody.fromBytes(file.bytes))
+            menaS3Client.putObject(putReq, RequestBody.fromBytes(file.bytes))
             return "${props.cdnEndpoint}/$key"
         } catch (_: Exception) {
             throw ImageUploadFailedException()
