@@ -80,6 +80,11 @@ class DukanService(
         return dukanRepository.findAllByCategoriesId(categoryId, pageable)
     }
 
+    fun getAllEditorPicksDukan(userId: UUID?, pageable: Pageable): Page<Dukan> {
+        // TODO: Filter by user preferences once data model is ready
+        return dukanRepository.findAllApprovedWithShelvesAndProducts(pageable)
+    }
+
     private fun validateDukanCreation(params: DukanCreationParams) {
         if (dukanRepository.existsByOwnerId(params.ownerId)) {
             throw DukanCreationFailedException()
