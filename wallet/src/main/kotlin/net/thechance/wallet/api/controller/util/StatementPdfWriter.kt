@@ -5,13 +5,16 @@ import com.itextpdf.html2pdf.HtmlConverter
 import com.itextpdf.kernel.pdf.PdfDocument
 import com.itextpdf.kernel.pdf.PdfWriter
 import com.itextpdf.layout.font.FontProvider
-import jakarta.servlet.ServletOutputStream
 import net.thechance.wallet.api.dto.transaction.StatementData
-import net.thechance.wallet.service.helper.UserTransactionType
+import net.thechance.wallet.entity.Transaction
 import net.thechance.wallet.service.StatementService
 import net.thechance.wallet.service.TransactionService
+import net.thechance.wallet.service.helper.UserTransactionType
 import org.springframework.core.io.ResourceLoader
+import org.springframework.data.domain.Page
 import org.springframework.stereotype.Component
+import java.io.OutputStream
+import java.math.BigDecimal
 import java.time.LocalDate
 import java.time.LocalDateTime
 import java.util.*
@@ -28,27 +31,31 @@ class StatementPdfWriter(
         types: List<UserTransactionType>?,
         startDate: LocalDate?,
         endDate: LocalDate?,
-        outputStream: ServletOutputStream
-    ) {
+        outputStream: OutputStream
+    ) : StatementMetadata {
         val statementData = getStatementData(userId, types, startDate, endDate)
 
         val writer = PdfWriter(outputStream)
         val pdf = PdfDocument(writer)
         val converterProperties = setupConverterProperties()
 
-        writePages(statementData, pdf, converterProperties)
+        val metadata = writePages(statementData, pdf, converterProperties)
 
         pdf.close()
         outputStream.flush()
+
+        return metadata
     }
 
     private fun writePages(
         statementData: StatementData,
         pdf: PdfDocument,
         converterProperties: ConverterProperties
-    ) {
+    ) : StatementMetadata{
         var pageNum = 0
         var totalPages: Int
+        var totalInflows: BigDecimal = 0.toBigDecimal()
+        var totalOutflows: BigDecimal = 0.toBigDecimal()
 
         do {
             val page = statementService.getTransactionsPage(
@@ -62,9 +69,19 @@ class StatementPdfWriter(
             val htmlContent = statementHtmlGenerator.generateForPage(statementData, page)
             HtmlConverter.convertToPdf(htmlContent, pdf, converterProperties)
 
+            totalInflows += getPageInflows(page, statementData.userId)
+            totalOutflows += getPageOutflows(page, statementData.userId)
+
             totalPages = page.totalPages
             pageNum++
         } while (pageNum < totalPages)
+
+        return StatementMetadata(
+            startDate = statementData.startDateTime.toLocalDate(),
+            endDate = statementData.endDateTime.toLocalDate().minusDays(1),
+            totalInflows = totalInflows,
+            totalOutflows = totalOutflows
+        )
     }
 
     fun getStatementData(
@@ -122,7 +139,21 @@ class StatementPdfWriter(
         return converterProperties
     }
 
-    private companion object {
-        const val PAGE_SIZE = 100
+    private fun getPageInflows(transactions: Page<Transaction>, userId: UUID): BigDecimal {
+        return transactions.sumOf { transaction ->
+            when {
+                transaction.receiver.userId == userId -> transaction.amount
+                else -> 0.toBigDecimal()
+            }
+        }
+    }
+
+    private fun getPageOutflows(transactions: Page<Transaction>, userId: UUID): BigDecimal {
+        return transactions.sumOf { transaction ->
+            when {
+                transaction.sender.userId == userId -> transaction.amount
+                else -> 0.toBigDecimal()
+            }
+        }
     }
 }
