@@ -10,7 +10,7 @@ import java.util.*
 @Table(name = "transactions", schema = "wallet")
 data class Transaction(
     @Id
-    @GeneratedValue(strategy = GenerationType.UUID)
+    @Column(columnDefinition = "uuid", updatable = false, nullable = false)
     val id: UUID = UUID.randomUUID(),
 
     @Column(nullable = false, updatable = false)
