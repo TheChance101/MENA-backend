@@ -20,7 +20,7 @@ class UserControllerTest {
         val id = UUID.fromString(userId)
         every { contactUserService.getUserById(id) } returns contactUser
 
-        assertThat(controller.getUserById(userId).body).isEqualTo(user)
+        assertThat(controller.getUserById(id).body).isEqualTo(user)
 
     }
 
@@ -30,7 +30,7 @@ class UserControllerTest {
         every { contactUserService.getUserById(id) } throws IllegalArgumentException("User not found")
 
         assertThrows<IllegalArgumentException> {
-            controller.getUserById(invalidUserId)
+            controller.getUserById(id)
         }
     }
 
@@ -45,7 +45,7 @@ class UserControllerTest {
             imageUrl = null
         )
         val contactUser= ContactUser(
-            id = UUID.fromString("451e4d6c-0380-41ed-95e6-275793c404c6"),
+            id = UUID.fromString(userId),
             firstName = "omer",
             lastName = "faris",
             phoneNumber = "+9647710222244",
