@@ -11,6 +11,7 @@ import org.springframework.messaging.simp.SimpMessagingTemplate
 import org.springframework.security.core.annotation.AuthenticationPrincipal
 import org.springframework.stereotype.Controller
 import org.springframework.web.bind.annotation.*
+import org.springframework.web.multipart.MultipartFile
 import java.security.Principal
 import java.util.*
 
@@ -56,12 +57,14 @@ class ChatController(
     }
 
 
-    @PostMapping("/image")
+    @PostMapping("/image/{chatId}")
     fun uploadMessageImages(
-        @RequestBody request: MessageImagesRequestDto,
+        @PathVariable("chatId") chatId: UUID,
+        @RequestParam("images") images: List<MultipartFile>,
         principal: Principal
     ): ResponseEntity<MessageResponseDto> {
         val senderId = UUID.fromString(principal.name)
+        val request = MessageImagesRequestDto(chatId, images)
         return ResponseEntity.ok(chatService.saveMessageImages(senderId, request).toDto())
     }
 
