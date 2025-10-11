@@ -7,6 +7,7 @@ import net.thechance.wallet.repository.PendingTransactionRepository
 import net.thechance.wallet.repository.TransactionRepository
 import org.springframework.data.repository.findByIdOrNull
 import org.springframework.stereotype.Service
+import org.springframework.transaction.annotation.Transactional
 import java.time.LocalDateTime
 import java.time.LocalTime
 import java.util.*
@@ -19,6 +20,7 @@ class PaymentService(
     private val blockRepository: BlockRepository
 ) {
 
+    @Transactional
     fun pay(userId: UUID, transactionId: UUID) {
         if (transactionRepository.findByIdOrNull(transactionId) != null)
             throw IllegalArgumentException("Transaction already processed")
