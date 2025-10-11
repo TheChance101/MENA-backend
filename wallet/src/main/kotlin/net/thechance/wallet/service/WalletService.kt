@@ -6,7 +6,7 @@ import java.util.*
 
 @Service
 class WalletService(
-    private val transactionRepository: TransactionRepository,
+    private val transactionRepository: TransactionRepository
 ) {
 
     fun getUserBalance(userId: UUID): Double {

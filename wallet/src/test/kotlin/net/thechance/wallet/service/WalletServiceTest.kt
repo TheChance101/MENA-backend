@@ -5,6 +5,7 @@ import io.mockk.every
 import io.mockk.mockk
 import net.thechance.wallet.repository.TransactionRepository
 import org.junit.Test
+import java.math.BigDecimal
 import java.util.*
 
 class WalletServiceTest {
@@ -33,7 +34,7 @@ class WalletServiceTest {
 
     companion object {
         private val USER_ID = UUID.fromString("a1b2c3d4-e5f6-a7b8-c9d0-e1f2a3b4c5d6")
-        private val RECEIVED = 32543.0
+        private val RECEIVED =32543.0
         private val SENT = 3236.0
         private val EXPECTED_BALANCE = RECEIVED - SENT
     }
