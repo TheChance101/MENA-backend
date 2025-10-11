@@ -17,28 +17,6 @@ class ReelsController(
     private val reelsService: ReelsService
 ) {
 
-    @GetMapping
-    fun getAllReelsByUserId(
-        pageable: Pageable,
-        @AuthenticationPrincipal currentUserId: UUID
-    ): ResponseEntity<PagingResponse<ReelResponse>> {
-
-        val reels = reelsService.getAllReelsByUserId(pageable, currentUserId).content.map { reel ->
-            reel.toResponse().withOwnership(
-                currentUserId = currentUserId,
-                ownerId = reel.ownerId
-            )
-        }
-
-        val result = PagingResponse(
-            pageNumber = pageable.pageNumber,
-            results = reels,
-            totalResults = reels.size
-        )
-
-        return ResponseEntity.ok(result)
-    }
-
     @GetMapping("/feed","/feed/{reelId}" )
     fun getAllReelsForFeed(
         pageable: Pageable,
@@ -52,7 +30,7 @@ class ReelsController(
             )
         }
 
-        val result = PagingResponse(
+        val result = PagingResponse.create(
             pageNumber = pageable.pageNumber,
             results = reels,
             totalResults = reels.size
