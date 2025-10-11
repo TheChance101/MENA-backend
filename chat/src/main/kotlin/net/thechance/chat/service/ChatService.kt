@@ -7,6 +7,7 @@ import net.thechance.chat.repository.ChatRepository
 import net.thechance.chat.repository.MessageRepository
 import net.thechance.chat.service.args.CreateMessageArgs
 import org.springframework.data.domain.Pageable
+import org.springframework.data.repository.findByIdOrNull
 import org.springframework.stereotype.Service
 import org.springframework.transaction.annotation.Transactional
 import java.util.*
@@ -50,4 +51,10 @@ class ChatService(
 
     fun markChatMessagesAsRead(chatId: UUID, userId: UUID) =
         messageRepository.updateIsReadByChatIdAndSenderIdNot(chatId = chatId, userId = userId)
+
+    fun getChatById(chatId: UUID): Chat?{
+        val chat = chatRepository.findByIdOrNull(chatId)
+        return chat
+    }
+
 }
