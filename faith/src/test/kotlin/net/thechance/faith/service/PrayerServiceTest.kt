@@ -27,9 +27,6 @@ class PrayerServiceTest {
                 date = DATE
             )
         } returns cachedDatePrayerTimes
-        every {
-            remoteClient.getPrayerTimes(any(), any(), any())
-        }
         //When
         val result = service.getPrayerTimes(LATITUDE, LONGITUDE, DATE)
         //Then
@@ -98,7 +95,7 @@ class PrayerServiceTest {
             id = 1,
             latitude = 30.0444,
             longitude = 31.2357,
-            savedIn = Instant.parse("2025-10-08T10:00:00Z"),
+            savedIn = Instant.now(),
             gregorianDate = "2025-10-09",
             dateTimestamp = "2025-10-08T00:00:00Z",
             gregorianReadableDate = "08 October 2025",
