@@ -1,6 +1,5 @@
 package net.thechance.trends.repository
 
-import net.thechance.trends.entity.Category
 import net.thechance.trends.entity.Reel
 import org.springframework.data.domain.Page
 import org.springframework.data.domain.Pageable
@@ -23,26 +22,15 @@ interface ReelsRepository : JpaRepository<Reel, UUID> {
         JOIN u.categories uc
         WHERE u.userId = :userId
         )
+    AND (:reelId IS NULL OR r.createdAt <= (
+        SELECT r2.createdAt FROM Reel r2 WHERE r2.id = :reelId
+        )
+    )
     """
     )
     fun getReelFeedForUser(
         userId: UUID,
+        reelId: UUID?,
         pageable: Pageable
     ): Page<Reel>
-
-    @Query(
-        """
-    SELECT CASE WHEN COUNT(r) > 0 THEN true ELSE false END
-    FROM Reel r
-    JOIN r.categories rc
-    WHERE r.id = :reelId
-    AND r.isPublished = true
-    AND rc.id IN (
-        SELECT uc.id FROM TrendUser u
-        JOIN u.categories uc
-        WHERE u.userId = :userId
-        )
-    """
-    )
-    fun isReelInUserFeed(userId: UUID, reelId: UUID): Boolean
 }
