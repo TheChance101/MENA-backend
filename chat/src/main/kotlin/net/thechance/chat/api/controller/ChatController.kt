@@ -76,6 +76,21 @@ class ChatController(
         )
     }
 
+    @GetMapping("/{chatId}")
+    fun getChatDetail(
+        @PathVariable chatId : String,
+        @AuthenticationPrincipal userId: UUID
+    ): ResponseEntity<ChatResponse>{
+        val id = UUID.fromString(chatId)
+        val chat = chatService.getChatById(id) ?: throw IllegalStateException("chat not found")
+        val otherUser = chat.users.firstOrNull { it.id != userId }
+        val contact =otherUser?.let{
+            contactService.getContactByOwnerIdAndContactUserId(userId, it.id)
+        }
+        return ResponseEntity.ok(chat.toResponse(userId,contact))
+
+    }
+
     companion object {
         const val QUEUE_MESSAGES = "/queue/messages"
     }
