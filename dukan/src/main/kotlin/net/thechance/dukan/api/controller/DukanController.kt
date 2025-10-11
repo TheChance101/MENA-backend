@@ -107,4 +107,15 @@ class DukanController(
         val dukanDetails = dukanService.getDukanDetailsById(dukanId).toResponse()
         return ResponseEntity.ok(dukanDetails)
     }
+
+    @GetMapping("/best_around")
+    fun getBestDukansAround(
+        @RequestParam lat: Double,
+        @RequestParam lng: Double,
+        @RequestParam(required = false, defaultValue = "30000") range: Double,
+        @PageableDefault(size = 10, page = 0) pageable: Pageable
+    ): ResponseEntity<Page<DukanResponse>> {
+        val dukans = dukanService.getAllBestDukansAround(lat, lng, pageable, range)
+        return ResponseEntity.ok(dukans.map { it.toDukanResponse() })
+    }
 }
