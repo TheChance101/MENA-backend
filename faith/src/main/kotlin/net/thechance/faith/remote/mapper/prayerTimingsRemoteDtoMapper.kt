@@ -8,33 +8,33 @@ fun PrayerTimingsRemoteDto.DayPrayerTimings(latitude: Double, longitude: Double)
         id = 0,
         latitude = latitude,
         longitude = longitude,
-        gregorianDate = data.date.gregorian.date,
-        dateTimestamp = data.date.timestamp,
-        gregorianReadableDate = data.date.readable,
-        gregorianDay = data.date.gregorian.day,
-        gregorianDayName = data.date.gregorian.weekday.en,
-        gregorianMonth = data.date.gregorian.month.number,
-        gregorianMonthName = data.date.gregorian.month.en,
-        gregorianYear = data.date.gregorian.year,
-        hijriDate = data.date.hijri.date,
+        gregorianDate = data?.date?.gregorian?.date.orEmpty(),
+        dateTimestamp = data?.date?.timestamp.orEmpty(),
+        gregorianReadableDate = data?.date?.readable.orEmpty(),
+        gregorianDay = data?.date?.gregorian?.day.orEmpty(),
+        gregorianDayName = data?.date?.gregorian?.weekday?.en.orEmpty(),
+        gregorianMonth = data?.date?.gregorian?.month?.number.orZero(),
+        gregorianMonthName = data?.date?.gregorian?.month?.en.orEmpty(),
+        gregorianYear = data?.date?.gregorian?.year.orEmpty(),
+        hijriDate = data?.date?.hijri?.date.orEmpty(),
         hijriReadableDate = hijriDateToReadable(
-            day = data.date.hijri.day,
-            month = data.date.hijri.month.en,
-            year = data.date.hijri.year
+            day = data?.date?.hijri?.day.orEmpty(),
+            month = data?.date?.hijri?.month?.en.orEmpty(),
+            year = data?.date?.hijri?.year.orEmpty()
         ),
-        hijriDay = data.date.hijri.day,
-        hijriDayName = data.date.hijri.weekday.en,
-        hijriDayArabicName = data.date.hijri.weekday.ar,
-        hijriMonth = data.date.hijri.month.number,
-        hijriYear = data.date.hijri.year,
-        hijriMonthName = data.date.hijri.month.en,
-        hijriMonthArabicName = data.date.hijri.month.ar,
-        fajr = data.timings.fajr,
-        sunrise = data.timings.sunrise,
-        dhuhr = data.timings.dhuhr,
-        asr = data.timings.asr,
-        maghrib = data.timings.maghrib,
-        isha = data.timings.isha
+        hijriDay = data?.date?.hijri?.day.orEmpty(),
+        hijriDayName = data?.date?.hijri?.weekday?.en.orEmpty(),
+        hijriDayArabicName = data?.date?.hijri?.weekday?.ar.orEmpty(),
+        hijriMonth = data?.date?.hijri?.month?.number.orZero(),
+        hijriYear = data?.date?.hijri?.year.orEmpty(),
+        hijriMonthName = data?.date?.hijri?.month?.en.orEmpty(),
+        hijriMonthArabicName = data?.date?.hijri?.month?.ar.orEmpty(),
+        fajr = data?.timings?.fajr.orEmpty(),
+        sunrise = data?.timings?.sunrise.orEmpty(),
+        dhuhr = data?.timings?.dhuhr.orEmpty(),
+        asr = data?.timings?.asr.orEmpty(),
+        maghrib = data?.timings?.maghrib.orEmpty(),
+        isha = data?.timings?.isha.orEmpty()
     )
 
 private fun hijriDateToReadable(
@@ -42,3 +42,6 @@ private fun hijriDateToReadable(
     month: String,
     year: String
 ): String = "$day $month $year"
+
+fun String?.orEmpty(): String = this ?: ""
+fun Int?.orZero(): Int = this ?: 0
