@@ -20,28 +20,25 @@ class PaymentService(
 ) {
 
     fun pay(userId: UUID, transactionId: UUID) {
+        if (transactionRepository.findTransactionById(transactionId) != null)
+            throw IllegalArgumentException("Transaction already processed")
+
         val pendingTransaction = pendingTransactionRepository.findById(transactionId)
             .orElseThrow { IllegalArgumentException("transaction not found") }
 
-        if (pendingTransaction.sender.userId != userId) throw IllegalArgumentException("User is not authorized to pay this transaction")
+        if (pendingTransaction.sender.userId != userId)
+            throw IllegalArgumentException("User is not authorized to pay this transaction")
 
-        if (userId == pendingTransaction.receiver.userId) throw IllegalArgumentException("Sender and receiver cannot be the same")
+        if (userId == pendingTransaction.receiver.userId)
+            throw IllegalArgumentException("Sender and receiver cannot be the same")
 
-        if (walletService.getUserBalance(userId) < pendingTransaction.amount.toDouble()) {
-            val block = getToDayBlock()
-            val failedTransaction = pendingTransaction.toTransaction(block, Transaction.Status.FAILED)
-            transactionRepository.save(failedTransaction)
+        if (walletService.getUserBalance(userId) < pendingTransaction.amount.toDouble())
             throw IllegalArgumentException("Insufficient balance")
-        }
-
-        val existingTransaction = transactionRepository.findTransactionById(pendingTransaction.id)
-        if (existingTransaction != null && existingTransaction.status == Transaction.Status.SUCCESS)
-            throw IllegalArgumentException("Transaction already processed")
 
         val block = getToDayBlock()
-
         val transaction = pendingTransaction.toTransaction(block)
         transactionRepository.save(transaction)
+        pendingTransactionRepository.deleteById(transactionId)
     }
 
     private fun getToDayBlock(): Block {
