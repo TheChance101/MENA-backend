@@ -74,5 +74,6 @@ interface TransactionRepository : JpaRepository<Transaction, UUID> {
         @Param("endDate") endDate: LocalDateTime?,
     ): Double?
 
-    fun getAllByBlockId(blockId: UUID): List<Transaction>
+    fun getAllByBlockId(blockId: UUID, pageable: Pageable): List<Transaction>
+    fun countAllByBlockId(blockId: UUID): Long
 }

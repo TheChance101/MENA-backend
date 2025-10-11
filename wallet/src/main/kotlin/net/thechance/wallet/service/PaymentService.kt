@@ -5,12 +5,12 @@ import net.thechance.wallet.entity.toTransaction
 import net.thechance.wallet.repository.BlockRepository
 import net.thechance.wallet.repository.PendingTransactionRepository
 import net.thechance.wallet.repository.TransactionRepository
+import org.springframework.data.domain.Pageable
 import org.springframework.data.repository.findByIdOrNull
 import org.springframework.stereotype.Service
 import org.springframework.transaction.annotation.Transactional
 import java.security.MessageDigest
 import java.time.LocalDateTime
-import java.time.LocalTime
 import java.util.*
 
 @Service
@@ -38,38 +38,35 @@ class PaymentService(
         if (walletService.getUserBalance(userId) < pendingTransaction.amount.toDouble())
             throw IllegalArgumentException("Insufficient balance")
 
-        val block = getToDayBlock()
+        val block = getBlock()
         val transaction = pendingTransaction.toTransaction(block)
         transactionRepository.save(transaction)
         pendingTransactionRepository.deleteById(transactionId)
     }
 
-    private fun getToDayBlock(): Block {
-        val now = LocalDateTime.now()
-        val today = now.toLocalDate()
-        val block = blockRepository.findBlockByTimestampBetween(
-            start = LocalDateTime.of(today, LocalTime.MIN),
-            end = LocalDateTime.of(today, LocalTime.MAX)
-        )
-        if (block != null) return block
-
+    private fun getBlock(): Block {
         val latestBlock = blockRepository.findTopByOrderByTimestampDesc()
-        val previousBlockHash = calculatePreviousBlockHash(latestBlock, now)
-
+        if (latestBlock != null) {
+            val transactionCount = transactionRepository.countAllByBlockId(latestBlock.id)
+            if (transactionCount <= TRANSACTION_COUNT_LIMIT_PER_BLOCK) {
+                return latestBlock
+            }
+        }
+        val previousBlockHash = calculatePreviousBlockHash(latestBlock)
         return blockRepository.save(Block(previousBlockHash = previousBlockHash))
     }
 
-    private fun calculatePreviousBlockHash(latestBlock: Block?, now: LocalDateTime): String {
+    private fun calculatePreviousBlockHash(latestBlock: Block?): String {
         if (latestBlock == null) return "0".repeat(64)
 
         val transactionsData = transactionRepository
-            .getAllByBlockId(latestBlock.id)
+            .getAllByBlockId(latestBlock.id, Pageable.ofSize(TRANSACTION_COUNT_LIMIT_PER_BLOCK))
             .joinToString(separator = "|") { it.toString() }
 
         val input = latestBlock.id.toString() +
                 latestBlock.timestamp.toString() +
                 transactionsData +
-                now.toString()
+                LocalDateTime.now().toString()
 
         return hashWithSha256(input)
     }
@@ -77,5 +74,9 @@ class PaymentService(
     private fun hashWithSha256(input: String): String {
         val bytes = MessageDigest.getInstance("SHA-256").digest(input.toByteArray())
         return bytes.joinToString("") { "%02x".format(it) }
+    }
+
+    private companion object {
+        const val TRANSACTION_COUNT_LIMIT_PER_BLOCK = 15
     }
 }
