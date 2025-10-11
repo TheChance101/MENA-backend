@@ -53,8 +53,7 @@ class ChatService(
         messageRepository.updateIsReadByChatIdAndSenderIdNot(chatId = chatId, userId = userId)
 
     fun getChatById(chatId: UUID): Chat?{
-        val chat = chatRepository.findByIdOrNull(chatId)
-        return chat
+        return chatRepository.findByIdOrNull(chatId)
     }
 
 }
