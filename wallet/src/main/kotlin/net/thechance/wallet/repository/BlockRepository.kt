@@ -7,4 +7,5 @@ import java.util.*
 
 interface BlockRepository : JpaRepository<Block, UUID>{
     fun findBlockByTimestampBetween(start: LocalDateTime, end: LocalDateTime): Block?
+    fun findTopByOrderByTimestampDesc(): Block?
 }

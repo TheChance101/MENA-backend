@@ -8,6 +8,7 @@ import net.thechance.wallet.repository.TransactionRepository
 import org.springframework.data.repository.findByIdOrNull
 import org.springframework.stereotype.Service
 import org.springframework.transaction.annotation.Transactional
+import java.security.MessageDigest
 import java.time.LocalDateTime
 import java.time.LocalTime
 import java.util.*
@@ -44,13 +45,37 @@ class PaymentService(
     }
 
     private fun getToDayBlock(): Block {
-        val today = LocalDateTime.now().toLocalDate()
+        val now = LocalDateTime.now()
+        val today = now.toLocalDate()
         val block = blockRepository.findBlockByTimestampBetween(
             start = LocalDateTime.of(today, LocalTime.MIN),
             end = LocalDateTime.of(today, LocalTime.MAX)
         )
-        return block ?: blockRepository.save(Block(previousBlockHash = "")) // TODO: set previous block hash
+        if (block != null) return block
+
+        val latestBlock = blockRepository.findTopByOrderByTimestampDesc()
+        val previousBlockHash = calculatePreviousBlockHash(latestBlock, now)
+
+        return blockRepository.save(Block(previousBlockHash = previousBlockHash))
+    }
+
+    private fun calculatePreviousBlockHash(latestBlock: Block?, now: LocalDateTime): String {
+        if (latestBlock == null) return "0".repeat(64)
+
+        val transactionsData = transactionRepository
+            .getAllByBlockId(latestBlock.id)
+            .joinToString(separator = "|") { it.toString() }
+
+        val input = latestBlock.id.toString() +
+                latestBlock.timestamp.toString() +
+                transactionsData +
+                now.toString()
+
+        return hashWithSha256(input)
+    }
+
+    private fun hashWithSha256(input: String): String {
+        val bytes = MessageDigest.getInstance("SHA-256").digest(input.toByteArray())
+        return bytes.joinToString("") { "%02x".format(it) }
     }
 }
-
-

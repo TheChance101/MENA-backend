@@ -73,4 +73,6 @@ interface TransactionRepository : JpaRepository<Transaction, UUID> {
         @Param("currentUserId") currentUserId: UUID,
         @Param("endDate") endDate: LocalDateTime?,
     ): Double?
+
+    fun getAllByBlockId(blockId: UUID): List<Transaction>
 }
