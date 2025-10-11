@@ -48,7 +48,7 @@ class PaymentService(
         val latestBlock = blockRepository.findTopByOrderByTimestampDesc()
         if (latestBlock != null) {
             val transactionCount = transactionRepository.countAllByBlockId(latestBlock.id)
-            if (transactionCount <= TRANSACTION_COUNT_LIMIT_PER_BLOCK) {
+            if (transactionCount < TRANSACTION_COUNT_LIMIT_PER_BLOCK) {
                 return latestBlock
             }
         }
