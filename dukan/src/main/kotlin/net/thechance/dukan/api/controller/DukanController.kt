@@ -90,6 +90,18 @@ class DukanController(
         return ResponseEntity.ok(dukanService.getAllByCategoryId(categoryId, pageable).map(Dukan::toDukanResponse))
     }
 
+
+    @GetMapping("/editor_picks")
+    fun getEditorPicksDukan(
+        @AuthenticationPrincipal userId: UUID?,
+        @PageableDefault(size = 5, page = 0, sort = ["createdAt"], direction = Sort.Direction.DESC)
+        pageable: Pageable
+    ): ResponseEntity<Page<DukanResponse>> {
+        val dukansPage = dukanService.getAllEditorPicksDukan(userId, pageable)
+        return ResponseEntity.ok(dukansPage.map(Dukan::toDukanResponse))
+    }
+
+
     @GetMapping("/{dukanId}")
     fun getDukanDetailsById(@PathVariable("dukanId") dukanId: UUID): ResponseEntity<DukanDetailsResponse> {
         val dukanDetails = dukanService.getDukanDetailsById(dukanId).toResponse()
