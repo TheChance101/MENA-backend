@@ -27,20 +27,30 @@ class PaymentService(
 
         if (userId == pendingTransaction.receiver.userId) throw IllegalArgumentException("Sender and receiver cannot be the same")
 
-        if (walletService.getUserBalance(userId) < pendingTransaction.amount.toDouble()) throw IllegalArgumentException("Insufficient balance")
+        if (walletService.getUserBalance(userId) < pendingTransaction.amount.toDouble()) {
+            val block = getToDayBlock()
+            val failedTransaction = pendingTransaction.toTransaction(block, Transaction.Status.FAILED)
+            transactionRepository.save(failedTransaction)
+            throw IllegalArgumentException("Insufficient balance")
+        }
 
         val existingTransaction = transactionRepository.findTransactionById(pendingTransaction.id)
-        if (existingTransaction != null && existingTransaction.status == Transaction.Status.SUCCESS) throw IllegalArgumentException("Transaction already processed")
+        if (existingTransaction != null && existingTransaction.status == Transaction.Status.SUCCESS)
+            throw IllegalArgumentException("Transaction already processed")
 
-        val today = LocalDateTime.now().toLocalDate()
-
-        val block = blockRepository.findBlockByTimestampBetween(
-            start = LocalDateTime.of(today, LocalTime.MIN),
-            end = LocalDateTime.of(today, LocalTime.MAX)
-        ) ?: blockRepository.save(Block(previousBlockHash = ""))
+        val block = getToDayBlock()
 
         val transaction = pendingTransaction.toTransaction(block)
         transactionRepository.save(transaction)
+    }
+
+    private fun getToDayBlock(): Block {
+        val today = LocalDateTime.now().toLocalDate()
+        val block = blockRepository.findBlockByTimestampBetween(
+            start = LocalDateTime.of(today, LocalTime.MIN),
+            end = LocalDateTime.of(today, LocalTime.MAX)
+        )
+        return block ?: blockRepository.save(Block(previousBlockHash = "")) // TODO: set previous block hash
     }
 }
 
