@@ -13,16 +13,16 @@ class PrayerRemoteClient(
 
     private val webClient: WebClient = WebClient
         .builder()
-        .baseUrl("https://api.aladhan.com")
+        .baseUrl(BASE_URL)
         .build()
 
     fun getPrayerTimes(latitude: Double, longitude: Double, date: String): PrayerTimingsRemoteDto = runCatching {
         val rawJson = webClient.get()
             .uri { uriBuilder ->
                 uriBuilder
-                    .path("/v1/timings/$date")
-                    .queryParam("latitude", latitude)
-                    .queryParam("longitude", longitude)
+                    .path("$PATH$date")
+                    .queryParam(QUERY_LATITUDE, latitude)
+                    .queryParam(QUERY_LONGITUDE, longitude)
                     .build()
             }
             .retrieve()
@@ -31,5 +31,12 @@ class PrayerRemoteClient(
         json.decodeFromString(PrayerTimingsRemoteDto.serializer(), rawJson)
     }.getOrElse {
         throw CannotGetPrayerTimesException()
+    }
+
+    private companion object {
+        const val BASE_URL = "https://api.aladhan.com"
+        const val PATH = "/v1/timings/"
+        const val QUERY_LATITUDE = "latitude"
+        const val QUERY_LONGITUDE = "longitude"
     }
 }
