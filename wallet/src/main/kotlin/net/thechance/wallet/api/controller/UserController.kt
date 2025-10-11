@@ -4,6 +4,7 @@ import net.thechance.wallet.api.dto.user.UserDetailsResponse
 import net.thechance.wallet.api.dto.user.toUserDetailsResponse
 import net.thechance.wallet.service.WalletUserService
 import org.springframework.http.ResponseEntity
+import org.springframework.security.core.annotation.AuthenticationPrincipal
 import org.springframework.web.bind.annotation.*
 import java.util.*
 
@@ -15,7 +16,7 @@ class UserController(
 ) {
     @GetMapping("/details")
     fun getUserDetails(
-        @RequestParam currentUserId: UUID,
+        @AuthenticationPrincipal currentUserId: UUID,
         @RequestParam userId: UUID
     ): ResponseEntity<UserDetailsResponse> {
         val user = walletUserService.getUserById(userId)
