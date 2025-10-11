@@ -7,8 +7,8 @@ import java.time.LocalDateTime
 import java.util.*
 
 @Entity
-@Table(name = "transactions", schema = "wallet")
-data class Transaction(
+@Table(name = "pending_transactions", schema = "wallet")
+data class PendingTransaction(
     @Id
     @GeneratedValue(strategy = GenerationType.UUID)
     val id: UUID = UUID.randomUUID(),
@@ -16,13 +16,9 @@ data class Transaction(
     @Column(nullable = false, updatable = false)
     val createdAt: LocalDateTime = LocalDateTime.now(),
 
-    @Column(nullable = false)
-    @Enumerated(EnumType.STRING)
-    val status: Status,
-
     @Enumerated(EnumType.STRING)
     @Column(nullable = false)
-    val type: Type,
+    val type: Transaction.Type,
 
     @ManyToOne(fetch = FetchType.EAGER)
     @JoinColumn(name = "sender_id", nullable = false)
@@ -35,18 +31,21 @@ data class Transaction(
     @Column(nullable = false, updatable = false)
     val amount: BigDecimal,
 
-    @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "block_id", nullable = false, updatable = false)
-    val block: Block
-){
+    )
 
-    enum class Status{
-        FAILED,
-        SUCCESS
-    }
 
-    enum class Type {
-        P2P,
-        ONLINE_PURCHASE
-    }
+fun PendingTransaction.toTransaction(
+    block: Block,
+    status: Transaction.Status = Transaction.Status.SUCCESS
+): Transaction {
+    return Transaction(
+        id = this.id,
+        sender = this.sender,
+        receiver = this.receiver,
+        amount = this.amount,
+        block = block,
+        createdAt = this.createdAt,
+        status = status,
+        type = this.type
+    )
 }

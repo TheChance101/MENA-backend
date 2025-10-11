@@ -6,6 +6,7 @@ import io.mockk.mockk
 import jakarta.persistence.EntityNotFoundException
 import net.thechance.wallet.entity.Transaction
 import net.thechance.wallet.entity.user.WalletUser
+import net.thechance.wallet.repository.PendingTransactionRepository
 import net.thechance.wallet.repository.TransactionRepository
 import org.junit.Test
 import java.math.BigDecimal
@@ -16,7 +17,8 @@ import org.junit.Assert.assertThrows
 class TransactionServiceTest {
 
     private val transactionRepository = mockk<TransactionRepository>()
-    private val transactionService = TransactionService(transactionRepository = transactionRepository)
+    private val pendingTransactionRepository = mockk<PendingTransactionRepository>()
+    private val transactionService = TransactionService(transactionRepository = transactionRepository, pendingTransactionRepository = pendingTransactionRepository, walletUserRepository = mockk())
 
     @Test
     fun `getTransactionDetails should return transaction when it exists and user is authorized`() {
@@ -88,7 +90,6 @@ class TransactionServiceTest {
             createdAt = LocalDateTime.now().minusDays(5),
             status = Transaction.Status.SUCCESS,
             type = Transaction.Type.P2P,
-            senderSignature = "signature",
             block = mockk()
         )
     }

@@ -3,10 +3,7 @@ package net.thechance.wallet.api.controller
 import jakarta.servlet.http.HttpServletResponse
 import net.thechance.wallet.api.controller.util.StatementMetadata
 import net.thechance.wallet.api.controller.util.StatementPdfWriter
-import net.thechance.wallet.api.dto.transaction.FirstTransactionDateResponse
-import net.thechance.wallet.api.dto.transaction.TransactionPageResponse
-import net.thechance.wallet.api.dto.transaction.TransactionResponse
-import net.thechance.wallet.api.dto.transaction.toResponse
+import net.thechance.wallet.api.dto.transaction.*
 import net.thechance.wallet.entity.Transaction
 import net.thechance.wallet.service.TransactionService
 import net.thechance.wallet.service.helper.TransactionFilterParams
@@ -124,7 +121,15 @@ class TransactionController(
         response.setHeader("X-Statement-End-Date", metadata.endDate.toString())
     }
 
+    @PostMapping("/add")
+    fun createTransaction(
+        @AuthenticationPrincipal userId: UUID,
+        @RequestBody params: CreatePendingTransactionRequest,
+    ): ResponseEntity<UUID> {
+        val transaction = transactionService.createTransaction(params.toCreatePendingTransactionParams(userId))
+        return ResponseEntity.ok(transaction.id)
+    }
+
     private fun LocalDate?.formatDate(): String =
         this?.format(DateTimeFormatter.ofPattern("_dd_MMM_yyyy"))?.lowercase() ?: ""
 }
-
