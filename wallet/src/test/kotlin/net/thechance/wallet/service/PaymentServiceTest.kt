@@ -28,8 +28,8 @@ class PaymentServiceTest {
     private val transactionId = UUID.randomUUID()
     private val blockId = UUID.randomUUID()
     private val block = Block(id = blockId, previousBlockHash = "prev", timestamp = LocalDateTime.now())
-    private val sender = WalletUser(userId = userId, userName = "sender")
-    private val receiver = WalletUser(userId = receiverId, userName = "receiver")
+    private val sender = WalletUser(userId = userId, userName = "sender", firstName = "Sender", lastName = "User", imageUrl = null)
+    private val receiver = WalletUser(userId = receiverId, userName = "receiver", firstName = "Receiver", lastName = "User", imageUrl = null)
     private val pendingTransaction = PendingTransaction(
         id = transactionId,
         sender = sender,
@@ -81,7 +81,7 @@ class PaymentServiceTest {
     @Test
     fun `pay throws if user is not authorized`() {
         every { transactionRepository.findByIdOrNull(transactionId) } returns null
-        every { pendingTransactionRepository.findById(transactionId) } returns Optional.of(pendingTransaction.copy(sender = WalletUser(UUID.randomUUID(), "other")))
+        every { pendingTransactionRepository.findById(transactionId) } returns Optional.of(pendingTransaction.copy(sender = WalletUser(UUID.randomUUID(), "other", "Other", "User", null)))
         val ex = assertThrows(IllegalArgumentException::class.java) {
             paymentService.pay(userId, transactionId)
         }
@@ -90,7 +90,7 @@ class PaymentServiceTest {
 
     @Test
     fun `pay throws if sender and receiver are the same`() {
-        val sameUser = WalletUser(userId, "same")
+        val sameUser = WalletUser(userId, "same", "Same", "User", null)
         val pt = pendingTransaction.copy(sender = sameUser, receiver = sameUser)
         every { transactionRepository.findByIdOrNull(transactionId) } returns null
         every { pendingTransactionRepository.findById(transactionId) } returns Optional.of(pt)
