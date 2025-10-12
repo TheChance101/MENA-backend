@@ -1,13 +1,14 @@
 package net.thechance.trends.service
 
+import net.thechance.trends.entity.Category
+import net.thechance.trends.entity.TrendUser
 import net.thechance.trends.exception.InvalidTrendInputException
 import net.thechance.trends.exception.TrendCategoryNotFoundException
-import net.thechance.trends.entity.TrendUser
 import net.thechance.trends.repository.CategoryRepository
 import net.thechance.trends.repository.TrendUserRepository
 import org.springframework.stereotype.Service
 import org.springframework.transaction.annotation.Transactional
-import java.util.UUID
+import java.util.*
 import kotlin.jvm.optionals.getOrElse
 import kotlin.jvm.optionals.getOrNull
 
@@ -39,6 +40,10 @@ class TrendUserService(
         val updatedUser = trendUser.copy(categories = categoryProxies)
         trendUserRepository.save(updatedUser)
 
+    }
+
+    fun getUserSelectedCategories(userId: UUID): Set<Category> {
+        return trendUserRepository.findById(userId).getOrNull()?.categories.orEmpty()
     }
 
     fun getDoesUserHaveCategories(userId: UUID): Boolean {
