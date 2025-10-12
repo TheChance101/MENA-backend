@@ -43,7 +43,7 @@ class TrendUserService(
     }
 
     fun getUserSelectedCategories(userId: UUID): Set<Category> {
-        return trendUserRepository.findById(userId).getOrNull()?.categories ?: emptySet()
+        return trendUserRepository.findById(userId).getOrNull()?.categories.orEmpty()
     }
 
     fun getDoesUserHaveCategories(userId: UUID): Boolean {
