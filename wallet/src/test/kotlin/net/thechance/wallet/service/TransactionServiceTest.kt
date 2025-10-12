@@ -84,8 +84,8 @@ class TransactionServiceTest {
 
         val FAKE_TRANSACTION = Transaction(
             id = TRANSACTION_ID,
-            sender = WalletUser(userId = USER_ID, userName = "user"),
-            receiver = WalletUser(userId = OTHER_USER_ID, userName = "otherUser"),
+            sender = WalletUser(userId = USER_ID, userName = "user", firstName = "First", lastName = "Last", imageUrl = null),
+            receiver = WalletUser(userId = OTHER_USER_ID, userName = "otherUser", firstName = "Other", lastName = "User", imageUrl = null),
             amount = BigDecimal.TEN,
             createdAt = LocalDateTime.now().minusDays(5),
             status = Transaction.Status.SUCCESS,
