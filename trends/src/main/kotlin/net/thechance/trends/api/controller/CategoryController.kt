@@ -41,8 +41,8 @@ class CategoryController(
         val userCategories = trendUserService.getUserSelectedCategories(userId)
 
         return ResponseEntity.ok(
-            allCategories.map {
-                it.toCategoryResponse(isSelected = it in userCategories)
+            allCategories.map { category ->
+                category.toCategoryResponse(isSelected = category in userCategories)
             }
         )
     }
