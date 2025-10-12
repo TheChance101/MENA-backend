@@ -1,7 +1,7 @@
 package net.thechance.trends.api.controller
 
 import jakarta.validation.Valid
-import net.thechance.trends.api.dto.category.GetAllCategoriesResponse
+import net.thechance.trends.api.dto.category.CategoryResponse
 import net.thechance.trends.api.dto.category.SubmitUserCategoriesRequest
 import net.thechance.trends.api.dto.category.SubmitUserCategoriesResponse
 import net.thechance.trends.api.dto.category.toCategoryResponse
@@ -9,12 +9,8 @@ import net.thechance.trends.service.CategoryService
 import net.thechance.trends.service.TrendUserService
 import org.springframework.http.ResponseEntity
 import org.springframework.security.core.annotation.AuthenticationPrincipal
-import org.springframework.web.bind.annotation.GetMapping
-import org.springframework.web.bind.annotation.PostMapping
-import org.springframework.web.bind.annotation.RequestBody
-import org.springframework.web.bind.annotation.RequestMapping
-import org.springframework.web.bind.annotation.RestController
-import java.util.UUID
+import org.springframework.web.bind.annotation.*
+import java.util.*
 
 @RestController
 @RequestMapping("/${Constants.TRENDS_PATH}/categories")
@@ -38,12 +34,16 @@ class CategoryController(
     }
 
     @GetMapping
-    fun getAllCategories(): ResponseEntity<GetAllCategoriesResponse> {
-        val categories = categoryService.getAllCategories()
-        val response = GetAllCategoriesResponse(
-            message = "Success",
-            data = categories.map { it.toCategoryResponse() }
+    fun getSelectedCategories(
+        @AuthenticationPrincipal userId: UUID
+    ): ResponseEntity<List<CategoryResponse>> {
+        val allCategories = categoryService.getAllCategories()
+        val userCategories = trendUserService.getUserSelectedCategories(userId)
+
+        return ResponseEntity.ok(
+            allCategories.map { category ->
+                category.toCategoryResponse(isSelected = category in userCategories)
+            }
         )
-        return ResponseEntity.ok(response)
     }
 }
