@@ -55,8 +55,8 @@ class TransactionService(
         ) ?: throw EntityNotFoundException("Transaction with ID $transactionId not found or access denied.")
     }
 
-    fun createTransaction(transaction: PendingTransactionParams): PendingTransaction {
-        val sender = walletUserRepository.getReferenceById(transaction.senderId)
+    fun createTransaction(transaction: PendingTransactionParams, senderId: UUID): PendingTransaction {
+        val sender = walletUserRepository.getReferenceById(senderId)
         val receiver = walletUserRepository.getReferenceById(transaction.receiverId)
         return pendingTransactionRepository.save(transaction.toPendingTransaction(sender, receiver))
     }

@@ -7,7 +7,6 @@ import java.util.*
 
 data class PendingTransactionParams(
     val type: Transaction.Type,
-    val senderId: UUID,
     val receiverId: UUID,
     val amount: Double,
 )
