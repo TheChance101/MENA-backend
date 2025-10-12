@@ -56,6 +56,9 @@ class TransactionService(
     }
 
     fun createTransaction(transaction: PendingTransactionParams, senderId: UUID): PendingTransaction {
+        if (transaction.receiverId == senderId)
+            throw IllegalArgumentException("Sender and receiver cannot be the same.")
+
         val sender = walletUserRepository.getReferenceById(senderId)
         val receiver = walletUserRepository.getReferenceById(transaction.receiverId)
         return pendingTransactionRepository.save(transaction.toPendingTransaction(sender, receiver))
