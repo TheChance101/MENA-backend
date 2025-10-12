@@ -43,18 +43,22 @@ class ChatControllerTest {
     fun `sendPrivateMessage should save message and send to user`() {
         val chatId = UUID.randomUUID()
         val senderId = UUID.randomUUID()
-        val dto = MessageRequestDto(chatId, "message1")
+        val dto = MessageRequestDto(chatId, null, "message1")
 
         val principal = mockk<Principal>()
         every { principal.name } returns senderId.toString()
 
-        justRun { chatService.saveMessage(any()) }
+        justRun { chatService.saveMessage(any(), any()) }
         justRun { messagingTemplate.convertAndSendToUser(any(), any(), any()) }
 
         controller.sendPrivateMessage(dto, principal)
 
-        verify { chatService.saveMessage(match { it.text == "message1" && it.chatId == chatId && it.senderId == senderId }) }
-
+        verify {
+            chatService.saveMessage(
+                match { it == senderId },
+                match { it.text == "message1" && it.chatId == chatId },
+            )
+        }
     }
 
 
