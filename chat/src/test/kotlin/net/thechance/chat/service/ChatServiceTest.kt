@@ -6,21 +6,23 @@ import io.mockk.mockk
 import io.mockk.verify
 import jakarta.persistence.EntityManager
 import jakarta.persistence.EntityNotFoundException
+import net.thechance.chat.api.dto.MessageRequestDto
 import net.thechance.chat.entity.Chat
 import net.thechance.chat.entity.ContactUser
 import net.thechance.chat.repository.ChatRepository
+import net.thechance.chat.repository.MessageImagesRepository
 import net.thechance.chat.repository.MessageRepository
-import net.thechance.chat.service.args.CreateMessageArgs
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.assertThrows
-import java.time.Instant
 import java.util.*
 
 class ChatServiceTest {
 
     private lateinit var messageRepository: MessageRepository
     private lateinit var chatRepository: ChatRepository
+    private lateinit var messageImagesRepository: MessageImagesRepository
+    private lateinit var attachmentStorageService: AttachmentStorageService
     private lateinit var contactUserService: ContactUserService
     private lateinit var entityManager: EntityManager
     private lateinit var service: ChatService
@@ -44,7 +46,14 @@ class ChatServiceTest {
         chatRepository = mockk(relaxed = true)
         contactUserService = mockk(relaxed = true)
         entityManager = mockk(relaxed = true)
-        service = ChatService(messageRepository, chatRepository, contactUserService, entityManager)
+        service = ChatService(
+            messageRepository,
+            messageImagesRepository,
+            chatRepository,
+            contactUserService,
+            attachmentStorageService,
+            entityManager
+        )
     }
 
     @Test
@@ -86,19 +95,16 @@ class ChatServiceTest {
     @Test
     fun `saveMessage saves message when chat exists`() {
         val chat = testChat()
-        val messageDto = CreateMessageArgs(
-            id = UUID.randomUUID(),
+        val messageDto = MessageRequestDto(
             chatId = chat.id,
-            senderId = UUID.randomUUID(),
+            messageId = UUID.randomUUID(),
             text = "message 1",
-            sendAt = Instant.now(),
-            isRead = false
         )
 
         every { entityManager.getReference(Chat::class.java, chat.id) } returns chat
         every { messageRepository.save(any()) } answers { firstArg() }
 
-        service.saveMessage(messageDto)
+        service.saveMessage(UUID.randomUUID(), messageDto)
 
         verify {
             messageRepository.save(
@@ -112,19 +118,16 @@ class ChatServiceTest {
 
     @Test
     fun `saveMessage throws if chat not found`() {
-        val messageDto = CreateMessageArgs(
-            id = UUID.randomUUID(),
+        val messageDto = MessageRequestDto(
             chatId = UUID.randomUUID(),
-            senderId = UUID.randomUUID(),
+            messageId = UUID.randomUUID(),
             text = "message 1",
-            sendAt = Instant.now(),
-            isRead = false
         )
 
         every { entityManager.getReference(Chat::class.java, messageDto.chatId) } throws EntityNotFoundException()
 
         assertThrows<EntityNotFoundException> {
-            service.saveMessage(messageDto)
+            service.saveMessage(UUID.randomUUID(), messageDto)
         }
     }
 
