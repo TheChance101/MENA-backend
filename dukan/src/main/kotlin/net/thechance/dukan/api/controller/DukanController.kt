@@ -98,7 +98,8 @@ class DukanController(
         pageable: Pageable
     ): ResponseEntity<Page<DukanResponse>> {
         val dukansPage = dukanService.getAllEditorPicksDukan(userId, pageable)
-        return ResponseEntity.ok(dukansPage.map(Dukan::toDukanResponse))
+        val response = dukansPage.map(Dukan::toDukanResponse)
+        return ResponseEntity.ok(response)
     }
 
 
@@ -116,6 +117,7 @@ class DukanController(
         @PageableDefault(size = 10, page = 0) pageable: Pageable
     ): ResponseEntity<Page<DukanResponse>> {
         val dukans = dukanService.getAllBestDukansAround(lat, lng, pageable, range)
-        return ResponseEntity.ok(dukans.map { it.toDukanResponse() })
+        val response = dukans.map { it.toDukanResponse() }
+        return ResponseEntity.ok(response)
     }
 }
