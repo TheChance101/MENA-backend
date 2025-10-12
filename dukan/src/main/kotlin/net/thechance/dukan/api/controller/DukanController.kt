@@ -108,7 +108,7 @@ class DukanController(
         return ResponseEntity.ok(dukanDetails)
     }
 
-    @GetMapping("/best_around")
+    @GetMapping("/nearby/best")
     fun getBestDukansAround(
         @RequestParam lat: Double,
         @RequestParam lng: Double,
