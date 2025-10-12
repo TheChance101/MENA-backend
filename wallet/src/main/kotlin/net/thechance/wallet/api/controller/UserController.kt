@@ -16,7 +16,6 @@ class UserController(
 ) {
     @GetMapping("/details")
     fun getUserDetails(
-        @AuthenticationPrincipal currentUserId: UUID,
         @RequestParam userId: UUID
     ): ResponseEntity<UserDetailsResponse> {
         val user = walletUserService.getUserById(userId)
