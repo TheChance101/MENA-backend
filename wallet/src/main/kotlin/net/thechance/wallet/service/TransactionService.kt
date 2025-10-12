@@ -6,11 +6,10 @@ import net.thechance.wallet.entity.Transaction
 import net.thechance.wallet.repository.PendingTransactionRepository
 import net.thechance.wallet.repository.TransactionRepository
 import net.thechance.wallet.repository.WalletUserRepository
-import net.thechance.wallet.service.helper.PendingTransactionParams
-import net.thechance.wallet.service.helper.TransactionFilterParams
-import net.thechance.wallet.service.helper.toPendingTransaction
+import net.thechance.wallet.service.helper.*
 import org.springframework.data.domain.Page
 import org.springframework.data.domain.Pageable
+import org.springframework.data.repository.findByIdOrNull
 import org.springframework.stereotype.Service
 import java.time.LocalDateTime
 import java.util.*
@@ -37,7 +36,7 @@ class TransactionService(
 
         return transactionRepository.findFilteredTransactions(
             status = transactionFilterParams.status,
-            transactionTypes = transactionFilterParams.types?.map{ it.name},
+            transactionTypes = transactionFilterParams.types?.map { it.name },
             startDate = startDate,
             endDate = endDate,
             pageable = pageable,
@@ -46,7 +45,10 @@ class TransactionService(
     }
 
     fun getUserFirstTransactionDate(currentUserId: UUID): LocalDateTime? {
-        return transactionRepository.findFirstBySenderUserIdOrReceiverUserIdOrderByCreatedAtAsc(currentUserId, currentUserId)?.createdAt
+        return transactionRepository.findFirstBySenderUserIdOrReceiverUserIdOrderByCreatedAtAsc(
+            currentUserId,
+            currentUserId
+        )?.createdAt
     }
 
     fun getTransactionDetails(transactionId: UUID): Transaction {
@@ -62,5 +64,15 @@ class TransactionService(
         val sender = walletUserRepository.getReferenceById(senderId)
         val receiver = walletUserRepository.getReferenceById(transaction.receiverId)
         return pendingTransactionRepository.save(transaction.toPendingTransaction(sender, receiver))
+    }
+
+    fun getTransactionReceiverDetails(transactionId: UUID): ReceiverDetails {
+        val pendingTransaction = pendingTransactionRepository.findByIdOrNull(transactionId)
+        val transaction = transactionRepository.findByIdOrNull(transactionId)
+
+        val receiver = transaction?.receiver ?: pendingTransaction?.receiver
+        ?: throw EntityNotFoundException("Transaction ID $transactionId")
+
+        return receiver.toReceiverDetails(transaction?.type ?: pendingTransaction?.type ?: Transaction.Type.P2P)
     }
 }

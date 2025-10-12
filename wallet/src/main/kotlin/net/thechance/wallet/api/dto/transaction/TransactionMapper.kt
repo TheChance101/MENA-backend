@@ -18,7 +18,7 @@ fun Transaction.toResponse(currentUserId: UUID): TransactionResponse {
 
     val actualReceiverName =
         if (userType == UserTransactionType.ONLINE_PURCHASE)
-            receiver.dukanName?.ifBlank { receiver.userName } ?: receiver.userName
+            receiver.dukan?.name?.ifBlank { receiver.userName } ?: receiver.userName
         else
             receiver.userName
 
