@@ -6,7 +6,6 @@ import net.thechance.wallet.entity.Block
 import net.thechance.wallet.entity.PendingTransaction
 import net.thechance.wallet.entity.Transaction
 import net.thechance.wallet.entity.user.WalletUser
-import net.thechance.wallet.repository.BlockRepository
 import net.thechance.wallet.repository.PendingTransactionRepository
 import net.thechance.wallet.repository.TransactionRepository
 import org.junit.Assert.assertThrows
@@ -21,7 +20,7 @@ class PaymentServiceTest {
     private val pendingTransactionRepository = mockk<PendingTransactionRepository>()
     private val transactionRepository = mockk<TransactionRepository>()
     private val walletService = mockk<WalletService>()
-    private val blockRepository = mockk<BlockRepository>()
+    private val blockService = mockk<BlockService>()
     private lateinit var paymentService: PaymentService
 
     private val userId = UUID.randomUUID()
@@ -56,7 +55,7 @@ class PaymentServiceTest {
             pendingTransactionRepository,
             transactionRepository,
             walletService,
-            blockRepository
+            blockService
         )
     }
 
@@ -117,8 +116,7 @@ class PaymentServiceTest {
         every { transactionRepository.findByIdOrNull(transactionId) } returns null
         every { pendingTransactionRepository.findById(transactionId) } returns Optional.of(pendingTransaction)
         every { walletService.getUserBalance(userId) } returns 100.0
-        every { blockRepository.findTopByOrderByTimestampDesc() } returns block
-        every { transactionRepository.countAllByBlockId(blockId) } returns 5L
+        every { blockService.getCurrentBlock() } returns block
         every { transactionRepository.save(any()) } returns transaction
         every { pendingTransactionRepository.deleteById(transactionId) } just Runs
 
@@ -132,15 +130,12 @@ class PaymentServiceTest {
         every { transactionRepository.findByIdOrNull(transactionId) } returns null
         every { pendingTransactionRepository.findById(transactionId) } returns Optional.of(pendingTransaction)
         every { walletService.getUserBalance(userId) } returns 100.0
-        every { blockRepository.findTopByOrderByTimestampDesc() } returns block
-        every { transactionRepository.countAllByBlockId(blockId) } returns 15L
-        every { transactionRepository.getAllByBlockId(blockId, any()) } returns listOf(transaction)
-        every { blockRepository.save(any()) } returns block.copy(id = UUID.randomUUID())
+        every { blockService.getCurrentBlock() } returns block.copy(id = UUID.randomUUID())
         every { transactionRepository.save(any()) } returns transaction
         every { pendingTransactionRepository.deleteById(transactionId) } just Runs
 
         paymentService.pay(userId, transactionId)
-        verify { blockRepository.save(any()) }
+        verify { blockService.getCurrentBlock() }
         verify { transactionRepository.save(any()) }
         verify { pendingTransactionRepository.deleteById(transactionId) }
     }
@@ -150,13 +145,12 @@ class PaymentServiceTest {
         every { transactionRepository.findByIdOrNull(transactionId) } returns null
         every { pendingTransactionRepository.findById(transactionId) } returns Optional.of(pendingTransaction)
         every { walletService.getUserBalance(userId) } returns 100.0
-        every { blockRepository.findTopByOrderByTimestampDesc() } returns null
-        every { blockRepository.save(any()) } returns block
+        every { blockService.getCurrentBlock() } returns block
         every { transactionRepository.save(any()) } returns transaction
         every { pendingTransactionRepository.deleteById(transactionId) } just Runs
 
         paymentService.pay(userId, transactionId)
-        verify { blockRepository.save(any()) }
+        verify { blockService.getCurrentBlock() }
         verify { transactionRepository.save(any()) }
         verify { pendingTransactionRepository.deleteById(transactionId) }
     }
