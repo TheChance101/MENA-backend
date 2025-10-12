@@ -2,16 +2,17 @@ package net.thechance.dukan.api.controller
 
 import jakarta.validation.Valid
 import net.thechance.dukan.api.dto.DukanShelfCreationRequest
+import net.thechance.dukan.api.dto.DukanShelfResponse
+import net.thechance.dukan.entity.DukanShelf
+import net.thechance.dukan.mapper.toResponse
 import net.thechance.dukan.service.DukanShelfService
+import org.springframework.data.domain.Page
+import org.springframework.data.domain.Pageable
+import org.springframework.data.web.PageableDefault
 import org.springframework.http.ResponseEntity
 import org.springframework.security.core.annotation.AuthenticationPrincipal
-import org.springframework.web.bind.annotation.DeleteMapping
-import org.springframework.web.bind.annotation.PathVariable
-import org.springframework.web.bind.annotation.PostMapping
-import org.springframework.web.bind.annotation.RequestBody
-import org.springframework.web.bind.annotation.RequestMapping
-import org.springframework.web.bind.annotation.RestController
-import java.util.UUID
+import org.springframework.web.bind.annotation.*
+import java.util.*
 
 @RestController
 @RequestMapping("/dukan/shelf")
@@ -31,6 +32,16 @@ class DukanShelfController(
         return ResponseEntity.ok().build()
     }
 
+    @GetMapping
+    fun getMyDukanShelves(
+        @AuthenticationPrincipal userId: UUID,
+    ): ResponseEntity<List<DukanShelfResponse>> {
+        val shelves = dukanShelfService
+            .getDukanShelvesByOwnerId(userId)
+            .map(DukanShelf::toResponse)
+        return ResponseEntity.ok(shelves)
+    }
+
     @DeleteMapping("/{shelfId}")
     fun deleteShelf(
         @PathVariable shelfId: UUID,
@@ -38,5 +49,16 @@ class DukanShelfController(
     ): ResponseEntity<Unit> {
         dukanShelfService.deleteShelf(shelfId, userId)
         return ResponseEntity.noContent().build()
+    }
+
+    @GetMapping("/{dukanId}")
+    fun getAllShelvesByDukanId(
+        @PathVariable dukanId: UUID,
+        @PageableDefault(size = 10, page = 0)
+        pageable: Pageable
+    ): ResponseEntity<Page<DukanShelfResponse>> {
+        val shelvesPage = dukanShelfService.getAllShelvesByDukanId(dukanId, pageable)
+            .map(DukanShelf::toResponse)
+        return ResponseEntity.ok(shelvesPage)
     }
 }

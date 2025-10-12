@@ -1,6 +1,6 @@
 package net.thechance.wallet.api.controller
 
-import net.thechance.wallet.api.dto.BalanceResponse
+import net.thechance.wallet.api.dto.balance.BalanceResponse
 import net.thechance.wallet.service.WalletService
 import org.springframework.http.ResponseEntity
 import org.springframework.security.core.annotation.AuthenticationPrincipal

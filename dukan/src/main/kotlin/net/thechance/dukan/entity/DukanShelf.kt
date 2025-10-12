@@ -25,5 +25,5 @@ data class DukanShelf(
     val title: String,
     @ManyToOne
     @JoinColumn(name = "dukan_id", nullable = false)
-    val dukan: Dukan
+    val dukan: Dukan,
 )

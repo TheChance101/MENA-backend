@@ -1,7 +1,18 @@
 package net.thechance.dukan.exception
 
-class InvalidPictureException : Exception("Invalid picture format")
+import net.thechance.dukan.exception.ErrorCodes.DUKAN_CREATION_FAILED
+import net.thechance.dukan.exception.ErrorCodes.DUKAN_NOT_FOUND
+import org.springframework.http.HttpStatus
 
-class ImageUploadingFailedException : Exception("Image uploading failed")
 
-class ShelfNameAlreadyTakenException : Exception("Shelf name already taken")
+class DukanCreationFailedException() : DukanException(
+    code = DUKAN_CREATION_FAILED,
+    status = HttpStatus.BAD_REQUEST,
+    message = "Dukan creation failed"
+)
+
+class DukanNotFoundException() : DukanException(
+    code = DUKAN_NOT_FOUND,
+    status = HttpStatus.NOT_FOUND,
+    message = "Dukan not found"
+)

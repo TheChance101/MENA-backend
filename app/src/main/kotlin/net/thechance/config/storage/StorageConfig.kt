@@ -30,7 +30,6 @@ class StorageConfig(
     @Bean
     fun walletS3Client(walletCreds: StaticCredentialsProvider): S3Client =
         buildClient(props.wallet.endpoint, walletCreds)
-
     @Bean
     fun menaCreds(): StaticCredentialsProvider {
         return StaticCredentialsProvider.create(AwsBasicCredentials.create(props.mena.key, props.mena.secret))

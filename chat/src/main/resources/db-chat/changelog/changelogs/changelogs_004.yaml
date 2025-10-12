@@ -1,0 +1,112 @@
+databaseChangeLog:
+  - changeSet:
+      id: 7-chat
+      author: omer-faris
+      comment: create chat table
+      changes:
+        - createTable:
+            tableName: chats
+            schemaName: chat
+            columns:
+              - column:
+                  name: id
+                  type: UUID
+                  defaultValueComputed: gen_random_uuid()
+                  constraints:
+                    primaryKey: true
+                    nullable: false
+
+  - changeSet:
+      id: 8-chat
+      author: omer-faris
+      comment: create messages table
+      changes:
+        - createTable:
+            tableName: messages
+            schemaName: chat
+            columns:
+              - column:
+                  name: id
+                  type: UUID
+                  defaultValueComputed: gen_random_uuid()
+                  constraints:
+                    primaryKey: true
+                    nullable: false
+              - column:
+                  name: chat_id
+                  type: UUID
+                  constraints:
+                    nullable: false
+              - column:
+                  name: sender_id
+                  type: UUID
+                  constraints:
+                    nullable: false
+              - column:
+                  name: text
+                  type: TEXT
+                  constraints:
+                    nullable: false
+              - column:
+                  name: is_read
+                  type: BOOLEAN
+                  defaultValueBoolean: false
+                  constraints:
+                    nullable: false
+              - column:
+                  name: sent_at
+                  type: TIMESTAMP
+                  defaultValueComputed: NOW()
+                  constraints:
+                    nullable: false
+        - addForeignKeyConstraint:
+            baseTableSchemaName: chat
+            baseTableName: messages
+            baseColumnNames: chat_id
+            referencedTableSchemaName: chat
+            referencedTableName: chats
+            referencedColumnNames: id
+            constraintName: fk_messages_chat
+            onDelete: CASCADE
+
+  - changeSet:
+      id: 9-chat
+      author: omer-faris
+      comment: create chat_users join table
+      changes:
+        - createTable:
+            tableName: chat_users
+            schemaName: chat
+            columns:
+              - column:
+                  name: chat_id
+                  type: UUID
+                  constraints:
+                    nullable: false
+              - column:
+                  name: user_id
+                  type: UUID
+                  constraints:
+                    nullable: false
+        - addPrimaryKey:
+            tableName: chat_users
+            schemaName: chat
+            columnNames: chat_id, user_id
+        - addForeignKeyConstraint:
+            baseTableSchemaName: chat
+            baseTableName: chat_users
+            baseColumnNames: chat_id
+            referencedTableSchemaName: chat
+            referencedTableName: chats
+            referencedColumnNames: id
+            constraintName: fk_chat_users_chat
+            onDelete: CASCADE
+        - addForeignKeyConstraint:
+            baseTableSchemaName: chat
+            baseTableName: chat_users
+            baseColumnNames: user_id
+            referencedTableSchemaName: chat
+            referencedTableName: users_of_contacts
+            referencedColumnNames: id
+            constraintName: fk_chat_users_user
+            onDelete: CASCADE

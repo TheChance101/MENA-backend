@@ -1,0 +1,37 @@
+databaseChangeLog:
+  - changeSet:
+      id: 4-wallet
+      author: malakraef
+      comment: Add type and status columns to wallet.transactions
+      changes:
+        - addColumn:
+            tableName: transactions
+            schemaName: wallet
+            columns:
+              - column:
+                  name: type
+                  type: VARCHAR(50)
+                  defaultValue: 'P2P'
+                  constraints:
+                    nullable: false
+              - column:
+                  name: status
+                  type: VARCHAR(50)
+                  defaultValue: 'SUCCESS'
+                  constraints:
+                    nullable: false
+
+  - changeSet:
+      id: 5-wallet
+      author: malakraef
+      comment: Create wallet_user table to store replicated user and dukan info
+      changes:
+        - sql:
+            sql: |
+              CREATE TABLE wallet.wallet_user (
+                user_id UUID PRIMARY KEY,
+                user_name VARCHAR NOT NULL,
+                dukan_name VARCHAR
+              );
+
+

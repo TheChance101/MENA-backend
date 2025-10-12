@@ -17,6 +17,9 @@ dependencies {
     testImplementation("org.jetbrains.kotlin:kotlin-test-junit5")
     testImplementation("io.mockk:mockk:1.13.12")
     testImplementation("com.google.truth:truth:1.4.4")
+
+    //websocket
+    implementation("org.springframework.boot:spring-boot-starter-websocket")
 }
 
 tasks.test {
@@ -38,6 +41,8 @@ kover.reports {
         excludes {
             packages("net.thechance.chat.api.dto*")
             packages("net.thechance.chat.entity*")
+            packages("net.thechance.chat.service.model*")
+            packages("net.thechance.chat.api.config*")
         }
     }
 }

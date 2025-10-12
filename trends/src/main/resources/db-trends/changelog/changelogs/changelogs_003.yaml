@@ -1,0 +1,12 @@
+databaseChangeLog:
+  - changeSet:
+      id: 4-trends
+      author: Mohamed Hassan
+      comment: Create the trends tables
+      changes:
+        - dropNotNullConstraint:
+            schemaName: trends
+            tableName: reels
+            constraintName: NOT NULL
+            columnName: thumbnail_url
+            columnDataType: VARCHAR

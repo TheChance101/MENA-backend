@@ -37,7 +37,7 @@ jobs:
       - name: Determine modules
         id: changes
         run: |
-          ALL_MODULES='app identity chat dukan faith wallet trends'
+          ALL_MODULES='identity chat dukan faith wallet trends'
 
           CHANGED_FILES="${{ steps.changed-files-git.outputs.changed_files }}"
           UNIQUE_MODULE_LIST=$(echo "$CHANGED_FILES" | awk -F/ '{print $1}' | sort -u)
