@@ -26,11 +26,10 @@ class ChatController(
     @MessageMapping("/chat.privateMessage")
     fun sendPrivateMessage(@Payload chatMessage: MessageRequestDto, principal: Principal) {
         val senderId = UUID.fromString(principal.name)
-        val createdMessage = chatMessage.toCreateMessageArgs(senderId = senderId)
-        chatService.saveMessage(createdMessage)
+        val message = chatService.saveMessage(senderId, chatMessage).toDto()
         sendMessageToUser(
             user = chatMessage.chatId.toString(),
-            message = createdMessage
+            message = message
         )
     }
 

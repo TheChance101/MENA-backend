@@ -2,17 +2,17 @@ package net.thechance.chat.service
 
 import jakarta.persistence.EntityManager
 import net.thechance.chat.api.dto.MessageImagesRequestDto
-import net.thechance.chat.api.dto.toMessageArgs
+import net.thechance.chat.api.dto.MessageRequestDto
 import net.thechance.chat.entity.Chat
 import net.thechance.chat.entity.Message
 import net.thechance.chat.entity.MessageImages
 import net.thechance.chat.repository.ChatRepository
 import net.thechance.chat.repository.MessageImagesRepository
 import net.thechance.chat.repository.MessageRepository
-import net.thechance.chat.service.args.CreateMessageArgs
 import org.springframework.data.domain.Pageable
 import org.springframework.stereotype.Service
 import org.springframework.transaction.annotation.Transactional
+import java.time.Instant
 import java.util.*
 
 @Service
@@ -38,14 +38,17 @@ class ChatService(
     }
 
     @Transactional
-    fun saveMessage(message: CreateMessageArgs): Message {
-        val chat = entityManager.getReference(Chat::class.java, message.chatId)
+    fun saveMessage(senderId: UUID, request: MessageRequestDto): Message {
+        request.messageId?.let { messageId ->
+            messageRepository.findById(messageId).orElse(null)?.let { return it }
+        }
+        val chat = entityManager.getReference(Chat::class.java, request.chatId)
         val message = Message(
-            id = message.id,
-            senderId = message.senderId,
+            id = UUID.randomUUID(),
+            senderId = senderId,
             chat = chat,
-            text = message.text,
-            sentAt = message.sendAt,
+            text = request.text,
+            sentAt = Instant.now(),
         )
         messageRepository.save(message)
         return message
@@ -53,7 +56,7 @@ class ChatService(
 
     @Transactional
     fun saveMessageImages(senderId: UUID, request: MessageImagesRequestDto): Message {
-        val message = saveMessage(request.toMessageArgs(senderId))
+        val message = saveMessage(senderId, MessageRequestDto(request.chatId, null, null))
         val messageImages = mutableListOf<MessageImages>()
         request.images.forEach { image ->
             val imageUrl = attachmentStorageService.uploadImage(
@@ -71,7 +74,6 @@ class ChatService(
         }
         return message.copy(images = messageImages)
     }
-
 
     fun getAllChatMessages(chatId: UUID, pageable: Pageable) =
         messageRepository.getAllByChatIdOrderBySentAtDesc(chatId, pageable)
