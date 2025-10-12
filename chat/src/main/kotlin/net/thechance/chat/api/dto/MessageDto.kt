@@ -1,14 +1,14 @@
 package net.thechance.chat.api.dto
 
 import net.thechance.chat.entity.Message
-import net.thechance.chat.service.args.CreateMessageArgs
 import org.springframework.data.domain.Page
 import java.time.Instant
 import java.util.*
 
 data class MessageRequestDto(
     val chatId: UUID,
-    val text: String
+    val messageId: UUID?,
+    val text: String?
 )
 
 data class MessageResponseDto(
@@ -31,17 +31,6 @@ fun Message.toDto(): MessageResponseDto {
         images = this.images.map { it.url },
         sendAt = this.sentAt,
         isRead = this.isRead
-    )
-}
-
-fun MessageRequestDto.toCreateMessageArgs(senderId: UUID): CreateMessageArgs {
-    return CreateMessageArgs(
-        id = UUID.randomUUID(),
-        senderId = senderId,
-        chatId = this.chatId,
-        text = this.text,
-        sendAt = Instant.now(),
-        isRead = false
     )
 }
 
