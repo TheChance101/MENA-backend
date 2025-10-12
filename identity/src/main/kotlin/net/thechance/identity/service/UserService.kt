@@ -11,7 +11,7 @@ import java.util.*
 
 @Service
 class UserService(
-    val userRepository: UserRepository
+    private val userRepository: UserRepository
 ) {
 
     fun findByPhoneNumber(phoneNumber: String): User {
