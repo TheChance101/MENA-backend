@@ -1,6 +1,6 @@
 package net.thechance.identity.api.dto
 
-data class ProfileResponse(
+data class UpdateProfileRequest (
     val username: String,
     val firstName: String,
     val lastName: String,

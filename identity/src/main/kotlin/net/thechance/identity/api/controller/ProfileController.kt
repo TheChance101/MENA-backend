@@ -2,6 +2,7 @@ package net.thechance.identity.api.controller
 
 import net.thechance.identity.api.dto.GeneralResponse
 import net.thechance.identity.api.dto.ProfileResponse
+import net.thechance.identity.api.dto.UpdateProfileRequest
 import net.thechance.identity.mapper.toResponse
 import net.thechance.identity.service.UpdateUserProfileImageService
 import net.thechance.identity.service.UserService
@@ -17,6 +18,15 @@ class ProfileController(
     private val userService: UserService,
     private val updateUserProfileImageService: UpdateUserProfileImageService
 ) {
+
+    @PostMapping("/me")
+    fun updateCurrentUserProfile(
+        @AuthenticationPrincipal userId: UUID,
+        @RequestBody updateProfileRequest: UpdateProfileRequest
+    ): ResponseEntity<ProfileResponse> {
+        val updateUser = userService.updateUserProfile(userId, updateProfileRequest)
+        return ResponseEntity.ok(updateUser.toResponse())
+    }
 
     @GetMapping("/me")
     fun getCurrentUserProfile(@AuthenticationPrincipal userId: UUID): ResponseEntity<ProfileResponse> {
