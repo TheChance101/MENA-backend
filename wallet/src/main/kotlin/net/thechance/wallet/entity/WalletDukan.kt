@@ -7,8 +7,8 @@ import java.util.*
 @Entity
 @Table(name = "dukan", schema = "wallet")
 data class WalletDukan(
-    @Id
-    val userId: UUID,
+    @Id @Column(columnDefinition = "uuid", updatable = false, nullable = false)
+    val dukanId: UUID,
 
     @Column(nullable = false)
     val name: String,
