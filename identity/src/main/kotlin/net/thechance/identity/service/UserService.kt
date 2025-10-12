@@ -8,12 +8,14 @@ import net.thechance.identity.exception.UserNotFoundException
 import net.thechance.identity.repository.UserRepository
 import org.springframework.data.repository.findByIdOrNull
 import org.springframework.stereotype.Service
+import org.springframework.web.multipart.MultipartFile
 import java.time.LocalDate
 import java.util.*
 
 @Service
 class UserService(
-    private val userRepository: UserRepository
+    private val userRepository: UserRepository,
+    private val identityImageStorageService: IdentityImageStorageService
 ) {
 
     fun findByPhoneNumber(phoneNumber: String): User {
@@ -44,18 +46,24 @@ class UserService(
         return user.copy(password = newPassword)
     }
 
-    fun updateUserProfile(userId: UUID, updateProfileRequest: UpdateProfileRequest): User {
+    fun updateUserProfile(userId: UUID, updateProfileRequest: UpdateProfileRequest, file: MultipartFile): User {
         val user = userRepository.findById(userId)
             .orElseThrow { UserNotFoundException("User with id: $userId not found") }
+
+        val imageUrl = identityImageStorageService.uploadImage(
+            file = file,
+            fileName = "$userId"
+        )
 
         val updatedUser = user.copy(
             username = updateProfileRequest.username,
             firstName = updateProfileRequest.firstName,
             lastName = updateProfileRequest.lastName,
-            imageUrl = updateProfileRequest.imageUrl,
+            imageUrl = imageUrl,
             birthDate = LocalDate.parse(updateProfileRequest.birthDate),
             gender = updateProfileRequest.gender,
         )
+
         return userRepository.save(updatedUser)
     }
 }

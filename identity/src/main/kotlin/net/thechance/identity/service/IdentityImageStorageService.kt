@@ -27,7 +27,7 @@ class IdentityImageStorageService(
     fun uploadImage(
         file: MultipartFile,
         fileName: String,
-        folderName: String,
+        folderName: String = "profile"
     ): String {
         val mimeType = file.contentType ?: throw InvalidImageException("null")
         val extension = allowedMimeTypes[mimeType] ?: throw InvalidImageException(mimeType)
