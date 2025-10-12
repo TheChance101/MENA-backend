@@ -3,11 +3,10 @@ package net.thechance.wallet.service
 import jakarta.persistence.EntityNotFoundException
 import net.thechance.wallet.entity.PendingTransaction
 import net.thechance.wallet.entity.Transaction
-import net.thechance.wallet.entity.user.WalletUser
 import net.thechance.wallet.repository.PendingTransactionRepository
 import net.thechance.wallet.repository.TransactionRepository
 import net.thechance.wallet.repository.WalletUserRepository
-import net.thechance.wallet.service.helper.CreatePendingTransactionParams
+import net.thechance.wallet.service.helper.PendingTransactionParams
 import net.thechance.wallet.service.helper.TransactionFilterParams
 import net.thechance.wallet.service.helper.toPendingTransaction
 import org.springframework.data.domain.Page
@@ -56,7 +55,7 @@ class TransactionService(
         ) ?: throw EntityNotFoundException("Transaction with ID $transactionId not found or access denied.")
     }
 
-    fun createTransaction(transaction: CreatePendingTransactionParams): PendingTransaction {
+    fun createTransaction(transaction: PendingTransactionParams): PendingTransaction {
         val sender = walletUserRepository.getReferenceById(transaction.senderId)
         val receiver = walletUserRepository.getReferenceById(transaction.receiverId)
         return pendingTransactionRepository.save(transaction.toPendingTransaction(sender, receiver))

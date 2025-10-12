@@ -15,7 +15,7 @@ class PaymentController(
     private val paymentService: PaymentService
 ) {
     @PostMapping("/submit")
-    fun validatePayment(
+    fun submitTransaction(
         @AuthenticationPrincipal userId: UUID,
         @RequestParam transactionId: UUID,
     ): ResponseEntity<Unit> {

@@ -1,6 +1,7 @@
 package net.thechance.wallet.service
 
 import net.thechance.wallet.entity.Block
+import net.thechance.wallet.entity.PendingTransaction
 import net.thechance.wallet.entity.toTransaction
 import net.thechance.wallet.repository.BlockRepository
 import net.thechance.wallet.repository.PendingTransactionRepository
@@ -23,6 +24,15 @@ class PaymentService(
 
     @Transactional
     fun pay(userId: UUID, transactionId: UUID) {
+        val pendingTransaction = validateAndGetTransaction(userId, transactionId)
+
+        val block = getCurrentBlock()
+        val transaction = pendingTransaction.toTransaction(block)
+        transactionRepository.save(transaction)
+        pendingTransactionRepository.deleteById(transactionId)
+    }
+
+    private fun validateAndGetTransaction(userId: UUID, transactionId: UUID): PendingTransaction {
         if (transactionRepository.findByIdOrNull(transactionId) != null)
             throw IllegalArgumentException("Transaction already processed")
 
@@ -38,13 +48,10 @@ class PaymentService(
         if (walletService.getUserBalance(userId) < pendingTransaction.amount.toDouble())
             throw IllegalArgumentException("Insufficient balance")
 
-        val block = getBlock()
-        val transaction = pendingTransaction.toTransaction(block)
-        transactionRepository.save(transaction)
-        pendingTransactionRepository.deleteById(transactionId)
+        return pendingTransaction
     }
 
-    private fun getBlock(): Block {
+    private fun getCurrentBlock(): Block {
         val latestBlock = blockRepository.findTopByOrderByTimestampDesc()
         if (latestBlock != null) {
             val transactionCount = transactionRepository.countAllByBlockId(latestBlock.id)

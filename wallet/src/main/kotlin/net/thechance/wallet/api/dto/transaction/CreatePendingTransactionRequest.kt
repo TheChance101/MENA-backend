@@ -1,7 +1,7 @@
 package net.thechance.wallet.api.dto.transaction
 
 import net.thechance.wallet.entity.Transaction
-import net.thechance.wallet.service.helper.CreatePendingTransactionParams
+import net.thechance.wallet.service.helper.PendingTransactionParams
 import java.util.*
 
 data class CreatePendingTransactionRequest(
@@ -12,8 +12,8 @@ data class CreatePendingTransactionRequest(
 
 fun CreatePendingTransactionRequest.toCreatePendingTransactionParams(
     userId: UUID
-): CreatePendingTransactionParams {
-    return CreatePendingTransactionParams(
+): PendingTransactionParams {
+    return PendingTransactionParams(
         type = type,
         senderId = userId,
         receiverId = receiverId,

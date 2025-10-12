@@ -5,14 +5,14 @@ import net.thechance.wallet.entity.Transaction
 import net.thechance.wallet.entity.user.WalletUser
 import java.util.*
 
-data class CreatePendingTransactionParams(
+data class PendingTransactionParams(
     val type: Transaction.Type,
     val senderId: UUID,
     val receiverId: UUID,
     val amount: Double,
 )
 
-fun CreatePendingTransactionParams.toPendingTransaction(
+fun PendingTransactionParams.toPendingTransaction(
     sender: WalletUser,
     receiver: WalletUser,
 ): PendingTransaction {
