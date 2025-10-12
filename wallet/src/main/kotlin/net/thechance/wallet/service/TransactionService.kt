@@ -71,7 +71,7 @@ class TransactionService(
         val transaction = transactionRepository.findByIdOrNull(transactionId)
 
         val receiver = transaction?.receiver ?: pendingTransaction?.receiver
-        ?: throw EntityNotFoundException("Transaction ID $transactionId")
+        ?: throw EntityNotFoundException("Transaction ID $transactionId not found.")
 
         return receiver.toReceiverDetails(transaction?.type ?: pendingTransaction?.type ?: Transaction.Type.P2P)
     }
