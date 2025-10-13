@@ -55,17 +55,14 @@ class CategoryController(
             categoriesToRemove = patchRequest.remove
         )
 
-        val allCategories = categoryService.getAllCategories()
-        val userCategories = trendUserService.getUserSelectedCategories(userId)
-
-        val categoriesWithSelection = allCategories.map { category ->
-            category.toCategoryResponse(isSelected = category in userCategories)
+        val userCategories = trendUserService.getUserSelectedCategories(userId).map { category ->
+            category.toCategoryResponse(isSelected = true)
         }
 
         return ResponseEntity.ok(
             PatchUserCategoriesResponse(
                 patchMetadata = patchMetadata,
-                updatedCategories = categoriesWithSelection
+                updatedCategories = userCategories
             )
         )
     }
