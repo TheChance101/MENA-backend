@@ -1,8 +1,6 @@
 package net.thechance.chat.api.dto
 
 import net.thechance.chat.entity.ChatSummary
-import net.thechance.chat.entity.Contact
-import net.thechance.chat.entity.ContactUser
 import org.springframework.data.domain.Page
 import java.time.Instant
 import java.util.*
@@ -12,7 +10,7 @@ data class ChatSummaryResponse(
     val name: String,
     val imageUrl: String?,
     val lastMessage: Message?,
-    val unReadMessagesCount: UInt
+    val unReadMessagesCount: Int
 ) {
     data class Message(
         val text: String,

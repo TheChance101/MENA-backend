@@ -56,13 +56,16 @@ class ChatService(
     fun getUserChats(userId: UUID, pageable: Pageable): Page<ChatSummary> {
         val chats = chatRepository.findAllByUserId(userId, pageable)
         val lastMessages = messageRepository.findLastMessagesForChats(chats.content.map { it.id })
-        val unreadCounts = chatRepository.findUnreadCountsForChats(
-            chatIds = chats.content.map { it.id }
-        ).associate { it.entries.first().toPair() }
+        val unreadCounts = chatRepository.findUnreadCountsForChats(chats.content.map { it.id })
 
         val chatSummaries = chats.map { chat ->
             val otherUser = chat.users.firstOrNull { it.id != userId }
-            chat.toSummary(userId, otherUser, lastMessages.firstOrNull { it.chat.id == chat.id }, unreadCounts[chat.id] ?: 0)
+            chat.toSummary(
+                userId,
+                otherUser,
+                lastMessages.firstOrNull { it.chat.id == chat.id },
+                unreadCounts.firstOrNull { it.chatId == chat.id }?.unreadCount ?: 0
+            )
         }
         return chatSummaries
     }

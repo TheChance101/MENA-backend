@@ -13,11 +13,11 @@ fun Chat.toSummary(userId: UUID, otherUser: ContactUser?, lastMessage: Message?,
         imageUrl = otherUser?.imageUrl,
         lastMessage = lastMessage?.let {
             ChatSummary.Message(
-                text = lastMessage.text.orEmpty(),
+                text = lastMessage.text,
                 sentAt = lastMessage.sentAt,
                 isMine = lastMessage.senderId == userId
             )
         },
-        unReadMessagesCount = unreadCount.toUInt()
+        unReadMessagesCount = unreadCount
     )
 }

@@ -1,6 +1,7 @@
 package net.thechance.chat.repository
 
 import net.thechance.chat.entity.Chat
+import net.thechance.chat.entity.ChatUnreadMessagesCount
 import org.springframework.data.domain.Page
 import org.springframework.data.domain.Pageable
 import org.springframework.data.jpa.repository.JpaRepository
@@ -31,8 +32,8 @@ interface ChatRepository : JpaRepository<Chat, UUID> {
         nativeQuery = true,
         value = """
         SELECT
-            m.chat_id,
-            COUNT(*) AS unread_count
+            m.chat_id AS chatId,
+            COUNT(*) AS unreadCount
         FROM chat.messages m
         WHERE m.is_read = FALSE
           AND m.chat_id IN :chatIds
@@ -41,6 +42,6 @@ interface ChatRepository : JpaRepository<Chat, UUID> {
     )
     fun findUnreadCountsForChats(
         @Param("chatIds") chatIds: List<UUID>
-    ): List<Map<UUID, Int>>
+    ): List<ChatUnreadMessagesCount>
 }
 
