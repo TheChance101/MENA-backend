@@ -7,8 +7,14 @@ import net.thechance.dukan.entity.Dukan
 import net.thechance.dukan.mapper.DukanLanguage
 import net.thechance.dukan.mapper.toDto
 import net.thechance.dukan.mapper.toDukanCreationParams
+import net.thechance.dukan.mapper.toDukanResponse
 import net.thechance.dukan.mapper.toDukanStyleResponse
+import net.thechance.dukan.mapper.toResponse
 import net.thechance.dukan.service.DukanService
+import org.springframework.data.domain.Page
+import org.springframework.data.domain.Pageable
+import org.springframework.data.domain.Sort
+import org.springframework.data.web.PageableDefault
 import org.springframework.http.ResponseEntity
 import org.springframework.security.core.annotation.AuthenticationPrincipal
 import org.springframework.web.bind.annotation.*
@@ -24,7 +30,7 @@ class DukanController(
     @GetMapping("/styles")
     fun getAllStyles(): ResponseEntity<DukanStyleResponse> {
         val styles = dukanService.getAllStyles().toDukanStyleResponse()
-       return ResponseEntity.ok(styles)
+        return ResponseEntity.ok(styles)
     }
 
     @GetMapping("/categories")
@@ -67,12 +73,51 @@ class DukanController(
         val colors = dukanService.getAllColors().map { it.toDto() }
         return ResponseEntity.ok(DukanColorResponse(colors))
     }
-    
+
     @GetMapping("/statues")
     fun getDukanStatues(
         @AuthenticationPrincipal userId: UUID,
     ): ResponseEntity<DukanStatuesResponse> {
         val dukan = dukanService.getDukanByOwnerId(userId)
         return ResponseEntity.ok(DukanStatuesResponse(dukan.name, dukan.status))
+    }
+
+    @GetMapping("/categories/{categoryId}")
+    fun getAllByCategoryId(
+        @PathVariable("categoryId") categoryId: UUID,
+        @PageableDefault(size = 10, page = 0, sort = ["createdAt"], direction = Sort.Direction.DESC) pageable: Pageable
+    ): ResponseEntity<Page<DukanResponse>> {
+        return ResponseEntity.ok(dukanService.getAllByCategoryId(categoryId, pageable).map(Dukan::toDukanResponse))
+    }
+
+
+    @GetMapping("/editor_picks")
+    fun getEditorPicksDukan(
+        @AuthenticationPrincipal userId: UUID?,
+        @PageableDefault(size = 5, page = 0, sort = ["createdAt"], direction = Sort.Direction.DESC)
+        pageable: Pageable
+    ): ResponseEntity<Page<DukanResponse>> {
+        val dukansPage = dukanService.getAllEditorPicksDukan(userId, pageable)
+        val response = dukansPage.map(Dukan::toDukanResponse)
+        return ResponseEntity.ok(response)
+    }
+
+
+    @GetMapping("/{dukanId}")
+    fun getDukanDetailsById(@PathVariable("dukanId") dukanId: UUID): ResponseEntity<DukanDetailsResponse> {
+        val dukanDetails = dukanService.getDukanDetailsById(dukanId).toResponse()
+        return ResponseEntity.ok(dukanDetails)
+    }
+
+    @GetMapping("/nearby/best")
+    fun getBestDukansAround(
+        @RequestParam lat: Double,
+        @RequestParam lng: Double,
+        @RequestParam(required = false, defaultValue = "30000") range: Double,
+        @PageableDefault(size = 10, page = 0) pageable: Pageable
+    ): ResponseEntity<Page<DukanResponse>> {
+        val dukans = dukanService.getAllBestDukansAround(lat, lng, pageable, range)
+        val response = dukans.map { it.toDukanResponse() }
+        return ResponseEntity.ok(response)
     }
 }

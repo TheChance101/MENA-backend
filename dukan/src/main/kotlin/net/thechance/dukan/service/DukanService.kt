@@ -12,6 +12,9 @@ import net.thechance.dukan.repository.DukanCategoryRepository
 import net.thechance.dukan.repository.DukanColorRepository
 import net.thechance.dukan.repository.DukanRepository
 import net.thechance.dukan.service.model.DukanCreationParams
+import org.springframework.data.repository.findByIdOrNull
+import org.springframework.data.domain.Page
+import org.springframework.data.domain.Pageable
 import org.springframework.stereotype.Service
 import org.springframework.web.multipart.MultipartFile
 import java.util.*
@@ -69,6 +72,19 @@ class DukanService(
         return imageUrl
     }
 
+    fun getDukanDetailsById(dukanId: UUID): Dukan {
+        return dukanRepository.findByIdOrNull(dukanId) ?: throw DukanNotFoundException()
+    }
+
+    fun getAllByCategoryId(categoryId: UUID, pageable: Pageable): Page<Dukan> {
+        return dukanRepository.findAllByCategoriesId(categoryId, pageable)
+    }
+
+    fun getAllEditorPicksDukan(userId: UUID?, pageable: Pageable): Page<Dukan> {
+        // TODO: Filter by user preferences once data model is ready
+        return dukanRepository.findAllApprovedWithShelvesAndProducts(pageable)
+    }
+
     private fun validateDukanCreation(params: DukanCreationParams) {
         if (dukanRepository.existsByOwnerId(params.ownerId)) {
             throw DukanCreationFailedException()
@@ -77,6 +93,15 @@ class DukanService(
         if (dukanRepository.existsByName(params.name)) {
             throw DukanCreationFailedException()
         }
+    }
+
+    fun getAllBestDukansAround(
+        lat: Double,
+        lng: Double,
+        pageable: Pageable,
+        range: Double = 30000.0
+    ): Page<Dukan> {
+        return dukanRepository.findBestAroundApprovedDukans(lat, lng, range, pageable)
     }
 
     companion object {
