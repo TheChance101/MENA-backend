@@ -5,6 +5,7 @@ import net.thechance.trends.entity.Category
 import net.thechance.trends.entity.TrendUser
 import net.thechance.trends.exception.InvalidTrendInputException
 import net.thechance.trends.exception.TrendCategoryNotFoundException
+import net.thechance.trends.exception.TrendUserNotFoundException
 import net.thechance.trends.repository.CategoryRepository
 import net.thechance.trends.repository.TrendUserRepository
 import org.springframework.stereotype.Service
@@ -20,20 +21,11 @@ class TrendUserService(
     private val categoryRepository: CategoryRepository
 ) {
     fun saveCategoriesToUser(userId: UUID, categoryIds: List<UUID>) {
+        if (categoryIds.isEmpty()) throw InvalidTrendInputException()
 
-        if (categoryIds.isEmpty()) {
-            throw InvalidTrendInputException()
-        }
+        validateCategoriesExist(categoryIds)
 
-        val existingCategoryCount = categoryRepository.countByIdIn(categoryIds.toMutableList())
-        if (existingCategoryCount != categoryIds.size.toLong()) {
-            throw TrendCategoryNotFoundException()
-        }
-
-        val trendUser = trendUserRepository.findById(userId).getOrElse {
-            TrendUser(userId = userId)
-        }
-
+        val trendUser = getOrCreateUser(userId)
         val categoryProxies = categoryIds.map { categoryId ->
             categoryRepository.getReferenceById(categoryId)
         }.toMutableSet()
@@ -48,39 +40,26 @@ class TrendUserService(
         categoriesToRemove: List<UUID>
     ): PatchMetadata {
         val allCategoryIds = (categoriesToAdd + categoriesToRemove).distinct()
+        validateCategoriesExist(allCategoryIds)
 
-        if (allCategoryIds.isNotEmpty()) {
-            val existingCategoryCount = categoryRepository.countByIdIn(allCategoryIds.toMutableList())
-            if (existingCategoryCount != allCategoryIds.size.toLong()) {
-                throw TrendCategoryNotFoundException()
-            }
+        val trendUser = getUserOrThrow(userId)
+        val currentCategoryIds = trendUser.categories.mapTo(mutableSetOf()) { it.id }
+
+        val actualRemoved = categoriesToRemove.filterTo(mutableSetOf()) { it in currentCategoryIds }
+        val actualAdded = categoriesToAdd.filterTo(mutableSetOf()) { it !in currentCategoryIds }
+
+        if (actualAdded.isEmpty() && actualRemoved.isEmpty()) {
+            return PatchMetadata(addedCount = 0, removedCount = 0)
         }
 
-        val trendUser = trendUserRepository.findById(userId).getOrElse { TrendUser(userId = userId) }
+        val updatedCategories = trendUser.categories
+            .filterNot { it.id in actualRemoved }
+            .plus(actualAdded.map { categoryRepository.getReferenceById(it) })
+            .toMutableSet()
 
-        val currentCategories = trendUser.categories.toMutableSet()
-        val currentCategoryIds = currentCategories.map { it.id }.toSet()
+        trendUserRepository.save(trendUser.copy(categories = updatedCategories))
 
-        var addedCount = 0
-        var removedCount = 0
-
-        categoriesToRemove.forEach { categoryId ->
-            currentCategories.removeIf { it.id == categoryId }.let { removed ->
-                if (removed) removedCount++
-            }
-        }
-
-        categoriesToAdd.forEach { categoryId ->
-            if (categoryId !in currentCategoryIds) {
-                currentCategories.add(categoryRepository.getReferenceById(categoryId))
-                addedCount++
-            }
-        }
-
-        val updatedUser = trendUser.copy(categories = currentCategories)
-        trendUserRepository.save(updatedUser)
-
-        return PatchMetadata(addedCount = addedCount, removedCount = removedCount)
+        return PatchMetadata(addedCount = actualAdded.size, removedCount = actualRemoved.size)
     }
 
     fun getUserSelectedCategories(userId: UUID): Set<Category> {
@@ -89,5 +68,17 @@ class TrendUserService(
 
     fun getDoesUserHaveCategories(userId: UUID): Boolean {
         return trendUserRepository.findById(userId).getOrNull()?.categories?.isNotEmpty() ?: false
+    }
+
+    private fun getUserOrThrow(userId: UUID) =
+        trendUserRepository.findById(userId).getOrNull() ?: throw TrendUserNotFoundException()
+
+    private fun getOrCreateUser(userId: UUID) =
+        trendUserRepository.findById(userId).getOrElse { TrendUser(userId = userId) }
+
+    private fun validateCategoriesExist(categoryIds: List<UUID>) {
+        if (categoryIds.isEmpty()) return
+        val existingCount = categoryRepository.countByIdIn(categoryIds.toMutableList())
+        if (existingCount != categoryIds.size.toLong()) throw TrendCategoryNotFoundException()
     }
 }
