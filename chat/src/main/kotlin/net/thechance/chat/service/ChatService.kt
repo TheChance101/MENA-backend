@@ -2,11 +2,16 @@ package net.thechance.chat.service
 
 import jakarta.persistence.EntityManager
 import net.thechance.chat.entity.Chat
+import net.thechance.chat.entity.Contact
+import net.thechance.chat.entity.ContactUser
 import net.thechance.chat.entity.Message
 import net.thechance.chat.repository.ChatRepository
 import net.thechance.chat.repository.MessageRepository
 import net.thechance.chat.service.args.CreateMessageArgs
+import net.thechance.chat.service.exception.NotFoundException
+import net.thechance.chat.service.model.ChatModel
 import org.springframework.data.domain.Pageable
+import org.springframework.data.repository.findByIdOrNull
 import org.springframework.stereotype.Service
 import org.springframework.transaction.annotation.Transactional
 import java.util.*
@@ -16,6 +21,7 @@ class ChatService(
     private val messageRepository: MessageRepository,
     private val chatRepository: ChatRepository,
     private val contactUserService: ContactUserService,
+    private val contactService: ContactService,
     private val entityManager: EntityManager
 ) {
     @Transactional
@@ -50,4 +56,24 @@ class ChatService(
 
     fun markChatMessagesAsRead(chatId: UUID, userId: UUID) =
         messageRepository.updateIsReadByChatIdAndSenderIdNot(chatId = chatId, userId = userId)
+
+    fun getChatById(chatId: UUID, userId: UUID): ChatModel {
+        val chat = chatRepository.findByIdOrNull(chatId) ?: throw NotFoundException("no chat was found with id: $chatId")
+        val otherUser = chat.users.firstOrNull { it.id != userId }
+        val contact =otherUser?.let{
+            contactService.getContactByOwnerIdAndContactUserId(userId, it.id)
+        }
+        return ChatModel(
+            name = getChatName(contact, otherUser),
+            imageUrl = otherUser?.imageUrl,
+            requesterId = userId,
+            id = chatId
+        )
+    }
+
+    private fun getChatName(contact: Contact?, user: ContactUser? ): String{
+        return contact?.let { "${it.firstName} ${it.lastName}" }
+            ?: user?.let { "${it.firstName} ${it.lastName}" }.orEmpty()
+    }
+
 }
