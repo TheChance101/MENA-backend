@@ -16,7 +16,6 @@ import net.thechance.chat.service.args.CreateMessageArgs
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.assertThrows
-import org.springframework.data.domain.PageImpl
 import org.springframework.data.domain.Pageable
 import java.time.Instant
 import java.util.*
@@ -29,6 +28,13 @@ class ChatServiceTest {
     private lateinit var entityManager: EntityManager
     private lateinit var contactService: ContactService
     private lateinit var service: ChatService
+
+    private lateinit var userId: UUID
+    private lateinit var otherUser: ContactUser
+    private lateinit var chat: Chat
+    private lateinit var pageable: Pageable
+    private lateinit var message: Message
+    private lateinit var contact: Contact
 
     private fun testUser(id: UUID = UUID.randomUUID()) = ContactUser(
         id = id,
@@ -51,7 +57,13 @@ class ChatServiceTest {
         entityManager = mockk(relaxed = true)
         contactService = mockk(relaxed = true)
 
-        service = ChatService(messageRepository, chatRepository, contactUserService, entityManager,contactService)
+        service = ChatService(
+            messageRepository,
+            chatRepository,
+            contactUserService,
+            entityManager,
+            contactService
+        )
     }
 
     @Test
@@ -66,13 +78,13 @@ class ChatServiceTest {
 
         val result = service.getOrCreateConversationByParticipants(requester.id, theOtherUser.id)
 
-        assertThat(chat).isEqualTo(result)
+        assertThat(result).isEqualTo(chat)
         verify { chatRepository.findByUsersIds(setOf(requester.id, theOtherUser.id)) }
         verify(exactly = 0) { chatRepository.save(any()) }
     }
 
     @Test
-    fun `getOrCreateConversationByParticipants creates and returns new chat if not found`() {
+    fun `getOrCreateConversationByParticipants creates new chat when not found`() {
         val requester = testUser()
         val theOtherUser = testUser()
         val newChat = testChat().apply { users.addAll(listOf(requester, theOtherUser)) }
@@ -86,7 +98,7 @@ class ChatServiceTest {
 
         val result = service.getOrCreateConversationByParticipants(requester.id, theOtherUser.id)
 
-        assertThat(newChat).isEqualTo(result)
+        assertThat(result).isEqualTo(newChat)
         verify { chatRepository.save(any()) }
     }
 
@@ -118,7 +130,7 @@ class ChatServiceTest {
     }
 
     @Test
-    fun `saveMessage throws if chat not found`() {
+    fun `saveMessage throws exception when chat not found`() {
         val messageDto = CreateMessageArgs(
             id = UUID.randomUUID(),
             chatId = UUID.randomUUID(),
@@ -136,7 +148,7 @@ class ChatServiceTest {
     }
 
     @Test
-    fun `markChatMessagesAsRead updates messages`() {
+    fun `markChatMessagesAsRead updates messages as read`() {
         val chatId = UUID.randomUUID()
         val userId = UUID.randomUUID()
 
@@ -144,45 +156,103 @@ class ChatServiceTest {
 
         verify { messageRepository.updateIsReadByChatIdAndSenderIdNot(chatId, userId) }
     }
-    @Test
-    fun `getUserChats should return paged chat responses with correct status`() {
-        val userId = UUID.randomUUID()
-        val otherUser = testUser()
-        val chat = testChat().apply { users.addAll(listOf(testUser(userId), otherUser)) }
-        val pageable = Pageable.unpaged()
-        val message = mockk<Message>().apply {
-            every { text } returns "Hello"
+
+    private fun setupChatEnvironment() {
+        userId = UUID.randomUUID()
+        otherUser = testUser()
+        chat = testChat().apply { users.addAll(listOf(testUser(userId), otherUser)) }
+        pageable = Pageable.unpaged()
+    }
+
+    private fun mockChatDependencies(
+        unreadCount: Int = 2,
+        lastMessageText: String = "Hello"
+    ) {
+        message = mockk<Message>().apply {
+            every { text } returns lastMessageText
             every { sentAt } returns Instant.now()
             every { senderId } returns otherUser.id
         }
-        val contact = mockk<Contact>().apply {
+
+        contact = mockk<Contact>().apply {
             every { firstName } returns "Ali"
             every { lastName } returns "Ahmed"
         }
 
         every { chatRepository.findAllByUserId(userId, pageable) } returns listOf(chat)
         every { messageRepository.findTopByChatIdOrderBySentAtDesc(chat.id) } returns message
-        every { messageRepository.countByChatIdAndSenderIdNotAndIsReadFalse(chat.id, userId) } returns 2
+        every { messageRepository.countByChatIdAndSenderIdNotAndIsReadFalse(chat.id, userId) } returns unreadCount
         every { chatRepository.countByUserId(userId) } returns 1L
         every { contactService.getContactByOwnerIdAndContactUserId(userId, otherUser.id) } returns contact
+    }
+
+    @Test
+    fun `getUserChats returns chat with correct id`() {
+        setupChatEnvironment()
+        mockChatDependencies()
+
+        val result = service.getUserChats(userId, pageable)
+        val firstChat = result.content.first()
+
+        assertThat(firstChat.id).isEqualTo(chat.id)
+    }
+
+    @Test
+    fun `getUserChats includes last message text`() {
+        setupChatEnvironment()
+        mockChatDependencies(lastMessageText = "Hello1")
+
+        val result = service.getUserChats(userId, pageable)
+        val firstChat = result.content.first()
+
+        assertThat(firstChat.lastMessage).isEqualTo("Hello")
+    }
+
+    @Test
+    fun `getUserChats returns correct unread messages count`() {
+        setupChatEnvironment()
+        mockChatDependencies(unreadCount = 3)
+
+        val result = service.getUserChats(userId, pageable)
+        val firstChat = result.content.first()
+
+        assertThat(firstChat.status.unReadMessagesCount).isEqualTo(3u)
+    }
+
+    @Test
+    fun `getUserChats marks chat as not mine when last message is from other user`() {
+        setupChatEnvironment()
+        mockChatDependencies()
+
+        val result = service.getUserChats(userId, pageable)
+        val firstChat = result.content.first()
+
+        assertThat(firstChat.status.isMine).isFalse()
+    }
+
+    @Test
+    fun `getUserChats returns correct total chat count`() {
+        setupChatEnvironment()
+        mockChatDependencies()
 
         val result = service.getUserChats(userId, pageable)
 
-        with(result.content.first()) {
-            assertThat(id).isEqualTo(chat.id)
-            assertThat(lastMessage).isEqualTo("Hello")
-            assertThat(status.unReadMessagesCount).isEqualTo(2u)
-            assertThat(status.isMine).isFalse()
-        }
+        assertThat(result.totalElements).isEqualTo(1)
+    }
+
+    @Test
+    fun `getUserChats calls all repository dependencies`() {
+        setupChatEnvironment()
+        mockChatDependencies()
+
+        service.getUserChats(userId, pageable)
 
         verify {
             chatRepository.findAllByUserId(userId, pageable)
             messageRepository.findTopByChatIdOrderBySentAtDesc(chat.id)
             messageRepository.countByChatIdAndSenderIdNotAndIsReadFalse(chat.id, userId)
             chatRepository.countByUserId(userId)
+            contactService.getContactByOwnerIdAndContactUserId(userId, otherUser.id)
         }
     }
-
-
-
 }
