@@ -1,7 +1,8 @@
 package net.thechance.trends.api.dto.category
 
+import net.thechance.trends.api.dto.PatchMetadata
+
 data class PatchUserCategoriesResponse(
-    val added: List<CategoryResponse>,
-    val removed: List<CategoryResponse>,
-    val current: List<CategoryResponse>
+    val patchMetadata: PatchMetadata,
+    val updatedCategories: List<CategoryResponse>
 )
