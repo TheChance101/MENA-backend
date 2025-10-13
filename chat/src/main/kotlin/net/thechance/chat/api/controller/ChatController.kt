@@ -3,7 +3,6 @@ package net.thechance.chat.api.controller
 import net.thechance.chat.api.dto.*
 import net.thechance.chat.service.ChatService
 import net.thechance.chat.service.ContactService
-import net.thechance.chat.service.model.toResponse
 import org.springframework.data.domain.Pageable
 import org.springframework.http.ResponseEntity
 import org.springframework.messaging.handler.annotation.MessageMapping
