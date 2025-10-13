@@ -26,7 +26,7 @@ class ChatController(
     @MessageMapping("/chat.privateMessage")
     fun sendPrivateMessage(@Payload chatMessage: MessageRequestDto, principal: Principal) {
         val senderId = UUID.fromString(principal.name)
-        val message = chatService.saveMessage(senderId, chatMessage).toDto()
+        val message = chatService.saveMessage(chatMessage.toReqArgs(senderId)).toDto()
         sendMessageToUser(
             user = chatMessage.chatId.toString(),
             message = message
@@ -59,12 +59,12 @@ class ChatController(
     @PostMapping("/image/{chatId}")
     fun uploadMessageImages(
         @PathVariable("chatId") chatId: UUID,
-        @RequestParam("images") images: List<MultipartFile>,
+        @RequestParam("images") images: MultipartFile,
         principal: Principal
     ): ResponseEntity<MessageResponseDto> {
         val senderId = UUID.fromString(principal.name)
-        val message = chatService.saveMessageImages(senderId, MessageImagesRequestDto(chatId, images))
-        sendPrivateMessage(MessageRequestDto(chatId, null, null), principal)
+        val message = chatService.saveMessageImages(MessageImagesRequestDto(chatId, listOf(images)).toReqArgs(senderId))
+        sendPrivateMessage(MessageRequestDto(chatId, message.id, null), principal)
         return ResponseEntity.ok(message.toDto())
     }
 

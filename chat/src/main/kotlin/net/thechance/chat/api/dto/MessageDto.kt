@@ -43,3 +43,20 @@ fun Page<Message>.toPagedMessageResponse(): PagedResponse<MessageResponseDto> {
         totalPages = this.totalPages
     )
 }
+
+
+data class MessageRequestArgs(
+    val chatId: UUID,
+    val senderId: UUID,
+    val text: String?,
+    val messageId: UUID?
+)
+
+fun MessageRequestDto.toReqArgs(senderId: UUID): MessageRequestArgs {
+    return MessageRequestArgs(
+        chatId = this.chatId,
+        senderId = senderId,
+        text = this.text,
+        messageId = this.messageId
+    )
+}

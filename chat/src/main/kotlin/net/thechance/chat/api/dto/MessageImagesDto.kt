@@ -8,3 +8,18 @@ data class MessageImagesRequestDto(
     val images: List<MultipartFile>
 )
 
+
+data class MessageImagesRequestArgs(
+    val chatId: UUID,
+    val senderId: UUID,
+    val images: List<MultipartFile>
+)
+
+
+fun MessageImagesRequestDto.toReqArgs(senderId: UUID): MessageImagesRequestArgs {
+    return MessageImagesRequestArgs(
+        chatId = this.chatId,
+        senderId = senderId,
+        images = this.images
+    )
+}

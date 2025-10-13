@@ -1,8 +1,8 @@
 package net.thechance.chat.service
 
 import jakarta.persistence.EntityManager
-import net.thechance.chat.api.dto.MessageImagesRequestDto
-import net.thechance.chat.api.dto.MessageRequestDto
+import net.thechance.chat.api.dto.MessageImagesRequestArgs
+import net.thechance.chat.api.dto.MessageRequestArgs
 import net.thechance.chat.entity.Chat
 import net.thechance.chat.entity.Message
 import net.thechance.chat.entity.MessageImages
@@ -38,16 +38,16 @@ class ChatService(
     }
 
     @Transactional
-    fun saveMessage(senderId: UUID, request: MessageRequestDto): Message {
-        request.messageId?.let { messageId ->
+    fun saveMessage(args: MessageRequestArgs): Message {
+        args.messageId?.let { messageId ->
             messageRepository.findById(messageId).orElse(null)?.let { return it }
         }
-        val chat = entityManager.getReference(Chat::class.java, request.chatId)
+        val chat = entityManager.getReference(Chat::class.java, args.chatId)
         val message = Message(
             id = UUID.randomUUID(),
-            senderId = senderId,
+            senderId = args.senderId,
             chat = chat,
-            text = request.text,
+            text = args.text,
             sentAt = Instant.now(),
         )
         messageRepository.save(message)
@@ -55,10 +55,10 @@ class ChatService(
     }
 
     @Transactional
-    fun saveMessageImages(senderId: UUID, request: MessageImagesRequestDto): Message {
-        val message = saveMessage(senderId, MessageRequestDto(request.chatId, null, null))
+    fun saveMessageImages(args: MessageImagesRequestArgs): Message {
+        val message = saveMessage(MessageRequestArgs(args.chatId, args.senderId, null, null))
         val messageImages = mutableListOf<MessageImages>()
-        request.images.forEach { image ->
+        args.images.forEach { image ->
             val imageUrl = attachmentStorageService.uploadImage(
                 file = image,
                 fileName = "${message.id}-$image",
@@ -67,7 +67,7 @@ class ChatService(
             val image = MessageImages(
                 id = UUID.randomUUID(),
                 url = imageUrl,
-                message = message
+                messageId = message.id
             )
             messageImagesRepository.save(image)
             messageImages.add(image)
