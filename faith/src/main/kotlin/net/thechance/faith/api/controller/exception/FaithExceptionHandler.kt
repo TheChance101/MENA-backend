@@ -26,7 +26,7 @@ class FaithExceptionHandler {
         exception: Exception, status: Int
     ): ResponseEntity<ApiErrorResponse> {
         val apiError = ApiErrorResponse(
-            status = status, message = exception.message ?: ""
+            status = status, message = exception.message.orEmpty()
         )
         return ResponseEntity(apiError, HttpStatus.valueOf(status))
     }

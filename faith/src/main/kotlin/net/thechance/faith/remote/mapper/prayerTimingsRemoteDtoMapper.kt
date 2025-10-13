@@ -43,5 +43,4 @@ private fun hijriDateToReadable(
     year: String
 ): String = "$day $month $year"
 
-fun String?.orEmpty(): String = this ?: ""
 fun Int?.orZero(): Int = this ?: 0
