@@ -63,8 +63,9 @@ class ChatController(
         principal: Principal
     ): ResponseEntity<MessageResponseDto> {
         val senderId = UUID.fromString(principal.name)
-        val request = MessageImagesRequestDto(chatId, images)
-        return ResponseEntity.ok(chatService.saveMessageImages(senderId, request).toDto())
+        val message = chatService.saveMessageImages(senderId, MessageImagesRequestDto(chatId, images))
+        sendPrivateMessage(MessageRequestDto(chatId, null, null), principal)
+        return ResponseEntity.ok(message.toDto())
     }
 
     @MessageMapping("/chat.markAsRead")
