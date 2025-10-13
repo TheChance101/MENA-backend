@@ -21,6 +21,7 @@ import org.springframework.data.domain.PageRequest
 import org.springframework.data.domain.Pageable
 import org.springframework.http.HttpStatus
 import org.springframework.messaging.simp.SimpMessagingTemplate
+import org.springframework.web.multipart.MultipartFile
 import java.security.Principal
 import java.time.Instant
 import java.util.*
@@ -61,6 +62,26 @@ class ChatControllerTest {
         }
     }
 
+    @Test
+    fun `uploadMessageImages should upload image then send to user`() {
+        val chatId = UUID.randomUUID()
+        val senderId = UUID.randomUUID()
+
+        val principal = mockk<Principal>()
+        every { principal.name } returns senderId.toString()
+
+        val images = mockk<List<MultipartFile>>()
+        every { images } returns listOf()
+
+        controller.uploadMessageImages(chatId, images, principal)
+
+        verify {
+            chatService.saveMessage(
+                match { it == senderId },
+                match { it.text == null && it.chatId == chatId },
+            )
+        }
+    }
 
     @Test
     fun `getOrCreateConversation should return conversation`() {

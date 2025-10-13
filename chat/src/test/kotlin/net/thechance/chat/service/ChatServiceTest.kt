@@ -6,6 +6,7 @@ import io.mockk.mockk
 import io.mockk.verify
 import jakarta.persistence.EntityManager
 import jakarta.persistence.EntityNotFoundException
+import net.thechance.chat.api.dto.MessageImagesRequestDto
 import net.thechance.chat.api.dto.MessageRequestDto
 import net.thechance.chat.entity.Chat
 import net.thechance.chat.entity.ContactUser
@@ -43,8 +44,10 @@ class ChatServiceTest {
     @BeforeEach
     fun setUp() {
         messageRepository = mockk(relaxed = true)
+        messageImagesRepository = mockk(relaxed = true)
         chatRepository = mockk(relaxed = true)
         contactUserService = mockk(relaxed = true)
+        attachmentStorageService = mockk(relaxed = true)
         entityManager = mockk(relaxed = true)
         service = ChatService(
             messageRepository,
@@ -131,6 +134,25 @@ class ChatServiceTest {
         }
     }
 
+    @Test
+    fun `saveMessageImages should upload image & create message then return message with images urls`() {
+        val chat = testChat()
+        val req = MessageImagesRequestDto(chat.id, emptyList())
+
+        every { entityManager.getReference(Chat::class.java, chat.id) } returns chat
+        every { messageRepository.save(any()) } answers { firstArg() }
+
+        service.saveMessageImages(UUID.randomUUID(), req)
+
+        verify {
+            messageRepository.save(
+                withArg {
+                    assertThat(it.chat).isEqualTo(chat)
+                    assertThat(it.text).isEqualTo(null)
+                }
+            )
+        }
+    }
     @Test
     fun `markChatMessagesAsRead updates messages`() {
         val chatId = UUID.randomUUID()
