@@ -95,6 +95,15 @@ class DukanService(
         }
     }
 
+    fun getAllBestDukansAround(
+        lat: Double,
+        lng: Double,
+        pageable: Pageable,
+        range: Double = 30000.0
+    ): Page<Dukan> {
+        return dukanRepository.findBestAroundApprovedDukans(lat, lng, range, pageable)
+    }
+
     companion object {
         private val DUKAN_FOLDER_NAME = "dukan"
     }
