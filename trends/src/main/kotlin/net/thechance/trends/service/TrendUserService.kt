@@ -21,8 +21,7 @@ class TrendUserService(
     private val categoryRepository: CategoryRepository
 ) {
     fun saveCategoriesToUser(userId: UUID, categoryIds: List<UUID>) {
-        if (categoryIds.isEmpty()) throw InvalidTrendInputException()
-
+        validateCategoriesNotEmpty(categoryIds)
         validateCategoriesExist(categoryIds)
 
         val trendUser = getOrCreateUser(userId)
@@ -40,6 +39,8 @@ class TrendUserService(
         categoriesToRemove: List<UUID>
     ): PatchMetadata {
         val allCategoryIds = (categoriesToAdd + categoriesToRemove).distinct()
+
+        validateCategoriesNotEmpty(allCategoryIds)
         validateCategoriesExist(allCategoryIds)
 
         val trendUser = getUserOrThrow(userId)
@@ -76,8 +77,11 @@ class TrendUserService(
     private fun getOrCreateUser(userId: UUID) =
         trendUserRepository.findById(userId).getOrElse { TrendUser(userId = userId) }
 
+    private fun validateCategoriesNotEmpty(categoryIds: List<UUID>) {
+        if (categoryIds.isEmpty()) throw InvalidTrendInputException()
+    }
+
     private fun validateCategoriesExist(categoryIds: List<UUID>) {
-        if (categoryIds.isEmpty()) return
         val existingCount = categoryRepository.countByIdIn(categoryIds.toMutableList())
         if (existingCount != categoryIds.size.toLong()) throw TrendCategoryNotFoundException()
     }
