@@ -19,7 +19,6 @@ class ChatService(
     private val chatRepository: ChatRepository,
     private val contactUserService: ContactUserService,
     private val entityManager: EntityManager,
-    private val contactService: ContactService,
 ) {
     @Transactional
     fun getOrCreateConversationByParticipants(userId: UUID, receiverId: UUID): Chat {
@@ -62,7 +61,6 @@ class ChatService(
         ).associate { it.entries.first().toPair() }
 
         val chatSummaries = chats.map { chat ->
-            messageRepository.findTopByChatIdOrderBySentAtDesc(chat.id).also { println("$it") }
             val otherUser = chat.users.firstOrNull { it.id != userId }
             chat.toSummary(userId, otherUser, lastMessages.firstOrNull { it.chat.id == chat.id }, unreadCounts[chat.id] ?: 0)
         }
