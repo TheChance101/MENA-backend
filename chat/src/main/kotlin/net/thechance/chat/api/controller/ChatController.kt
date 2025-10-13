@@ -3,6 +3,7 @@ package net.thechance.chat.api.controller
 import net.thechance.chat.api.dto.*
 import net.thechance.chat.service.ChatService
 import net.thechance.chat.service.ContactService
+import net.thechance.chat.service.model.toResponse
 import org.springframework.data.domain.Pageable
 import org.springframework.http.ResponseEntity
 import org.springframework.messaging.handler.annotation.MessageMapping
@@ -78,17 +79,11 @@ class ChatController(
 
     @GetMapping("/{chatId}")
     fun getChatDetail(
-        @PathVariable chatId : String,
+        @PathVariable chatId : UUID,
         @AuthenticationPrincipal userId: UUID
     ): ResponseEntity<ChatResponse>{
-        val id = UUID.fromString(chatId)
-        val chat = chatService.getChatById(id) ?: throw IllegalStateException("chat not found")
-        val otherUser = chat.users.firstOrNull { it.id != userId }
-        val contact =otherUser?.let{
-            contactService.getContactByOwnerIdAndContactUserId(userId, it.id)
-        }
-        return ResponseEntity.ok(chat.toResponse(userId,contact))
-
+       val chat = chatService.getChatById(chatId, userId)
+        return ResponseEntity.ok(chat.toResponse())
     }
 
     companion object {
