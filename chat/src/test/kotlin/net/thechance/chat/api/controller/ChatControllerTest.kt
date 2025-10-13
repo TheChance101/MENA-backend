@@ -16,6 +16,8 @@ import net.thechance.chat.entity.ContactUser
 import net.thechance.chat.entity.Message
 import net.thechance.chat.service.ChatService
 import net.thechance.chat.service.ContactService
+import net.thechance.chat.service.exception.NotFoundException
+import net.thechance.chat.service.model.ChatModel
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.assertThrows
 import org.springframework.data.domain.PageImpl
@@ -142,85 +144,37 @@ class ChatControllerTest {
     }
 
     @Test
-    fun `getChatDetail should get chatResponse correctly when specific chat exist`() {
-        every { chatService.getChatById(chatId) } returns chat
-        every { contactService.getContactByOwnerIdAndContactUserId(userId, otherUser.id) } returns contact
-
-        val result = controller.getChatDetail(chatIdString, userId).body
+    fun `getChatDetail should get chat response correctly when the function run successfully `(){
+        every {chatService.getChatById(chatId, userId)} returns chatModel
+        val result = controller.getChatDetail(chatId, userId).body
 
         assertThat(result).isEqualTo(chatResponse)
     }
 
     @Test
-    fun `getChatDetail should return chat name equal to other contact names when the other user is in our contact list`() {
-        every { chatService.getChatById(chatId) } returns chat
-        every { contactService.getContactByOwnerIdAndContactUserId(userId, otherUser.id) } returns contact
-
-        val result = controller.getChatDetail(chatIdString, userId).body
-
-        assertThat(result?.name).isEqualTo("${contact.firstName} ${contact.lastName}")
-    }
-
-    @Test
-    fun `getChatDetail should return chat name equal to other mina user names when the other user is not in our contact list`() {
-        every { chatService.getChatById(chatId) } returns chat
-        every { contactService.getContactByOwnerIdAndContactUserId(userId, otherUser.id) } returns null
-
-        val result = controller.getChatDetail(chatIdString, userId).body
-
-        assertThat(result?.name).isEqualTo("${otherUser.firstName} ${otherUser.lastName}")
-    }
-
-    @Test
-    fun `getChatDetail should throw IllegalStateException when there is no chat available with specific chat id `() {
-        every { chatService.getChatById(notAvailableChatId) } returns null
-        every { contactService.getContactByOwnerIdAndContactUserId(userId, otherUser.id) } returns null
-
-        assertThrows<IllegalStateException> {
-            controller.getChatDetail(notAvailableChatIdString, userId)
+    fun `getChatDetail should throw not found exception when try to find unavailable chatId`(){
+        every {chatService.getChatById(chatId, userId)} throws NotFoundException("")
+        assertThrows<NotFoundException> {
+            controller.getChatDetail(chatId = chatId, userId = userId)
         }
     }
 
-    private companion object {
+    private companion object{
         val chatId = UUID.fromString("825265f7-7e30-4ac3-b9fb-16ba3869610e")
-        val chatIdString = "825265f7-7e30-4ac3-b9fb-16ba3869610e"
-
-        val notAvailableChatId = UUID.fromString("825265f7-7e30-4ac3-b9fb-87ba3869610e")
-        val notAvailableChatIdString = "825265f7-7e30-4ac3-b9fb-87ba3869610e"
-
         val userId = UUID.fromString("451e4d6c-0380-41ed-95e6-275793c404c6")
 
-        val contact = Contact(
-            id = UUID.fromString("73439a0a-adfa-4bf7-86ad-0d66435d5f18"),
-            firstName = "Raouf",
-            lastName = "kamel",
-            phoneNumber = "+967775074564",
-            contactOwnerId = userId
-        )
-        val otherUser = ContactUser(
-            id = UUID.fromString("1804d9db-c870-421d-934b-b00528cb5b93"),
-            firstName = "osama",
-            lastName = "kamel",
-            phoneNumber = "+967775074564",
-            imageUrl = null
-        )
-        val meUser = ContactUser(
-            id = userId,
-            firstName = "omer",
-            lastName = "faris",
-            phoneNumber = "9647844440001",
-            imageUrl = null
-        )
-        val chatResponse = ChatResponse(
-            id = chatId,
+        val chatModel = ChatModel(
             name = "Raouf kamel",
+            imageUrl = null,
             requesterId = userId,
-            imageUrl = null
+            id = chatId
         )
 
-        val chat = Chat(
-            id = chatId,
-            users = mutableSetOf(meUser, otherUser),
+        val chatResponse = ChatResponse(
+            name = "Raouf kamel",
+            imageUrl = null,
+            requesterId = userId,
+            id = chatId
         )
     }
 }
