@@ -1,15 +1,13 @@
 package net.thechance.chat.service
 
 import jakarta.persistence.EntityManager
-import net.thechance.chat.api.dto.ChatsResponse
-import net.thechance.chat.api.dto.toResponse
 import net.thechance.chat.entity.Chat
+import net.thechance.chat.entity.ChatSummary
 import net.thechance.chat.entity.Message
 import net.thechance.chat.repository.ChatRepository
 import net.thechance.chat.repository.MessageRepository
 import net.thechance.chat.service.args.CreateMessageArgs
 import org.springframework.data.domain.Page
-import org.springframework.data.domain.PageImpl
 import org.springframework.data.domain.Pageable
 import org.springframework.stereotype.Service
 import org.springframework.transaction.annotation.Transactional
@@ -56,23 +54,18 @@ class ChatService(
     fun markChatMessagesAsRead(chatId: UUID, userId: UUID) =
         messageRepository.updateIsReadByChatIdAndSenderIdNot(chatId = chatId, userId = userId)
 
-    fun getUserChats(userId: UUID, pageable: Pageable): Page<ChatsResponse> {
+    fun getUserChats(userId: UUID, pageable: Pageable): Page<ChatSummary> {
         val chats = chatRepository.findAllByUserId(userId, pageable)
-        val chatResponses = chats.map { chat ->
-            val lastMessage = messageRepository.findTopByChatIdOrderBySentAtDesc(chat.id)
-            val unreadCount = messageRepository.countByChatIdAndSenderIdNotAndIsReadFalse(chat.id, userId)
-            val contact = chat.users.firstOrNull { it.id != userId }?.let { requester ->
-                contactService.getContactByOwnerIdAndContactUserId(userId, requester.id)
-            }
+        val lastMessages = messageRepository.findLastMessagesForChats(chats.content.map { it.id })
+        val unreadCounts = chatRepository.findUnreadCountsForChats(
+            chatIds = chats.content.map { it.id }
+        ).associate { it.entries.first().toPair() }
 
-            chat.toResponse(
-                requesterId = userId,
-                contact = contact,
-                message = lastMessage,
-                unreadCount = unreadCount
-            )
+        val chatSummaries = chats.map { chat ->
+            messageRepository.findTopByChatIdOrderBySentAtDesc(chat.id).also { println("$it") }
+            val otherUser = chat.users.firstOrNull { it.id != userId }
+            chat.toSummary(userId, otherUser, lastMessages.firstOrNull { it.chat.id == chat.id }, unreadCounts[chat.id] ?: 0)
         }
-        return PageImpl(chatResponses, pageable, chatRepository.countByUserId(userId))
-
+        return chatSummaries
     }
 }

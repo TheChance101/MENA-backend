@@ -68,13 +68,13 @@ class ChatController(
         chatService.markChatMessagesAsRead(markAsReadRequest.chatId, userId)
     }
 
-    @GetMapping("/list")
+    @GetMapping("/chatsSummary")
     fun getUserChatList(
         @AuthenticationPrincipal userId: UUID,
         pageable: Pageable
-    ): ResponseEntity<PagedResponse<ChatsResponse>> {
+    ): ResponseEntity<PagedResponse<ChatSummaryResponse>> {
         val chats = chatService.getUserChats(userId, pageable)
-        return ResponseEntity.ok(chats.toPagedChatResponse())
+        return ResponseEntity.ok(chats.toPagedResponse())
     }
 
     private fun sendMessageToUser(user: String, message: Any) {
