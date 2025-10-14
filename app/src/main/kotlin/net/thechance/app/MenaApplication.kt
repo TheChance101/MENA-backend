@@ -7,6 +7,7 @@ import org.springframework.context.annotation.ComponentScan
 import org.springframework.context.annotation.PropertySource
 import org.springframework.data.jpa.repository.config.EnableJpaRepositories
 import org.springframework.scheduling.annotation.EnableScheduling
+import org.springframework.scheduling.annotation.EnableAsync
 
 @SpringBootApplication
 @ComponentScan(basePackages = ["net.thechance"])
@@ -14,6 +15,7 @@ import org.springframework.scheduling.annotation.EnableScheduling
 @EntityScan(basePackages = ["net.thechance"])
 @PropertySource("classpath:identity-rate-limit.properties")
 @EnableScheduling
+@EnableAsync
 class MenaApplication
 
 fun main(args: Array<String>) {

@@ -5,6 +5,7 @@ plugins {
     kotlin("plugin.spring")
     id("org.jetbrains.kotlinx.kover")
     kotlin("plugin.jpa")
+    kotlin("plugin.serialization") version "1.9.10"
 }
 
 dependencies {
@@ -12,7 +13,8 @@ dependencies {
     implementation("org.springframework.boot:spring-boot-starter-security")
     implementation("org.springframework.boot:spring-boot-starter-validation")
     implementation("org.springframework.boot:spring-boot-starter-web")
-
+    implementation("org.springframework.boot:spring-boot-starter-webflux")
+    implementation("org.jetbrains.kotlinx:kotlinx-serialization-json:1.6.0")
     testImplementation(kotlin("test"))
     testImplementation("io.mockk:mockk:1.13.12")
     testImplementation("com.google.truth:truth:1.4.4")
