@@ -11,7 +11,6 @@ import net.thechance.wallet.repository.TransactionRepository
 import org.junit.Assert.assertThrows
 import org.junit.Before
 import org.junit.Test
-import org.springframework.data.repository.findByIdOrNull
 import java.math.BigDecimal
 import java.time.LocalDateTime
 import java.util.*
@@ -61,7 +60,7 @@ class PaymentServiceTest {
 
     @Test
     fun `pay throws if transaction already processed`() {
-        every { transactionRepository.findByIdOrNull(transactionId) } returns transaction
+        every { transactionRepository.existsById(transactionId) } returns true
         val ex = assertThrows(IllegalArgumentException::class.java) {
             paymentService.pay(userId, transactionId)
         }
@@ -70,7 +69,7 @@ class PaymentServiceTest {
 
     @Test
     fun `pay throws if pending transaction not found`() {
-        every { transactionRepository.findByIdOrNull(transactionId) } returns null
+        every { transactionRepository.existsById(transactionId) } returns false
         every { pendingTransactionRepository.findById(transactionId) } returns Optional.empty()
         val ex = assertThrows(IllegalArgumentException::class.java) {
             paymentService.pay(userId, transactionId)
@@ -80,7 +79,7 @@ class PaymentServiceTest {
 
     @Test
     fun `pay throws if user is not authorized`() {
-        every { transactionRepository.findByIdOrNull(transactionId) } returns null
+        every { transactionRepository.existsById(transactionId) } returns false
         every { pendingTransactionRepository.findById(transactionId) } returns Optional.of(pendingTransaction.copy(sender = WalletUser(UUID.randomUUID(), "other", "Other", "User", null)))
         val ex = assertThrows(IllegalArgumentException::class.java) {
             paymentService.pay(userId, transactionId)
@@ -92,7 +91,7 @@ class PaymentServiceTest {
     fun `pay throws if sender and receiver are the same`() {
         val sameUser = WalletUser(userId, "same", "Same", "User", null)
         val pt = pendingTransaction.copy(sender = sameUser, receiver = sameUser)
-        every { transactionRepository.findByIdOrNull(transactionId) } returns null
+        every { transactionRepository.existsById(transactionId) } returns false
         every { pendingTransactionRepository.findById(transactionId) } returns Optional.of(pt)
         val ex = assertThrows(IllegalArgumentException::class.java) {
             paymentService.pay(userId, transactionId)
@@ -102,7 +101,7 @@ class PaymentServiceTest {
 
     @Test
     fun `pay throws if insufficient balance`() {
-        every { transactionRepository.findByIdOrNull(transactionId) } returns null
+        every { transactionRepository.existsById(transactionId) } returns false
         every { pendingTransactionRepository.findById(transactionId) } returns Optional.of(pendingTransaction)
         every { walletService.getUserBalance(userId) } returns 5.0
         val ex = assertThrows(IllegalArgumentException::class.java) {
@@ -113,7 +112,7 @@ class PaymentServiceTest {
 
     @Test
     fun `pay uses existing block if not full`() {
-        every { transactionRepository.findByIdOrNull(transactionId) } returns null
+        every { transactionRepository.existsById(transactionId) } returns false
         every { pendingTransactionRepository.findById(transactionId) } returns Optional.of(pendingTransaction)
         every { walletService.getUserBalance(userId) } returns 100.0
         every { blockService.getCurrentBlock() } returns block
@@ -127,7 +126,7 @@ class PaymentServiceTest {
 
     @Test
     fun `pay creates new block if last block is full`() {
-        every { transactionRepository.findByIdOrNull(transactionId) } returns null
+        every { transactionRepository.existsById(transactionId) } returns false
         every { pendingTransactionRepository.findById(transactionId) } returns Optional.of(pendingTransaction)
         every { walletService.getUserBalance(userId) } returns 100.0
         every { blockService.getCurrentBlock() } returns block.copy(id = UUID.randomUUID())
@@ -142,7 +141,7 @@ class PaymentServiceTest {
 
     @Test
     fun `pay creates new block if no previous block exists`() {
-        every { transactionRepository.findByIdOrNull(transactionId) } returns null
+        every { transactionRepository.existsById(transactionId) } returns false
         every { pendingTransactionRepository.findById(transactionId) } returns Optional.of(pendingTransaction)
         every { walletService.getUserBalance(userId) } returns 100.0
         every { blockService.getCurrentBlock() } returns block
