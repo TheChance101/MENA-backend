@@ -6,6 +6,7 @@ import io.mockk.justRun
 import io.mockk.mockk
 import io.mockk.verify
 import net.thechance.chat.api.controller.ChatController.Companion.QUEUE_MESSAGES
+import net.thechance.chat.api.dto.ChatResponse
 import net.thechance.chat.api.dto.MarkAsReadRequest
 import net.thechance.chat.api.dto.MarkAsReadResponse
 import net.thechance.chat.api.dto.MessageRequestDto
@@ -15,7 +16,10 @@ import net.thechance.chat.entity.ContactUser
 import net.thechance.chat.entity.Message
 import net.thechance.chat.service.ChatService
 import net.thechance.chat.service.ContactService
+import net.thechance.chat.service.exception.NotFoundException
+import net.thechance.chat.service.model.ChatModel
 import org.junit.jupiter.api.Test
+import org.junit.jupiter.api.assertThrows
 import org.springframework.data.domain.PageImpl
 import org.springframework.data.domain.PageRequest
 import org.springframework.data.domain.Pageable
@@ -162,5 +166,40 @@ class ChatControllerTest {
             )
         }
         verify { chatService.markChatMessagesAsRead(chatId, userId) }
+    }
+
+    @Test
+    fun `getChatDetail should get chat response correctly when the function run successfully `(){
+        every {chatService.getChatById(chatId, userId)} returns chatModel
+        val result = controller.getChatDetail(chatId, userId).body
+
+        assertThat(result).isEqualTo(chatResponse)
+    }
+
+    @Test
+    fun `getChatDetail should throw not found exception when try to find unavailable chatId`(){
+        every {chatService.getChatById(chatId, userId)} throws NotFoundException("")
+        assertThrows<NotFoundException> {
+            controller.getChatDetail(chatId = chatId, userId = userId)
+        }
+    }
+
+    private companion object{
+        val chatId = UUID.fromString("825265f7-7e30-4ac3-b9fb-16ba3869610e")
+        val userId = UUID.fromString("451e4d6c-0380-41ed-95e6-275793c404c6")
+
+        val chatModel = ChatModel(
+            name = "Raouf kamel",
+            imageUrl = null,
+            requesterId = userId,
+            id = chatId
+        )
+
+        val chatResponse = ChatResponse(
+            name = "Raouf kamel",
+            imageUrl = null,
+            requesterId = userId,
+            id = chatId
+        )
     }
 }

@@ -89,6 +89,15 @@ class ChatController(
         )
     }
 
+    @GetMapping("/{chatId}")
+    fun getChatDetail(
+        @PathVariable chatId : UUID,
+        @AuthenticationPrincipal userId: UUID
+    ): ResponseEntity<ChatResponse>{
+       val chat = chatService.getChatById(chatId, userId)
+        return ResponseEntity.ok(chat.toResponse())
+    }
+
     companion object {
         const val QUEUE_MESSAGES = "/queue/messages"
     }

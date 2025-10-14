@@ -3,6 +3,7 @@ package net.thechance.chat.api.dto
 import net.thechance.chat.entity.Chat
 import net.thechance.chat.entity.Contact
 import net.thechance.chat.entity.ContactUser
+import net.thechance.chat.service.model.ChatModel
 import java.util.UUID
 
 data class ChatResponse(
@@ -27,4 +28,12 @@ private fun getChatName(contact: Contact?, theOtherUser: ContactUser?): String {
         ?: theOtherUser?.let { "${it.firstName} ${it.lastName}" }.orEmpty()
 }
 
+fun ChatModel.toResponse(): ChatResponse{
+    return ChatResponse(
+        id = id,
+        name = name,
+        requesterId = requesterId,
+        imageUrl = imageUrl
+    )
+}
 
