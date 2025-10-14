@@ -1,7 +1,6 @@
 package net.thechance.wallet.entity
 
 import jakarta.persistence.*
-import net.thechance.wallet.entity.user.WalletUser
 import java.util.*
 
 @Entity
@@ -14,9 +13,5 @@ data class WalletDukan(
     val name: String,
 
     @Column(nullable = true)
-    val imageUrl: String? = null,
-
-    @OneToOne
-    @JoinColumn(name = "user_id", referencedColumnName = "userId")
-    val user: WalletUser
+    val imageUrl: String? = null
 )
