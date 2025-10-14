@@ -36,7 +36,7 @@ data class PendingTransaction(
 
 fun PendingTransaction.toTransaction(
     block: Block,
-    status: Transaction.Status = Transaction.Status.SUCCESS
+    status: Transaction.Status
 ): Transaction {
     return Transaction(
         id = this.id,

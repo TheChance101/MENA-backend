@@ -1,6 +1,5 @@
-package net.thechance.wallet.service.helper
+package net.thechance.wallet.entity
 
-import net.thechance.wallet.entity.Transaction
 import net.thechance.wallet.entity.user.WalletUser
 
 data class ReceiverDetails(

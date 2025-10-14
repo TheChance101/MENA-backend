@@ -1,8 +1,7 @@
 package net.thechance.wallet.service
 
 import jakarta.persistence.EntityNotFoundException
-import net.thechance.wallet.entity.PendingTransaction
-import net.thechance.wallet.entity.Transaction
+import net.thechance.wallet.entity.*
 import net.thechance.wallet.repository.PendingTransactionRepository
 import net.thechance.wallet.repository.TransactionRepository
 import net.thechance.wallet.repository.WalletUserRepository

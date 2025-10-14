@@ -6,8 +6,8 @@ import net.thechance.wallet.api.controller.util.StatementPdfWriter
 import net.thechance.wallet.api.dto.transaction.*
 import net.thechance.wallet.entity.Transaction
 import net.thechance.wallet.service.TransactionService
-import net.thechance.wallet.service.helper.PendingTransactionParams
-import net.thechance.wallet.service.helper.ReceiverDetails
+import net.thechance.wallet.entity.PendingTransactionParams
+import net.thechance.wallet.entity.ReceiverDetails
 import net.thechance.wallet.service.helper.TransactionFilterParams
 import net.thechance.wallet.service.helper.UserTransactionType
 import org.springframework.data.domain.PageRequest
