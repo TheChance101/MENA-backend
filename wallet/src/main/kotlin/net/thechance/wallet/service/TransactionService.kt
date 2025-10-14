@@ -66,12 +66,16 @@ class TransactionService(
     }
 
     fun getTransactionReceiverDetails(transactionId: UUID): ReceiverDetails {
-        val pendingTransaction = pendingTransactionRepository.findByIdOrNull(transactionId)
         val transaction = transactionRepository.findByIdOrNull(transactionId)
+        if (transaction != null) {
+            return transaction.receiver.toReceiverDetails(transaction.type)
+        }
 
-        val receiver = transaction?.receiver ?: pendingTransaction?.receiver
-        ?: throw EntityNotFoundException("Transaction ID $transactionId not found.")
+        val pendingTransaction = pendingTransactionRepository.findByIdOrNull(transactionId)
+        if (pendingTransaction != null) {
+            return pendingTransaction.receiver.toReceiverDetails(pendingTransaction.type)
+        }
 
-        return receiver.toReceiverDetails(transaction?.type ?: pendingTransaction?.type ?: Transaction.Type.P2P)
+        throw EntityNotFoundException("Transaction ID $transactionId not found.")
     }
 }
