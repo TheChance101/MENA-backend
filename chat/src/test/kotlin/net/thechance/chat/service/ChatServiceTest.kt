@@ -6,29 +6,28 @@ import io.mockk.mockk
 import io.mockk.verify
 import jakarta.persistence.EntityManager
 import jakarta.persistence.EntityNotFoundException
+import net.thechance.chat.api.dto.MessageImagesRequestArgs
 import net.thechance.chat.api.dto.MessageImagesRequestDto
+import net.thechance.chat.api.dto.MessageRequestArgs
 import net.thechance.chat.api.dto.MessageRequestDto
 import net.thechance.chat.entity.Chat
 import net.thechance.chat.entity.Contact
 import net.thechance.chat.entity.ContactUser
+import net.thechance.chat.entity.Message
 import net.thechance.chat.repository.ChatRepository
-import net.thechance.chat.repository.MessageImagesRepository
 import net.thechance.chat.repository.MessageRepository
-import net.thechance.chat.service.args.CreateMessageArgs
 import net.thechance.chat.service.exception.NotFoundException
 import net.thechance.chat.service.model.ChatModel
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.assertThrows
 import org.springframework.data.repository.findByIdOrNull
-import java.time.Instant
 import java.util.*
 
 class ChatServiceTest {
 
     private lateinit var messageRepository: MessageRepository
     private lateinit var chatRepository: ChatRepository
-    private lateinit var messageImagesRepository: MessageImagesRepository
     private lateinit var attachmentStorageService: AttachmentStorageService
     private lateinit var contactUserService: ContactUserService
     private lateinit var contactService: ContactService
@@ -51,7 +50,6 @@ class ChatServiceTest {
     @BeforeEach
     fun setUp() {
         messageRepository = mockk(relaxed = true)
-        messageImagesRepository = mockk(relaxed = true)
         chatRepository = mockk(relaxed = true)
         contactUserService = mockk(relaxed = true)
         attachmentStorageService = mockk(relaxed = true)
@@ -59,7 +57,6 @@ class ChatServiceTest {
         contactService = mockk()
         service = ChatService(
             messageRepository,
-            messageImagesRepository,
             chatRepository,
             contactUserService,
             attachmentStorageService,
@@ -105,7 +102,7 @@ class ChatServiceTest {
     }
 
     @Test
-    fun `saveMessage saves message when chat exists`() {
+    fun `saveMessage saves message when chat exists`() { // the failed one
         val chat = testChat()
         val messageDto = MessageRequestDto(
             chatId = chat.id,
@@ -114,9 +111,10 @@ class ChatServiceTest {
         )
 
         every { entityManager.getReference(Chat::class.java, chat.id) } returns chat
-        every { messageRepository.save(any()) } answers { firstArg() }
+        every { messageRepository.findById(any()) } answers { Optional.empty() }
+        every { messageRepository.save(any()) } answers { firstArg<Message>() }
 
-        service.saveMessage(UUID.randomUUID(), messageDto)
+        service.saveMessage(MessageRequestArgs(chat.id, UUID.randomUUID(), messageDto.text, UUID.randomUUID()))
 
         verify {
             messageRepository.save(
@@ -137,9 +135,10 @@ class ChatServiceTest {
         )
 
         every { entityManager.getReference(Chat::class.java, messageDto.chatId) } throws EntityNotFoundException()
+        every { messageRepository.findById(any()) } answers { Optional.empty() }
 
         assertThrows<EntityNotFoundException> {
-            service.saveMessage(UUID.randomUUID(), messageDto)
+            service.saveMessage(MessageRequestArgs(messageDto.chatId, UUID.randomUUID(), messageDto.text, messageDto.messageId))
         }
     }
 
@@ -151,7 +150,7 @@ class ChatServiceTest {
         every { entityManager.getReference(Chat::class.java, chat.id) } returns chat
         every { messageRepository.save(any()) } answers { firstArg() }
 
-        service.saveMessageImages(UUID.randomUUID(), req)
+        service.saveMessageImages(MessageImagesRequestArgs(req.chatId, UUID.randomUUID(), req.images))
 
         verify {
             messageRepository.save(
@@ -162,6 +161,7 @@ class ChatServiceTest {
             )
         }
     }
+
     @Test
     fun `markChatMessagesAsRead updates messages`() {
         val chatId = UUID.randomUUID()

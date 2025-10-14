@@ -11,7 +11,4 @@ data class MessageImages(
 
     @Column(nullable = false)
     val url: String,
-
-    @JoinColumn(name = "message_id", referencedColumnName = "id", nullable = false)
-    val messageId: UUID
 )
