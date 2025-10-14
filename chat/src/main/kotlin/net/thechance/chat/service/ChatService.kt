@@ -40,7 +40,7 @@ class ChatService(
     @Transactional
     fun saveMessage(args: MessageRequestArgs): Message {
         args.messageId?.let { messageId ->
-            messageRepository.findById(messageId).orElse(null)?.let { return it } // this is line 43
+            messageRepository.findById(messageId).orElse(null)?.let { return it }
         }
         val chat = entityManager.getReference(Chat::class.java, args.chatId)
         val message = Message(
@@ -50,8 +50,7 @@ class ChatService(
             text = args.text,
             sentAt = Instant.now(),
         )
-        messageRepository.save(message)
-        return message
+        return messageRepository.save(message)
     }
 
     @Transactional
@@ -68,7 +67,6 @@ class ChatService(
                 url = imageUrl
             )
         }
-
         return messageRepository.save(message.copy(images = messageImages))
     }
 
@@ -82,7 +80,7 @@ class ChatService(
     fun getChatById(chatId: UUID, userId: UUID): ChatModel {
         val chat = chatRepository.findByIdOrNull(chatId) ?: throw NotFoundException("no chat was found with id: $chatId")
         val otherUser = chat.users.firstOrNull { it.id != userId }
-        val contact =otherUser?.let{
+        val contact = otherUser?.let {
             contactService.getContactByOwnerIdAndContactUserId(userId, it.id)
         }
         return ChatModel(
@@ -93,7 +91,7 @@ class ChatService(
         )
     }
 
-    private fun getChatName(contact: Contact?, user: ContactUser? ): String{
+    private fun getChatName(contact: Contact?, user: ContactUser?): String {
         return contact?.let { "${it.firstName} ${it.lastName}" }
             ?: user?.let { "${it.firstName} ${it.lastName}" }.orEmpty()
     }

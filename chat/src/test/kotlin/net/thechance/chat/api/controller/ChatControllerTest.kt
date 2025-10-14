@@ -90,7 +90,7 @@ class ChatControllerTest {
         every { chatService.saveMessage(any()) } returns savedMessage
         justRun { messagingTemplate.convertAndSendToUser(any(), any(), any()) }
 
-        controller.uploadMessageImages(chatId, images, principal)
+        controller.uploadMessageImages(chatId, listOf(images), principal)
 
         verify {
             chatService.saveMessageImages(match { it.chatId == chatId && it.senderId == senderId })
