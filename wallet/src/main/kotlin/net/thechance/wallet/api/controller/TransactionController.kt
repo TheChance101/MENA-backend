@@ -6,7 +6,7 @@ import net.thechance.wallet.api.controller.util.StatementPdfWriter
 import net.thechance.wallet.api.dto.transaction.*
 import net.thechance.wallet.entity.Transaction
 import net.thechance.wallet.service.TransactionService
-import net.thechance.wallet.entity.PendingTransactionParams
+import net.thechance.wallet.entity.InitiateTransactionParams
 import net.thechance.wallet.entity.ReceiverDetails
 import net.thechance.wallet.service.helper.TransactionFilterParams
 import net.thechance.wallet.service.helper.UserTransactionType
@@ -124,11 +124,11 @@ class TransactionController(
     }
 
     @PostMapping("/add")
-    fun createTransaction(
+    fun initiateTransaction(
         @AuthenticationPrincipal userId: UUID,
-        @RequestBody params: PendingTransactionParams,
+        @RequestBody params: InitiateTransactionParams,
     ): ResponseEntity<UUID> {
-        val transaction = transactionService.createTransaction(params, userId)
+        val transaction = transactionService.initiateTransaction(params, userId)
         return ResponseEntity.ok(transaction.id)
     }
 

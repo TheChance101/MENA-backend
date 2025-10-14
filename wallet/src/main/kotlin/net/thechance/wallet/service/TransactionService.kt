@@ -56,13 +56,13 @@ class TransactionService(
         ) ?: throw EntityNotFoundException("Transaction with ID $transactionId not found or access denied.")
     }
 
-    fun createTransaction(transaction: PendingTransactionParams, senderId: UUID): PendingTransaction {
-        if (transaction.receiverId == senderId)
+    fun initiateTransaction(initiateTransactionParams: InitiateTransactionParams, senderId: UUID): PendingTransaction {
+        if (initiateTransactionParams.receiverId == senderId)
             throw IllegalArgumentException("Sender and receiver cannot be the same.")
 
         val sender = walletUserRepository.getReferenceById(senderId)
-        val receiver = walletUserRepository.getReferenceById(transaction.receiverId)
-        return pendingTransactionRepository.save(transaction.toPendingTransaction(sender, receiver))
+        val receiver = walletUserRepository.getReferenceById(initiateTransactionParams.receiverId)
+        return pendingTransactionRepository.save(initiateTransactionParams.toPendingTransaction(sender, receiver))
     }
 
     fun getTransactionReceiverDetails(transactionId: UUID): ReceiverDetails {
