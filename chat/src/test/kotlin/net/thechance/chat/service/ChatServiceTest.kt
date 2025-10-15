@@ -106,7 +106,6 @@ class ChatServiceTest {
         val chat = testChat()
         val messageDto = MessageRequestDto(
             chatId = chat.id,
-            messageId = UUID.randomUUID(),
             text = "message 1",
         )
 
@@ -114,7 +113,7 @@ class ChatServiceTest {
         every { messageRepository.findById(any()) } answers { Optional.empty() }
         every { messageRepository.save(any()) } answers { firstArg<Message>() }
 
-        service.saveMessage(MessageRequestArgs(chat.id, UUID.randomUUID(), messageDto.text, UUID.randomUUID()))
+        service.saveMessage(MessageRequestArgs(chat.id, UUID.randomUUID(), messageDto.text))
 
         verify {
             messageRepository.save(
@@ -130,7 +129,6 @@ class ChatServiceTest {
     fun `saveMessage throws if chat not found`() {
         val messageDto = MessageRequestDto(
             chatId = UUID.randomUUID(),
-            messageId = UUID.randomUUID(),
             text = "message 1",
         )
 
@@ -138,19 +136,18 @@ class ChatServiceTest {
         every { messageRepository.findById(any()) } answers { Optional.empty() }
 
         assertThrows<EntityNotFoundException> {
-            service.saveMessage(MessageRequestArgs(messageDto.chatId, UUID.randomUUID(), messageDto.text, messageDto.messageId))
+            service.saveMessage(MessageRequestArgs(messageDto.chatId, UUID.randomUUID(), messageDto.text))
         }
     }
 
     @Test
     fun `saveMessageImages should upload image & create message then return message with images urls`() {
         val chat = testChat()
-        val req = MessageImagesRequestDto(chat.id, emptyList())
 
         every { entityManager.getReference(Chat::class.java, chat.id) } returns chat
         every { messageRepository.save(any()) } answers { firstArg() }
 
-        service.saveMessageImages(MessageImagesRequestArgs(req.chatId, UUID.randomUUID(), req.images))
+        service.saveMessageImages(chat.id, UUID.randomUUID(), emptyList())
 
         verify {
             messageRepository.save(

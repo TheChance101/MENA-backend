@@ -7,7 +7,6 @@ import java.util.*
 
 data class MessageRequestDto(
     val chatId: UUID,
-    val messageId: UUID?,
     val text: String?
 )
 
@@ -48,15 +47,13 @@ fun Page<Message>.toPagedMessageResponse(): PagedResponse<MessageResponseDto> {
 data class MessageRequestArgs(
     val chatId: UUID,
     val senderId: UUID,
-    val text: String?,
-    val messageId: UUID?
+    val text: String?
 )
 
 fun MessageRequestDto.toReqArgs(senderId: UUID): MessageRequestArgs {
     return MessageRequestArgs(
         chatId = this.chatId,
         senderId = senderId,
-        text = this.text,
-        messageId = this.messageId
+        text = this.text
     )
 }

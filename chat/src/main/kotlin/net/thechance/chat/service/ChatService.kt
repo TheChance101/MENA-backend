@@ -12,6 +12,7 @@ import org.springframework.data.domain.Pageable
 import org.springframework.data.repository.findByIdOrNull
 import org.springframework.stereotype.Service
 import org.springframework.transaction.annotation.Transactional
+import org.springframework.web.multipart.MultipartFile
 import java.time.Instant
 import java.util.*
 
@@ -39,10 +40,8 @@ class ChatService(
 
     @Transactional
     fun saveMessage(args: MessageRequestArgs): Message {
-        args.messageId?.let { messageId ->
-            messageRepository.findById(messageId).orElse(null)?.let { return it }
-        }
         val chat = entityManager.getReference(Chat::class.java, args.chatId)
+
         val message = Message(
             id = UUID.randomUUID(),
             senderId = args.senderId,
@@ -50,16 +49,18 @@ class ChatService(
             text = args.text,
             sentAt = Instant.now(),
         )
+
         return messageRepository.save(message)
     }
 
     @Transactional
-    fun saveMessageImages(args: MessageImagesRequestArgs): Message {
-        val message = saveMessage(MessageRequestArgs(args.chatId, args.senderId, null, null))
-        val messageImages = args.images.map { image ->
+    fun saveMessageImages(chatId: UUID, senderId: UUID, images: List<MultipartFile>): Message {
+        val message = saveMessage(MessageRequestArgs(chatId, senderId, null))
+
+        val messageImages = images.map { image ->
             val imageUrl = attachmentStorageService.uploadImage(
                 file = image,
-                fileName = "${message.id}-$image",
+                fileName = "${message.id}-${Instant.now()}-${image.originalFilename}",
                 folderName = FOLDER_NAME
             )
             MessageImages(
@@ -67,6 +68,7 @@ class ChatService(
                 url = imageUrl
             )
         }
+
         return messageRepository.save(message.copy(images = messageImages))
     }
 

@@ -48,7 +48,7 @@ class ChatControllerTest {
     fun `sendPrivateMessage should save message and send to user`() {
         val chatId = UUID.randomUUID()
         val senderId = UUID.randomUUID()
-        val dto = MessageRequestDto(chatId, null, "message1")
+        val dto = MessageRequestDto(chatId, "message1")
 
         val principal = mockk<Principal>()
         every { principal.name } returns senderId.toString()
@@ -72,7 +72,7 @@ class ChatControllerTest {
     }
 
     @Test
-    fun `uploadMessageImages should upload image then send to user`() {
+    fun `sendMessageImages should upload image then send to user`() {
         val chatId = UUID.randomUUID()
         val senderId = UUID.randomUUID()
 
@@ -86,15 +86,18 @@ class ChatControllerTest {
 
         val savedMessage = testMessage(senderId = senderId, chat = dummyChat)
 
-        every { chatService.saveMessageImages(any()) } returns savedMessage
+        every { chatService.saveMessageImages(any(), any(), any()) } returns savedMessage
         every { chatService.saveMessage(any()) } returns savedMessage
         justRun { messagingTemplate.convertAndSendToUser(any(), any(), any()) }
 
-        controller.uploadMessageImages(chatId, listOf(images), principal)
+        controller.sendMessageImages(chatId, listOf(images), principal)
 
         verify {
-            chatService.saveMessageImages(match { it.chatId == chatId && it.senderId == senderId })
-            chatService.saveMessage(match { it.senderId == senderId && it.chatId == chatId })
+            chatService.saveMessageImages(
+                match { it == chatId },
+                match { it == senderId },
+                match { it == listOf(images) }
+            )
         }
     }
 
