@@ -2,12 +2,14 @@ package net.thechance.chat.service
 
 import jakarta.persistence.EntityManager
 import net.thechance.chat.entity.Chat
+import net.thechance.chat.entity.ChatSummary
 import net.thechance.chat.entity.Contact
 import net.thechance.chat.entity.ContactUser
 import net.thechance.chat.entity.Message
 import net.thechance.chat.repository.ChatRepository
 import net.thechance.chat.repository.MessageRepository
 import net.thechance.chat.service.args.CreateMessageArgs
+import org.springframework.data.domain.Page
 import net.thechance.chat.service.exception.NotFoundException
 import net.thechance.chat.service.model.ChatModel
 import org.springframework.data.domain.Pageable
@@ -21,8 +23,8 @@ class ChatService(
     private val messageRepository: MessageRepository,
     private val chatRepository: ChatRepository,
     private val contactUserService: ContactUserService,
+    private val entityManager: EntityManager,
     private val contactService: ContactService,
-    private val entityManager: EntityManager
 ) {
     @Transactional
     fun getOrCreateConversationByParticipants(userId: UUID, receiverId: UUID): Chat {
@@ -56,6 +58,25 @@ class ChatService(
 
     fun markChatMessagesAsRead(chatId: UUID, userId: UUID) =
         messageRepository.updateIsReadByChatIdAndSenderIdNot(chatId = chatId, userId = userId)
+
+    fun getUserChats(userId: UUID, pageable: Pageable): Page<ChatSummary> {
+        val chats = chatRepository.findAllByUserId(userId, pageable)
+        val chatIds = chats.content.map { it.id }
+
+        val lastMessages = messageRepository.findLastMessagesForChats(chatIds)
+        val unreadCounts = chatRepository.findUnreadCountsForChats(chatIds)
+
+        val chatSummaries = chats.map { chat ->
+            val otherUser = chat.users.firstOrNull { it.id != userId }
+            chat.toSummary(
+                userId,
+                otherUser,
+                lastMessages.firstOrNull { it.chat.id == chat.id },
+                unreadCounts.firstOrNull { it.chatId == chat.id }?.unreadCount ?: 0
+            )
+        }
+        return chatSummaries
+    }
 
     fun getChatById(chatId: UUID, userId: UUID): ChatModel {
         val chat = chatRepository.findByIdOrNull(chatId) ?: throw NotFoundException("no chat was found with id: $chatId")
