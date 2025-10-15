@@ -1,10 +1,10 @@
 package net.thechance.wallet.eventListener
 
-import net.thechance.events.wallet.TransactionInitiatedEvent
+import net.thechance.events.wallet.InitiateTransactionEvent
 import net.thechance.wallet.entity.InitiateTransactionParams
 import net.thechance.wallet.entity.Transaction
 
-fun TransactionInitiatedEvent.toInitiateTransactionParams(): InitiateTransactionParams {
+fun InitiateTransactionEvent.toInitiateTransactionParams(): InitiateTransactionParams {
     return InitiateTransactionParams(
         type = type.toTransactionType(),
         senderId = senderId,
@@ -13,9 +13,9 @@ fun TransactionInitiatedEvent.toInitiateTransactionParams(): InitiateTransaction
     )
 }
 
-fun TransactionInitiatedEvent.TransactionType.toTransactionType(): Transaction.Type {
+fun InitiateTransactionEvent.TransactionType.toTransactionType(): Transaction.Type {
     return when (this) {
-        TransactionInitiatedEvent.TransactionType.P2P -> Transaction.Type.P2P
-        TransactionInitiatedEvent.TransactionType.ONLINE_PURCHASE -> Transaction.Type.ONLINE_PURCHASE
+        InitiateTransactionEvent.TransactionType.P2P -> Transaction.Type.P2P
+        InitiateTransactionEvent.TransactionType.ONLINE_PURCHASE -> Transaction.Type.ONLINE_PURCHASE
     }
 }

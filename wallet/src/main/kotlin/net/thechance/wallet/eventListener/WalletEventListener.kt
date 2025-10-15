@@ -1,6 +1,6 @@
 package net.thechance.wallet.eventListener
 
-import net.thechance.events.wallet.TransactionInitiatedEvent
+import net.thechance.events.wallet.InitiateTransactionEvent
 import net.thechance.wallet.service.TransactionService
 import org.springframework.context.event.EventListener
 import org.springframework.stereotype.Component
@@ -11,7 +11,7 @@ class WalletEventListener(
 ) {
 
     @EventListener
-    fun onInitiateTransaction(event: TransactionInitiatedEvent) {
+    fun onInitiateTransaction(event: InitiateTransactionEvent) {
         transactionService.initiateTransaction(event.toInitiateTransactionParams())
     }
 }
