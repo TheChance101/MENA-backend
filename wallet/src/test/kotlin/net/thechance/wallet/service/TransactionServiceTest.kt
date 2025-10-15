@@ -5,37 +5,47 @@ import io.mockk.every
 import io.mockk.mockk
 import jakarta.persistence.EntityNotFoundException
 import net.thechance.wallet.entity.Transaction
+import net.thechance.wallet.entity.toTransactionDetailsModel
 import net.thechance.wallet.entity.user.WalletUser
+import net.thechance.wallet.repository.PendingTransactionRepository
 import net.thechance.wallet.repository.TransactionRepository
 import org.junit.Test
 import java.math.BigDecimal
 import java.time.LocalDateTime
 import java.util.UUID
 import org.junit.Assert.assertThrows
+import org.springframework.data.repository.findByIdOrNull
 
 class TransactionServiceTest {
 
     private val transactionRepository = mockk<TransactionRepository>()
-    private val transactionService = TransactionService(transactionRepository = transactionRepository)
+    private val pendingTransactionRepository = mockk<PendingTransactionRepository>()
+    private val transactionService = TransactionService(transactionRepository = transactionRepository, pendingTransactionRepository = pendingTransactionRepository, walletUserRepository = mockk())
 
     @Test
     fun `getTransactionDetails should return transaction when it exists and user is authorized`() {
         every {
-            transactionRepository.findTransactionById(
+            transactionRepository.findByIdOrNull(
                 TRANSACTION_ID
             )
         } returns FAKE_TRANSACTION
 
         val result = transactionService.getTransactionDetails(TRANSACTION_ID)
 
-        assertThat(result).isEqualTo(FAKE_TRANSACTION)
+        assertThat(result).isEqualTo(FAKE_TRANSACTION.toTransactionDetailsModel())
     }
 
     @Test
     fun `getTransactionDetails should throw EntityNotFoundException when transaction does not exist or user is not authorized`() {
         val transactionId = UUID.randomUUID()
         every {
-            transactionRepository.findTransactionById(
+            transactionRepository.findByIdOrNull(
+                transactionId
+            )
+        } returns null
+
+        every {
+            pendingTransactionRepository.findByIdOrNull(
                 transactionId
             )
         } returns null
@@ -82,13 +92,12 @@ class TransactionServiceTest {
 
         val FAKE_TRANSACTION = Transaction(
             id = TRANSACTION_ID,
-            sender = WalletUser(userId = USER_ID, userName = "user"),
-            receiver = WalletUser(userId = OTHER_USER_ID, userName = "otherUser"),
+            sender = WalletUser(userId = USER_ID, userName = "user", firstName = "First", lastName = "Last", imageUrl = null),
+            receiver = WalletUser(userId = OTHER_USER_ID, userName = "otherUser", firstName = "Other", lastName = "User", imageUrl = null),
             amount = BigDecimal.TEN,
             createdAt = LocalDateTime.now().minusDays(5),
             status = Transaction.Status.SUCCESS,
             type = Transaction.Type.P2P,
-            senderSignature = "signature",
             block = mockk()
         )
     }

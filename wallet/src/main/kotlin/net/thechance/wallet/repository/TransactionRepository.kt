@@ -49,11 +49,6 @@ interface TransactionRepository : JpaRepository<Transaction, UUID> {
         receiverId: UUID
     ): Transaction?
 
-
-    fun findTransactionById(
-        transactionId: UUID,
-    ): Transaction?
-
     @Query(
         """
     SELECT SUM(
@@ -73,4 +68,7 @@ interface TransactionRepository : JpaRepository<Transaction, UUID> {
         @Param("currentUserId") currentUserId: UUID,
         @Param("endDate") endDate: LocalDateTime?,
     ): Double?
+
+    fun getAllByBlockId(blockId: UUID, pageable: Pageable): List<Transaction>
+    fun countAllByBlockId(blockId: UUID): Long
 }

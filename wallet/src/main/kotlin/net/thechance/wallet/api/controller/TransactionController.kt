@@ -3,12 +3,11 @@ package net.thechance.wallet.api.controller
 import jakarta.servlet.http.HttpServletResponse
 import net.thechance.wallet.api.controller.util.StatementMetadata
 import net.thechance.wallet.api.controller.util.StatementPdfWriter
-import net.thechance.wallet.api.dto.transaction.FirstTransactionDateResponse
-import net.thechance.wallet.api.dto.transaction.TransactionPageResponse
-import net.thechance.wallet.api.dto.transaction.TransactionResponse
-import net.thechance.wallet.api.dto.transaction.toResponse
+import net.thechance.wallet.api.dto.transaction.*
 import net.thechance.wallet.entity.Transaction
 import net.thechance.wallet.service.TransactionService
+import net.thechance.wallet.entity.ReceiverDetails
+import net.thechance.wallet.entity.toReceiverDetails
 import net.thechance.wallet.service.helper.TransactionFilterParams
 import net.thechance.wallet.service.helper.UserTransactionType
 import org.springframework.data.domain.PageRequest
@@ -124,7 +123,23 @@ class TransactionController(
         response.setHeader("X-Statement-End-Date", metadata.endDate.toString())
     }
 
+    @PostMapping("/initiate")
+    fun initiateTransaction(
+        @AuthenticationPrincipal userId: UUID,
+        @RequestBody params: InitiateTransactionRequest,
+    ): ResponseEntity<UUID> {
+        val transaction = transactionService.initiateTransaction(params.toInitiateTransactionParam(userId, Transaction.Type.P2P))
+        return ResponseEntity.ok(transaction.id)
+    }
+
+    @GetMapping("/{transactionId}/receiver-details")
+    fun getReceiverDetails(
+        @PathVariable transactionId: UUID,
+    ): ResponseEntity<ReceiverDetails> {
+        val receiverDetails = transactionService.getTransactionDetails(transactionId)
+        return ResponseEntity.ok(receiverDetails.receiver.toReceiverDetails(receiverDetails.type))
+    }
+
     private fun LocalDate?.formatDate(): String =
         this?.format(DateTimeFormatter.ofPattern("_dd_MMM_yyyy"))?.lowercase() ?: ""
 }
-
