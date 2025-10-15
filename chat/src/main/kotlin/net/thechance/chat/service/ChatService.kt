@@ -1,7 +1,6 @@
 package net.thechance.chat.service
 
 import jakarta.persistence.EntityManager
-import net.thechance.chat.api.dto.MessageImagesRequestArgs
 import net.thechance.chat.api.dto.MessageRequestArgs
 import net.thechance.chat.entity.*
 import net.thechance.chat.repository.ChatRepository
@@ -80,7 +79,8 @@ class ChatService(
         messageRepository.updateIsReadByChatIdAndSenderIdNot(chatId = chatId, userId = userId)
 
     fun getChatById(chatId: UUID, userId: UUID): ChatModel {
-        val chat = chatRepository.findByIdOrNull(chatId) ?: throw NotFoundException("no chat was found with id: $chatId")
+        val chat =
+            chatRepository.findByIdOrNull(chatId) ?: throw NotFoundException("no chat was found with id: $chatId")
         val otherUser = chat.users.firstOrNull { it.id != userId }
         val contact = otherUser?.let {
             contactService.getContactByOwnerIdAndContactUserId(userId, it.id)

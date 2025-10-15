@@ -33,8 +33,8 @@ class AttachmentStorageService(
         val mimeType = file.contentType ?: throw InvalidImageFormatException()
         val extension = allowedMimeTypes[mimeType] ?: throw InvalidImageFormatException()
         try {
-            val fileName = "${fileName}_${LocalDateTime.now()}.$extension"
-            val key = "images/$folderName/$fileName"
+            val finalFileName = "${fileName}_${LocalDateTime.now()}.$extension"
+            val key = "images/$folderName/$finalFileName"
             val putReq = createObjectRequest(key, mimeType)
             menaS3Client.putObject(putReq, RequestBody.fromBytes(file.bytes))
             return "${props.cdnEndpoint}/$key"

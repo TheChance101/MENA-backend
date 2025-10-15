@@ -6,8 +6,6 @@ import io.mockk.mockk
 import io.mockk.verify
 import jakarta.persistence.EntityManager
 import jakarta.persistence.EntityNotFoundException
-import net.thechance.chat.api.dto.MessageImagesRequestArgs
-import net.thechance.chat.api.dto.MessageImagesRequestDto
 import net.thechance.chat.api.dto.MessageRequestArgs
 import net.thechance.chat.api.dto.MessageRequestDto
 import net.thechance.chat.entity.Chat
