@@ -77,7 +77,7 @@ class DukanService(
     }
 
     fun getAllByCategoryId(categoryId: UUID, pageable: Pageable): Page<Dukan> {
-        return dukanRepository.findAllByCategoriesId(categoryId, pageable)
+        return dukanRepository.findApprovedDukansWithProductsByCategory(categoryId, pageable)
     }
 
     fun getAllEditorPicksDukan(userId: UUID?, pageable: Pageable): Page<Dukan> {
@@ -93,6 +93,15 @@ class DukanService(
         if (dukanRepository.existsByName(params.name)) {
             throw DukanCreationFailedException()
         }
+    }
+
+    fun getAllBestDukansAround(
+        lat: Double,
+        lng: Double,
+        pageable: Pageable,
+        range: Double = 30000.0
+    ): Page<Dukan> {
+        return dukanRepository.findBestAroundApprovedDukans(lat, lng, range, pageable)
     }
 
     companion object {
