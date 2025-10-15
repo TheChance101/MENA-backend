@@ -5,6 +5,7 @@ import io.mockk.every
 import io.mockk.mockk
 import jakarta.persistence.EntityNotFoundException
 import net.thechance.wallet.entity.Transaction
+import net.thechance.wallet.entity.toTransactionDetailsModel
 import net.thechance.wallet.entity.user.WalletUser
 import net.thechance.wallet.repository.PendingTransactionRepository
 import net.thechance.wallet.repository.TransactionRepository
@@ -13,6 +14,7 @@ import java.math.BigDecimal
 import java.time.LocalDateTime
 import java.util.UUID
 import org.junit.Assert.assertThrows
+import org.springframework.data.repository.findByIdOrNull
 
 class TransactionServiceTest {
 
@@ -23,21 +25,27 @@ class TransactionServiceTest {
     @Test
     fun `getTransactionDetails should return transaction when it exists and user is authorized`() {
         every {
-            transactionRepository.findTransactionById(
+            transactionRepository.findByIdOrNull(
                 TRANSACTION_ID
             )
         } returns FAKE_TRANSACTION
 
         val result = transactionService.getTransactionDetails(TRANSACTION_ID)
 
-        assertThat(result).isEqualTo(FAKE_TRANSACTION)
+        assertThat(result).isEqualTo(FAKE_TRANSACTION.toTransactionDetailsModel())
     }
 
     @Test
     fun `getTransactionDetails should throw EntityNotFoundException when transaction does not exist or user is not authorized`() {
         val transactionId = UUID.randomUUID()
         every {
-            transactionRepository.findTransactionById(
+            transactionRepository.findByIdOrNull(
+                transactionId
+            )
+        } returns null
+
+        every {
+            pendingTransactionRepository.findByIdOrNull(
                 transactionId
             )
         } returns null
