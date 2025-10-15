@@ -11,9 +11,10 @@ data class InitiateTransactionRequest(
 
 fun InitiateTransactionRequest.toInitiateTransactionParam(
     senderId: UUID,
+    type: Transaction.Type,
 ): InitiateTransactionParams {
     return InitiateTransactionParams(
-        type = Transaction.Type.P2P,
+        type = type,
         senderId = senderId,
         receiverId = receiverId,
         amount = amount,

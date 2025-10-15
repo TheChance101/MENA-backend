@@ -128,7 +128,7 @@ class TransactionController(
         @AuthenticationPrincipal userId: UUID,
         @RequestBody params: InitiateTransactionRequest,
     ): ResponseEntity<UUID> {
-        val transaction = transactionService.initiateTransaction(params.toInitiateTransactionParam(userId))
+        val transaction = transactionService.initiateTransaction(params.toInitiateTransactionParam(userId, Transaction.Type.P2P))
         return ResponseEntity.ok(transaction.id)
     }
 
