@@ -123,7 +123,7 @@ class TransactionController(
         response.setHeader("X-Statement-End-Date", metadata.endDate.toString())
     }
 
-    @PostMapping("/initiate")
+    @PostMapping("/p2p/initiate")
     fun initiateTransaction(
         @AuthenticationPrincipal userId: UUID,
         @RequestBody params: InitiateTransactionRequest,
