@@ -49,11 +49,6 @@ interface TransactionRepository : JpaRepository<Transaction, UUID> {
         receiverId: UUID
     ): Transaction?
 
-
-    fun findTransactionById(
-        transactionId: UUID,
-    ): Transaction?
-
     @Query(
         """
     SELECT SUM(

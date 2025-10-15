@@ -42,7 +42,8 @@ data class Transaction(
 
     enum class Status{
         FAILED,
-        SUCCESS
+        SUCCESS,
+        PENDING
     }
 
     enum class Type {

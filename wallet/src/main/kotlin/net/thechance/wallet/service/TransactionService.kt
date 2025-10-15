@@ -50,32 +50,18 @@ class TransactionService(
         )?.createdAt
     }
 
-    fun getTransactionDetails(transactionId: UUID): Transaction {
-        return transactionRepository.findTransactionById(
-            transactionId,
-        ) ?: throw EntityNotFoundException("Transaction with ID $transactionId not found or access denied.")
+    fun getTransactionDetails(transactionId: UUID): TransactionDetailsModel {
+        return transactionRepository.findByIdOrNull(transactionId)?.toTransactionDetailsModel()
+            ?: pendingTransactionRepository.findByIdOrNull(transactionId)?.toTransactionDetailsModel()
+            ?: throw EntityNotFoundException("Transaction with ID $transactionId not found or access denied.")
     }
 
-    fun initiateTransaction(initiateTransactionParams: InitiateTransactionParams, senderId: UUID): PendingTransaction {
-        if (initiateTransactionParams.receiverId == senderId)
+    fun initiateTransaction(initiateTransactionParams: InitiateTransactionParams): PendingTransaction {
+        if (initiateTransactionParams.receiverId == initiateTransactionParams.senderId)
             throw IllegalArgumentException("Sender and receiver cannot be the same.")
 
-        val sender = walletUserRepository.getReferenceById(senderId)
+        val sender = walletUserRepository.getReferenceById(initiateTransactionParams.senderId)
         val receiver = walletUserRepository.getReferenceById(initiateTransactionParams.receiverId)
         return pendingTransactionRepository.save(initiateTransactionParams.toPendingTransaction(sender, receiver))
-    }
-
-    fun getTransactionReceiverDetails(transactionId: UUID): ReceiverDetails {
-        val transaction = transactionRepository.findByIdOrNull(transactionId)
-        if (transaction != null) {
-            return transaction.receiver.toReceiverDetails(transaction.type)
-        }
-
-        val pendingTransaction = pendingTransactionRepository.findByIdOrNull(transactionId)
-        if (pendingTransaction != null) {
-            return pendingTransaction.receiver.toReceiverDetails(pendingTransaction.type)
-        }
-
-        throw EntityNotFoundException("Transaction ID $transactionId not found.")
     }
 }
