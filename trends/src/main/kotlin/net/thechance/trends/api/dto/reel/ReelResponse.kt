@@ -1,6 +1,5 @@
 package net.thechance.trends.api.dto.reel
 
-import net.thechance.trends.entity.Category
 import net.thechance.trends.entity.Reel
 import java.time.LocalDateTime
 import java.util.*
@@ -13,12 +12,13 @@ data class ReelResponse(
     val createdAt: LocalDateTime,
     val likesCount: Int,
     val viewsCount: Int,
+    val isLiked: Boolean,
     val isCurrentUserOwner: Boolean,
     val username: String = "The Chance",
     val profilePictureUrl: String = "",
 )
 
-fun Reel.toResponse(): ReelResponse {
+fun Reel.toResponse(isLiked: Boolean = false): ReelResponse {
     return ReelResponse(
         reelId = id,
         thumbnailUrl = thumbnailUrl,
@@ -27,7 +27,8 @@ fun Reel.toResponse(): ReelResponse {
         createdAt = createdAt,
         likesCount = likesCount,
         viewsCount = viewsCount,
-        isCurrentUserOwner = false
+        isCurrentUserOwner = false,
+        isLiked = isLiked
     )
 }
 
