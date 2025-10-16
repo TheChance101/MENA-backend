@@ -43,5 +43,21 @@ interface ChatRepository : JpaRepository<Chat, UUID> {
     fun findUnreadCountsForChats(
         @Param("chatIds") chatIds: List<UUID>
     ): List<ChatUnreadMessagesCount>
+
+    @Query(
+        nativeQuery = true,
+        value = """
+        SELECT
+            m.chat_id AS chatId,
+            COUNT(*) AS unreadCount
+        FROM chat.messages m
+        WHERE m.is_read = FALSE
+          AND m.chat_id = :chatId
+        GROUP BY m.chat_id
+    """
+    )
+    fun findUnreadCountForChat(
+        @Param("chatId") chatId: UUID
+    ): ChatUnreadMessagesCount
 }
 

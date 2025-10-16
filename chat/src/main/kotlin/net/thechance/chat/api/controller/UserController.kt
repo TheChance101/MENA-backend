@@ -1,7 +1,7 @@
 package net.thechance.chat.api.controller
 
 import net.thechance.chat.api.dto.UserDto
-import net.thechance.chat.api.dto.toDto
+import net.thechance.chat.api.dto.toResponse
 import net.thechance.chat.service.ContactUserService
 import org.springframework.http.ResponseEntity
 import org.springframework.security.core.annotation.AuthenticationPrincipal
@@ -20,6 +20,6 @@ class UserController (
     fun getUserById(
         @AuthenticationPrincipal userId : UUID
     ):  ResponseEntity<UserDto>{
-        return ResponseEntity.ok(contactUserService.getUserById(userId).toDto())
+        return ResponseEntity.ok(contactUserService.getUserById(userId).toResponse())
     }
 }

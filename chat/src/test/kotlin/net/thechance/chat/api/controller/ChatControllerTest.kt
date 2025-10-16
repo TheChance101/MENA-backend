@@ -137,7 +137,7 @@ class ChatControllerTest {
             messagingTemplate.convertAndSendToUser(
                 chatId.toString(),
                 PRIVATE_MESSAGES,
-                MarkAsReadResponse(userId)
+                MarkAsReadResponse(userId, chatId)
             )
         }
         verify { chatService.markChatMessagesAsRead(chatId, userId) }

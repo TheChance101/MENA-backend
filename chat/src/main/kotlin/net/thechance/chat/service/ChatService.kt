@@ -39,17 +39,17 @@ class ChatService(
         return chatRepository.save(Chat(users = mutableSetOf(requester, otherUser)))
     }
 
-    fun saveMessage(message: CreateMessageArgs) {
+    fun saveMessage(message: CreateMessageArgs): Message {
         val chat = entityManager.getReference(Chat::class.java, message.chatId)
-        messageRepository.save(
-            Message(
-                id = message.id,
-                senderId = message.senderId,
-                chat = chat,
-                text = message.text,
-                sentAt = message.sendAt,
-            )
+        val message = Message(
+            senderId = message.senderId,
+            chat = chat,
+            text = message.text,
         )
+        messageRepository.save(
+            message
+        )
+        return message
     }
 
     fun getAllChatMessages(chatId: UUID, pageable: Pageable) =
@@ -59,7 +59,7 @@ class ChatService(
     fun markChatMessagesAsRead(chatId: UUID, userId: UUID) =
         messageRepository.updateIsReadByChatIdAndSenderIdNot(chatId = chatId, userId = userId)
 
-    fun getUserChats(userId: UUID, pageable: Pageable): Page<ChatSummary> {
+    fun getUserChatsSummaries(userId: UUID, pageable: Pageable): Page<ChatSummary> {
         val chats = chatRepository.findAllByUserId(userId, pageable)
         val chatIds = chats.content.map { it.id }
 
@@ -76,6 +76,19 @@ class ChatService(
             )
         }
         return chatSummaries
+    }
+
+    fun getUserChatSummaryById(chatId: UUID, userId: UUID): ChatSummary {
+        val chat = chatRepository.findByIdOrNull(chatId) ?: throw NotFoundException("no chat was found with id: $chatId")
+        val otherUser = chat.users.firstOrNull { it.id != userId }
+        val lastMessage = messageRepository.findTopByChatIdOrderBySentAtDesc(chatId)
+        val unreadCount = chatRepository.findUnreadCountForChat(chatId).unreadCount
+        return chat.toSummary(
+            userId,
+            otherUser,
+            lastMessage,
+            unreadCount
+        )
     }
 
     fun getChatById(chatId: UUID, userId: UUID): ChatModel {
