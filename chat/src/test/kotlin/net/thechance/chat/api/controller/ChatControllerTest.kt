@@ -6,10 +6,7 @@ import io.mockk.justRun
 import io.mockk.mockk
 import io.mockk.verify
 import net.thechance.chat.api.controller.ChatController.Companion.QUEUE_MESSAGES
-import net.thechance.chat.api.dto.ChatResponse
-import net.thechance.chat.api.dto.MarkAsReadRequest
-import net.thechance.chat.api.dto.MarkAsReadResponse
-import net.thechance.chat.api.dto.MessageRequestDto
+import net.thechance.chat.api.dto.*
 import net.thechance.chat.entity.Chat
 import net.thechance.chat.entity.Contact
 import net.thechance.chat.entity.ContactUser
@@ -18,6 +15,7 @@ import net.thechance.chat.service.ChatService
 import net.thechance.chat.service.ContactService
 import net.thechance.chat.service.exception.NotFoundException
 import net.thechance.chat.service.model.ChatModel
+import net.thechance.chat.service.model.MessageImageRequestArgs
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.assertThrows
 import org.springframework.data.domain.PageImpl
@@ -48,7 +46,7 @@ class ChatControllerTest {
     fun `sendPrivateMessage should save message and send to user`() {
         val chatId = UUID.randomUUID()
         val senderId = UUID.randomUUID()
-        val dto = MessageRequestDto(chatId, "message1")
+        val dto = MessageRequestDto(chatId, "message1", null)
 
         val principal = mockk<Principal>()
         every { principal.name } returns senderId.toString()
@@ -79,25 +77,22 @@ class ChatControllerTest {
         val principal = mockk<Principal>()
         every { principal.name } returns senderId.toString()
 
-        val images = mockk<MultipartFile>()
+        val image = mockk<MultipartFile>()
 
         val dummyChat = mockk<Chat>()
         every { dummyChat.id } returns chatId
 
         val savedMessage = testMessage(senderId = senderId, chat = dummyChat)
 
-        every { chatService.saveMessageImages(any(), any(), any()) } returns savedMessage
+        every { chatService.saveMessageImage(any()) } returns savedMessage
         every { chatService.saveMessage(any()) } returns savedMessage
         justRun { messagingTemplate.convertAndSendToUser(any(), any(), any()) }
 
-        controller.sendMessageImages(chatId, listOf(images), principal)
+        val messageImageArgs = MessageImageRequest(chatId, image, null)
+        controller.sendMessageImage(messageImageArgs, principal)
 
         verify {
-            chatService.saveMessageImages(
-                match { it == chatId },
-                match { it == senderId },
-                match { it == listOf(images) }
-            )
+            chatService.saveMessageImage(match { it == MessageImageRequestArgs(chatId, senderId, image, null) })
         }
     }
 

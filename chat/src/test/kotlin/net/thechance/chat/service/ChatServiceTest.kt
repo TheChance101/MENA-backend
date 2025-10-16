@@ -6,7 +6,6 @@ import io.mockk.mockk
 import io.mockk.verify
 import jakarta.persistence.EntityManager
 import jakarta.persistence.EntityNotFoundException
-import net.thechance.chat.api.dto.MessageRequestArgs
 import net.thechance.chat.api.dto.MessageRequestDto
 import net.thechance.chat.entity.Chat
 import net.thechance.chat.entity.Contact
@@ -16,10 +15,13 @@ import net.thechance.chat.repository.ChatRepository
 import net.thechance.chat.repository.MessageRepository
 import net.thechance.chat.service.exception.NotFoundException
 import net.thechance.chat.service.model.ChatModel
+import net.thechance.chat.service.model.MessageImageRequestArgs
+import net.thechance.chat.service.model.MessageRequestArgs
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.assertThrows
 import org.springframework.data.repository.findByIdOrNull
+import org.springframework.web.multipart.MultipartFile
 import java.util.*
 
 class ChatServiceTest {
@@ -105,13 +107,14 @@ class ChatServiceTest {
         val messageDto = MessageRequestDto(
             chatId = chat.id,
             text = "message 1",
+            messageId = null
         )
 
         every { entityManager.getReference(Chat::class.java, chat.id) } returns chat
         every { messageRepository.findById(any()) } answers { Optional.empty() }
         every { messageRepository.save(any()) } answers { firstArg<Message>() }
 
-        service.saveMessage(MessageRequestArgs(chat.id, UUID.randomUUID(), messageDto.text))
+        service.saveMessage(MessageRequestArgs(chat.id, UUID.randomUUID(), messageDto.text, null))
 
         verify {
             messageRepository.save(
@@ -128,30 +131,40 @@ class ChatServiceTest {
         val messageDto = MessageRequestDto(
             chatId = UUID.randomUUID(),
             text = "message 1",
+            messageId = null
         )
 
         every { entityManager.getReference(Chat::class.java, messageDto.chatId) } throws EntityNotFoundException()
         every { messageRepository.findById(any()) } answers { Optional.empty() }
 
         assertThrows<EntityNotFoundException> {
-            service.saveMessage(MessageRequestArgs(messageDto.chatId, UUID.randomUUID(), messageDto.text))
+            service.saveMessage(MessageRequestArgs(messageDto.chatId, UUID.randomUUID(), messageDto.text, null))
         }
     }
 
     @Test
     fun `saveMessageImages should upload image & create message then return message with images urls`() {
         val chat = testChat()
-
+        val senderId = UUID.randomUUID()
+        val image = mockk<MultipartFile>(relaxed = true)
         every { entityManager.getReference(Chat::class.java, chat.id) } returns chat
         every { messageRepository.save(any()) } answers { firstArg() }
 
-        service.saveMessageImages(chat.id, UUID.randomUUID(), emptyList())
+        service.saveMessageImage(
+            MessageImageRequestArgs(
+                chatId = chat.id,
+                senderId = senderId,
+                image = image,
+                messageId = null
+            )
+        )
 
         verify {
             messageRepository.save(
                 withArg {
                     assertThat(it.chat).isEqualTo(chat)
                     assertThat(it.text).isEqualTo(null)
+                    assertThat(it.senderId).isEqualTo(senderId)
                 }
             )
         }
