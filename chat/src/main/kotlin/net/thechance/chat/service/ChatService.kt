@@ -1,17 +1,14 @@
 package net.thechance.chat.service
 
 import jakarta.persistence.EntityManager
-import net.thechance.chat.entity.Chat
-import net.thechance.chat.entity.Contact
-import net.thechance.chat.entity.ContactUser
-import net.thechance.chat.entity.Message
+import net.thechance.chat.entity.*
 import net.thechance.chat.repository.ChatRepository
 import net.thechance.chat.repository.MessageRepository
-import net.thechance.chat.service.args.CreateMessageArgs
 import net.thechance.chat.service.exception.NotFoundException
 import net.thechance.chat.service.model.ChatModel
 import net.thechance.chat.service.model.MessageImageRequestArgs
 import net.thechance.chat.service.model.MessageRequestArgs
+import org.springframework.data.domain.Page
 import org.springframework.data.domain.Pageable
 import org.springframework.data.repository.findByIdOrNull
 import org.springframework.stereotype.Service
