@@ -92,6 +92,11 @@ class ChatService(
         )
     }
 
+    fun getChatUsersIds(chatId: UUID): List<UUID> {
+        val chat = chatRepository.findByIdOrNull(chatId) ?: throw NotFoundException("no chat was found with id: $chatId")
+        return chat.users.map { it.id }
+    }
+
     private fun getChatName(contact: Contact?, user: ContactUser? ): String{
         return contact?.let { "${it.firstName} ${it.lastName}" }
             ?: user?.let { "${it.firstName} ${it.lastName}" }.orEmpty()
