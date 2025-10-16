@@ -20,8 +20,11 @@ import net.thechance.chat.service.model.MessageRequestArgs
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.assertThrows
+import org.springframework.data.domain.PageImpl
+import org.springframework.data.domain.Pageable
 import org.springframework.data.repository.findByIdOrNull
 import org.springframework.web.multipart.MultipartFile
+import java.time.Instant
 import java.util.*
 
 class ChatServiceTest {
@@ -33,6 +36,16 @@ class ChatServiceTest {
     private lateinit var contactService: ContactService
     private lateinit var entityManager: EntityManager
     private lateinit var service: ChatService
+
+    private lateinit var otherUser: ContactUser
+    private lateinit var chat: Chat
+    private lateinit var pageable: Pageable
+    private lateinit var message: Message
+    private lateinit var contact: Contact
+
+    val chatId = UUID.fromString("825265f7-7e30-4ac3-b9fb-16ba3869610e")
+    var userId = UUID.fromString("451e4d6c-0380-41ed-95e6-275793c404c6")
+    val notAvailableChatId = UUID.fromString("825265f7-7e30-4ac3-b9fb-87ba3869610e")
 
     private fun testUser(id: UUID = UUID.randomUUID()) = ContactUser(
         id = id,
@@ -54,14 +67,15 @@ class ChatServiceTest {
         contactUserService = mockk(relaxed = true)
         attachmentStorageService = mockk(relaxed = true)
         entityManager = mockk(relaxed = true)
-        contactService = mockk()
+        contactService = mockk(relaxed = true)
+
         service = ChatService(
             messageRepository,
             chatRepository,
             contactUserService,
             attachmentStorageService,
             contactService,
-            entityManager
+            entityManager,
         )
     }
 
@@ -216,6 +230,91 @@ class ChatServiceTest {
         }
     }
 
+    private fun setupChatEnvironment() {
+        userId = UUID.fromString("451e4d6c-0380-41ed-95e6-275793c404c6") //UUID.randomUUID()
+        otherUser = testUser()
+        chat = testChat().apply { users.addAll(listOf(testUser(userId), otherUser)) }
+        pageable = Pageable.unpaged()
+
+        contact = mockk<Contact>().apply {
+            every { firstName } returns "Ali"
+            every { lastName } returns "Ahmed"
+        }
+    }
+
+    private fun mockChatDependencies(
+        unreadCount: Long = 2L,
+        lastMessageText: String = "Hello"
+    ) {
+        message = Message(
+            id = UUID.randomUUID(),
+            text = lastMessageText,
+            sentAt = Instant.now(),
+            senderId = otherUser.id,
+            chat = chat,
+            isRead = false
+        )
+
+        contact = mockk<Contact>().apply {
+            every { firstName } returns "Ali"
+            every { lastName } returns "Ahmed"
+        }
+
+        val chatPage = PageImpl(listOf(chat))
+        every { chatRepository.findAllByUserId(userId, pageable) } returns chatPage
+        every { messageRepository.findLastMessagesForChats(listOf(chat.id)) } returns listOf(message)
+        every { chatRepository.findUnreadCountsForChats(listOf(chat.id)) } returns listOf(
+            mockk {
+                every { chatId } returns chat.id
+                every { unreadCount } returns unreadCount
+            }
+        )
+        every { contactService.getContactByOwnerIdAndContactUserId(userId, otherUser.id) } returns contact
+    }
+
+    @Test
+    fun `getUserChats marks chat as mine when last message is from current user`() {
+        setupChatEnvironment()
+        val myMessage = Message(
+            id = UUID.randomUUID(),
+            text = "My message",
+            sentAt = Instant.now(),
+            senderId = userId,
+            chat = chat,
+            isRead = false
+        )
+
+        val chatPage = PageImpl(listOf(chat))
+        every { chatRepository.findAllByUserId(userId, pageable) } returns chatPage
+        every { messageRepository.findLastMessagesForChats(listOf(chat.id)) } returns listOf(myMessage)
+        every { chatRepository.findUnreadCountsForChats(listOf(chat.id)) } returns listOf(
+            mockk {
+                every { chatId } returns chat.id
+                every { unreadCount } returns 0
+            }
+        )
+        every { contactService.getContactByOwnerIdAndContactUserId(userId, otherUser.id) } returns contact
+
+        val result = service.getUserChats(userId, pageable)
+        val firstChat = result.content.first()
+
+        assertThat(firstChat.lastMessage?.isMine).isTrue()
+    }
+
+    @Test
+    fun `getUserChats handles empty chat list correctly`() {
+        setupChatEnvironment()
+        val emptyChatPage = PageImpl<Chat>(emptyList())
+
+        every { chatRepository.findAllByUserId(userId, pageable) } returns emptyChatPage
+        every { messageRepository.findLastMessagesForChats(emptyList()) } returns emptyList()
+        every { chatRepository.findUnreadCountsForChats(emptyList()) } returns emptyList()
+
+        val result = service.getUserChats(userId, pageable)
+
+        assertThat(result.content).isEmpty()
+        assertThat(result.totalElements).isEqualTo(0)
+    }
     private companion object {
         val chatId = UUID.fromString("825265f7-7e30-4ac3-b9fb-16ba3869610e")
         val userId = UUID.fromString("451e4d6c-0380-41ed-95e6-275793c404c6")
