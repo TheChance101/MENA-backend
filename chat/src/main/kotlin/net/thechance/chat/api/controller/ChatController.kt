@@ -3,6 +3,7 @@ package net.thechance.chat.api.controller
 import net.thechance.chat.api.dto.*
 import net.thechance.chat.service.ChatService
 import net.thechance.chat.service.ContactService
+import net.thechance.chat.service.model.toRequestArgs
 import org.springframework.data.domain.Pageable
 import org.springframework.http.ResponseEntity
 import org.springframework.messaging.handler.annotation.MessageMapping
@@ -11,7 +12,6 @@ import org.springframework.messaging.simp.SimpMessagingTemplate
 import org.springframework.security.core.annotation.AuthenticationPrincipal
 import org.springframework.stereotype.Controller
 import org.springframework.web.bind.annotation.*
-import org.springframework.web.multipart.MultipartFile
 import java.security.Principal
 import java.util.*
 
@@ -26,7 +26,8 @@ class ChatController(
     @MessageMapping("/chat.privateMessage")
     fun sendPrivateMessage(@Payload chatMessage: MessageRequestDto, principal: Principal) {
         val senderId = UUID.fromString(principal.name)
-        val message = chatService.saveMessage(chatMessage.toReqArgs(senderId)).toDto()
+        val chatMessageArgs = chatMessage.toRequestArgs(senderId)
+        val message = chatService.saveMessage(chatMessageArgs).toDto()
         sendMessageToUser(
             user = chatMessage.chatId.toString(),
             message = message
@@ -56,21 +57,18 @@ class ChatController(
     }
 
 
-    @PostMapping("/image/{chatId}")
-    fun sendMessageImages(
-        @PathVariable("chatId") chatId: UUID,
-        @RequestParam("images") images: List<MultipartFile>,
+    @PostMapping("/image")
+    fun sendMessageImage(
+        @ModelAttribute request: MessageImageRequest,
         principal: Principal
     ): ResponseEntity<MessageResponseDto> {
         val senderId = UUID.fromString(principal.name)
-
-        val message = chatService.saveMessageImages(chatId, senderId, images).toDto()
-
+        val messageImageArgs = request.toRequestArgs(senderId)
+        val message = chatService.saveMessageImage(messageImageArgs).toDto()
         sendMessageToUser(
-            user = chatId.toString(),
+            user = request.chatId.toString(),
             message = message
         )
-
         return ResponseEntity.ok(message)
     }
 
@@ -97,10 +95,10 @@ class ChatController(
 
     @GetMapping("/{chatId}")
     fun getChatDetail(
-        @PathVariable chatId : UUID,
+        @PathVariable chatId: UUID,
         @AuthenticationPrincipal userId: UUID
-    ): ResponseEntity<ChatResponse>{
-       val chat = chatService.getChatById(chatId, userId)
+    ): ResponseEntity<ChatResponse> {
+        val chat = chatService.getChatById(chatId, userId)
         return ResponseEntity.ok(chat.toResponse())
     }
 
