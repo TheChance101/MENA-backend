@@ -1,17 +1,20 @@
 package net.thechance.chat.service
 
 import jakarta.persistence.EntityManager
-import net.thechance.chat.api.dto.MessageRequestArgs
-import net.thechance.chat.entity.*
+import net.thechance.chat.entity.Chat
+import net.thechance.chat.entity.Contact
+import net.thechance.chat.entity.ContactUser
+import net.thechance.chat.entity.Message
 import net.thechance.chat.repository.ChatRepository
 import net.thechance.chat.repository.MessageRepository
 import net.thechance.chat.service.exception.NotFoundException
 import net.thechance.chat.service.model.ChatModel
+import net.thechance.chat.service.model.MessageImageRequestArgs
+import net.thechance.chat.service.model.MessageRequestArgs
 import org.springframework.data.domain.Pageable
 import org.springframework.data.repository.findByIdOrNull
 import org.springframework.stereotype.Service
 import org.springframework.transaction.annotation.Transactional
-import org.springframework.web.multipart.MultipartFile
 import java.time.Instant
 import java.util.*
 
@@ -39,8 +42,10 @@ class ChatService(
 
     @Transactional
     fun saveMessage(args: MessageRequestArgs): Message {
+        args.messageId?.let { messageId ->
+            messageRepository.findById(messageId).orElse(null)?.let { return it }
+        }
         val chat = entityManager.getReference(Chat::class.java, args.chatId)
-
         val message = Message(
             id = UUID.randomUUID(),
             senderId = args.senderId,
@@ -53,22 +58,19 @@ class ChatService(
     }
 
     @Transactional
-    fun saveMessageImages(chatId: UUID, senderId: UUID, images: List<MultipartFile>): Message {
-        val message = saveMessage(MessageRequestArgs(chatId, senderId, null))
-
-        val messageImages = images.map { image ->
-            val imageUrl = attachmentStorageService.uploadImage(
-                file = image,
-                fileName = "${message.id}-${Instant.now()}-${image.originalFilename}",
-                folderName = FOLDER_NAME
-            )
-            MessageImages(
-                id = UUID.randomUUID(),
-                url = imageUrl
-            )
-        }
-
-        return messageRepository.save(message.copy(images = messageImages))
+    fun saveMessageImage(args: MessageImageRequestArgs): Message {
+        val message = saveMessage(MessageRequestArgs(args.chatId, args.senderId, null, args.messageId))
+        val imageUrl = attachmentStorageService.uploadImage(
+            file = args.image,
+            fileName = args.image.originalFilename ?: "${message.id}-Untitled",
+            folderName = FOLDER_NAME
+        )
+        val updatedMessage = message.copy(
+            images = message.images.toMutableList().apply {
+                add(imageUrl)
+            }
+        )
+        return messageRepository.save(updatedMessage)
     }
 
     fun getAllChatMessages(chatId: UUID, pageable: Pageable) =

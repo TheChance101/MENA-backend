@@ -7,7 +7,8 @@ import java.util.*
 
 data class MessageRequestDto(
     val chatId: UUID,
-    val text: String?
+    val text: String?,
+    val messageId: UUID?
 )
 
 data class MessageResponseDto(
@@ -27,7 +28,7 @@ fun Message.toDto(): MessageResponseDto {
         senderId = this.senderId,
         chatId = this.chat.id,
         text = this.text,
-        images = this.images.map { it.url },
+        images = this.images,
         sendAt = this.sentAt,
         isRead = this.isRead
     )
@@ -40,20 +41,5 @@ fun Page<Message>.toPagedMessageResponse(): PagedResponse<MessageResponseDto> {
         pageSize = this.size,
         totalItems = this.totalElements,
         totalPages = this.totalPages
-    )
-}
-
-
-data class MessageRequestArgs(
-    val chatId: UUID,
-    val senderId: UUID,
-    val text: String?
-)
-
-fun MessageRequestDto.toReqArgs(senderId: UUID): MessageRequestArgs {
-    return MessageRequestArgs(
-        chatId = this.chatId,
-        senderId = senderId,
-        text = this.text
     )
 }
