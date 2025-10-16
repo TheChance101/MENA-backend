@@ -113,7 +113,7 @@ class ChatControllerTest {
 
         every { chatService.getAllChatMessages(chatId, pageable) } returns page
 
-        val response = controller.getChatHistory(chatId, pageable)
+        val response = controller.getChatHistory(chatId, UUID.randomUUID(), pageable)
 
         assertThat(response.statusCode).isEqualTo(HttpStatus.OK)
         assertThat(response.body?.data).hasSize(1)
@@ -137,7 +137,7 @@ class ChatControllerTest {
             messagingTemplate.convertAndSendToUser(
                 chatId.toString(),
                 PRIVATE_MESSAGES,
-                MarkAsReadResponse(userId, chatId)
+                MarkAsReadResponse(userId, chatId, true)
             )
         }
         verify { chatService.markChatMessagesAsRead(chatId, userId) }

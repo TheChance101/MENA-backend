@@ -113,12 +113,9 @@ class ChatServiceTest {
     fun `saveMessage saves message when chat exists`() {
         val chat = testChat()
         val messageDto = CreateMessageArgs(
-            id = UUID.randomUUID(),
             chatId = chat.id,
             senderId = UUID.randomUUID(),
             text = "message 1",
-            sendAt = Instant.now(),
-            isRead = false
         )
 
         every { entityManager.getReference(Chat::class.java, chat.id) } returns chat
@@ -139,12 +136,9 @@ class ChatServiceTest {
     @Test
     fun `saveMessage throws exception when chat not found`() {
         val messageDto = CreateMessageArgs(
-            id = UUID.randomUUID(),
             chatId = UUID.randomUUID(),
             senderId = UUID.randomUUID(),
             text = "message 1",
-            sendAt = Instant.now(),
-            isRead = false
         )
 
         every { entityManager.getReference(Chat::class.java, messageDto.chatId) } throws EntityNotFoundException()
@@ -205,9 +199,8 @@ class ChatServiceTest {
     }
 
     private companion object {
-        val chatId = UUID.fromString("825265f7-7e30-4ac3-b9fb-16ba3869610e")
-        val userId = UUID.fromString("451e4d6c-0380-41ed-95e6-275793c404c6")
-        val notAvailableChatId = UUID.fromString("825265f7-7e30-4ac3-b9fb-87ba3869610e")
+        val chatId: UUID = UUID.fromString("825265f7-7e30-4ac3-b9fb-16ba3869610e")
+        val userId: UUID = UUID.fromString("451e4d6c-0380-41ed-95e6-275793c404c6")
 
         val contact = Contact(
             id = UUID.fromString("73439a0a-adfa-4bf7-86ad-0d66435d5f18"),

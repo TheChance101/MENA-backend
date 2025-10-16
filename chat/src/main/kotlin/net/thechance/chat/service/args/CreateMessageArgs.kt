@@ -1,6 +1,5 @@
 package net.thechance.chat.service.args
 
-import java.time.Instant
 import java.util.*
 
 data class CreateMessageArgs(
