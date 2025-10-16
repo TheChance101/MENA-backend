@@ -104,8 +104,12 @@ class ReelsController(
     fun toggleLike(
         @PathVariable reelId: UUID,
         @AuthenticationPrincipal currentUserId: UUID
-    ): ResponseEntity<Unit> {
+    ): ResponseEntity<ReelResponse> {
         reelsService.toggleLike(reelId = reelId, currentUserId)
-        return ResponseEntity.ok().build()
+        val reel = reelsService.getReelDetailsById(reelId)
+        val isLiked = reelsService.isReelLikedByUser(reel.id, currentUserId)
+
+        val reelResponse = reel.toResponse(isLiked).withOwnership(currentUserId = currentUserId, ownerId = reel.ownerId)
+        return ResponseEntity.ok(reelResponse)
     }
 }

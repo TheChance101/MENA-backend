@@ -165,6 +165,14 @@ class ReelsService(
         return reelLikeRepository.existsByReelIdAndUserId(reelId, userId)
     }
 
+    fun getReelDetailsById(reelId: UUID): Reel{
+        val reel = reelsRepository.findById(reelId).orElseThrow {
+            ReelNotFoundException()
+        }
+
+        return reel
+    }
+
     companion object {
         private const val TRENDS_FOLDER_NAME = "trends"
     }
