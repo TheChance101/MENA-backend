@@ -18,9 +18,10 @@ data class Message(
     @Column(nullable = false)
     val isRead: Boolean = false,
 
-    @OneToMany(cascade = [CascadeType.ALL], orphanRemoval = true, fetch = FetchType.EAGER)
-    @JoinColumn(name = "message_id")
-    val images: List<MessageImages> = emptyList(),
+    @ElementCollection(targetClass = String::class, fetch = FetchType.EAGER)
+    @CollectionTable(name = "message_images", schema = "chat", joinColumns = [JoinColumn(name = "message_id")])
+    @Column(name = "url", nullable = false)
+    val images: List<String> = emptyList(),
 
     @ManyToOne(optional = false)
     @JoinColumn(name = "chat_id", referencedColumnName = "id", nullable = false)
