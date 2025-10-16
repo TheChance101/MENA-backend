@@ -78,7 +78,7 @@ class StatementPdfWriter(
 
         return StatementMetadata(
             startDate = statementData.startDateTime.toLocalDate(),
-            endDate = statementData.endDateTime.toLocalDate().minusDays(1),
+            endDate = statementData.endDateTime.toLocalDate(),
             totalInflows = totalInflows,
             totalOutflows = totalOutflows
         )
@@ -113,7 +113,7 @@ class StatementPdfWriter(
     }
 
     private fun getEndDateTime(endDate: LocalDate?): LocalDateTime {
-        return endDate?.plusDays(1)?.atStartOfDay() ?: LocalDateTime.now()
+        return endDate?.atTime(23, 59, 59) ?: LocalDateTime.now()
     }
 
     private fun setupConverterProperties(): ConverterProperties {

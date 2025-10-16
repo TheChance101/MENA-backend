@@ -14,7 +14,8 @@ data class ReelResponse(
     val likesCount: Int,
     val viewsCount: Int,
     val isCurrentUserOwner: Boolean,
-    val categories: Set<Category> = emptySet()
+    val username: String = "The Chance",
+    val profilePictureUrl: String = "",
 )
 
 fun Reel.toResponse(): ReelResponse {
@@ -26,7 +27,6 @@ fun Reel.toResponse(): ReelResponse {
         createdAt = createdAt,
         likesCount = likesCount,
         viewsCount = viewsCount,
-        categories = categories,
         isCurrentUserOwner = false
     )
 }

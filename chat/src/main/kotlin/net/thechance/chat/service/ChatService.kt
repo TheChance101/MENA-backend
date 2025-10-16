@@ -7,6 +7,7 @@ import net.thechance.chat.entity.ContactUser
 import net.thechance.chat.entity.Message
 import net.thechance.chat.repository.ChatRepository
 import net.thechance.chat.repository.MessageRepository
+import net.thechance.chat.service.args.CreateMessageArgs
 import net.thechance.chat.service.exception.NotFoundException
 import net.thechance.chat.service.model.ChatModel
 import net.thechance.chat.service.model.MessageImageRequestArgs
@@ -79,6 +80,25 @@ class ChatService(
 
     fun markChatMessagesAsRead(chatId: UUID, userId: UUID) =
         messageRepository.updateIsReadByChatIdAndSenderIdNot(chatId = chatId, userId = userId)
+
+    fun getUserChats(userId: UUID, pageable: Pageable): Page<ChatSummary> {
+        val chats = chatRepository.findAllByUserId(userId, pageable)
+        val chatIds = chats.content.map { it.id }
+
+        val lastMessages = messageRepository.findLastMessagesForChats(chatIds)
+        val unreadCounts = chatRepository.findUnreadCountsForChats(chatIds)
+
+        val chatSummaries = chats.map { chat ->
+            val otherUser = chat.users.firstOrNull { it.id != userId }
+            chat.toSummary(
+                userId,
+                otherUser,
+                lastMessages.firstOrNull { it.chat.id == chat.id },
+                unreadCounts.firstOrNull { it.chatId == chat.id }?.unreadCount ?: 0
+            )
+        }
+        return chatSummaries
+    }
 
     fun getChatById(chatId: UUID, userId: UUID): ChatModel {
         val chat =
