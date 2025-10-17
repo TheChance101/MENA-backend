@@ -5,9 +5,7 @@ import jakarta.persistence.Column
 import jakarta.persistence.Entity
 import jakarta.persistence.Id
 import jakarta.persistence.Table
-import jakarta.validation.constraints.Max
-import jakarta.validation.constraints.Min
-import net.thechance.identity.mapper.util.DEFAULT_DATE_FORMAT
+import org.hibernate.validator.constraints.Range
 import java.time.LocalDate
 import java.util.*
 
@@ -36,23 +34,16 @@ data class User(
     @Column(name = "image_url", nullable = true, length = 2083)
     val imageUrl: String?,
 
-    @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = DEFAULT_DATE_FORMAT)
+    @field:JsonFormat(shape = JsonFormat.Shape.STRING)
     @Column(name = "birth_date", nullable = false)
     val birthDate: LocalDate,
 
-    @field:Min(
-        value = Gender.MALE.toLong(),
-        message = "Gender must be ${Gender.MALE} (man) or ${Gender.FEMALE} (woman)"
-    )
-    @field:Max(
-        value = Gender.FEMALE.toLong(),
-        message = "Gender must be ${Gender.MALE} (man) or ${Gender.FEMALE} (woman)"
-    )
-    @Column(name = "gender", nullable = false)
+    @field:Range(min = Gender.MALE, max = Gender.FEMALE)
+    @Column(name = "gender",  nullable = false)
     val gender: Int,
 ) {
     object Gender {
-        const val MALE = 1
-        const val FEMALE = 2
+        const val MALE = 1L
+        const val FEMALE = 2L
     }
 }

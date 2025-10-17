@@ -1,11 +1,11 @@
 package net.thechance.identity.service
 
-import net.thechance.identity.api.dto.UpdateProfileRequest
 import net.thechance.identity.entity.User
 import net.thechance.identity.exception.InvalidCredentialsException
 import net.thechance.identity.exception.PasswordNotUpdatedException
 import net.thechance.identity.exception.UserNotFoundException
 import net.thechance.identity.repository.UserRepository
+import net.thechance.identity.service.model.UserServiceModel
 import org.springframework.data.repository.findByIdOrNull
 import org.springframework.stereotype.Service
 import org.springframework.web.multipart.MultipartFile
@@ -46,22 +46,27 @@ class UserService(
         return user.copy(password = newPassword)
     }
 
-    fun updateUserProfile(userId: UUID, updateProfileRequest: UpdateProfileRequest, file: MultipartFile): User {
-        val user = userRepository.findById(userId)
-            .orElseThrow { UserNotFoundException("User with id: $userId not found") }
+    fun updateUserProfile(
+        user: UserServiceModel,
+        shouldUpdatedImage: Boolean,
+        file: MultipartFile?
+    ): User {
+        val userEntity = userRepository.findById(user.id)
+            .orElseThrow { UserNotFoundException("User with id: ${user.id} not found") }
 
-        val imageUrl = identityImageStorageService.uploadImage(
-            file = file,
-            fileName = "$userId"
-        )
+        val imageUrl = when {
+            !shouldUpdatedImage -> userEntity.imageUrl
+            file != null -> identityImageStorageService.uploadImage(file = file, fileName = "${userEntity.id}")
+            else -> ""
+        }
 
-        val updatedUser = user.copy(
-            username = updateProfileRequest.username,
-            firstName = updateProfileRequest.firstName,
-            lastName = updateProfileRequest.lastName,
+        val updatedUser = userEntity.copy(
+            username = user.username,
+            firstName = user.firstName,
+            lastName = user.lastName,
             imageUrl = imageUrl,
-            birthDate = LocalDate.parse(updateProfileRequest.birthDate),
-            gender = updateProfileRequest.gender,
+            birthDate = LocalDate.parse(user.birthDate),
+            gender = user.gender,
         )
 
         return userRepository.save(updatedUser)

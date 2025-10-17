@@ -1,7 +1,9 @@
 package net.thechance.identity.api.controller
 
+import jakarta.validation.Valid
 import net.thechance.identity.api.dto.ProfileResponse
 import net.thechance.identity.api.dto.UpdateProfileRequest
+import net.thechance.identity.api.dto.toUserServiceModel
 import net.thechance.identity.mapper.toResponse
 import net.thechance.identity.service.UserService
 import org.springframework.http.ResponseEntity
@@ -19,10 +21,15 @@ class ProfileController(
     @PostMapping("/me")
     fun updateCurrentUserProfile(
         @AuthenticationPrincipal userId: UUID,
-        @RequestPart("user") updateProfileRequest: UpdateProfileRequest,
-        @RequestPart("file") file: MultipartFile,
+        @Valid @RequestPart("user") updateProfileRequest: UpdateProfileRequest,
+        @RequestPart("file", required = false) file: MultipartFile?,
     ): ResponseEntity<ProfileResponse> {
-        val updateUser = userService.updateUserProfile(userId, updateProfileRequest, file)
+        val updateUser = userService.updateUserProfile(
+            user = updateProfileRequest.toUserServiceModel(userId),
+            shouldUpdatedImage = updateProfileRequest.updateImage,
+            file = file
+        )
+
         return ResponseEntity.ok(updateUser.toResponse())
     }
 
