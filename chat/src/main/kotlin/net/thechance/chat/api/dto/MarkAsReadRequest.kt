@@ -6,6 +6,3 @@ data class MarkAsReadRequest(
     val chatId: UUID
 )
 
-data class MarkAsReadResponse(
-    val readBy: UUID
-)

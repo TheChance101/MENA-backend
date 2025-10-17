@@ -11,32 +11,42 @@ data class MessageRequestDto(
     val messageId: UUID?
 )
 
-data class MessageResponseDto(
+data class MessageResponse(
     val id: UUID,
     val senderId: UUID,
     val chatId: UUID,
     val text: String?,
     val images: List<String>,
     val sendAt: Instant,
-    val isRead: Boolean
+    val isRead: Boolean,
+    val isMine: Boolean
 )
 
 
-fun Message.toDto(): MessageResponseDto {
-    return MessageResponseDto(
+fun Message.toResponse(requesterId: UUID): MessageResponse {
+    return MessageResponse(
         id = this.id,
         senderId = this.senderId,
         chatId = this.chat.id,
         text = this.text,
         images = this.images,
         sendAt = this.sentAt,
-        isRead = this.isRead
+        isRead = this.isRead,
+        isMine = requesterId == senderId
     )
 }
 
-fun Page<Message>.toPagedMessageResponse(): PagedResponse<MessageResponseDto> {
+fun MessageRequestDto.toCreateMessageArgs(senderId: UUID): CreateMessageArgs {
+    return CreateMessageArgs(
+        senderId = senderId,
+        chatId = this.chatId,
+        text = this.text,
+    )
+}
+
+fun Page<Message>.toPagedMessageResponse(requesterId: UUID): PagedResponse<MessageResponse> {
     return PagedResponse(
-        data = this.content.map { it.toDto() },
+        data = this.content.map { it.toResponse(requesterId) },
         pageNumber = this.number,
         pageSize = this.size,
         totalItems = this.totalElements,

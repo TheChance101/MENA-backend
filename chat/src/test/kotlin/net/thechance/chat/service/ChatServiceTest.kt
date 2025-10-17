@@ -116,7 +116,7 @@ class ChatServiceTest {
     }
 
     @Test
-    fun `saveMessage saves message when chat exists`() { // the failed one
+    fun `saveMessage saves message when chat exists`() {
         val chat = testChat()
         val messageDto = MessageRequestDto(
             chatId = chat.id,
@@ -295,7 +295,7 @@ class ChatServiceTest {
         )
         every { contactService.getContactByOwnerIdAndContactUserId(userId, otherUser.id) } returns contact
 
-        val result = service.getUserChats(userId, pageable)
+        val result = service.getUserChatsSummaries(userId, pageable)
         val firstChat = result.content.first()
 
         assertThat(firstChat.lastMessage?.isMine).isTrue()
@@ -310,7 +310,7 @@ class ChatServiceTest {
         every { messageRepository.findLastMessagesForChats(emptyList()) } returns emptyList()
         every { chatRepository.findUnreadCountsForChats(emptyList()) } returns emptyList()
 
-        val result = service.getUserChats(userId, pageable)
+        val result = service.getUserChatsSummaries(userId, pageable)
 
         assertThat(result.content).isEmpty()
         assertThat(result.totalElements).isEqualTo(0)

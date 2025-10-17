@@ -17,14 +17,16 @@ class ReelsController(
     private val reelsService: ReelsService
 ) {
 
-    @GetMapping("/feed","/feed/{reelId}" )
+    @GetMapping("/feed", "/feed/{reelId}")
     fun getAllReelsForFeed(
         pageable: Pageable,
         @PathVariable(required = false) reelId: UUID? = null,
         @AuthenticationPrincipal currentUserId: UUID
     ): ResponseEntity<PagingResponse<ReelResponse>> {
         val reels = reelsService.getAllReelsForFeed(pageable, currentUserId, reelId).content.map { reel ->
-            reel.toResponse().withOwnership(
+            val isLiked = reelsService.isReelLikedByUser(reel.id, currentUserId)
+
+            reel.toResponse(isLiked).withOwnership(
                 currentUserId = currentUserId,
                 ownerId = reel.ownerId,
             )
@@ -87,5 +89,27 @@ class ReelsController(
         )
 
         return ResponseEntity.ok(updatedReel.toResponse())
+    }
+
+    @PostMapping("/view/{reelId}")
+    fun recordView(
+        @PathVariable reelId: UUID,
+        @AuthenticationPrincipal currentUserId: UUID
+    ): ResponseEntity<Unit> {
+        reelsService.incrementViewCount(reelId, currentUserId)
+        return ResponseEntity.ok().build()
+    }
+
+    @PostMapping("/like/{reelId}")
+    fun toggleLike(
+        @PathVariable reelId: UUID,
+        @AuthenticationPrincipal currentUserId: UUID
+    ): ResponseEntity<ReelResponse> {
+        reelsService.toggleLike(reelId = reelId, currentUserId)
+        val reel = reelsService.getReelDetailsById(reelId)
+        val isLiked = reelsService.isReelLikedByUser(reel.id, currentUserId)
+
+        val reelResponse = reel.toResponse(isLiked).withOwnership(currentUserId = currentUserId, ownerId = reel.ownerId)
+        return ResponseEntity.ok(reelResponse)
     }
 }

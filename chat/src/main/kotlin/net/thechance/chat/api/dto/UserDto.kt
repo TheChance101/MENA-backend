@@ -9,7 +9,7 @@ data class UserDto(
     val imageUrl: String? = null,
 )
 
-fun ContactUser.toDto(): UserDto{
+fun ContactUser.toResponse(): UserDto{
     return UserDto(
         firstName = this.firstName,
         lastName = this.lastName,

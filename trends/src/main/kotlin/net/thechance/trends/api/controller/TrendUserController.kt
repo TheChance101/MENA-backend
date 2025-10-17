@@ -8,13 +8,12 @@ import net.thechance.trends.api.dto.trendUser.DoesUserHaveCategoriesResponse
 import net.thechance.trends.service.ReelsService
 import net.thechance.trends.service.TrendUserService
 import org.springframework.data.domain.Pageable
-import org.springframework.data.web.PageableDefault
 import org.springframework.http.ResponseEntity
 import org.springframework.security.core.annotation.AuthenticationPrincipal
 import org.springframework.web.bind.annotation.GetMapping
 import org.springframework.web.bind.annotation.RequestMapping
 import org.springframework.web.bind.annotation.RestController
-import java.util.UUID
+import java.util.*
 
 @RestController
 @RequestMapping("/${Constants.TRENDS_PATH}/user")
@@ -30,7 +29,9 @@ class TrendUserController(
     ): ResponseEntity<PagingResponse<ReelResponse>> {
 
         val reels = reelService.getAllReelsByUserId(pageable, currentUserId).content.map { reel ->
-            reel.toResponse().withOwnership(
+            val isLiked = reelService.isReelLikedByUser(reel.id, currentUserId)
+
+            reel.toResponse(isLiked).withOwnership(
                 currentUserId = currentUserId,
                 ownerId = reel.ownerId
             )
