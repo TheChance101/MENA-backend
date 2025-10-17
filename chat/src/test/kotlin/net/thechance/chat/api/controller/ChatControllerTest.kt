@@ -5,7 +5,7 @@ import io.mockk.every
 import io.mockk.justRun
 import io.mockk.mockk
 import io.mockk.verify
-import net.thechance.chat.api.controller.ChatController.Companion.QUEUE_MESSAGES
+import net.thechance.chat.api.controller.ChatController.Companion.PRIVATE_MESSAGES
 import net.thechance.chat.api.dto.ChatResponse
 import net.thechance.chat.api.dto.MarkAsReadRequest
 import net.thechance.chat.api.dto.MarkAsReadResponse
@@ -113,7 +113,7 @@ class ChatControllerTest {
 
         every { chatService.getAllChatMessages(chatId, pageable) } returns page
 
-        val response = controller.getChatHistory(chatId, pageable)
+        val response = controller.getChatHistory(chatId, UUID.randomUUID(), pageable)
 
         assertThat(response.statusCode).isEqualTo(HttpStatus.OK)
         assertThat(response.body?.data).hasSize(1)
@@ -136,8 +136,8 @@ class ChatControllerTest {
         verify {
             messagingTemplate.convertAndSendToUser(
                 chatId.toString(),
-                QUEUE_MESSAGES,
-                MarkAsReadResponse(userId)
+                PRIVATE_MESSAGES,
+                MarkAsReadResponse(userId, chatId, true)
             )
         }
         verify { chatService.markChatMessagesAsRead(chatId, userId) }

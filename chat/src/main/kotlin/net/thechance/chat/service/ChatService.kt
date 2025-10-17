@@ -39,17 +39,17 @@ class ChatService(
         return chatRepository.save(Chat(users = mutableSetOf(requester, otherUser)))
     }
 
-    fun saveMessage(message: CreateMessageArgs) {
+    fun saveMessage(message: CreateMessageArgs): Message {
         val chat = entityManager.getReference(Chat::class.java, message.chatId)
-        messageRepository.save(
-            Message(
-                id = message.id,
-                senderId = message.senderId,
-                chat = chat,
-                text = message.text,
-                sentAt = message.sendAt,
-            )
+        val message = Message(
+            senderId = message.senderId,
+            chat = chat,
+            text = message.text,
         )
+        messageRepository.save(
+            message
+        )
+        return message
     }
 
     fun getAllChatMessages(chatId: UUID, pageable: Pageable) =
@@ -59,14 +59,14 @@ class ChatService(
     fun markChatMessagesAsRead(chatId: UUID, userId: UUID) =
         messageRepository.updateIsReadByChatIdAndSenderIdNot(chatId = chatId, userId = userId)
 
-    fun getUserChats(userId: UUID, pageable: Pageable): Page<ChatSummary> {
+    fun getUserChatsSummaries(userId: UUID, pageable: Pageable): Page<ChatSummary> {
         val chats = chatRepository.findAllByUserId(userId, pageable)
         val chatIds = chats.content.map { it.id }
 
         val lastMessages = messageRepository.findLastMessagesForChats(chatIds)
         val unreadCounts = chatRepository.findUnreadCountsForChats(chatIds)
 
-        val chatSummaries = chats.map { chat ->
+        val chatsSummaries = chats.map { chat ->
             val otherUser = chat.users.firstOrNull { it.id != userId }
             chat.toSummary(
                 userId,
@@ -75,7 +75,20 @@ class ChatService(
                 unreadCounts.firstOrNull { it.chatId == chat.id }?.unreadCount ?: 0
             )
         }
-        return chatSummaries
+        return chatsSummaries
+    }
+
+    fun getUserChatSummaryById(chatId: UUID, userId: UUID): ChatSummary {
+        val chat = chatRepository.findByIdOrNull(chatId) ?: throw NotFoundException("no chat was found with id: $chatId")
+        val otherUser = chat.users.firstOrNull { it.id != userId }
+        val lastMessage = messageRepository.findTopByChatIdOrderBySentAtDesc(chatId)
+        val unreadCount = chatRepository.findUnreadCountsForChats(listOf(chatId)).firstOrNull()?.unreadCount ?: 0
+        return chat.toSummary(
+            userId,
+            otherUser,
+            lastMessage,
+            unreadCount
+        )
     }
 
     fun getChatById(chatId: UUID, userId: UUID): ChatModel {
@@ -90,6 +103,11 @@ class ChatService(
             requesterId = userId,
             id = chatId
         )
+    }
+
+    fun getChatUsersIds(chatId: UUID): List<UUID> {
+        val chat = chatRepository.findByIdOrNull(chatId) ?: throw NotFoundException("no chat was found with id: $chatId")
+        return chat.users.map { it.id }
     }
 
     private fun getChatName(contact: Contact?, user: ContactUser? ): String{
