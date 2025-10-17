@@ -66,7 +66,7 @@ class ChatService(
         val lastMessages = messageRepository.findLastMessagesForChats(chatIds)
         val unreadCounts = chatRepository.findUnreadCountsForChats(chatIds)
 
-        val chatSummaries = chats.map { chat ->
+        val chatsSummaries = chats.map { chat ->
             val otherUser = chat.users.firstOrNull { it.id != userId }
             chat.toSummary(
                 userId,
@@ -75,14 +75,14 @@ class ChatService(
                 unreadCounts.firstOrNull { it.chatId == chat.id }?.unreadCount ?: 0
             )
         }
-        return chatSummaries
+        return chatsSummaries
     }
 
     fun getUserChatSummaryById(chatId: UUID, userId: UUID): ChatSummary {
         val chat = chatRepository.findByIdOrNull(chatId) ?: throw NotFoundException("no chat was found with id: $chatId")
         val otherUser = chat.users.firstOrNull { it.id != userId }
         val lastMessage = messageRepository.findTopByChatIdOrderBySentAtDesc(chatId)
-        val unreadCount = chatRepository.findUnreadCountForChat(chatId).unreadCount
+        val unreadCount = chatRepository.findUnreadCountsForChats(listOf(chatId)).firstOrNull()?.unreadCount ?: 0
         return chat.toSummary(
             userId,
             otherUser,
