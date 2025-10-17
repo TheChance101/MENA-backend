@@ -158,7 +158,7 @@ class ReelsService(
 
     private fun unlikeReel(reelId: UUID, userId: UUID, reel: Reel) {
         reelLikeRepository.deleteByReelIdAndUserId(reelId, userId)
-        reelsRepository.save(reel.copy(likesCount = maxOf(0,  - 1)))
+reelsRepository.save(reel.copy(likesCount = maxOf(0, reel.likesCount - 1)))
     }
 
     fun isReelLikedByUser(reelId: UUID, userId: UUID): Boolean {
