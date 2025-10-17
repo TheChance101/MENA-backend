@@ -5,13 +5,8 @@ import io.mockk.every
 import io.mockk.justRun
 import io.mockk.mockk
 import io.mockk.verify
-import net.thechance.chat.api.controller.ChatController.Companion.QUEUE_MESSAGES
-import net.thechance.chat.api.dto.*
 import net.thechance.chat.api.controller.ChatController.Companion.PRIVATE_MESSAGES
-import net.thechance.chat.api.dto.ChatResponse
-import net.thechance.chat.api.dto.MarkAsReadRequest
-import net.thechance.chat.api.dto.MarkAsReadResponse
-import net.thechance.chat.api.dto.MessageRequestDto
+import net.thechance.chat.api.dto.*
 import net.thechance.chat.entity.Chat
 import net.thechance.chat.entity.Contact
 import net.thechance.chat.entity.ContactUser

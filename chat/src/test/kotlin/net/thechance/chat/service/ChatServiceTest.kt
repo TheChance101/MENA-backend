@@ -315,6 +315,7 @@ class ChatServiceTest {
         assertThat(result.content).isEmpty()
         assertThat(result.totalElements).isEqualTo(0)
     }
+
     private companion object {
         val chatId = UUID.fromString("825265f7-7e30-4ac3-b9fb-16ba3869610e")
         val userId = UUID.fromString("451e4d6c-0380-41ed-95e6-275793c404c6")

@@ -29,7 +29,7 @@ class ChatController(
         principal: Principal
     ) {
         val senderId = UUID.fromString(principal.name)
-        val message = chatService.saveMessage(chatMessage.toCreateMessageArgs(senderId = senderId))
+        val message = chatService.saveMessage(chatMessage.toRequestArgs(senderId))
 
         chatService
             .getChatUsersIds(chatId = chatMessage.chatId)
@@ -70,14 +70,21 @@ class ChatController(
     fun sendMessageImage(
         @ModelAttribute request: MessageImageRequest,
         principal: Principal
-    ): ResponseEntity<MessageResponseDto> {
+    ): ResponseEntity<MessageResponse> {
         val senderId = UUID.fromString(principal.name)
         val messageImageArgs = request.toRequestArgs(senderId)
-        val message = chatService.saveMessageImage(messageImageArgs).toDto()
-        sendMessageToUser(
-            user = request.chatId.toString(),
-            message = message
-        )
+        val message = chatService.saveMessageImage(messageImageArgs).toResponse(senderId)
+
+        chatService
+            .getChatUsersIds(chatId = request.chatId)
+            .forEach { chatParticipantId ->
+                messagingTemplate.convertAndSendToUser(
+                    chatParticipantId.toString(),
+                    PRIVATE_MESSAGES,
+                    message
+                )
+            }
+
         return ResponseEntity.ok(message)
     }
 

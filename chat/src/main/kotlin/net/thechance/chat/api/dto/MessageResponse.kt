@@ -36,14 +36,6 @@ fun Message.toResponse(requesterId: UUID): MessageResponse {
     )
 }
 
-fun MessageRequestDto.toCreateMessageArgs(senderId: UUID): CreateMessageArgs {
-    return CreateMessageArgs(
-        senderId = senderId,
-        chatId = this.chatId,
-        text = this.text,
-    )
-}
-
 fun Page<Message>.toPagedMessageResponse(requesterId: UUID): PagedResponse<MessageResponse> {
     return PagedResponse(
         data = this.content.map { it.toResponse(requesterId) },

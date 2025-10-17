@@ -98,7 +98,8 @@ class ChatService(
     }
 
     fun getUserChatSummaryById(chatId: UUID, userId: UUID): ChatSummary {
-        val chat = chatRepository.findByIdOrNull(chatId) ?: throw NotFoundException("no chat was found with id: $chatId")
+        val chat =
+            chatRepository.findByIdOrNull(chatId) ?: throw NotFoundException("no chat was found with id: $chatId")
         val otherUser = chat.users.firstOrNull { it.id != userId }
         val lastMessage = messageRepository.findTopByChatIdOrderBySentAtDesc(chatId)
         val unreadCount = chatRepository.findUnreadCountsForChats(listOf(chatId)).firstOrNull()?.unreadCount ?: 0
@@ -111,9 +112,10 @@ class ChatService(
     }
 
     fun getChatById(chatId: UUID, userId: UUID): ChatModel {
-        val chat = chatRepository.findByIdOrNull(chatId) ?: throw NotFoundException("no chat was found with id: $chatId")
+        val chat =
+            chatRepository.findByIdOrNull(chatId) ?: throw NotFoundException("no chat was found with id: $chatId")
         val otherUser = chat.users.firstOrNull { it.id != userId }
-        val contact =otherUser?.let{
+        val contact = otherUser?.let {
             contactService.getContactByOwnerIdAndContactUserId(userId, it.id)
         }
         return ChatModel(
@@ -125,11 +127,12 @@ class ChatService(
     }
 
     fun getChatUsersIds(chatId: UUID): List<UUID> {
-        val chat = chatRepository.findByIdOrNull(chatId) ?: throw NotFoundException("no chat was found with id: $chatId")
+        val chat =
+            chatRepository.findByIdOrNull(chatId) ?: throw NotFoundException("no chat was found with id: $chatId")
         return chat.users.map { it.id }
     }
 
-    private fun getChatName(contact: Contact?, user: ContactUser? ): String{
+    private fun getChatName(contact: Contact?, user: ContactUser?): String {
         return contact?.let { "${it.firstName} ${it.lastName}" }
             ?: user?.let { "${it.firstName} ${it.lastName}" }.orEmpty()
     }
