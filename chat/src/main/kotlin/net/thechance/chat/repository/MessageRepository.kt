@@ -12,7 +12,7 @@ import java.util.*
 
 interface MessageRepository : JpaRepository<Message, UUID> {
 
-    fun getAllByChatIdOrderBySentAt(chatId: UUID, pageable: Pageable): Page<Message>
+    fun getAllByChatIdOrderBySentAtDesc(chatId: UUID, pageable: Pageable): Page<Message>
 
     @Modifying
     @Transactional

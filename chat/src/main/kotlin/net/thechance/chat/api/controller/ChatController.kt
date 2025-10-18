@@ -3,6 +3,7 @@ package net.thechance.chat.api.controller
 import net.thechance.chat.api.dto.*
 import net.thechance.chat.service.ChatService
 import net.thechance.chat.service.ContactService
+import net.thechance.chat.service.model.toRequestArgs
 import org.springframework.data.domain.Pageable
 import org.springframework.http.ResponseEntity
 import org.springframework.messaging.handler.annotation.MessageMapping
@@ -28,7 +29,7 @@ class ChatController(
         principal: Principal
     ) {
         val senderId = UUID.fromString(principal.name)
-        val message = chatService.saveMessage(chatMessage.toCreateMessageArgs(senderId = senderId))
+        val message = chatService.saveMessage(chatMessage.toRequestArgs(senderId))
 
         chatService
             .getChatUsersIds(chatId = chatMessage.chatId)
@@ -62,6 +63,29 @@ class ChatController(
         return ResponseEntity.ok(
             chatService.getAllChatMessages(chatId, pageable).toPagedMessageResponse(userId)
         )
+    }
+
+
+    @PostMapping("/image")
+    fun sendMessageImage(
+        @ModelAttribute request: MessageImageRequest,
+        principal: Principal
+    ): ResponseEntity<MessageResponse> {
+        val senderId = UUID.fromString(principal.name)
+        val messageImageArgs = request.toRequestArgs(senderId)
+        val message = chatService.saveMessageImage(messageImageArgs).toResponse(senderId)
+
+        chatService
+            .getChatUsersIds(chatId = request.chatId)
+            .forEach { chatParticipantId ->
+                messagingTemplate.convertAndSendToUser(
+                    chatParticipantId.toString(),
+                    PRIVATE_MESSAGES,
+                    message
+                )
+            }
+
+        return ResponseEntity.ok(message)
     }
 
     @MessageMapping("/chat.markAsRead")

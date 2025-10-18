@@ -1,21 +1,19 @@
 package net.thechance.chat.service
 
 import jakarta.persistence.EntityManager
-import net.thechance.chat.entity.Chat
-import net.thechance.chat.entity.ChatSummary
-import net.thechance.chat.entity.Contact
-import net.thechance.chat.entity.ContactUser
-import net.thechance.chat.entity.Message
+import net.thechance.chat.entity.*
 import net.thechance.chat.repository.ChatRepository
 import net.thechance.chat.repository.MessageRepository
-import net.thechance.chat.service.args.CreateMessageArgs
-import org.springframework.data.domain.Page
 import net.thechance.chat.service.exception.NotFoundException
 import net.thechance.chat.service.model.ChatModel
+import net.thechance.chat.service.model.MessageImageRequestArgs
+import net.thechance.chat.service.model.MessageRequestArgs
+import org.springframework.data.domain.Page
 import org.springframework.data.domain.Pageable
 import org.springframework.data.repository.findByIdOrNull
 import org.springframework.stereotype.Service
 import org.springframework.transaction.annotation.Transactional
+import java.time.Instant
 import java.util.*
 
 @Service
@@ -23,8 +21,9 @@ class ChatService(
     private val messageRepository: MessageRepository,
     private val chatRepository: ChatRepository,
     private val contactUserService: ContactUserService,
-    private val entityManager: EntityManager,
+    private val attachmentStorageService: AttachmentStorageService,
     private val contactService: ContactService,
+    private val entityManager: EntityManager
 ) {
     @Transactional
     fun getOrCreateConversationByParticipants(userId: UUID, receiverId: UUID): Chat {
@@ -39,21 +38,41 @@ class ChatService(
         return chatRepository.save(Chat(users = mutableSetOf(requester, otherUser)))
     }
 
-    fun saveMessage(message: CreateMessageArgs): Message {
-        val chat = entityManager.getReference(Chat::class.java, message.chatId)
+    @Transactional
+    fun saveMessage(args: MessageRequestArgs): Message {
+        args.messageId?.let { messageId ->
+            messageRepository.findById(messageId).orElse(null)?.let { return it }
+        }
+        val chat = entityManager.getReference(Chat::class.java, args.chatId)
         val message = Message(
-            senderId = message.senderId,
+            id = UUID.randomUUID(),
+            senderId = args.senderId,
             chat = chat,
-            text = message.text,
+            text = args.text,
+            sentAt = Instant.now(),
         )
-        messageRepository.save(
-            message
+
+        return messageRepository.save(message)
+    }
+
+    @Transactional
+    fun saveMessageImage(args: MessageImageRequestArgs): Message {
+        val message = saveMessage(MessageRequestArgs(args.chatId, args.senderId, null, args.messageId))
+        val imageUrl = attachmentStorageService.uploadImage(
+            file = args.image,
+            fileName = args.image.originalFilename ?: "${message.id}-Untitled",
+            folderName = FOLDER_NAME
         )
-        return message
+        val updatedMessage = message.copy(
+            images = message.images.toMutableList().apply {
+                add(imageUrl)
+            }
+        )
+        return messageRepository.save(updatedMessage)
     }
 
     fun getAllChatMessages(chatId: UUID, pageable: Pageable) =
-        messageRepository.getAllByChatIdOrderBySentAt(chatId, pageable)
+        messageRepository.getAllByChatIdOrderBySentAtDesc(chatId, pageable)
 
 
     fun markChatMessagesAsRead(chatId: UUID, userId: UUID) =
@@ -79,7 +98,8 @@ class ChatService(
     }
 
     fun getUserChatSummaryById(chatId: UUID, userId: UUID): ChatSummary {
-        val chat = chatRepository.findByIdOrNull(chatId) ?: throw NotFoundException("no chat was found with id: $chatId")
+        val chat =
+            chatRepository.findByIdOrNull(chatId) ?: throw NotFoundException("no chat was found with id: $chatId")
         val otherUser = chat.users.firstOrNull { it.id != userId }
         val lastMessage = messageRepository.findTopByChatIdOrderBySentAtDesc(chatId)
         val unreadCount = chatRepository.findUnreadCountsForChats(listOf(chatId)).firstOrNull()?.unreadCount ?: 0
@@ -92,9 +112,10 @@ class ChatService(
     }
 
     fun getChatById(chatId: UUID, userId: UUID): ChatModel {
-        val chat = chatRepository.findByIdOrNull(chatId) ?: throw NotFoundException("no chat was found with id: $chatId")
+        val chat =
+            chatRepository.findByIdOrNull(chatId) ?: throw NotFoundException("no chat was found with id: $chatId")
         val otherUser = chat.users.firstOrNull { it.id != userId }
-        val contact =otherUser?.let{
+        val contact = otherUser?.let {
             contactService.getContactByOwnerIdAndContactUserId(userId, it.id)
         }
         return ChatModel(
@@ -106,13 +127,18 @@ class ChatService(
     }
 
     fun getChatUsersIds(chatId: UUID): List<UUID> {
-        val chat = chatRepository.findByIdOrNull(chatId) ?: throw NotFoundException("no chat was found with id: $chatId")
+        val chat =
+            chatRepository.findByIdOrNull(chatId) ?: throw NotFoundException("no chat was found with id: $chatId")
         return chat.users.map { it.id }
     }
 
-    private fun getChatName(contact: Contact?, user: ContactUser? ): String{
+    private fun getChatName(contact: Contact?, user: ContactUser?): String {
         return contact?.let { "${it.firstName} ${it.lastName}" }
             ?: user?.let { "${it.firstName} ${it.lastName}" }.orEmpty()
     }
 
+
+    companion object {
+        private const val FOLDER_NAME = "chat_attachments"
+    }
 }

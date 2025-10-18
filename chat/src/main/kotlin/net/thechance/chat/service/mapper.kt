@@ -4,7 +4,7 @@ import net.thechance.chat.entity.Chat
 import net.thechance.chat.entity.ChatSummary
 import net.thechance.chat.entity.ContactUser
 import net.thechance.chat.entity.Message
-import java.util.UUID
+import java.util.*
 
 fun Chat.toSummary(userId: UUID, otherUser: ContactUser?, lastMessage: Message?, unreadCount: Int): ChatSummary {
     return ChatSummary(
@@ -13,7 +13,7 @@ fun Chat.toSummary(userId: UUID, otherUser: ContactUser?, lastMessage: Message?,
         imageUrl = otherUser?.imageUrl,
         lastMessage = lastMessage?.let {
             ChatSummary.Message(
-                text = lastMessage.text,
+                text = lastMessage.text ?: "photo",
                 sentAt = lastMessage.sentAt,
                 isMine = lastMessage.senderId == userId
             )

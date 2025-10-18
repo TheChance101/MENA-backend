@@ -6,10 +6,7 @@ import io.mockk.justRun
 import io.mockk.mockk
 import io.mockk.verify
 import net.thechance.chat.api.controller.ChatController.Companion.PRIVATE_MESSAGES
-import net.thechance.chat.api.dto.ChatResponse
-import net.thechance.chat.api.dto.MarkAsReadRequest
-import net.thechance.chat.api.dto.MarkAsReadResponse
-import net.thechance.chat.api.dto.MessageRequestDto
+import net.thechance.chat.api.dto.*
 import net.thechance.chat.entity.Chat
 import net.thechance.chat.entity.Contact
 import net.thechance.chat.entity.ContactUser
@@ -18,6 +15,7 @@ import net.thechance.chat.service.ChatService
 import net.thechance.chat.service.ContactService
 import net.thechance.chat.service.exception.NotFoundException
 import net.thechance.chat.service.model.ChatModel
+import net.thechance.chat.service.model.MessageImageRequestArgs
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.assertThrows
 import org.springframework.data.domain.PageImpl
@@ -25,6 +23,7 @@ import org.springframework.data.domain.PageRequest
 import org.springframework.data.domain.Pageable
 import org.springframework.http.HttpStatus
 import org.springframework.messaging.simp.SimpMessagingTemplate
+import org.springframework.web.multipart.MultipartFile
 import java.security.Principal
 import java.time.Instant
 import java.util.*
@@ -47,20 +46,55 @@ class ChatControllerTest {
     fun `sendPrivateMessage should save message and send to user`() {
         val chatId = UUID.randomUUID()
         val senderId = UUID.randomUUID()
-        val dto = MessageRequestDto(chatId, "message1")
+        val dto = MessageRequestDto(chatId, "message1", null)
 
         val principal = mockk<Principal>()
         every { principal.name } returns senderId.toString()
 
-        justRun { chatService.saveMessage(any()) }
+        val savedMessage = testMessage(
+            chat = Chat(id = chatId, users = mutableSetOf()),
+            senderId = senderId,
+            text = "message1",
+        )
+
+        every { chatService.saveMessage(any()) } returns savedMessage
         justRun { messagingTemplate.convertAndSendToUser(any(), any(), any()) }
 
         controller.sendPrivateMessage(dto, principal)
 
-        verify { chatService.saveMessage(match { it.text == "message1" && it.chatId == chatId && it.senderId == senderId }) }
-
+        verify {
+            chatService.saveMessage(
+                match { it.senderId == senderId && it.text == "message1" && it.chatId == chatId },
+            )
+        }
     }
 
+    @Test
+    fun `sendMessageImages should upload image then send to user`() {
+        val chatId = UUID.randomUUID()
+        val senderId = UUID.randomUUID()
+
+        val principal = mockk<Principal>()
+        every { principal.name } returns senderId.toString()
+
+        val image = mockk<MultipartFile>()
+
+        val dummyChat = mockk<Chat>()
+        every { dummyChat.id } returns chatId
+
+        val savedMessage = testMessage(senderId = senderId, chat = dummyChat)
+
+        every { chatService.saveMessageImage(any()) } returns savedMessage
+        every { chatService.saveMessage(any()) } returns savedMessage
+        justRun { messagingTemplate.convertAndSendToUser(any(), any(), any()) }
+
+        val messageImageArgs = MessageImageRequest(chatId, image, null)
+        controller.sendMessageImage(messageImageArgs, principal)
+
+        verify {
+            chatService.saveMessageImage(match { it == MessageImageRequestArgs(chatId, senderId, image, null) })
+        }
+    }
 
     @Test
     fun `getOrCreateConversation should return conversation`() {
@@ -144,22 +178,22 @@ class ChatControllerTest {
     }
 
     @Test
-    fun `getChatDetail should get chat response correctly when the function run successfully `(){
-        every {chatService.getChatById(chatId, userId)} returns chatModel
+    fun `getChatDetail should get chat response correctly when the function run successfully `() {
+        every { chatService.getChatById(chatId, userId) } returns chatModel
         val result = controller.getChatDetail(chatId, userId).body
 
         assertThat(result).isEqualTo(chatResponse)
     }
 
     @Test
-    fun `getChatDetail should throw not found exception when try to find unavailable chatId`(){
-        every {chatService.getChatById(chatId, userId)} throws NotFoundException("")
+    fun `getChatDetail should throw not found exception when try to find unavailable chatId`() {
+        every { chatService.getChatById(chatId, userId) } throws NotFoundException("")
         assertThrows<NotFoundException> {
             controller.getChatDetail(chatId = chatId, userId = userId)
         }
     }
 
-    private companion object{
+    private companion object {
         val chatId = UUID.fromString("825265f7-7e30-4ac3-b9fb-16ba3869610e")
         val userId = UUID.fromString("451e4d6c-0380-41ed-95e6-275793c404c6")
 
@@ -175,6 +209,15 @@ class ChatControllerTest {
             imageUrl = null,
             requesterId = userId,
             id = chatId
+        )
+
+        private fun testMessage(senderId: UUID, chat: Chat, text: String? = null) = Message(
+            id = UUID.randomUUID(),
+            senderId = senderId,
+            chat = chat,
+            text = text,
+            sentAt = Instant.now(),
+            images = emptyList()
         )
     }
 }
