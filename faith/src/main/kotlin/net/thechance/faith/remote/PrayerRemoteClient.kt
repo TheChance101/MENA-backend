@@ -4,33 +4,29 @@ import kotlinx.serialization.json.Json
 import net.thechance.faith.api.controller.exception.CannotGetPrayerTimesException
 import net.thechance.faith.remote.dto.PrayerTimingsRemoteDto
 import org.springframework.stereotype.Component
-import org.springframework.web.reactive.function.client.WebClient
+import org.springframework.web.client.RestTemplate
+import org.springframework.web.util.UriComponentsBuilder
 
 @Component
 class PrayerRemoteClient(
     private val json: Json = Json { ignoreUnknownKeys = true }
 ) {
+    private val restTemplate = RestTemplate()
 
-    private val webClient: WebClient = WebClient
-        .builder()
-        .baseUrl(BASE_URL)
-        .build()
+    fun getPrayerTimes(latitude: Double, longitude: Double, date: String): PrayerTimingsRemoteDto {
+        return runCatching {
+            val url = UriComponentsBuilder.fromHttpUrl(BASE_URL)
+                .path("$PATH$date")
+                .queryParam(QUERY_LATITUDE, latitude)
+                .queryParam(QUERY_LONGITUDE, longitude)
+                .build()
+                .toUriString()
 
-    fun getPrayerTimes(latitude: Double, longitude: Double, date: String): PrayerTimingsRemoteDto = runCatching {
-        val rawJson = webClient.get()
-            .uri { uriBuilder ->
-                uriBuilder
-                    .path("$PATH$date")
-                    .queryParam(QUERY_LATITUDE, latitude)
-                    .queryParam(QUERY_LONGITUDE, longitude)
-                    .build()
-            }
-            .retrieve()
-            .bodyToMono(String::class.java)
-            .block() ?: throw CannotGetPrayerTimesException()
-        json.decodeFromString(PrayerTimingsRemoteDto.serializer(), rawJson)
-    }.getOrElse {
-        throw CannotGetPrayerTimesException()
+            val rawJson = restTemplate.getForObject(url, String::class.java)
+                ?: throw CannotGetPrayerTimesException("Empty response from prayer times API")
+
+            json.decodeFromString(PrayerTimingsRemoteDto.serializer(), rawJson)
+        }.getOrElse { throw CannotGetPrayerTimesException(it.message.orEmpty()) }
     }
 
     private companion object {

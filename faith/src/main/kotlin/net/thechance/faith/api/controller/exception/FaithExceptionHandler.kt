@@ -9,24 +9,31 @@ import org.springframework.web.bind.annotation.RestControllerAdvice
 class FaithExceptionHandler {
 
     @ExceptionHandler(AyahBookmarkNotFoundException::class)
-    fun onBookmarkNotFoundError(exception: AyahBookmarkNotFoundException): ResponseEntity<ApiErrorResponse> =
-        createErrorResponse(
+    fun onBookmarkNotFoundError(exception: AyahBookmarkNotFoundException): ResponseEntity<ApiErrorResponse> {
+        return createErrorResponse(
+            message = "Ayah bookmark not found",
             exception = exception,
             status = HttpStatus.NOT_FOUND.value(),
         )
+    }
 
     @ExceptionHandler(CannotGetPrayerTimesException::class)
-    fun onCannotGetPrayerTimesError(exception: CannotGetPrayerTimesException): ResponseEntity<ApiErrorResponse> =
-        createErrorResponse(
+    fun onCannotGetPrayerTimesError(exception: CannotGetPrayerTimesException): ResponseEntity<ApiErrorResponse> {
+        return createErrorResponse(
+            message = "Cannot get prayer times",
             exception = exception,
             status = HttpStatus.SERVICE_UNAVAILABLE.value(),
         )
+    }
 
     private fun createErrorResponse(
-        exception: Exception, status: Int
+        message: String,
+        exception: Exception,
+        status: Int
     ): ResponseEntity<ApiErrorResponse> {
+        println("[Error] ${exception::class.simpleName}: ${exception.message}")
         val apiError = ApiErrorResponse(
-            status = status, message = exception.message.orEmpty()
+            status = status, message = message
         )
         return ResponseEntity(apiError, HttpStatus.valueOf(status))
     }
