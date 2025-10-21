@@ -7,12 +7,10 @@ import net.thechance.identity.service.model.UserServiceModel
 import org.hibernate.validator.constraints.Length
 import java.util.*
 
-data class UpdateProfileRequest (
+data class UpdateProfileRequest(
     @field:NotBlank(message = "username must not be blank")
-    @field:Length(min = 3, message = "username must be at least 3 characters")
     val username: String,
     @field:NotBlank(message = "firstName must not be blank")
-    @field:Length(min = 3, message = "username must be at least 3 characters")
     val firstName: String,
     @field:NotBlank(message = "lastName must not be blank")
     val lastName: String,
@@ -23,15 +21,4 @@ data class UpdateProfileRequest (
     val gender: Int,
     val imageUrl: String?,
     val updateImage: Boolean = false
-)
-
-fun UpdateProfileRequest.toUserServiceModel(id: UUID) = UserServiceModel(
-    id = id,
-    username = username,
-    firstName = firstName,
-    lastName = lastName,
-    birthDate = birthDate,
-    gender = gender,
-    imageUrl = imageUrl,
-    phoneNumber = ""
 )
