@@ -3,9 +3,6 @@ package net.thechance.identity.api.dto
 import jakarta.validation.constraints.Max
 import jakarta.validation.constraints.Min
 import jakarta.validation.constraints.NotBlank
-import net.thechance.identity.service.model.UserServiceModel
-import org.hibernate.validator.constraints.Length
-import java.util.*
 
 data class UpdateProfileRequest(
     @field:NotBlank(message = "username must not be blank")
