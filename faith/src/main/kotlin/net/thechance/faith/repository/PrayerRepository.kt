@@ -17,8 +17,7 @@ interface PrayerRepository : JpaRepository<DayPrayerTimings, Int> {
     WHERE d.latitude BETWEEN :#{#latitude - #degreeRange} AND :#{#latitude + #degreeRange}
     AND d.longitude BETWEEN :#{#longitude - #degreeRange} AND :#{#longitude + #degreeRange}
     AND d.date = :date
-    ORDER BY 
-        ABS(d.latitude - :latitude) + ABS(d.longitude - :longitude)
+    ORDER BY ABS(d.latitude - :latitude) + ABS(d.longitude - :longitude)
     """
     )
     fun findByLatitudeAndLongitudeAndDateSortedByNearestLocation(
@@ -26,7 +25,7 @@ interface PrayerRepository : JpaRepository<DayPrayerTimings, Int> {
         @Param("longitude") longitude: Double,
         @Param("date") date: LocalDate,
         @Param("degreeRange") degreeRange: Double = 0.1
-    ): List<DayPrayerTimings>?
+    ): List<DayPrayerTimings>
 
     @Modifying
     @Transactional

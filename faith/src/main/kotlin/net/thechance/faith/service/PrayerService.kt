@@ -21,29 +21,46 @@ class PrayerService(
     private val today: LocalDate = LocalDate.now(ZoneId.systemDefault())
 
     fun getPrayerTimes(latitude: Double, longitude: Double, date: String): DayPrayerTimings {
-
         return runCatching {
 
-            val nearestCashedLocalPrayerTimes: DayPrayerTimings? =
-                prayerRepository.findByLatitudeAndLongitudeAndDateSortedByNearestLocation(
-                    longitude = longitude,
-                    latitude = latitude,
-                    date = date.toLocalDate()
-                )?.firstOrNull()
-
-            if (nearestCashedLocalPrayerTimes != null && isDateExpired(cacheDate = nearestCashedLocalPrayerTimes.savedIn).not())
-                return nearestCashedLocalPrayerTimes
+            val localPrayerTimes: DayPrayerTimings? = getLocalPrayerTimesIfNotExpired(
+                latitude = latitude,
+                longitude = longitude,
+                date = date
+            )
+            if (localPrayerTimes != null) return localPrayerTimes
 
             val remotePrayerTimes = prayerRemoteClient.getPrayerTimes(latitude, longitude, date).toDayPrayerTimings(
                 latitude = latitude,
                 longitude = longitude
             )
+            safeCachePrayerTimes(remotePrayerTimes)
 
-            runCatching { prayerRepository.save(remotePrayerTimes) }
             remotePrayerTimes
         }.getOrElse {
             throw CannotGetPrayerTimesException(it.message.orEmpty())
         }
+    }
+
+    private fun getLocalPrayerTimesIfNotExpired(
+        latitude: Double,
+        longitude: Double,
+        date: String
+    ): DayPrayerTimings? = runCatching {
+        val cachedPrayerTimes: DayPrayerTimings? =
+            prayerRepository.findByLatitudeAndLongitudeAndDateSortedByNearestLocation(
+                longitude = longitude,
+                latitude = latitude,
+                date = date.toLocalDate()
+            ).firstOrNull()
+        return if (cachedPrayerTimes != null && isDateExpired(cacheDate = cachedPrayerTimes.savedIn).not())
+            cachedPrayerTimes
+        else
+            null
+    }.getOrNull()
+
+    private fun safeCachePrayerTimes(prayerTimes: DayPrayerTimings) = runCatching {
+        prayerRepository.save(prayerTimes)
     }
 
     private fun isDateExpired(cacheDate: Instant): Boolean {
@@ -51,7 +68,7 @@ class PrayerService(
         return cacheLocalDate.isBefore(today)
     }
 
-    fun String.toLocalDate(): LocalDate = runCatching {
+    private fun String.toLocalDate(): LocalDate = runCatching {
         this.split('-').let {
             val day = it[0].toIntOrNull().orZero()
             val month = it[1].toIntOrNull().orZero()

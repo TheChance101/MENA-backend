@@ -18,6 +18,7 @@ fun PrayerTimingsRemoteDto.toDayPrayerTimings(latitude: Double, longitude: Doubl
         latitude = latitude,
         longitude = longitude,
         date = localDate,
+        hijriDate = data?.date?.hijri?.date.orEmpty(),
         fajr = data?.timings?.fajr.toInstant(startOfDay),
         sunrise = data?.timings?.sunrise.toInstant(startOfDay),
         dhuhr = data?.timings?.dhuhr.toInstant(startOfDay),
