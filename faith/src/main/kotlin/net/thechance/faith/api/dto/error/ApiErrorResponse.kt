@@ -1,4 +1,4 @@
-package net.thechance.faith.api.controller.exception
+package net.thechance.faith.api.dto.error
 
 data class ApiErrorResponse(
     val status: Int,

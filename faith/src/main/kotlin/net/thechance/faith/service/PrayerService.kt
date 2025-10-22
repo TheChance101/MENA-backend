@@ -1,12 +1,11 @@
 package net.thechance.faith.service
 
-import net.thechance.faith.api.controller.exception.CannotGetPrayerTimesException
 import net.thechance.faith.entity.DayPrayerTimings
+import net.thechance.faith.exception.FailedToGetPrayerTimesException
 import net.thechance.faith.remote.PrayerRemoteClient
 import net.thechance.faith.remote.mapper.toDayPrayerTimings
 import net.thechance.faith.repository.PrayerRepository
 import net.thechance.faith.utils.orZero
-import org.springframework.scheduling.annotation.Scheduled
 import org.springframework.stereotype.Service
 import java.time.Instant
 import java.time.LocalDate
@@ -38,7 +37,7 @@ class PrayerService(
 
             remotePrayerTimes
         }.getOrElse {
-            throw CannotGetPrayerTimesException(it.message.orEmpty())
+            throw FailedToGetPrayerTimesException(it.message.orEmpty())
         }
     }
 
@@ -78,7 +77,6 @@ class PrayerService(
         }
     }.getOrDefault(LocalDate.of(1970, 1, 1))
 
-    @Scheduled(cron = "0 0 0 * * *")
     fun clearOldCache() {
         val startOfToday = today.atStartOfDay(ZoneId.systemDefault()).toInstant()
         prayerRepository.deleteOlderThan(startOfToday)

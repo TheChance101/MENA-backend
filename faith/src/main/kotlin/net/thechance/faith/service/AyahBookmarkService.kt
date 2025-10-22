@@ -1,6 +1,6 @@
 package net.thechance.faith.service
 
-import net.thechance.faith.api.controller.exception.AyahBookmarkNotFoundException
+import net.thechance.faith.exception.AyahBookmarkNotFoundException
 import net.thechance.faith.entity.AyahBookmark
 import net.thechance.faith.repository.AyahBookmarkRepository
 import org.springframework.data.domain.Page

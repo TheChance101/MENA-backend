@@ -4,7 +4,7 @@ import com.google.common.truth.Truth.assertThat
 import io.mockk.every
 import io.mockk.mockk
 import io.mockk.verify
-import net.thechance.faith.api.controller.exception.CannotGetPrayerTimesException
+import net.thechance.faith.exception.FailedToGetPrayerTimesException
 import net.thechance.faith.entity.DayPrayerTimings
 import net.thechance.faith.remote.PrayerRemoteClient
 import net.thechance.faith.remote.dto.*
@@ -82,9 +82,9 @@ class PrayerServiceTest {
                 longitude = LONGITUDE,
                 date = DATE
             )
-        } throws CannotGetPrayerTimesException()
+        } throws FailedToGetPrayerTimesException()
         //When //Then
-        assertThrows(CannotGetPrayerTimesException::class.java) {
+        assertThrows(FailedToGetPrayerTimesException::class.java) {
             service.getPrayerTimes(LATITUDE, LONGITUDE, DATE)
         }
     }

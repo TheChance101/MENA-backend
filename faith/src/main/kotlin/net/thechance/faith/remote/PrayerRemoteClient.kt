@@ -1,7 +1,7 @@
 package net.thechance.faith.remote
 
 import kotlinx.serialization.json.Json
-import net.thechance.faith.api.controller.exception.CannotGetPrayerTimesException
+import net.thechance.faith.exception.FailedToGetPrayerTimesException
 import net.thechance.faith.remote.dto.PrayerTimingsRemoteDto
 import org.springframework.stereotype.Component
 import org.springframework.web.client.RestTemplate
@@ -23,10 +23,12 @@ class PrayerRemoteClient(
                 .toUriString()
 
             val rawJson = restTemplate.getForObject(url, String::class.java)
-                ?: throw CannotGetPrayerTimesException("Empty response from prayer times API")
+                ?: throw FailedToGetPrayerTimesException(
+                    "failed to fetch prayer times from remote: response body is null"
+                )
 
             json.decodeFromString(PrayerTimingsRemoteDto.serializer(), rawJson)
-        }.getOrElse { throw CannotGetPrayerTimesException(it.message.orEmpty()) }
+        }.getOrElse { throw FailedToGetPrayerTimesException("failed to fetch prayer times from remote") }
     }
 
     private companion object {

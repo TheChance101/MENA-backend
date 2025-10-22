@@ -1,9 +1,9 @@
-package net.thechance.faith.api.controller.exception
+package net.thechance.faith.exception
 
 class AyahBookmarkNotFoundException(
     message: String = "Bookmark not found"
 ) : RuntimeException(message)
 
-class CannotGetPrayerTimesException(
-    message: String = "Cannot get prayer times"
+class FailedToGetPrayerTimesException(
+    message: String = "failed to get prayer times"
 ) : RuntimeException(message)
