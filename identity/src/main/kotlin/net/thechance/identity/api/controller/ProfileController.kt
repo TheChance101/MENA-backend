@@ -3,6 +3,7 @@ package net.thechance.identity.api.controller
 import jakarta.validation.Valid
 import net.thechance.identity.api.dto.ProfileResponse
 import net.thechance.identity.api.dto.UpdateProfileRequest
+import net.thechance.identity.api.utils.jsonBody
 import net.thechance.identity.mapper.toResponse
 import net.thechance.identity.service.UserService
 import net.thechance.identity.service.model.UserServiceModel
@@ -10,6 +11,7 @@ import org.springframework.http.ResponseEntity
 import org.springframework.security.core.annotation.AuthenticationPrincipal
 import org.springframework.web.bind.annotation.*
 import org.springframework.web.multipart.MultipartFile
+import java.time.LocalDate
 import java.util.*
 
 @RestController
@@ -17,19 +19,36 @@ import java.util.*
 class ProfileController(
     private val userService: UserService
 ) {
-    @PostMapping
-    fun updateCurrentUserProfile(
-        @AuthenticationPrincipal userId: UUID,
-        @Valid @RequestPart("user") updateProfileRequest: UpdateProfileRequest,
-        @RequestPart("file", required = false) file: MultipartFile?,
-    ): ResponseEntity<ProfileResponse> {
-        val updateUser = userService.updateUserProfile(
-            user = updateProfileRequest.toServiceModel(userId),
-            shouldUpdatedImage = updateProfileRequest.updateImage,
-            file = file
-        )
 
-        return ResponseEntity.ok(updateUser.toResponse())
+    @PostMapping
+    fun updateUserProfile(
+        @AuthenticationPrincipal userId: UUID,
+        @Valid @RequestBody updateProfileRequest: UpdateProfileRequest,
+    ): ResponseEntity<ProfileResponse> {
+        val userServiceModel = updateProfileRequest.toServiceModel(userId)
+        val updatedUser = userService.updateUserProfile(userServiceModel)
+        return ResponseEntity.ok(updatedUser.toResponse())
+    }
+
+    @GetMapping
+    fun getUserProfile(@AuthenticationPrincipal userId: UUID): ResponseEntity<ProfileResponse> {
+        val response = userService.findById(userId).toResponse()
+        return ResponseEntity.ok(response)
+    }
+
+    @PostMapping("/image")
+    fun updateUserImage(
+        @AuthenticationPrincipal userId: UUID,
+        @RequestPart("file") file: MultipartFile,
+    ): ResponseEntity<String> {
+        val imageUrl = userService.updateUserImage(userId, file)
+        return ResponseEntity.ok().jsonBody(IMAGE_URL_KEY, imageUrl)
+    }
+
+    @DeleteMapping("/image")
+    fun deleteUserImage(@AuthenticationPrincipal userId: UUID): ResponseEntity<String> {
+        userService.deleteUserImage(userId)
+        return ResponseEntity.ok().jsonBody(MESSAGE_KEY, "Image deleted successfully")
     }
 
     private fun UpdateProfileRequest.toServiceModel(id: UUID) = UserServiceModel(
@@ -37,15 +56,12 @@ class ProfileController(
         username = username,
         firstName = firstName,
         lastName = lastName,
-        birthDate = birthDate,
-        gender = gender,
-        imageUrl = imageUrl,
-        phoneNumber = ""
+        birthDate = LocalDate.parse(birthDate),
+        gender = gender
     )
 
-    @GetMapping
-    fun getCurrentUserProfile(@AuthenticationPrincipal userId: UUID): ResponseEntity<ProfileResponse> {
-        val response = userService.findById(userId).toResponse()
-        return ResponseEntity.ok(response)
+    private companion object {
+        private const val IMAGE_URL_KEY = "imageUrl"
+        private const val MESSAGE_KEY = "message"
     }
 }

@@ -15,7 +15,5 @@ data class UpdateProfileRequest(
     val birthDate: String,
     @field:Min(1, message = "Gender must be 1 or 2")
     @field:Max(2, message = "Gender must be 1 or 2")
-    val gender: Int,
-    val imageUrl: String?,
-    val updateImage: Boolean = false
+    val gender: Int
 )

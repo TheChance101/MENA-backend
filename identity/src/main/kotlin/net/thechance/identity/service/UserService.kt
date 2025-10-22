@@ -9,7 +9,6 @@ import net.thechance.identity.service.model.UserServiceModel
 import org.springframework.data.repository.findByIdOrNull
 import org.springframework.stereotype.Service
 import org.springframework.web.multipart.MultipartFile
-import java.time.LocalDate
 import java.util.*
 
 @Service
@@ -36,7 +35,7 @@ class UserService(
         try {
             val savedUser = userRepository.save(userWithNewPassword)
             if (savedUser.password != newPassword) throw PasswordNotUpdatedException()
-        } catch (exception: Exception) {
+        } catch (_: Exception) {
             throw PasswordNotUpdatedException()
         }
     }
@@ -46,29 +45,32 @@ class UserService(
         return user.copy(password = newPassword)
     }
 
-    fun updateUserProfile(
-        user: UserServiceModel,
-        shouldUpdatedImage: Boolean,
-        file: MultipartFile?
-    ): User {
-        val userEntity = userRepository.findById(user.id)
-            .orElseThrow { UserNotFoundException("User with id: ${user.id} not found") }
-
-        val imageUrl = when {
-            !shouldUpdatedImage -> userEntity.imageUrl
-            file != null -> identityImageStorageService.uploadImage(file = file, fileName = "${userEntity.id}")
-            else -> ""
-        }
-
+    fun updateUserProfile(user: UserServiceModel): User {
+        val userEntity = findById(user.id)
         val updatedUser = userEntity.copy(
             username = user.username,
             firstName = user.firstName,
             lastName = user.lastName,
-            imageUrl = imageUrl,
-            birthDate = LocalDate.parse(user.birthDate),
-            gender = user.gender,
+            birthDate = user.birthDate,
+            gender = user.gender
         )
 
         return userRepository.save(updatedUser)
+    }
+
+    fun updateUserImage(
+        userId: UUID,
+        imageFile: MultipartFile
+    ): String {
+        return findById(userId)
+            .imageUrl
+            ?.let(identityImageStorageService::deleteImage)
+            .run { identityImageStorageService.uploadImage(file = imageFile) }
+    }
+
+    fun deleteUserImage(userId: UUID) {
+        findById(userId)
+            .imageUrl
+            ?.let(identityImageStorageService::deleteImage)
     }
 }
