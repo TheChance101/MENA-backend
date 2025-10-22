@@ -7,7 +7,14 @@ import io.mockk.verify
 import net.thechance.faith.exception.FailedToGetPrayerTimesException
 import net.thechance.faith.entity.DayPrayerTimings
 import net.thechance.faith.remote.PrayerRemoteClient
-import net.thechance.faith.remote.dto.*
+import net.thechance.faith.remote.dto.prayertime.DateInfoRemoteDto
+import net.thechance.faith.remote.dto.prayertime.GregorianRemoteDto
+import net.thechance.faith.remote.dto.prayertime.HijriRemoteDto
+import net.thechance.faith.remote.dto.prayertime.MetaRemoteDto
+import net.thechance.faith.remote.dto.prayertime.MonthGregorianRemoteDto
+import net.thechance.faith.remote.dto.prayertime.PrayerDataRemoteDto
+import net.thechance.faith.remote.dto.prayertime.PrayerTimingsRemoteDto
+import net.thechance.faith.remote.dto.prayertime.TimingsRemoteDto
 import net.thechance.faith.repository.PrayerRepository
 import org.junit.Assert.assertThrows
 import java.time.Instant
@@ -30,7 +37,7 @@ class PrayerServiceTest {
             )
         } returns listOf(cachedPrayerTimes)
         //When
-        val result = service.getPrayerTimes(LATITUDE, LONGITUDE, DATE)
+        val result = service.getPrayerTimes(LATITUDE, LONGITUDE, LOCAL_DATE)
         //Then
         assertThat(result).isEqualTo(cachedPrayerTimes)
         verify(exactly = 0) {
@@ -55,11 +62,11 @@ class PrayerServiceTest {
             remoteClient.getPrayerTimes(
                 latitude = LATITUDE,
                 longitude = LONGITUDE,
-                date = DATE
+                date = LOCAL_DATE
             )
         } returns remotePrayerTimes
         //When
-        service.getPrayerTimes(LATITUDE, LONGITUDE, DATE)
+        service.getPrayerTimes(LATITUDE, LONGITUDE, LOCAL_DATE)
         //Then
         verify(exactly = 1) {
             remoteClient.getPrayerTimes(any(), any(), any())
@@ -80,12 +87,12 @@ class PrayerServiceTest {
             remoteClient.getPrayerTimes(
                 latitude = LATITUDE,
                 longitude = LONGITUDE,
-                date = DATE
+                date = LOCAL_DATE
             )
         } throws FailedToGetPrayerTimesException()
         //When //Then
         assertThrows(FailedToGetPrayerTimesException::class.java) {
-            service.getPrayerTimes(LATITUDE, LONGITUDE, DATE)
+            service.getPrayerTimes(LATITUDE, LONGITUDE, LOCAL_DATE)
         }
     }
 
@@ -93,7 +100,6 @@ class PrayerServiceTest {
         const val LATITUDE = 30.0
         const val LONGITUDE = 31.0
         val LOCAL_DATE: LocalDate = LocalDate.now()
-        val DATE = "${LOCAL_DATE.dayOfMonth}-${LOCAL_DATE.monthValue}-${LOCAL_DATE.year}"
 
         val cachedPrayerTimes = DayPrayerTimings(
             id = 1,

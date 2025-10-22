@@ -3,9 +3,10 @@ package net.thechance.faith.service
 import net.thechance.faith.entity.DayPrayerTimings
 import net.thechance.faith.exception.FailedToGetPrayerTimesException
 import net.thechance.faith.remote.PrayerRemoteClient
-import net.thechance.faith.remote.mapper.toDayPrayerTimings
+import net.thechance.faith.remote.dto.prayertime.toDayPrayerTimings
 import net.thechance.faith.repository.PrayerRepository
-import net.thechance.faith.utils.orZero
+import org.slf4j.Logger
+import org.slf4j.LoggerFactory
 import org.springframework.stereotype.Service
 import java.time.Instant
 import java.time.LocalDate
@@ -14,12 +15,11 @@ import java.time.ZoneId
 @Service
 class PrayerService(
     private val prayerRepository: PrayerRepository,
-    private val prayerRemoteClient: PrayerRemoteClient
+    private val prayerRemoteClient: PrayerRemoteClient,
+    private val logger: Logger = LoggerFactory.getLogger(PrayerService::class.java)
 ) {
 
-    private val today: LocalDate = LocalDate.now(ZoneId.systemDefault())
-
-    fun getPrayerTimes(latitude: Double, longitude: Double, date: String): DayPrayerTimings {
+    fun getPrayerTimes(latitude: Double, longitude: Double, date: LocalDate): DayPrayerTimings {
         return runCatching {
 
             val localPrayerTimes: DayPrayerTimings? = getLocalPrayerTimesIfNotExpired(
@@ -44,41 +44,40 @@ class PrayerService(
     private fun getLocalPrayerTimesIfNotExpired(
         latitude: Double,
         longitude: Double,
-        date: String
+        date: LocalDate
     ): DayPrayerTimings? = runCatching {
         val cachedPrayerTimes: DayPrayerTimings? =
             prayerRepository.findByLatitudeAndLongitudeAndDateSortedByNearestLocation(
                 longitude = longitude,
                 latitude = latitude,
-                date = date.toLocalDate()
+                date = date
             ).firstOrNull()
         return if (cachedPrayerTimes != null && isDateExpired(cacheDate = cachedPrayerTimes.savedIn).not())
             cachedPrayerTimes
         else
             null
-    }.getOrNull()
+    }.getOrElse {
+        logger.error("Error getting local prayer times", it)
+        null
+    }
 
     private fun safeCachePrayerTimes(prayerTimes: DayPrayerTimings) = runCatching {
         prayerRepository.save(prayerTimes)
     }
 
     private fun isDateExpired(cacheDate: Instant): Boolean {
-        val cacheLocalDate = cacheDate.atZone(ZoneId.systemDefault()).toLocalDate()
+        val today: LocalDate = LocalDate.now(ZONE_ID)
+        val cacheLocalDate = cacheDate.atZone(ZONE_ID).toLocalDate()
         return cacheLocalDate.isBefore(today)
     }
 
-    private fun String.toLocalDate(): LocalDate = runCatching {
-        this.split('-').let {
-            val day = it[0].toIntOrNull().orZero()
-            val month = it[1].toIntOrNull().orZero()
-            val year = it[2].toIntOrNull().orZero()
-            LocalDate.of(year, month, day)
-
-        }
-    }.getOrDefault(LocalDate.of(1970, 1, 1))
-
     fun clearOldCache() {
-        val startOfToday = today.atStartOfDay(ZoneId.systemDefault()).toInstant()
+        val today: LocalDate = LocalDate.now(ZONE_ID)
+        val startOfToday = today.atStartOfDay(ZONE_ID).toInstant()
         prayerRepository.deleteOlderThan(startOfToday)
+    }
+
+    private companion object {
+        val ZONE_ID: ZoneId = ZoneId.systemDefault()
     }
 }

@@ -1,9 +1,11 @@
-package net.thechance.faith.remote.mapper
+package net.thechance.faith.remote.dto.prayertime
 
 import net.thechance.faith.entity.DayPrayerTimings
-import net.thechance.faith.remote.dto.PrayerTimingsRemoteDto
+import net.thechance.faith.utils.orZero
+import java.time.Instant
 import java.time.LocalDate
 import java.time.ZoneId
+import java.time.temporal.ChronoUnit
 
 fun PrayerTimingsRemoteDto.toDayPrayerTimings(latitude: Double, longitude: Double): DayPrayerTimings {
 
@@ -26,4 +28,27 @@ fun PrayerTimingsRemoteDto.toDayPrayerTimings(latitude: Double, longitude: Doubl
         maghrib = data?.timings?.maghrib.toInstant(startOfDay),
         isha = data?.timings?.isha.toInstant(startOfDay),
     )
+}
+
+fun String?.toInstant(
+    startOfDay: Instant,
+): Instant = runCatching {
+    stringTimeToInstant(
+        hoursAndMinutes = this,
+        startOfDay = startOfDay,
+    )
+}.getOrDefault(startOfDay)
+
+private fun stringTimeToInstant(
+    hoursAndMinutes: String?,
+    startOfDay: Instant,
+): Instant {
+    val parts = hoursAndMinutes?.split(":").orEmpty()
+    if (parts.size < 2) return startOfDay
+    val hour = parts[0].toIntOrNull().orZero()
+    val minute = parts[1].toIntOrNull().orZero()
+
+    return startOfDay
+        .plus(hour.toLong(), ChronoUnit.HOURS)
+        .plus(minute.toLong(), ChronoUnit.MINUTES)
 }

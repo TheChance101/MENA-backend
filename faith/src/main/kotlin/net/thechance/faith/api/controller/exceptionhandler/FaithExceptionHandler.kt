@@ -1,6 +1,8 @@
-package net.thechance.faith.exception
+package net.thechance.faith.api.controller.exceptionhandler
 
 import net.thechance.faith.api.dto.error.ApiErrorResponse
+import net.thechance.faith.exception.AyahBookmarkNotFoundException
+import net.thechance.faith.exception.FailedToGetPrayerTimesException
 import org.slf4j.LoggerFactory
 import org.springframework.http.HttpStatus
 import org.springframework.http.ResponseEntity
@@ -17,7 +19,7 @@ class FaithExceptionHandler {
         return createErrorResponse(
             message = "Ayah bookmark not found",
             exception = exception,
-            status = HttpStatus.NOT_FOUND.value(),
+            status = HttpStatus.NOT_FOUND,
         )
     }
 
@@ -26,19 +28,17 @@ class FaithExceptionHandler {
         return createErrorResponse(
             message = "failed to get prayer times",
             exception = exception,
-            status = HttpStatus.SERVICE_UNAVAILABLE.value(),
+            status = HttpStatus.SERVICE_UNAVAILABLE,
         )
     }
 
     private fun createErrorResponse(
         message: String,
         exception: Exception,
-        status: Int
+        status: HttpStatus
     ): ResponseEntity<ApiErrorResponse> {
         logger.error(message, exception)
-        val apiError = ApiErrorResponse(
-            status = status, message = message
-        )
-        return ResponseEntity(apiError, HttpStatus.valueOf(status))
+        val apiError = ApiErrorResponse(status = status.value(), message = message)
+        return ResponseEntity(apiError, status)
     }
 }

@@ -1,8 +1,7 @@
-package net.thechance.faith.remote.dto
+package net.thechance.faith.remote.dto.prayertime
 
 import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
-import net.thechance.faith.remote.mapper.StringHoursAndMinutesToInstantMapper
 
 @Serializable
 data class PrayerTimingsRemoteDto(
@@ -12,7 +11,7 @@ data class PrayerTimingsRemoteDto(
     val status: String?,
     @SerialName("data")
     val data: PrayerDataRemoteDto?
-) : StringHoursAndMinutesToInstantMapper
+)
 
 @Serializable
 data class PrayerDataRemoteDto(
