@@ -62,15 +62,16 @@ class UserService(
         userId: UUID,
         imageFile: MultipartFile
     ): String {
-        return findById(userId)
-            .imageUrl
-            ?.let(identityImageStorageService::deleteImage)
-            .run { identityImageStorageService.uploadImage(file = imageFile) }
+        val user = findById(userId)
+        user.imageUrl?.let(identityImageStorageService::deleteImage)
+        val newImageUrl = identityImageStorageService.uploadImage(file = imageFile)
+        val updatedUser = user.copy(imageUrl = newImageUrl)
+        userRepository.save(updatedUser)
+        return newImageUrl
     }
 
     fun deleteUserImage(userId: UUID) {
-        findById(userId)
-            .imageUrl
+        findById(userId).imageUrl
             ?.let(identityImageStorageService::deleteImage)
     }
 }

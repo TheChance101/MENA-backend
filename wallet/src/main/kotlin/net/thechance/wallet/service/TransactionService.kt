@@ -1,11 +1,14 @@
 package net.thechance.wallet.service
 
 import jakarta.persistence.EntityNotFoundException
-import net.thechance.wallet.entity.Transaction
+import net.thechance.wallet.entity.*
+import net.thechance.wallet.repository.PendingTransactionRepository
 import net.thechance.wallet.repository.TransactionRepository
-import net.thechance.wallet.service.helper.TransactionFilterParams
+import net.thechance.wallet.repository.WalletUserRepository
+import net.thechance.wallet.service.helper.*
 import org.springframework.data.domain.Page
 import org.springframework.data.domain.Pageable
+import org.springframework.data.repository.findByIdOrNull
 import org.springframework.stereotype.Service
 import java.time.LocalDateTime
 import java.util.*
@@ -13,7 +16,9 @@ import java.util.*
 
 @Service
 class TransactionService(
-    private val transactionRepository: TransactionRepository
+    private val transactionRepository: TransactionRepository,
+    private val pendingTransactionRepository: PendingTransactionRepository,
+    private val walletUserRepository: WalletUserRepository,
 ) {
     fun getFilteredTransactions(
         transactionFilterParams: TransactionFilterParams,
@@ -30,7 +35,7 @@ class TransactionService(
 
         return transactionRepository.findFilteredTransactions(
             status = transactionFilterParams.status,
-            transactionTypes = transactionFilterParams.types?.map{ it.name},
+            transactionTypes = transactionFilterParams.types?.map { it.name },
             startDate = startDate,
             endDate = endDate,
             pageable = pageable,
@@ -39,13 +44,24 @@ class TransactionService(
     }
 
     fun getUserFirstTransactionDate(currentUserId: UUID): LocalDateTime? {
-        return transactionRepository.findFirstBySenderUserIdOrReceiverUserIdOrderByCreatedAtAsc(currentUserId, currentUserId)?.createdAt
+        return transactionRepository.findFirstBySenderUserIdOrReceiverUserIdOrderByCreatedAtAsc(
+            currentUserId,
+            currentUserId
+        )?.createdAt
     }
 
-    fun getTransactionDetails(transactionId: UUID): Transaction {
-        return transactionRepository.findTransactionById(
-            transactionId,
-        ) ?: throw EntityNotFoundException("Transaction with ID $transactionId not found or access denied.")
+    fun getTransactionDetails(transactionId: UUID): TransactionDetailsModel {
+        return transactionRepository.findByIdOrNull(transactionId)?.toTransactionDetailsModel()
+            ?: pendingTransactionRepository.findByIdOrNull(transactionId)?.toTransactionDetailsModel()
+            ?: throw EntityNotFoundException("Transaction with ID $transactionId not found or access denied.")
     }
 
+    fun initiateTransaction(initiateTransactionParams: InitiateTransactionParams): PendingTransaction {
+        if (initiateTransactionParams.receiverId == initiateTransactionParams.senderId)
+            throw IllegalArgumentException("Sender and receiver cannot be the same.")
+
+        val sender = walletUserRepository.getReferenceById(initiateTransactionParams.senderId)
+        val receiver = walletUserRepository.getReferenceById(initiateTransactionParams.receiverId)
+        return pendingTransactionRepository.save(initiateTransactionParams.toPendingTransaction(sender, receiver))
+    }
 }

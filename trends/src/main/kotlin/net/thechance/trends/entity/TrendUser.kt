@@ -18,7 +18,7 @@ data class TrendUser(
     @Column(columnDefinition = "uuid", nullable = false, updatable = false)
     val userId: UUID,
 
-    @ManyToMany(fetch = FetchType.EAGER)
+    @ManyToMany(fetch = FetchType.LAZY)
     @JoinTable(
         name = "user_categories",
         joinColumns = [JoinColumn(name = "user_id")],

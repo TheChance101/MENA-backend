@@ -20,6 +20,9 @@ dependencies {
 
     //websocket
     implementation("org.springframework.boot:spring-boot-starter-websocket")
+    // AWS Configuration
+    implementation(platform("software.amazon.awssdk:bom:2.33.8"))
+    implementation("software.amazon.awssdk:s3")
 }
 
 tasks.test {

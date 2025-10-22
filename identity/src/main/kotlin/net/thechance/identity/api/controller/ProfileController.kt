@@ -7,6 +7,7 @@ import net.thechance.identity.api.utils.jsonBody
 import net.thechance.identity.mapper.toResponse
 import net.thechance.identity.service.UserService
 import net.thechance.identity.service.model.UserServiceModel
+import org.springframework.beans.factory.annotation.Value
 import org.springframework.http.ResponseEntity
 import org.springframework.security.core.annotation.AuthenticationPrincipal
 import org.springframework.web.bind.annotation.*
@@ -17,7 +18,8 @@ import java.util.*
 @RestController
 @RequestMapping("/identity/profile")
 class ProfileController(
-    private val userService: UserService
+    private val userService: UserService,
+    @param:Value("storage.mena.cdn-endpoint") private val cdnEndpoint: String,
 ) {
 
     @PostMapping
@@ -27,12 +29,12 @@ class ProfileController(
     ): ResponseEntity<ProfileResponse> {
         val userServiceModel = updateProfileRequest.toServiceModel(userId)
         val updatedUser = userService.updateUserProfile(userServiceModel)
-        return ResponseEntity.ok(updatedUser.toResponse())
+        return ResponseEntity.ok(updatedUser.toResponse(cdnEndpoint))
     }
 
     @GetMapping
     fun getUserProfile(@AuthenticationPrincipal userId: UUID): ResponseEntity<ProfileResponse> {
-        val response = userService.findById(userId).toResponse()
+        val response = userService.findById(userId).toResponse(cdnEndpoint)
         return ResponseEntity.ok(response)
     }
 

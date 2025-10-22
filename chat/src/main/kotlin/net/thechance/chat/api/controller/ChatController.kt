@@ -3,6 +3,7 @@ package net.thechance.chat.api.controller
 import net.thechance.chat.api.dto.*
 import net.thechance.chat.service.ChatService
 import net.thechance.chat.service.ContactService
+import net.thechance.chat.service.model.toRequestArgs
 import org.springframework.data.domain.Pageable
 import org.springframework.http.ResponseEntity
 import org.springframework.messaging.handler.annotation.MessageMapping
@@ -23,14 +24,22 @@ class ChatController(
 ) {
 
     @MessageMapping("/chat.privateMessage")
-    fun sendPrivateMessage(@Payload chatMessage: MessageRequestDto, principal: Principal) {
+    fun sendPrivateMessage(
+        @Payload chatMessage: MessageRequestDto,
+        principal: Principal
+    ) {
         val senderId = UUID.fromString(principal.name)
-        val createdMessage = chatMessage.toCreateMessageArgs(senderId = senderId)
-        chatService.saveMessage(createdMessage)
-        sendMessageToUser(
-            user = chatMessage.chatId.toString(),
-            message = createdMessage
-        )
+        val message = chatService.saveMessage(chatMessage.toRequestArgs(senderId))
+
+        chatService
+            .getChatUsersIds(chatId = chatMessage.chatId)
+            .forEach { chatParticipantId ->
+                messagingTemplate.convertAndSendToUser(
+                    chatParticipantId.toString(),
+                    PRIVATE_MESSAGES,
+                    message.toResponse(chatParticipantId)
+                )
+            }
     }
 
     @GetMapping
@@ -48,11 +57,35 @@ class ChatController(
     @GetMapping("/history")
     fun getChatHistory(
         @RequestParam chatId: UUID,
+        @AuthenticationPrincipal userId: UUID,
         pageable: Pageable
-    ): ResponseEntity<PagedResponse<MessageDto>> {
+    ): ResponseEntity<PagedResponse<MessageResponse>> {
         return ResponseEntity.ok(
-            chatService.getAllChatMessages(chatId,pageable).toPagedMessageResponse()
+            chatService.getAllChatMessages(chatId, pageable).toPagedMessageResponse(userId)
         )
+    }
+
+
+    @PostMapping("/image")
+    fun sendMessageImage(
+        @ModelAttribute request: MessageImageRequest,
+        principal: Principal
+    ): ResponseEntity<MessageResponse> {
+        val senderId = UUID.fromString(principal.name)
+        val messageImageArgs = request.toRequestArgs(senderId)
+        val message = chatService.saveMessageImage(messageImageArgs).toResponse(senderId)
+
+        chatService
+            .getChatUsersIds(chatId = request.chatId)
+            .forEach { chatParticipantId ->
+                messagingTemplate.convertAndSendToUser(
+                    chatParticipantId.toString(),
+                    PRIVATE_MESSAGES,
+                    message
+                )
+            }
+
+        return ResponseEntity.ok(message)
     }
 
     @MessageMapping("/chat.markAsRead")
@@ -61,22 +94,47 @@ class ChatController(
         principal: Principal
     ) {
         val userId = UUID.fromString(principal.name)
-        sendMessageToUser(
-            user = markAsReadRequest.chatId.toString(),
-            message = MarkAsReadResponse(userId)
-        )
         chatService.markChatMessagesAsRead(markAsReadRequest.chatId, userId)
+
+        chatService
+            .getChatUsersIds(chatId = markAsReadRequest.chatId)
+            .forEach { chatParticipantId ->
+                messagingTemplate.convertAndSendToUser(
+                    chatParticipantId.toString(),
+                    PRIVATE_MESSAGES,
+                    MarkAsReadResponse(userId, markAsReadRequest.chatId, chatParticipantId == userId)
+                )
+            }
     }
 
-    private fun sendMessageToUser(user: String, message: Any) {
-        messagingTemplate.convertAndSendToUser(
-            user,
-            QUEUE_MESSAGES,
-            message
-        )
+    @GetMapping("/chatsSummary")
+    fun getUserChatSummary(
+        @AuthenticationPrincipal userId: UUID,
+        pageable: Pageable
+    ): ResponseEntity<PagedResponse<ChatSummaryResponse>> {
+        val chats = chatService.getUserChatsSummaries(userId, pageable)
+        return ResponseEntity.ok(chats.toPagedResponse())
+    }
+
+    @GetMapping("/chatsSummary/{chatId}")
+    fun getUserChatSummaryById(
+        @AuthenticationPrincipal userId: UUID,
+        @PathVariable chatId: UUID,
+    ): ResponseEntity<ChatSummaryResponse> {
+        val chat = chatService.getUserChatSummaryById(chatId, userId)
+        return ResponseEntity.ok(chat.toResponse())
+    }
+
+    @GetMapping("/{chatId}")
+    fun getChatDetail(
+        @PathVariable chatId: UUID,
+        @AuthenticationPrincipal userId: UUID
+    ): ResponseEntity<ChatResponse> {
+        val chat = chatService.getChatById(chatId, userId)
+        return ResponseEntity.ok(chat.toResponse())
     }
 
     companion object {
-        const val QUEUE_MESSAGES = "/queue/messages"
+        const val PRIVATE_MESSAGES = "/private/messages"
     }
 }

@@ -10,7 +10,7 @@ import java.util.*
 @Table(name = "transactions", schema = "wallet")
 data class Transaction(
     @Id
-    @GeneratedValue(strategy = GenerationType.UUID)
+    @Column(columnDefinition = "uuid", updatable = false, nullable = false)
     val id: UUID = UUID.randomUUID(),
 
     @Column(nullable = false, updatable = false)
@@ -32,9 +32,6 @@ data class Transaction(
     @JoinColumn(name = "receiver_id", nullable = false)
     val receiver: WalletUser,
 
-    @Column(columnDefinition = "TEXT", nullable = false, updatable = false)
-    val senderSignature: String,
-
     @Column(nullable = false, updatable = false)
     val amount: BigDecimal,
 
@@ -45,7 +42,8 @@ data class Transaction(
 
     enum class Status{
         FAILED,
-        SUCCESS
+        SUCCESS,
+        PENDING
     }
 
     enum class Type {

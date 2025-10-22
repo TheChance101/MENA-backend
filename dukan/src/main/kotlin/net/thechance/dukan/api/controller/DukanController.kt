@@ -98,7 +98,8 @@ class DukanController(
         pageable: Pageable
     ): ResponseEntity<Page<DukanResponse>> {
         val dukansPage = dukanService.getAllEditorPicksDukan(userId, pageable)
-        return ResponseEntity.ok(dukansPage.map(Dukan::toDukanResponse))
+        val response = dukansPage.map(Dukan::toDukanResponse)
+        return ResponseEntity.ok(response)
     }
 
 
@@ -106,5 +107,17 @@ class DukanController(
     fun getDukanDetailsById(@PathVariable("dukanId") dukanId: UUID): ResponseEntity<DukanDetailsResponse> {
         val dukanDetails = dukanService.getDukanDetailsById(dukanId).toResponse()
         return ResponseEntity.ok(dukanDetails)
+    }
+
+    @GetMapping("/nearby/best")
+    fun getBestDukansAround(
+        @RequestParam lat: Double,
+        @RequestParam lng: Double,
+        @RequestParam(required = false, defaultValue = "30000") range: Double,
+        @PageableDefault(size = 10, page = 0) pageable: Pageable
+    ): ResponseEntity<Page<DukanResponse>> {
+        val dukans = dukanService.getAllBestDukansAround(lat, lng, pageable, range)
+        val response = dukans.map { it.toDukanResponse() }
+        return ResponseEntity.ok(response)
     }
 }

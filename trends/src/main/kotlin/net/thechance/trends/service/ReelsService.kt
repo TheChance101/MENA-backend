@@ -1,10 +1,14 @@
 package net.thechance.trends.service
 
 import net.thechance.trends.entity.Reel
+import net.thechance.trends.entity.ReelLike
+import net.thechance.trends.entity.ReelView
 import net.thechance.trends.exception.ReelNotFoundException
 import net.thechance.trends.exception.TrendCategoryNotFoundException
 import net.thechance.trends.exception.VideoDeleteFailedException
 import net.thechance.trends.repository.CategoryRepository
+import net.thechance.trends.repository.ReelLikeRepository
+import net.thechance.trends.repository.ReelViewRepository
 import net.thechance.trends.repository.ReelsRepository
 import org.springframework.data.domain.Page
 import org.springframework.data.domain.PageRequest
@@ -20,14 +24,17 @@ class ReelsService(
     private val reelsRepository: ReelsRepository,
     private val categoryRepository: CategoryRepository,
     private val fileStorageService: FileStorageService,
+    private val reelViewRepository: ReelViewRepository,
+    private val reelLikeRepository: ReelLikeRepository
 ) {
     fun getAllReelsByUserId(
         pageable: Pageable,
         currentUserId: UUID
     ): Page<Reel> {
 
-        val body = reelsRepository.findByOwnerId(
+        val body = reelsRepository.findByOwnerIdAndIsPublished(
             currentUserId,
+            true,
             PageRequest.of(
                 maxOf(0, pageable.pageNumber - 1),
                 10,
@@ -35,6 +42,20 @@ class ReelsService(
             )
         )
         return body
+    }
+
+    fun getAllReelsForFeed(
+        pageable: Pageable,
+        currentUserId: UUID,
+        reelId: UUID? = null,
+    ): Page<Reel> {
+        val adjustedPageable = PageRequest.of(
+            maxOf(0, pageable.pageNumber - 1),
+            10,
+            pageable.getSortOr(Sort.by(Sort.Direction.DESC, "createdAt"))
+        )
+
+        return reelsRepository.getReelFeedForUser(currentUserId, reelId, adjustedPageable)
     }
 
     @Transactional
@@ -59,12 +80,13 @@ class ReelsService(
         val existingReel = reelsRepository.findByIdAndOwnerId(id = reelId, ownerId = ownerId)
             ?: throw ReelNotFoundException()
 
-        val categories = categoryIds.map { categoryRepository.getReferenceById(it) }.toSet()
+        val categories = categoryIds.map { categoryRepository.getReferenceById(it) }.toMutableSet()
         if (categories.isEmpty()) throw TrendCategoryNotFoundException()
 
         val updatedReel = existingReel.copy(
             description = newDescription,
-            categories = categories
+            categories = categories,
+            isPublished = true
         )
 
         return reelsRepository.save(updatedReel)
@@ -102,6 +124,53 @@ class ReelsService(
         val updatedReel = existingReel.copy(thumbnailUrl = thumbnailUrl)
 
         return reelsRepository.save(updatedReel)
+    }
+
+    @Transactional
+    fun incrementViewCount(reelId: UUID, userId: UUID) {
+        if (!reelViewRepository.existsByReelIdAndUserId(reelId, userId)) {
+            reelViewRepository.save(ReelView(reelId = reelId, userId = userId))
+
+            reelsRepository.findById(reelId).ifPresent { reel ->
+                reelsRepository.save(reel.copy(viewsCount = reel.viewsCount + 1))
+            }
+        }
+    }
+
+    @Transactional
+    fun toggleLike(reelId: UUID, currentUserId: UUID) {
+        val reel = reelsRepository.findById(reelId)
+            .orElseThrow { ReelNotFoundException() }
+
+        val isCurrentlyLiked = reelLikeRepository.existsByReelIdAndUserId(reelId, currentUserId)
+
+        if (isCurrentlyLiked) {
+            unlikeReel(reelId, currentUserId, reel)
+        } else {
+            likeReel(reelId, currentUserId, reel)
+        }
+    }
+
+    private fun likeReel(reelId: UUID, userId: UUID, reel: Reel) {
+        reelLikeRepository.save(ReelLike(reelId = reelId, userId = userId))
+        reelsRepository.save(reel.copy(likesCount = reel.likesCount + 1))
+    }
+
+    private fun unlikeReel(reelId: UUID, userId: UUID, reel: Reel) {
+        reelLikeRepository.deleteByReelIdAndUserId(reelId, userId)
+reelsRepository.save(reel.copy(likesCount = maxOf(0, reel.likesCount - 1)))
+    }
+
+    fun isReelLikedByUser(reelId: UUID, userId: UUID): Boolean {
+        return reelLikeRepository.existsByReelIdAndUserId(reelId, userId)
+    }
+
+    fun getReelDetailsById(reelId: UUID): Reel{
+        val reel = reelsRepository.findById(reelId).orElseThrow {
+            ReelNotFoundException()
+        }
+
+        return reel
     }
 
     companion object {

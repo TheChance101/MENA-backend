@@ -6,14 +6,24 @@ import io.mockk.mockk
 import io.mockk.verify
 import jakarta.persistence.EntityManager
 import jakarta.persistence.EntityNotFoundException
+import net.thechance.chat.api.dto.MessageRequestDto
 import net.thechance.chat.entity.Chat
+import net.thechance.chat.entity.Contact
 import net.thechance.chat.entity.ContactUser
+import net.thechance.chat.entity.Message
 import net.thechance.chat.repository.ChatRepository
 import net.thechance.chat.repository.MessageRepository
-import net.thechance.chat.service.args.CreateMessageArgs
+import net.thechance.chat.service.exception.NotFoundException
+import net.thechance.chat.service.model.ChatModel
+import net.thechance.chat.service.model.MessageImageRequestArgs
+import net.thechance.chat.service.model.MessageRequestArgs
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.assertThrows
+import org.springframework.data.domain.PageImpl
+import org.springframework.data.domain.Pageable
+import org.springframework.data.repository.findByIdOrNull
+import org.springframework.web.multipart.MultipartFile
 import java.time.Instant
 import java.util.*
 
@@ -21,9 +31,21 @@ class ChatServiceTest {
 
     private lateinit var messageRepository: MessageRepository
     private lateinit var chatRepository: ChatRepository
+    private lateinit var attachmentStorageService: AttachmentStorageService
     private lateinit var contactUserService: ContactUserService
+    private lateinit var contactService: ContactService
     private lateinit var entityManager: EntityManager
     private lateinit var service: ChatService
+
+    private lateinit var otherUser: ContactUser
+    private lateinit var chat: Chat
+    private lateinit var pageable: Pageable
+    private lateinit var message: Message
+    private lateinit var contact: Contact
+
+    val chatId = UUID.fromString("825265f7-7e30-4ac3-b9fb-16ba3869610e")
+    var userId = UUID.fromString("451e4d6c-0380-41ed-95e6-275793c404c6")
+    val notAvailableChatId = UUID.fromString("825265f7-7e30-4ac3-b9fb-87ba3869610e")
 
     private fun testUser(id: UUID = UUID.randomUUID()) = ContactUser(
         id = id,
@@ -43,8 +65,18 @@ class ChatServiceTest {
         messageRepository = mockk(relaxed = true)
         chatRepository = mockk(relaxed = true)
         contactUserService = mockk(relaxed = true)
+        attachmentStorageService = mockk(relaxed = true)
         entityManager = mockk(relaxed = true)
-        service = ChatService(messageRepository, chatRepository, contactUserService, entityManager)
+        contactService = mockk(relaxed = true)
+
+        service = ChatService(
+            messageRepository,
+            chatRepository,
+            contactUserService,
+            attachmentStorageService,
+            contactService,
+            entityManager,
+        )
     }
 
     @Test
@@ -86,19 +118,17 @@ class ChatServiceTest {
     @Test
     fun `saveMessage saves message when chat exists`() {
         val chat = testChat()
-        val messageDto = CreateMessageArgs(
-            id = UUID.randomUUID(),
+        val messageDto = MessageRequestDto(
             chatId = chat.id,
-            senderId = UUID.randomUUID(),
             text = "message 1",
-            sendAt = Instant.now(),
-            isRead = false
+            messageId = null
         )
 
         every { entityManager.getReference(Chat::class.java, chat.id) } returns chat
-        every { messageRepository.save(any()) } answers { firstArg() }
+        every { messageRepository.findById(any()) } answers { Optional.empty() }
+        every { messageRepository.save(any()) } answers { firstArg<Message>() }
 
-        service.saveMessage(messageDto)
+        service.saveMessage(MessageRequestArgs(chat.id, UUID.randomUUID(), messageDto.text, null))
 
         verify {
             messageRepository.save(
@@ -112,19 +142,45 @@ class ChatServiceTest {
 
     @Test
     fun `saveMessage throws if chat not found`() {
-        val messageDto = CreateMessageArgs(
-            id = UUID.randomUUID(),
+        val messageDto = MessageRequestDto(
             chatId = UUID.randomUUID(),
-            senderId = UUID.randomUUID(),
             text = "message 1",
-            sendAt = Instant.now(),
-            isRead = false
+            messageId = null
         )
 
         every { entityManager.getReference(Chat::class.java, messageDto.chatId) } throws EntityNotFoundException()
+        every { messageRepository.findById(any()) } answers { Optional.empty() }
 
         assertThrows<EntityNotFoundException> {
-            service.saveMessage(messageDto)
+            service.saveMessage(MessageRequestArgs(messageDto.chatId, UUID.randomUUID(), messageDto.text, null))
+        }
+    }
+
+    @Test
+    fun `saveMessageImages should upload image & create message then return message with images urls`() {
+        val chat = testChat()
+        val senderId = UUID.randomUUID()
+        val image = mockk<MultipartFile>(relaxed = true)
+        every { entityManager.getReference(Chat::class.java, chat.id) } returns chat
+        every { messageRepository.save(any()) } answers { firstArg() }
+
+        service.saveMessageImage(
+            MessageImageRequestArgs(
+                chatId = chat.id,
+                senderId = senderId,
+                image = image,
+                messageId = null
+            )
+        )
+
+        verify {
+            messageRepository.save(
+                withArg {
+                    assertThat(it.chat).isEqualTo(chat)
+                    assertThat(it.text).isEqualTo(null)
+                    assertThat(it.senderId).isEqualTo(senderId)
+                }
+            )
         }
     }
 
@@ -136,5 +192,167 @@ class ChatServiceTest {
         service.markChatMessagesAsRead(chatId, userId)
 
         verify { messageRepository.updateIsReadByChatIdAndSenderIdNot(chatId, userId) }
+    }
+
+    @Test
+    fun `getChatById should get chatModel correctly when specific chat exist`() {
+        every { chatRepository.findByIdOrNull(chatId) } returns chat
+        every { contactService.getContactByOwnerIdAndContactUserId(userId, otherUser.id) } returns contact
+        val result = service.getChatById(chatId, userId)
+        assertThat(result).isEqualTo(chatModel)
+    }
+
+    @Test
+    fun `getChatById should return chat name equal to other contact names when the other user is in our contact list`() {
+        every { chatRepository.findByIdOrNull(chatId) } returns chat
+        every { contactService.getContactByOwnerIdAndContactUserId(userId, otherUser.id) } returns contact
+        val result = service.getChatById(chatId, userId)
+
+        assertThat(result.name).isEqualTo("${contact.firstName} ${contact.lastName}")
+    }
+
+    @Test
+    fun `getChatById should return chat name equal to other mina user names when the other user is not in our contact list`() {
+        every { chatRepository.findByIdOrNull(chatId) } returns chat
+        every { contactService.getContactByOwnerIdAndContactUserId(userId, otherUser.id) } returns null
+        val result = service.getChatById(chatId, userId)
+
+        assertThat(result.name).isEqualTo("${otherUser.firstName} ${otherUser.lastName}")
+    }
+
+    @Test
+    fun `getChatById should throw NotFoundException when there is no chat available with specific chat id `() {
+        every { chatRepository.findByIdOrNull(notAvailableChatId) } returns null
+        every { contactService.getContactByOwnerIdAndContactUserId(userId, otherUser.id) } returns null
+
+        assertThrows<NotFoundException> {
+            service.getChatById(notAvailableChatId, userId)
+        }
+    }
+
+    private fun setupChatEnvironment() {
+        userId = UUID.fromString("451e4d6c-0380-41ed-95e6-275793c404c6") //UUID.randomUUID()
+        otherUser = testUser()
+        chat = testChat().apply { users.addAll(listOf(testUser(userId), otherUser)) }
+        pageable = Pageable.unpaged()
+
+        contact = mockk<Contact>().apply {
+            every { firstName } returns "Ali"
+            every { lastName } returns "Ahmed"
+        }
+    }
+
+    private fun mockChatDependencies(
+        unreadCount: Long = 2L,
+        lastMessageText: String = "Hello"
+    ) {
+        message = Message(
+            id = UUID.randomUUID(),
+            text = lastMessageText,
+            sentAt = Instant.now(),
+            senderId = otherUser.id,
+            chat = chat,
+            isRead = false
+        )
+
+        contact = mockk<Contact>().apply {
+            every { firstName } returns "Ali"
+            every { lastName } returns "Ahmed"
+        }
+
+        val chatPage = PageImpl(listOf(chat))
+        every { chatRepository.findAllByUserId(userId, pageable) } returns chatPage
+        every { messageRepository.findLastMessagesForChats(listOf(chat.id)) } returns listOf(message)
+        every { chatRepository.findUnreadCountsForChats(listOf(chat.id)) } returns listOf(
+            mockk {
+                every { chatId } returns chat.id
+                every { unreadCount } returns unreadCount
+            }
+        )
+        every { contactService.getContactByOwnerIdAndContactUserId(userId, otherUser.id) } returns contact
+    }
+
+    @Test
+    fun `getUserChats marks chat as mine when last message is from current user`() {
+        setupChatEnvironment()
+        val myMessage = Message(
+            id = UUID.randomUUID(),
+            text = "My message",
+            sentAt = Instant.now(),
+            senderId = userId,
+            chat = chat,
+            isRead = false
+        )
+
+        val chatPage = PageImpl(listOf(chat))
+        every { chatRepository.findAllByUserId(userId, pageable) } returns chatPage
+        every { messageRepository.findLastMessagesForChats(listOf(chat.id)) } returns listOf(myMessage)
+        every { chatRepository.findUnreadCountsForChats(listOf(chat.id)) } returns listOf(
+            mockk {
+                every { chatId } returns chat.id
+                every { unreadCount } returns 0
+            }
+        )
+        every { contactService.getContactByOwnerIdAndContactUserId(userId, otherUser.id) } returns contact
+
+        val result = service.getUserChatsSummaries(userId, pageable)
+        val firstChat = result.content.first()
+
+        assertThat(firstChat.lastMessage?.isMine).isTrue()
+    }
+
+    @Test
+    fun `getUserChats handles empty chat list correctly`() {
+        setupChatEnvironment()
+        val emptyChatPage = PageImpl<Chat>(emptyList())
+
+        every { chatRepository.findAllByUserId(userId, pageable) } returns emptyChatPage
+        every { messageRepository.findLastMessagesForChats(emptyList()) } returns emptyList()
+        every { chatRepository.findUnreadCountsForChats(emptyList()) } returns emptyList()
+
+        val result = service.getUserChatsSummaries(userId, pageable)
+
+        assertThat(result.content).isEmpty()
+        assertThat(result.totalElements).isEqualTo(0)
+    }
+
+    private companion object {
+        val chatId = UUID.fromString("825265f7-7e30-4ac3-b9fb-16ba3869610e")
+        val userId = UUID.fromString("451e4d6c-0380-41ed-95e6-275793c404c6")
+        val notAvailableChatId = UUID.fromString("825265f7-7e30-4ac3-b9fb-87ba3869610e")
+
+        val contact = Contact(
+            id = UUID.fromString("73439a0a-adfa-4bf7-86ad-0d66435d5f18"),
+            firstName = "Raouf",
+            lastName = "kamel",
+            phoneNumber = "+967775074564",
+            contactOwnerId = userId
+        )
+        val otherUser = ContactUser(
+            id = UUID.fromString("1804d9db-c870-421d-934b-b00528cb5b93"),
+            firstName = "osama",
+            lastName = "kamel",
+            phoneNumber = "+967775074564",
+            imageUrl = null
+        )
+        val meUser = ContactUser(
+            id = userId,
+            firstName = "omer",
+            lastName = "faris",
+            phoneNumber = "9647844440001",
+            imageUrl = null
+        )
+
+        val chatModel = ChatModel(
+            name = "Raouf kamel",
+            imageUrl = null,
+            requesterId = userId,
+            id = chatId
+        )
+
+        val chat = Chat(
+            id = chatId,
+            users = mutableSetOf(meUser, otherUser),
+        )
     }
 }

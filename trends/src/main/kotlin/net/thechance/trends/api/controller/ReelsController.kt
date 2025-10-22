@@ -17,20 +17,22 @@ class ReelsController(
     private val reelsService: ReelsService
 ) {
 
-    @GetMapping
-    fun getAllReelsByUserId(
+    @GetMapping("/feed", "/feed/{reelId}")
+    fun getAllReelsForFeed(
         pageable: Pageable,
+        @PathVariable(required = false) reelId: UUID? = null,
         @AuthenticationPrincipal currentUserId: UUID
     ): ResponseEntity<PagingResponse<ReelResponse>> {
+        val reels = reelsService.getAllReelsForFeed(pageable, currentUserId, reelId).content.map { reel ->
+            val isLiked = reelsService.isReelLikedByUser(reel.id, currentUserId)
 
-        val reels = reelsService.getAllReelsByUserId(pageable, currentUserId).content.map { reel ->
-            reel.toResponse().withOwnership(
+            reel.toResponse(isLiked).withOwnership(
                 currentUserId = currentUserId,
-                ownerId = reel.ownerId
+                ownerId = reel.ownerId,
             )
         }
 
-        val result = PagingResponse(
+        val result = PagingResponse.create(
             pageNumber = pageable.pageNumber,
             results = reels,
             totalResults = reels.size
@@ -87,5 +89,27 @@ class ReelsController(
         )
 
         return ResponseEntity.ok(updatedReel.toResponse())
+    }
+
+    @PostMapping("/view/{reelId}")
+    fun recordView(
+        @PathVariable reelId: UUID,
+        @AuthenticationPrincipal currentUserId: UUID
+    ): ResponseEntity<Unit> {
+        reelsService.incrementViewCount(reelId, currentUserId)
+        return ResponseEntity.ok().build()
+    }
+
+    @PostMapping("/like/{reelId}")
+    fun toggleLike(
+        @PathVariable reelId: UUID,
+        @AuthenticationPrincipal currentUserId: UUID
+    ): ResponseEntity<ReelResponse> {
+        reelsService.toggleLike(reelId = reelId, currentUserId)
+        val reel = reelsService.getReelDetailsById(reelId)
+        val isLiked = reelsService.isReelLikedByUser(reel.id, currentUserId)
+
+        val reelResponse = reel.toResponse(isLiked).withOwnership(currentUserId = currentUserId, ownerId = reel.ownerId)
+        return ResponseEntity.ok(reelResponse)
     }
 }

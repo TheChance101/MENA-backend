@@ -2,7 +2,7 @@ package net.thechance.identity.service
 
 import net.thechance.identity.exception.InvalidImageException
 import net.thechance.identity.exception.UnknownErrorException
-import org.springframework.boot.context.properties.ConfigurationProperties
+import net.thechance.identity.security.config.IdentityStorageProperties
 import org.springframework.boot.context.properties.EnableConfigurationProperties
 import org.springframework.stereotype.Service
 import org.springframework.web.multipart.MultipartFile
@@ -12,13 +12,7 @@ import software.amazon.awssdk.services.s3.model.DeleteObjectRequest
 import software.amazon.awssdk.services.s3.model.ObjectCannedACL
 import software.amazon.awssdk.services.s3.model.PutObjectRequest
 import java.time.LocalDateTime
-import java.util.UUID
-
-@ConfigurationProperties(prefix = "storage.mena")
-data class IdentityStorageProperties(
-    val bucket: String,
-    val cdnEndpoint: String
-)
+import java.util.*
 
 @Service
 @EnableConfigurationProperties(IdentityStorageProperties::class)
@@ -34,11 +28,11 @@ class IdentityImageStorageService(
         val mimeType = file.contentType ?: throw InvalidImageException("null")
         val extension = allowedMimeTypes[mimeType] ?: throw InvalidImageException(mimeType)
         try {
-            val fileName = "${fileName}_${LocalDateTime.now()}.$extension"
+            val fileName = "${fileName}.$extension"
             val key = "images/identity/$folderName/$fileName"
             val putReq = createObjectRequest(key, mimeType)
             menaS3Client.putObject(putReq, RequestBody.fromBytes(file.bytes))
-            return "${identityStorageProperties.cdnEndpoint}/$key"
+            return "/$key"
         } catch (e: Exception) {
             throw UnknownErrorException(e.message ?: "Unknown error occurred")
         }

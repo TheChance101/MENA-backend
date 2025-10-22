@@ -1,10 +1,7 @@
 package net.thechance.trends.api.controller
 
 import jakarta.validation.Valid
-import net.thechance.trends.api.dto.category.CategoryResponse
-import net.thechance.trends.api.dto.category.SubmitUserCategoriesRequest
-import net.thechance.trends.api.dto.category.SubmitUserCategoriesResponse
-import net.thechance.trends.api.dto.category.toCategoryResponse
+import net.thechance.trends.api.dto.category.*
 import net.thechance.trends.service.CategoryService
 import net.thechance.trends.service.TrendUserService
 import org.springframework.http.ResponseEntity
@@ -44,6 +41,29 @@ class CategoryController(
             allCategories.map { category ->
                 category.toCategoryResponse(isSelected = category in userCategories)
             }
+        )
+    }
+
+    @PatchMapping
+    fun patchUserCategories(
+        @RequestBody @Valid patchRequest: PatchUserCategoriesRequest,
+        @AuthenticationPrincipal userId: UUID
+    ): ResponseEntity<PatchUserCategoriesResponse> {
+        val patchMetadata = trendUserService.patchUserCategories(
+            userId = userId,
+            categoriesToAdd = patchRequest.add,
+            categoriesToRemove = patchRequest.remove
+        )
+
+        val userCategories = trendUserService.getUserSelectedCategories(userId).map { category ->
+            category.toCategoryResponse(isSelected = true)
+        }
+
+        return ResponseEntity.ok(
+            PatchUserCategoriesResponse(
+                patchMetadata = patchMetadata,
+                updatedCategories = userCategories
+            )
         )
     }
 }

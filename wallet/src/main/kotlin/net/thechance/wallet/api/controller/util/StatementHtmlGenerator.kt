@@ -69,7 +69,7 @@ class StatementHtmlGenerator(
         return when {
             currentUserId == transaction.receiver.userId -> transaction.sender.userName
             transaction.type == Transaction.Type.P2P -> transaction.receiver.userName
-            transaction.type == Transaction.Type.ONLINE_PURCHASE -> transaction.receiver.dukanName ?: ""
+            transaction.type == Transaction.Type.ONLINE_PURCHASE -> transaction.receiver.dukan?.name ?: ""
             else -> ""
         }
     }
