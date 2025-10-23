@@ -1,6 +1,5 @@
-package net.thechance.wallet.api.dto.transaction
+package net.thechance.wallet.service.helper
 
-import net.thechance.wallet.service.helper.UserTransactionType
 import java.time.LocalDateTime
 import java.util.*
 

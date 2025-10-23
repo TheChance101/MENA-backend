@@ -1,7 +1,7 @@
 package net.thechance.wallet.api.controller.util
 
-import net.thechance.wallet.api.dto.transaction.StatementData
 import net.thechance.wallet.entity.Transaction
+import net.thechance.wallet.service.helper.StatementData
 import org.springframework.core.io.ResourceLoader
 import org.springframework.data.domain.Page
 import org.springframework.stereotype.Component
