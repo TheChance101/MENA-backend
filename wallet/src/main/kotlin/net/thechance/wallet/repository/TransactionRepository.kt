@@ -10,11 +10,31 @@ import java.time.LocalDateTime
 import java.util.*
 
 interface TransactionRepository : JpaRepository<Transaction, UUID> {
-    @Query("SELECT SUM(t.amount) FROM Transaction t WHERE t.receiver.userId = :receiverId AND t.status = 'SUCCESS'")
-    fun sumAmountByReceiverId(@Param("receiverId") receiverId: UUID): Double?
+    @Query(
+        """
+        SELECT SUM(t.amount) FROM Transaction t 
+        WHERE (t.receiver.userId = :receiverId) AND t.status = 'SUCCESS'
+        AND t.createdAt BETWEEN :startDate AND :endDate
+    """
+    )
+    fun sumAmountByReceiverId(
+        @Param("receiverId") receiverId: UUID,
+        @Param("startDate") startDate: LocalDateTime? = null,
+        @Param("endDate") endDate: LocalDateTime? = null
+    ): Double?
 
-    @Query("SELECT SUM(t.amount) FROM Transaction t WHERE t.sender.userId = :senderId AND t.status = 'SUCCESS'")
-    fun sumAmountBySenderId(@Param("senderId") senderId: UUID): Double?
+    @Query(
+        """
+        SELECT SUM(t.amount) FROM Transaction t 
+        WHERE (t.sender.userId = :senderId) AND t.status = 'SUCCESS'
+        AND t.createdAt BETWEEN :startDate AND :endDate
+    """
+    )
+    fun sumAmountBySenderId(
+        @Param("senderId") senderId: UUID,
+        @Param("startDate") startDate: LocalDateTime? = null,
+        @Param("endDate") endDate: LocalDateTime? = null
+    ): Double?
 
     @Query(
         """

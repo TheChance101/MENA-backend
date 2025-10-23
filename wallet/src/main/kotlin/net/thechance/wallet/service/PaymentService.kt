@@ -13,7 +13,7 @@ import java.util.*
 class PaymentService(
     private val pendingTransactionRepository: PendingTransactionRepository,
     private val transactionRepository: TransactionRepository,
-    private val walletService: WalletService,
+    private val balanceService: BalanceService,
     private val blockService: BlockService
 ) {
 
@@ -40,7 +40,7 @@ class PaymentService(
         if (userId == pendingTransaction.receiver.userId)
             throw IllegalArgumentException("Sender and receiver cannot be the same")
 
-        if (walletService.getUserBalance(userId) < pendingTransaction.amount.toDouble())
+        if (balanceService.getUserBalance(userId) < pendingTransaction.amount.toDouble())
             throw IllegalArgumentException("Insufficient balance")
 
         return pendingTransaction
