@@ -27,8 +27,7 @@ class TransactionService(
         pageable: Pageable,
     ): Page<Transaction> {
 
-        val startDate =
-            transactionFilterParams.startDate?.atStartOfDay()
+        val startDate = transactionFilterParams.startDate?.atStartOfDay()
                 ?: getUserFirstTransactionDate(currentUserId = currentUserId).orNow()
 
         val endDate = transactionFilterParams.endDate?.atTime(23, 59, 59, 59).orNow()
