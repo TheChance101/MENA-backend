@@ -7,7 +7,7 @@ import net.thechance.wallet.repository.TransactionRepository
 import org.junit.Test
 import java.util.*
 
-class WalletServiceTest {
+class BalanceServiceTest {
     private val transactionRepository = mockk<TransactionRepository>()
     private val balanceService = BalanceService(transactionRepository = transactionRepository)
 

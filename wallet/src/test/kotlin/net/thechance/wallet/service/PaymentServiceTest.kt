@@ -27,8 +27,8 @@ class PaymentServiceTest {
     private val transactionId = UUID.randomUUID()
     private val blockId = UUID.randomUUID()
     private val block = Block(id = blockId, previousBlockHash = "prev", timestamp = LocalDateTime.now())
-    private val sender = WalletUser(userId = userId, userName = "sender", firstName = "Sender", lastName = "User", imageUrl = null)
-    private val receiver = WalletUser(userId = receiverId, userName = "receiver", firstName = "Receiver", lastName = "User", imageUrl = null)
+    private val sender = WalletUser(userId = userId, firstName = "Sender", lastName = "User", imageUrl = null)
+    private val receiver = WalletUser(userId = receiverId, firstName = "Receiver", lastName = "User", imageUrl = null)
     private val pendingTransaction = PendingTransaction(
         id = transactionId,
         sender = sender,
