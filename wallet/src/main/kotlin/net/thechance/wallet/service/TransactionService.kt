@@ -5,7 +5,8 @@ import net.thechance.wallet.entity.*
 import net.thechance.wallet.repository.PendingTransactionRepository
 import net.thechance.wallet.repository.TransactionRepository
 import net.thechance.wallet.repository.WalletUserRepository
-import net.thechance.wallet.service.helper.*
+import net.thechance.wallet.service.helper.TransactionFilterParams
+import net.thechance.wallet.service.utils.orNow
 import org.springframework.data.domain.Page
 import org.springframework.data.domain.Pageable
 import org.springframework.data.repository.findByIdOrNull
@@ -28,10 +29,9 @@ class TransactionService(
 
         val startDate =
             transactionFilterParams.startDate?.atStartOfDay()
-                ?: getUserFirstTransactionDate(currentUserId = currentUserId)
-                ?: LocalDateTime.now()
+                ?: getUserFirstTransactionDate(currentUserId = currentUserId).orNow()
 
-        val endDate = transactionFilterParams.endDate?.atTime(23, 59, 59, 59) ?: LocalDateTime.now()
+        val endDate = transactionFilterParams.endDate?.atTime(23, 59, 59, 59).orNow()
 
         return transactionRepository.findFilteredTransactions(
             status = transactionFilterParams.status,

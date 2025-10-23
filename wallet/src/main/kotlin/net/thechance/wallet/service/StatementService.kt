@@ -5,6 +5,7 @@ import net.thechance.wallet.exception.NoTransactionsFoundException
 import net.thechance.wallet.repository.WalletUserRepository
 import net.thechance.wallet.service.helper.StatementData
 import net.thechance.wallet.service.helper.UserTransactionType
+import net.thechance.wallet.service.utils.orNow
 import org.springframework.data.domain.Page
 import org.springframework.data.domain.PageRequest
 import org.springframework.data.domain.Sort
@@ -41,12 +42,11 @@ class StatementService(
     }
 
     private fun getStartDateTime(startDate: LocalDate?, userId: UUID): LocalDateTime {
-        return startDate?.atStartOfDay() ?: transactionService.getUserFirstTransactionDate(userId)
-        ?: LocalDateTime.now()
+        return startDate?.atStartOfDay() ?: transactionService.getUserFirstTransactionDate(userId).orNow()
     }
 
     private fun getEndDateTime(endDate: LocalDate?): LocalDateTime {
-        return endDate?.atTime(23, 59, 59) ?: LocalDateTime.now()
+        return endDate?.atTime(23, 59, 59).orNow()
     }
 
     private fun getUserName(userId: UUID): String {
