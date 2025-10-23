@@ -1,11 +1,12 @@
 package net.thechance.dukan.api.controller
 
 import jakarta.validation.Valid
-import net.thechance.dukan.api.dto.DukanShelfCreationRequest
-import net.thechance.dukan.api.dto.DukanShelfResponse
+import net.thechance.dukan.api.constants.EndPoints.DUKAN_PATH
+import net.thechance.dukan.api.dto.shelf.DukanShelfCreationRequest
+import net.thechance.dukan.api.dto.shelf.DukanShelfResponse
 import net.thechance.dukan.entity.DukanShelf
-import net.thechance.dukan.mapper.toResponse
 import net.thechance.dukan.service.DukanShelfService
+import net.thechance.dukan.service.mapper.shelf.toResponse
 import org.springframework.data.domain.Page
 import org.springframework.data.domain.Pageable
 import org.springframework.data.web.PageableDefault
@@ -15,7 +16,7 @@ import org.springframework.web.bind.annotation.*
 import java.util.*
 
 @RestController
-@RequestMapping("/dukan/shelf")
+@RequestMapping("${DUKAN_PATH}/shelf")
 class DukanShelfController(
     val dukanShelfService: DukanShelfService
 ) {

@@ -2,15 +2,15 @@ package net.thechance.dukan.api.controller
 
 import jakarta.validation.Valid
 import jakarta.validation.constraints.NotBlank
-import net.thechance.dukan.api.dto.*
+import net.thechance.dukan.api.constants.EndPoints.DUKAN_PATH
+import net.thechance.dukan.api.dto.category.DukanCategoryResponse
+import net.thechance.dukan.api.dto.color.DukanColorResponse
+import net.thechance.dukan.api.dto.dukan.*
 import net.thechance.dukan.entity.Dukan
-import net.thechance.dukan.mapper.DukanLanguage
-import net.thechance.dukan.mapper.toDto
-import net.thechance.dukan.mapper.toDukanCreationParams
-import net.thechance.dukan.mapper.toDukanResponse
-import net.thechance.dukan.mapper.toDukanStyleResponse
-import net.thechance.dukan.mapper.toResponse
 import net.thechance.dukan.service.DukanService
+import net.thechance.dukan.service.mapper.category.DukanLanguage
+import net.thechance.dukan.service.mapper.category.toDto
+import net.thechance.dukan.service.mapper.dukan.*
 import org.springframework.data.domain.Page
 import org.springframework.data.domain.Pageable
 import org.springframework.data.domain.Sort
@@ -23,7 +23,7 @@ import java.util.*
 
 
 @RestController
-@RequestMapping("/dukan")
+@RequestMapping(DUKAN_PATH)
 class DukanController(
     private val dukanService: DukanService
 ) {
