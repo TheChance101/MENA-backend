@@ -6,6 +6,7 @@ import net.thechance.wallet.repository.WalletUserRepository
 import net.thechance.wallet.service.model.input.TransactionFilterParams
 import net.thechance.wallet.service.model.input.UserTransactionType
 import net.thechance.wallet.service.model.output.StatementData
+import net.thechance.wallet.service.utils.atEndOfDay
 import net.thechance.wallet.service.utils.orNow
 import org.springframework.data.domain.Page
 import org.springframework.data.domain.PageRequest
@@ -47,7 +48,7 @@ class StatementService(
     }
 
     private fun getEndDateTime(endDate: LocalDate?): LocalDateTime {
-        return endDate?.atTime(23, 59, 59).orNow()
+        return endDate?.atEndOfDay().orNow()
     }
 
     private fun getUserName(userId: UUID): String {
