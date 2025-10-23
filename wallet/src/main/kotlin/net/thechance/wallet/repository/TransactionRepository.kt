@@ -14,7 +14,8 @@ interface TransactionRepository : JpaRepository<Transaction, UUID> {
         """
         SELECT SUM(t.amount) FROM Transaction t 
         WHERE (t.receiver.userId = :receiverId) AND t.status = 'SUCCESS'
-        AND t.createdAt BETWEEN :startDate AND :endDate
+        AND (CAST(:startDate AS timestamp) IS NULL OR t.createdAt >= :startDate)
+        AND (CAST(:endDate AS timestamp) IS NULL OR t.createdAt <= :endDate)
     """
     )
     fun sumAmountByReceiverId(
@@ -27,7 +28,8 @@ interface TransactionRepository : JpaRepository<Transaction, UUID> {
         """
         SELECT SUM(t.amount) FROM Transaction t 
         WHERE (t.sender.userId = :senderId) AND t.status = 'SUCCESS'
-        AND t.createdAt BETWEEN :startDate AND :endDate
+        AND (CAST(:startDate AS timestamp) IS NULL OR t.createdAt >= :startDate)
+        AND (CAST(:endDate AS timestamp) IS NULL OR t.createdAt <= :endDate)
     """
     )
     fun sumAmountBySenderId(
