@@ -1,11 +1,16 @@
 package net.thechance.wallet.service
 
 import jakarta.persistence.EntityNotFoundException
-import net.thechance.wallet.entity.*
+import net.thechance.wallet.entity.PendingTransaction
+import net.thechance.wallet.entity.Transaction
 import net.thechance.wallet.repository.PendingTransactionRepository
 import net.thechance.wallet.repository.TransactionRepository
 import net.thechance.wallet.repository.WalletUserRepository
-import net.thechance.wallet.service.helper.TransactionFilterParams
+import net.thechance.wallet.service.model.input.InitiateTransactionParams
+import net.thechance.wallet.service.model.input.TransactionFilterParams
+import net.thechance.wallet.service.model.input.toPendingTransaction
+import net.thechance.wallet.service.model.output.TransactionDetailsModel
+import net.thechance.wallet.service.model.output.toTransactionDetailsModel
 import net.thechance.wallet.service.utils.orNow
 import org.springframework.data.domain.Page
 import org.springframework.data.domain.Pageable

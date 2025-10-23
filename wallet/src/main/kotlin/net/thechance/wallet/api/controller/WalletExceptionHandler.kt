@@ -1,6 +1,7 @@
-package net.thechance.wallet.exception
+package net.thechance.wallet.api.controller
 
 import net.thechance.wallet.api.dto.error.ErrorResponse
+import net.thechance.wallet.exception.NoTransactionsFoundException
 import org.springframework.http.HttpStatus
 import org.springframework.http.ResponseEntity
 import org.springframework.web.bind.annotation.ExceptionHandler

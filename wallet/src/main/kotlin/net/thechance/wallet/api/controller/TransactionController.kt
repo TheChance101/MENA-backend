@@ -6,10 +6,10 @@ import net.thechance.wallet.api.controller.util.StatementPdfWriter
 import net.thechance.wallet.api.dto.transaction.*
 import net.thechance.wallet.entity.Transaction
 import net.thechance.wallet.service.TransactionService
-import net.thechance.wallet.entity.ReceiverDetails
-import net.thechance.wallet.entity.toReceiverDetails
-import net.thechance.wallet.service.helper.TransactionFilterParams
-import net.thechance.wallet.service.helper.UserTransactionType
+import net.thechance.wallet.service.model.input.TransactionFilterParams
+import net.thechance.wallet.service.model.input.UserTransactionType
+import net.thechance.wallet.service.model.output.ReceiverDetails
+import net.thechance.wallet.service.model.output.toReceiverDetails
 import org.springframework.data.domain.PageRequest
 import org.springframework.data.domain.Pageable
 import org.springframework.data.domain.Sort

@@ -1,7 +1,9 @@
-package net.thechance.wallet.entity
+package net.thechance.wallet.service.model.input
 
-import net.thechance.wallet.entity.user.WalletUser
-import java.util.UUID
+import net.thechance.wallet.entity.PendingTransaction
+import net.thechance.wallet.entity.Transaction
+import net.thechance.wallet.entity.WalletUser
+import java.util.*
 
 data class InitiateTransactionParams(
     val type: Transaction.Type,

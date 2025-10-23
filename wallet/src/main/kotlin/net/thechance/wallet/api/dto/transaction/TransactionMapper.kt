@@ -1,8 +1,8 @@
 package net.thechance.wallet.api.dto.transaction
 
 import net.thechance.wallet.entity.Transaction
-import net.thechance.wallet.entity.TransactionDetailsModel
-import net.thechance.wallet.service.helper.UserTransactionType
+import net.thechance.wallet.service.model.input.UserTransactionType
+import net.thechance.wallet.service.model.output.TransactionDetailsModel
 import java.util.*
 
 private fun getUserTypeAndReceiverName(

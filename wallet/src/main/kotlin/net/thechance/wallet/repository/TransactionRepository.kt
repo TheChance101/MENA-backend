@@ -69,26 +69,6 @@ interface TransactionRepository : JpaRepository<Transaction, UUID> {
         receiverId: UUID
     ): Transaction?
 
-    @Query(
-        """
-    SELECT SUM(
-        CASE 
-            WHEN t.sender.userId = :currentUserId THEN -t.amount
-            WHEN t.receiver.userId = :currentUserId THEN t.amount
-            ELSE 0
-        END
-    )
-    FROM Transaction t
-    WHERE (t.sender.userId = :currentUserId OR t.receiver.userId = :currentUserId)
-      AND t.createdAt < :endDate
-      AND t.status = 'SUCCESS'
-    """
-    )
-    fun sumNetUserTransactions(
-        @Param("currentUserId") currentUserId: UUID,
-        @Param("endDate") endDate: LocalDateTime?,
-    ): Double?
-
     fun getAllByBlockId(blockId: UUID, pageable: Pageable): List<Transaction>
     fun countAllByBlockId(blockId: UUID): Long
 }

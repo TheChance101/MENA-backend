@@ -3,8 +3,9 @@ package net.thechance.wallet.service
 import net.thechance.wallet.entity.Transaction
 import net.thechance.wallet.exception.NoTransactionsFoundException
 import net.thechance.wallet.repository.WalletUserRepository
-import net.thechance.wallet.service.helper.StatementData
-import net.thechance.wallet.service.helper.UserTransactionType
+import net.thechance.wallet.service.model.input.TransactionFilterParams
+import net.thechance.wallet.service.model.input.UserTransactionType
+import net.thechance.wallet.service.model.output.StatementData
 import net.thechance.wallet.service.utils.orNow
 import org.springframework.data.domain.Page
 import org.springframework.data.domain.PageRequest
@@ -79,7 +80,7 @@ class StatementService(
         pageNum: Int
     ): Page<Transaction> {
         return transactionService.getFilteredTransactions(
-            transactionFilterParams = net.thechance.wallet.service.helper.TransactionFilterParams(
+            transactionFilterParams = TransactionFilterParams(
                 status = Transaction.Status.SUCCESS,
                 types = types,
                 startDate = startDateTime.toLocalDate(),

@@ -5,7 +5,7 @@ import io.mockk.*
 import net.thechance.wallet.entity.Block
 import net.thechance.wallet.entity.PendingTransaction
 import net.thechance.wallet.entity.Transaction
-import net.thechance.wallet.entity.user.WalletUser
+import net.thechance.wallet.entity.WalletUser
 import net.thechance.wallet.repository.PendingTransactionRepository
 import net.thechance.wallet.repository.TransactionRepository
 import org.junit.Assert.assertThrows
