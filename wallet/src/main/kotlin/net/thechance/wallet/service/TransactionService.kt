@@ -11,6 +11,7 @@ import net.thechance.wallet.service.model.input.TransactionFilterParams
 import net.thechance.wallet.service.model.input.toPendingTransaction
 import net.thechance.wallet.service.model.output.TransactionDetailsModel
 import net.thechance.wallet.service.model.output.toTransactionDetailsModel
+import net.thechance.wallet.service.utils.atEndOfDay
 import net.thechance.wallet.service.utils.orNow
 import org.springframework.data.domain.Page
 import org.springframework.data.domain.Pageable
@@ -35,7 +36,7 @@ class TransactionService(
         val startDate = transactionFilterParams.startDate?.atStartOfDay()
                 ?: getUserFirstTransactionDate(currentUserId = currentUserId).orNow()
 
-        val endDate = transactionFilterParams.endDate?.atTime(23, 59, 59, 59).orNow()
+        val endDate = transactionFilterParams.endDate?.atEndOfDay().orNow()
 
         return transactionRepository.findFilteredTransactions(
             status = transactionFilterParams.status,
