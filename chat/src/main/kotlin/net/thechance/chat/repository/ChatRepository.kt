@@ -25,8 +25,6 @@ interface ChatRepository : JpaRepository<Chat, UUID> {
     @Query("SELECT c FROM Chat c JOIN c.users u WHERE u.id = :userId")
     fun findAllByUserId(userId: UUID, pageable: Pageable): Page<Chat>
 
-    @Query("SELECT COUNT(c) FROM Chat c JOIN c.users u WHERE u.id = :userId")
-    fun countByUserId(userId: UUID): Long
 
     @Query(
         nativeQuery = true,

@@ -9,6 +9,7 @@ import net.thechance.chat.service.model.ChatModel
 import net.thechance.chat.service.model.ChatSummary
 import net.thechance.chat.service.model.MessageImageRequestArgs
 import net.thechance.chat.service.model.MessageRequestArgs
+import net.thechance.chat.service.model.toModel
 import net.thechance.chat.service.model.toSummary
 import org.springframework.data.domain.Page
 import org.springframework.data.domain.Pageable
@@ -28,16 +29,29 @@ class ChatService(
     private val entityManager: EntityManager
 ) {
     @Transactional
-    fun getOrCreateConversationByParticipants(userId: UUID, receiverId: UUID): Chat {
+    fun getChatByUserIds(userId: UUID, receiverId: UUID): ChatModel {
         val users = setOf(userId, receiverId)
-
-        val existingChat = chatRepository.findByUsersIds(users)
-        if (existingChat != null) return existingChat
-
         val requester = contactUserService.getUserById(userId)
         val otherUser = contactUserService.getUserById(receiverId)
+        val contact = otherUser.let {
+            contactService.getContactByOwnerIdAndContactUserId(userId, it.id)
+        }
+        val existingChat = chatRepository.findByUsersIds(users)
+        if (existingChat != null) {
+            return existingChat.toModel(
+                chatName = getChatName(contact, otherUser),
+                imageUrl = otherUser.imageUrl.orEmpty(),
+                requesterId = userId
+            )
+        }
 
-        return chatRepository.save(Chat(users = mutableSetOf(requester, otherUser)))
+        val newChat = chatRepository.save(Chat(users = mutableSetOf(requester, otherUser))).toModel(
+            chatName = getChatName(contact, otherUser),
+            imageUrl = otherUser.imageUrl.orEmpty(),
+            requesterId = userId
+        )
+
+        return newChat
     }
 
     @Transactional
@@ -117,13 +131,13 @@ class ChatService(
     fun getChatById(chatId: UUID, userId: UUID): ChatModel {
         val chat =
             chatRepository.findByIdOrNull(chatId) ?: throw NotFoundException("no chat was found with id: $chatId")
-        val otherUser = chat.users.firstOrNull { it.id != userId }
-        val contact = otherUser?.let {
+        val otherUser = chat.users.first { it.id != userId }
+        val contact = otherUser.let {
             contactService.getContactByOwnerIdAndContactUserId(userId, it.id)
         }
         return ChatModel(
             name = getChatName(contact, otherUser),
-            imageUrl = otherUser?.imageUrl,
+            imageUrl = otherUser.imageUrl,
             requesterId = userId,
             id = chatId
         )

@@ -13,14 +13,13 @@ import org.springframework.security.core.annotation.AuthenticationPrincipal
 import org.springframework.stereotype.Controller
 import org.springframework.web.bind.annotation.*
 import java.security.Principal
-import java.util.*
+import java.util.UUID
 
 @RequestMapping("/chat")
 @Controller
 class ChatController(
     private val messagingTemplate: SimpMessagingTemplate,
     private val chatService: ChatService,
-    private val contactService: ContactService,
 ) {
 
     @MessageMapping("/chat.privateMessage")
@@ -44,13 +43,11 @@ class ChatController(
 
     @GetMapping
     @ResponseBody
-    fun getOrCreateConversation(
+    fun getChatByUserIds(
         @AuthenticationPrincipal userId: UUID,
         @RequestParam receiverId: UUID
     ): ResponseEntity<ChatResponse> {
-        val contact = contactService.getContactByOwnerIdAndContactUserId(userId, receiverId)
-        val chat = chatService.getOrCreateConversationByParticipants(userId, receiverId)
-            .toResponse(userId, contact)
+        val chat = chatService.getChatByUserIds(userId, receiverId).toResponse()
         return ResponseEntity.ok(chat)
     }
 

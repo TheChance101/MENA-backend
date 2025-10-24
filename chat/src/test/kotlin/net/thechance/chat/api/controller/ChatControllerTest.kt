@@ -2,8 +2,10 @@ package net.thechance.chat.api.controller
 
 import com.google.common.truth.Truth.assertThat
 import io.mockk.every
+import io.mockk.just
 import io.mockk.justRun
 import io.mockk.mockk
+import io.mockk.runs
 import io.mockk.verify
 import net.thechance.chat.api.controller.ChatController.Companion.PRIVATE_MESSAGES
 import net.thechance.chat.api.dto.*
@@ -97,7 +99,7 @@ class ChatControllerTest {
     }
 
     @Test
-    fun `getOrCreateConversation should return conversation`() {
+    fun `getChatByUserIds should return conversation`() {
         val userId = UUID.randomUUID()
         val receiverId = UUID.randomUUID()
         val chatId = UUID.randomUUID()
@@ -117,9 +119,9 @@ class ChatControllerTest {
                 ContactUser(id = receiverId, firstName = "User2", lastName = "Test", phoneNumber = "777777777")
             )
         )
-        every { chatService.getOrCreateConversationByParticipants(userId, receiverId) } returns chat
+        every { chatService.getChatByUserIds(userId, receiverId) } returns chatModel
 
-        val response = controller.getOrCreateConversation(userId, receiverId)
+        val response = controller.getChatByUserIds(userId, receiverId)
 
         assertThat(response.statusCode).isEqualTo(HttpStatus.OK)
         assertThat(response.body?.id).isEqualTo(chatId)
@@ -129,7 +131,7 @@ class ChatControllerTest {
     @Test
     fun `getChatHistory should return paged messages`() {
         val chatId = UUID.randomUUID()
-        val chat = Chat(id = chatId, users = mutableSetOf(), messages = mutableSetOf())
+        val chat = Chat(id = chatId, users = mutableSetOf())
         val pageable: Pageable = PageRequest.of(0, 10)
 
         val messages = listOf(
@@ -163,7 +165,7 @@ class ChatControllerTest {
 
         every { principal.name } returns userId.toString()
         justRun { messagingTemplate.convertAndSendToUser(any(), any(), any()) }
-        every { chatService.markChatMessagesAsRead(chatId, userId) } returns 1
+        every { chatService.markChatMessagesAsRead(chatId, userId) } just runs
 
         controller.markMessagesAsRead(markAsReadRequest, principal)
 
