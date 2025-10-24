@@ -1,4 +1,4 @@
-package net.thechance.chat.entity
+package net.thechance.chat.service.model
 
 import java.util.UUID
 

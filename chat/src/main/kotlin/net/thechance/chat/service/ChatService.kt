@@ -6,8 +6,10 @@ import net.thechance.chat.repository.ChatRepository
 import net.thechance.chat.repository.MessageRepository
 import net.thechance.chat.api.exception.NotFoundException
 import net.thechance.chat.service.model.ChatModel
+import net.thechance.chat.service.model.ChatSummary
 import net.thechance.chat.service.model.MessageImageRequestArgs
 import net.thechance.chat.service.model.MessageRequestArgs
+import net.thechance.chat.service.model.toSummary
 import org.springframework.data.domain.Page
 import org.springframework.data.domain.Pageable
 import org.springframework.data.repository.findByIdOrNull
@@ -75,8 +77,9 @@ class ChatService(
         messageRepository.getAllByChatIdOrderBySentAtDesc(chatId, pageable)
 
 
-    fun markChatMessagesAsRead(chatId: UUID, userId: UUID) =
+    fun markChatMessagesAsRead(chatId: UUID, userId: UUID) {
         messageRepository.updateIsReadByChatIdAndSenderIdNot(chatId = chatId, userId = userId)
+    }
 
     fun getUserChatsSummaries(userId: UUID, pageable: Pageable): Page<ChatSummary> {
         val chats = chatRepository.findAllByUserId(userId, pageable)

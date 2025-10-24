@@ -1,5 +1,6 @@
 package net.thechance.chat.service
 
+import net.thechance.chat.api.exception.NotFoundException
 import net.thechance.chat.repository.ContactUserRepository
 import org.springframework.data.repository.findByIdOrNull
 import org.springframework.stereotype.Service
@@ -10,5 +11,5 @@ class ContactUserService(
     private val contactUserRepository: ContactUserRepository
 ) {
     fun getPhoneNumberByUserId(id: UUID) = getUserById(id).phoneNumber
-    fun getUserById(id: UUID) = contactUserRepository.findByIdOrNull(id) ?: throw IllegalArgumentException("User not found")
+    fun getUserById(id: UUID) = contactUserRepository.findByIdOrNull(id) ?: throw NotFoundException("User not found with this id $id")
 }

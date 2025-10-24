@@ -1,7 +1,7 @@
 package net.thechance.chat.repository
 
 import net.thechance.chat.entity.Chat
-import net.thechance.chat.entity.ChatUnreadMessagesCount
+import net.thechance.chat.service.model.ChatUnreadMessagesCount
 import org.springframework.data.domain.Page
 import org.springframework.data.domain.Pageable
 import org.springframework.data.jpa.repository.JpaRepository
