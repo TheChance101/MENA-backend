@@ -15,7 +15,7 @@ data class DayPrayerTimings(
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Column(updatable = false, nullable = false)
-    val id: Int,
+    val id: Int = 0,
     @Column(nullable = false)
     val latitude: Double,
     @Column(nullable = false)

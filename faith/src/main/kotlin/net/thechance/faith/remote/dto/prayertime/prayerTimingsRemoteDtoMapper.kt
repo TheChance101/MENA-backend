@@ -16,7 +16,6 @@ fun PrayerTimingsRemoteDto.toDayPrayerTimings(latitude: Double, longitude: Doubl
     val startOfDay = localDate.atStartOfDay(ZoneId.of(data?.meta?.timezone ?: "UTC")).toInstant()
 
     return DayPrayerTimings(
-        id = 0,
         latitude = latitude,
         longitude = longitude,
         date = localDate,
