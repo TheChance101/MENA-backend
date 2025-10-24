@@ -84,4 +84,12 @@ class AddressControllerAdvice {
             .status(HttpStatus.FORBIDDEN)
             .body(ErrorResponse(exception.message ?: "Address Can Not Be Updated"))
     }
+
+    @ExceptionHandler(NoActiveAddressException::class)
+    fun handleNoActiveAddressException(exception: NoActiveAddressException): ResponseEntity<ErrorResponse?> {
+        logger.error(exception.message)
+        return ResponseEntity
+            .status(HttpStatus.NOT_FOUND)
+            .body(ErrorResponse(exception.message ?: "No active address"))
+    }
 }

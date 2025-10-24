@@ -52,6 +52,14 @@ class AddressController(
         return ResponseEntity.ok(getAllAddressesResponse)
     }
 
+    @GetMapping("/active")
+    fun getActiveAddress(
+        @AuthenticationPrincipal userId: UUID
+    ): ResponseEntity<AddressResponse> {
+        val activeAddressResponse = addressService.getActiveAddress(userId).toResponse()
+        return ResponseEntity.ok(activeAddressResponse)
+    }
+
     @DeleteMapping("/{id}")
     fun deleteAddress(
         @AuthenticationPrincipal userId: UUID,
