@@ -1,4 +1,4 @@
-package net.thechance.dukan.service.mapper.product
+package net.thechance.dukan.api.mapper.product
 
 import net.thechance.dukan.api.dto.product.DukanProductCreationRequest
 import net.thechance.dukan.service.model.DukanProductCreationParams

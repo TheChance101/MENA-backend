@@ -1,4 +1,4 @@
-package net.thechance.dukan.service.mapper.dukan
+package net.thechance.dukan.api.mapper.dukan
 
 import net.thechance.dukan.api.dto.color.DukanColorDto
 import net.thechance.dukan.entity.DukanColor

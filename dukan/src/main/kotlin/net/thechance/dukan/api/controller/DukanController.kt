@@ -8,9 +8,13 @@ import net.thechance.dukan.api.dto.color.DukanColorResponse
 import net.thechance.dukan.api.dto.dukan.*
 import net.thechance.dukan.entity.Dukan
 import net.thechance.dukan.service.DukanService
-import net.thechance.dukan.service.mapper.category.DukanLanguage
-import net.thechance.dukan.service.mapper.category.toDto
-import net.thechance.dukan.service.mapper.dukan.*
+import net.thechance.dukan.api.mapper.category.DukanLanguage
+import net.thechance.dukan.api.mapper.category.toDto
+import net.thechance.dukan.api.mapper.dukan.toDto
+import net.thechance.dukan.api.mapper.dukan.toDukanCreationParams
+import net.thechance.dukan.api.mapper.dukan.toDukanResponse
+import net.thechance.dukan.api.mapper.dukan.toDukanStyleResponse
+import net.thechance.dukan.api.mapper.dukan.toResponse
 import org.springframework.data.domain.Page
 import org.springframework.data.domain.Pageable
 import org.springframework.data.domain.Sort

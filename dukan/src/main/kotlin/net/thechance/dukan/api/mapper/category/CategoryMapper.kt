@@ -1,4 +1,4 @@
-package net.thechance.dukan.service.mapper.category
+package net.thechance.dukan.api.mapper.category
 
 import net.thechance.dukan.api.dto.category.DukanCategoryDto
 import net.thechance.dukan.entity.DukanCategory

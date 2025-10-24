@@ -7,7 +7,7 @@ import net.thechance.dukan.entity.DukanCategory
 import net.thechance.dukan.entity.DukanColor
 import net.thechance.dukan.api.exception.DukanCreationFailedException
 import net.thechance.dukan.api.exception.DukanNotFoundException
-import net.thechance.dukan.service.mapper.dukan.toDukan
+import net.thechance.dukan.api.mapper.dukan.toDukan
 import net.thechance.dukan.repository.DukanCategoryRepository
 import net.thechance.dukan.repository.DukanColorRepository
 import net.thechance.dukan.repository.DukanRepository

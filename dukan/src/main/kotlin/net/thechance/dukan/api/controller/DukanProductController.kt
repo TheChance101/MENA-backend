@@ -6,8 +6,8 @@ import net.thechance.dukan.api.dto.product.DukanProductCreationRequest
 import net.thechance.dukan.api.dto.product.DukanProductCreationResponse
 import net.thechance.dukan.api.dto.product.DukanProductResponse
 import net.thechance.dukan.service.DukanProductService
-import net.thechance.dukan.service.mapper.product.toProductCreationParams
-import net.thechance.dukan.service.mapper.product.toProductResponse
+import net.thechance.dukan.api.mapper.product.toProductCreationParams
+import net.thechance.dukan.api.mapper.product.toProductResponse
 import org.springframework.data.domain.Page
 import org.springframework.data.domain.Pageable
 import org.springframework.data.domain.Sort

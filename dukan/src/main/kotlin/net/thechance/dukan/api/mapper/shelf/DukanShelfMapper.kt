@@ -1,4 +1,4 @@
-package net.thechance.dukan.service.mapper.shelf
+package net.thechance.dukan.api.mapper.shelf
 
 import net.thechance.dukan.api.dto.shelf.DukanShelfResponse
 import net.thechance.dukan.entity.DukanShelf

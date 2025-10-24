@@ -6,7 +6,7 @@ import net.thechance.dukan.api.dto.shelf.DukanShelfCreationRequest
 import net.thechance.dukan.api.dto.shelf.DukanShelfResponse
 import net.thechance.dukan.entity.DukanShelf
 import net.thechance.dukan.service.DukanShelfService
-import net.thechance.dukan.service.mapper.shelf.toResponse
+import net.thechance.dukan.api.mapper.shelf.toResponse
 import org.springframework.data.domain.Page
 import org.springframework.data.domain.Pageable
 import org.springframework.data.web.PageableDefault
