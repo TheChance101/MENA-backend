@@ -4,7 +4,6 @@ import jakarta.transaction.Transactional
 import net.thechance.identity.api.dto.CreateAddressRequest
 import net.thechance.identity.api.dto.UpdateAddressRequest
 import net.thechance.identity.entity.Address
-import net.thechance.identity.entity.User
 import net.thechance.identity.entity.copy
 import net.thechance.identity.exception.*
 import net.thechance.identity.repository.AddressRepository
@@ -22,8 +21,8 @@ class AddressService(
     fun addAddress(userId: UUID, addressToAdd: CreateAddressRequest): Address {
         val user = userService.findById(userId)
         return try {
-            val address = if (addressRepository.findAll().isEmpty()) createAddress(user, addressToAdd, true)
-            else createAddress(user, addressToAdd)
+            val address = if (addressRepository.findAll().isEmpty()) createAddress(userId, addressToAdd, true)
+            else createAddress(userId, addressToAdd)
             addressRepository.save(address)
         } catch (_: Exception) {
             throw AddressNotAddedException()
@@ -67,9 +66,9 @@ class AddressService(
         return addressRepository.findByIdAndUserId(addressId, userId) ?: throw AddressNotFoundException()
     }
 
-    private fun createAddress(user: User, addressToAdd: CreateAddressRequest, isActive: Boolean = false): Address {
+    private fun createAddress(userId: UUID, addressToAdd: CreateAddressRequest, isActive: Boolean = false): Address {
         return Address(
-            user = user,
+            userId = userId,
             latitude = addressToAdd.latitude,
             longitude = addressToAdd.longitude,
             addressLine = addressToAdd.addressLine,

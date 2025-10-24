@@ -1,6 +1,9 @@
 package net.thechance.identity.entity
 
-import jakarta.persistence.*
+import jakarta.persistence.Column
+import jakarta.persistence.Entity
+import jakarta.persistence.Id
+import jakarta.persistence.Table
 import java.time.Instant
 import java.util.*
 
@@ -11,9 +14,8 @@ class Address(
     @Column(name = "uuid", updatable = false, nullable = false)
     val id: UUID = UUID.randomUUID(),
 
-    @ManyToOne(fetch = FetchType.EAGER)
-    @JoinColumn(name = "user_id", nullable = false, updatable = false)
-    val user: User,
+    @Column(name = "user_id", nullable = false)
+    val userId: UUID,
 
     @Column(name = "latitude", nullable = false)
     val latitude: Double,
@@ -39,18 +41,18 @@ class Address(
 
 fun Address.copy(
     id: UUID = this.id,
-    user: User = this.user,
+    userId: UUID = this.userId,
     latitude: Double = this.latitude,
     longitude: Double = this.longitude,
     addressLine: String = this.addressLine,
     addressType: String = this.addressType,
     isActive: Boolean = this.isActive,
     createdAt: Instant = this.createdAt,
-    updatedAt: Instant = this.updatedAt
+    updatedAt: Instant = this.updatedAt,
 ): Address {
     return Address(
         id = id,
-        user = user,
+        userId = userId,
         latitude = latitude,
         longitude = longitude,
         addressLine = addressLine,
