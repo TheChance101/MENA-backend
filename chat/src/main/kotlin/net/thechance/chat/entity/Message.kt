@@ -23,7 +23,7 @@ data class Message(
     @Column(name = "url", nullable = false)
     val images: List<String> = emptyList(),
 
-    @ManyToOne(optional = false)
+    @ManyToOne(optional = false, fetch = FetchType.LAZY)
     @JoinColumn(name = "chat_id", referencedColumnName = "id", nullable = false)
     val chat: Chat
 )

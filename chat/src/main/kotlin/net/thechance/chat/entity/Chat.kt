@@ -1,7 +1,7 @@
 package net.thechance.chat.entity
 
 import jakarta.persistence.*
-import java.util.UUID
+import java.util.*
 
 @Entity
 @Table(name = "chats", schema = "chat")
@@ -17,7 +17,4 @@ data class Chat(
         inverseJoinColumns = [JoinColumn(name = "user_id", referencedColumnName = "id")]
     )
     val users: MutableSet<ContactUser> = mutableSetOf(),
-
-    @OneToMany(mappedBy = "chat", cascade = [CascadeType.ALL], orphanRemoval = true)
-    val messages: MutableSet<Message> = mutableSetOf()
 )
