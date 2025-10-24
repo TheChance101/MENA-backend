@@ -51,9 +51,9 @@ class ChatController(
         return ResponseEntity.ok(chat)
     }
 
-    @GetMapping("/history")
+    @GetMapping("/{chatId}/messages")
     fun getChatHistory(
-        @RequestParam chatId: UUID,
+        @PathVariable chatId: UUID,
         @AuthenticationPrincipal userId: UUID,
         pageable: Pageable
     ): ResponseEntity<PagedResponse<MessageResponse>> {
@@ -113,7 +113,7 @@ class ChatController(
         return ResponseEntity.ok(chats.toPagedResponse())
     }
 
-    @GetMapping("/chatsSummary/{chatId}")
+    @GetMapping("/{chatId}/summary")
     fun getUserChatSummaryById(
         @AuthenticationPrincipal userId: UUID,
         @PathVariable chatId: UUID,

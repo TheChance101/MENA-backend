@@ -40,7 +40,6 @@ class ChatControllerTest {
         ChatController(
             messagingTemplate,
             chatService,
-            contactService,
         )
     }
 
