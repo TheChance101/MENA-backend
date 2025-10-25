@@ -30,30 +30,30 @@ class ChatService(
 ) {
     @Transactional
     fun getChatByUserIds(userId: UUID, receiverId: UUID): ChatModel {
-        val users = setOf(userId, receiverId)
+        val usersId = setOf(userId, receiverId)
         val requester = contactUserService.getUserById(userId)
         val otherUser = contactUserService.getUserById(receiverId)
-        val contact = otherUser.let {
-            contactService.getContactByOwnerIdAndContactUserId(userId, it.id)
-        }
-        val existingChat = chatRepository.findByUsersIds(users)
-        if (existingChat != null) {
-            return existingChat.toModel(
-                chatName = getChatName(contact, otherUser),
-                imageUrl = otherUser.imageUrl.orEmpty(),
-                requesterId = userId
-            )
-        }
+        val contact = contactService.getContactByOwnerIdAndContactUserId(userId, otherUser.id)
 
-        val newChat = chatRepository.save(Chat(users = mutableSetOf(requester, otherUser))).toModel(
-            chatName = getChatName(contact, otherUser),
-            imageUrl = otherUser.imageUrl.orEmpty(),
+        val chatName = getChatName(contact, otherUser)
+        val imageUrl = otherUser.imageUrl.orEmpty()
+
+        val chat = findOrCreateChat(
+            usersId = usersId,
+            requester = requester,
+            otherUser = otherUser
+        ).toModel(
+            chatName = chatName,
+            imageUrl = imageUrl,
             requesterId = userId
         )
-
-        return newChat
+        return chat
     }
 
+    private fun findOrCreateChat(usersId: Set<UUID>, requester: ContactUser, otherUser: ContactUser): Chat {
+        return chatRepository.findByUsersIds(usersId)
+            ?: chatRepository.save(Chat(users = mutableSetOf(requester, otherUser)))
+    }
     @Transactional
     fun saveMessage(args: MessageRequestArgs): Message {
         args.messageId?.let { messageId ->
