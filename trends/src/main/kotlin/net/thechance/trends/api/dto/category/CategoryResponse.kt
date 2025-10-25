@@ -2,7 +2,6 @@ package net.thechance.trends.api.dto.category
 
 import net.thechance.trends.entity.Category
 import net.thechance.trends.models.UserSelectedCategories
-import net.thechance.trends.service.TrendUserService
 import java.util.*
 
 data class CategoryResponse(

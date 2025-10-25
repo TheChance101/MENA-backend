@@ -2,7 +2,6 @@ package net.thechance.trends.api.controller
 
 import jakarta.validation.Valid
 import net.thechance.trends.api.dto.category.*
-import net.thechance.trends.service.CategoryService
 import net.thechance.trends.service.TrendUserService
 import org.springframework.http.ResponseEntity
 import org.springframework.security.core.annotation.AuthenticationPrincipal

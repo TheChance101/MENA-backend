@@ -1,6 +1,6 @@
 package net.thechance.trends.models
 
-import java.util.UUID
+import java.util.*
 
 data class UserSelectedCategories(
     val id: UUID,

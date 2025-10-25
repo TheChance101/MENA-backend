@@ -1,14 +1,6 @@
 package net.thechance.trends.api.exceptionHandler
 
-import net.thechance.trends.exception.InvalidFileTypeException
-import net.thechance.trends.exception.InvalidThumbnailException
-import net.thechance.trends.exception.InvalidTrendInputException
-import net.thechance.trends.exception.InvalidVideoException
-import net.thechance.trends.exception.TrendNotFoundException
-import net.thechance.trends.exception.ThumbnailUploadFailedException
-import net.thechance.trends.exception.TrendCategoryNotFoundException
-import net.thechance.trends.exception.TrendUserNotFoundException
-import net.thechance.trends.exception.VideoUploadFailedException
+import net.thechance.trends.exception.*
 import org.springframework.http.HttpStatus
 import org.springframework.http.ResponseEntity
 import org.springframework.web.bind.annotation.ExceptionHandler

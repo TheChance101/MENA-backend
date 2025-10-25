@@ -3,14 +3,14 @@ package net.thechance.trends.service
 import net.thechance.trends.entity.Trend
 import net.thechance.trends.entity.TrendLike
 import net.thechance.trends.entity.TrendView
-import net.thechance.trends.exception.TrendNotFoundException
 import net.thechance.trends.exception.TrendCategoryNotFoundException
+import net.thechance.trends.exception.TrendNotFoundException
 import net.thechance.trends.exception.VideoDeleteFailedException
+import net.thechance.trends.models.TrendWithLikeStatus
 import net.thechance.trends.repository.CategoryRepository
 import net.thechance.trends.repository.TrendLikeRepository
 import net.thechance.trends.repository.TrendViewRepository
 import net.thechance.trends.repository.TrendsRepository
-import net.thechance.trends.models.TrendWithLikeStatus
 import org.springframework.data.domain.Page
 import org.springframework.data.domain.PageRequest
 import org.springframework.data.domain.Pageable
