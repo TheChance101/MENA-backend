@@ -49,7 +49,7 @@ class TrendsController(
         return ResponseEntity.noContent().build()
     }
 
-    @PutMapping("/{id}")
+    @PatchMapping("/{id}")
     fun updateTrendById(
         @PathVariable id: UUID,
         @AuthenticationPrincipal currentUserId: UUID,
@@ -74,7 +74,7 @@ class TrendsController(
         return ResponseEntity.ok(UploadTrendResponse(trendId = trendId))
     }
 
-    @PutMapping("/{trendId}/thumbnail")
+    @PatchMapping("/{trendId}/thumbnail")
     fun uploadThumbnail(
         @PathVariable trendId: UUID,
         @AuthenticationPrincipal currentUserId: UUID,
