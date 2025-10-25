@@ -19,7 +19,7 @@ class TrendUserController(
     private val trendsService: TrendsService
 ) {
 
-    @GetMapping("/trends")
+    @GetMapping
     fun getAllTrendsByUserId(
         pageable: Pageable,
         @AuthenticationPrincipal currentUserId: UUID
