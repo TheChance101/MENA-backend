@@ -1,7 +1,6 @@
 package net.thechance.identity.service
 
 import net.thechance.identity.entity.User
-import net.thechance.identity.exception.InvalidCredentialsException
 import net.thechance.identity.exception.PasswordNotUpdatedException
 import net.thechance.identity.exception.UserNotFoundException
 import net.thechance.identity.repository.UserRepository
@@ -11,11 +10,11 @@ import java.util.*
 
 @Service
 class UserService(
-    private val userRepository: UserRepository
+    private val userRepository: UserRepository,
 ) {
 
     fun findByPhoneNumber(phoneNumber: String): User {
-        return userRepository.findByPhoneNumber(phoneNumber) ?: throw InvalidCredentialsException("User not found")
+        return userRepository.findByPhoneNumber(phoneNumber) ?: throw UserNotFoundException("User not found")
     }
 
     fun findById(userId: UUID): User {
@@ -29,12 +28,8 @@ class UserService(
 
     fun updatePasswordByPhoneNumber(phoneNumber: String, newPassword: String) {
         val userWithNewPassword = getUserWithNewPassword(phoneNumber, newPassword)
-        try {
-            val savedUser = userRepository.save(userWithNewPassword)
-            if (savedUser.password != newPassword) throw PasswordNotUpdatedException()
-        } catch (exception: Exception) {
-            throw PasswordNotUpdatedException()
-        }
+        val savedUser = userRepository.save(userWithNewPassword)
+        if (savedUser.password != newPassword) throw PasswordNotUpdatedException()
     }
 
     private fun getUserWithNewPassword(phoneNumber: String, newPassword: String): User {
