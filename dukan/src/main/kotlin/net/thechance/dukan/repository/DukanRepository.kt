@@ -14,7 +14,7 @@ import java.util.UUID
 interface DukanRepository : JpaRepository<Dukan, UUID> {
     fun existsByName(name: String): Boolean
     fun existsByOwnerId(ownerId: UUID): Boolean
-    fun findByOwnerId(ownerId: UUID): Dukan
+    fun findByOwnerId(ownerId: UUID): Dukan?
     @Query(
         """
     SELECT DISTINCT d
