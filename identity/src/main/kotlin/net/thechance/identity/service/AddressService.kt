@@ -18,7 +18,7 @@ class AddressService(
     @Transactional
     fun addAddress(userId: UUID, addressToAdd: AddressModel): Address {
         val isThereAnAddress = addressRepository.existsByUserId(userId)
-        return addressRepository.save(createAddress(userId, addressToAdd, isThereAnAddress))
+        return addressRepository.save(createAddress(userId, addressToAdd, !isThereAnAddress))
     }
 
     @Transactional
