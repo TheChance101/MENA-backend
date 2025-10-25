@@ -45,30 +45,6 @@ class AddressControllerAdvice {
             .body(ErrorResponse(exception.message ?: "Address Can Not Be Deleted"))
     }
 
-    @ExceptionHandler(AddressNotAddedException::class)
-    fun handleAddressNotAddedException(exception: AddressNotAddedException): ResponseEntity<ErrorResponse?> {
-        logger.error(exception.message)
-        return ResponseEntity
-            .status(HttpStatus.NOT_MODIFIED)
-            .body(ErrorResponse(exception.message ?: "Address Not Added"))
-    }
-
-    @ExceptionHandler(AddressNotUpdatedException::class)
-    fun handleAddressNotUpdatedException(exception: AddressNotUpdatedException): ResponseEntity<ErrorResponse?> {
-        logger.error(exception.message)
-        return ResponseEntity
-            .status(HttpStatus.NOT_MODIFIED)
-            .body(ErrorResponse(exception.message ?: "Address Not Updated"))
-    }
-
-    @ExceptionHandler(AddressNotDeletedException::class)
-    fun handleAddressNotDeletedException(exception: AddressNotDeletedException): ResponseEntity<ErrorResponse?> {
-        logger.error(exception.message)
-        return ResponseEntity
-            .status(HttpStatus.NOT_MODIFIED)
-            .body(ErrorResponse(exception.message ?: "Address Not Deleted"))
-    }
-
     @ExceptionHandler(AtLeastAddressValueNeededException::class)
     fun handleAtLeastAddressValueNeededException(exception: AtLeastAddressValueNeededException): ResponseEntity<ErrorResponse?> {
         logger.error(exception.message)
