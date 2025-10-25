@@ -15,7 +15,7 @@ import org.springframework.web.bind.annotation.RestControllerAdvice
 @RestControllerAdvice(assignableTypes = [ProfileController::class])
 @Order(1)
 class ProfileControllerAdvice {
-    private val logger: Logger = LoggerFactory.getLogger(IdentityController::class.java)
+    private val logger: Logger = LoggerFactory.getLogger(ProfileController::class.java)
 
     @ExceptionHandler(UserNotFoundException::class)
     fun handleUserNotFoundException(exception: UserNotFoundException): ResponseEntity<ErrorResponse?> {

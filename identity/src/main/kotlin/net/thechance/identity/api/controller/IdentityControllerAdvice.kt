@@ -19,14 +19,14 @@ class IdentityControllerAdvice {
 
     @ExceptionHandler(MethodArgumentNotValidException::class)
     @ResponseStatus(HttpStatus.BAD_REQUEST)
-    fun handleValidationExceptions(exception: MethodArgumentNotValidException): ResponseEntity<Map<String, String?>> {
+    fun handleValidationExceptions(exception: MethodArgumentNotValidException): ResponseEntity<ErrorResponse?> {
         val errors = exception.bindingResult.fieldErrors.associate {
             it.field to it.defaultMessage
         }
         logger.error("Validation failed: $errors", exception)
         return ResponseEntity
             .status(HttpStatus.BAD_REQUEST)
-            .body(errors)
+            .body(ErrorResponse("Data not valid"))
     }
 
 	@ExceptionHandler(UserIsBlockedException::class)
