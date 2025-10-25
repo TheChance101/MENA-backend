@@ -4,7 +4,7 @@ import jakarta.persistence.EntityManager
 import net.thechance.chat.entity.*
 import net.thechance.chat.repository.ChatRepository
 import net.thechance.chat.repository.MessageRepository
-import net.thechance.chat.api.exception.NotFoundException
+import net.thechance.chat.service.exception.NotFoundException
 import net.thechance.chat.service.model.ChatModel
 import net.thechance.chat.service.model.ChatSummary
 import net.thechance.chat.service.model.MessageImageRequestArgs

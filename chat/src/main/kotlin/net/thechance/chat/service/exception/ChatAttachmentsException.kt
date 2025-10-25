@@ -1,4 +1,4 @@
-package net.thechance.chat.api.exception
+package net.thechance.chat.service.exception
 
 class InvalidImageFormatException : ChatException(
     code = ErrorCodes.INVALID_IMAGE_FORMAT, message = "Invalid picture format; supported formats: jpeg ,jpg, png, webp"

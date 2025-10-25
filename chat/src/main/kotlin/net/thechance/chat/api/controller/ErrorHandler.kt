@@ -1,9 +1,9 @@
 package net.thechance.chat.api.controller
 
 import net.thechance.chat.api.dto.ErrorResponse
-import net.thechance.chat.api.exception.ImageUploadFailedException
-import net.thechance.chat.api.exception.InvalidImageFormatException
-import net.thechance.chat.api.exception.NotFoundException
+import net.thechance.chat.service.exception.ImageUploadFailedException
+import net.thechance.chat.service.exception.InvalidImageFormatException
+import net.thechance.chat.service.exception.NotFoundException
 import org.springframework.core.annotation.Order
 import org.springframework.http.HttpStatus
 import org.springframework.http.ResponseEntity

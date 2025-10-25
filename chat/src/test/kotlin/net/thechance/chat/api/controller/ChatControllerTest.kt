@@ -15,7 +15,7 @@ import net.thechance.chat.entity.ContactUser
 import net.thechance.chat.entity.Message
 import net.thechance.chat.service.ChatService
 import net.thechance.chat.service.ContactService
-import net.thechance.chat.api.exception.NotFoundException
+import net.thechance.chat.service.exception.NotFoundException
 import net.thechance.chat.service.model.ChatModel
 import net.thechance.chat.service.model.MessageImageRequestArgs
 import org.junit.jupiter.api.Test

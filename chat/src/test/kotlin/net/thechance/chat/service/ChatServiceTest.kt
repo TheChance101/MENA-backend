@@ -7,7 +7,7 @@ import io.mockk.verify
 import jakarta.persistence.EntityManager
 import jakarta.persistence.EntityNotFoundException
 import net.thechance.chat.api.dto.MessageRequestDto
-import net.thechance.chat.api.exception.NotFoundException
+import net.thechance.chat.service.exception.NotFoundException
 import net.thechance.chat.entity.Chat
 import net.thechance.chat.entity.Contact
 import net.thechance.chat.entity.ContactUser

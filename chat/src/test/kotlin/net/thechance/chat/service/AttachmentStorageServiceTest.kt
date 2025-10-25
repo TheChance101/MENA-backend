@@ -3,8 +3,8 @@ package net.thechance.chat.service
 import io.mockk.every
 import io.mockk.mockk
 import io.mockk.verify
-import net.thechance.chat.api.exception.ImageUploadFailedException
-import net.thechance.chat.api.exception.InvalidImageFormatException
+import net.thechance.chat.service.exception.ImageUploadFailedException
+import net.thechance.chat.service.exception.InvalidImageFormatException
 import org.assertj.core.api.Assertions.assertThat
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test

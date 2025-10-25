@@ -1,7 +1,7 @@
 package net.thechance.chat.service
 
-import net.thechance.chat.api.exception.ImageUploadFailedException
-import net.thechance.chat.api.exception.InvalidImageFormatException
+import net.thechance.chat.service.exception.ImageUploadFailedException
+import net.thechance.chat.service.exception.InvalidImageFormatException
 import org.springframework.boot.context.properties.ConfigurationProperties
 import org.springframework.boot.context.properties.EnableConfigurationProperties
 import org.springframework.stereotype.Service

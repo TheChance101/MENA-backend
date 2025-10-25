@@ -1,6 +1,6 @@
 package net.thechance.chat.service
 
-import net.thechance.chat.api.exception.NotFoundException
+import net.thechance.chat.service.exception.NotFoundException
 import net.thechance.chat.repository.ContactUserRepository
 import org.springframework.data.repository.findByIdOrNull
 import org.springframework.stereotype.Service

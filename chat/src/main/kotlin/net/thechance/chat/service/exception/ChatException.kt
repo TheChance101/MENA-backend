@@ -1,4 +1,4 @@
-package net.thechance.chat.api.exception
+package net.thechance.chat.service.exception
 
 
 open class ChatException(
