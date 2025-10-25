@@ -13,12 +13,10 @@ import net.thechance.identity.service.model.Address as AddressModel
 @Service
 class AddressService(
     private val addressRepository: AddressRepository,
-    private val userService: UserService,
 ) {
 
     @Transactional
     fun addAddress(userId: UUID, addressToAdd: AddressModel): Address {
-        throwIfUserNotExist(userId)
         val isThereAnAddress = addressRepository.existsByUserId(userId)
         return addressRepository.save(createAddress(userId, addressToAdd, isThereAnAddress))
     }
@@ -48,10 +46,6 @@ class AddressService(
 
     fun getAddressById(addressId: UUID, userId: UUID): Address {
         return addressRepository.findByIdAndUserId(addressId, userId) ?: throw AddressNotFoundException()
-    }
-
-    private fun throwIfUserNotExist(userId: UUID) {
-        if (!userService.userExists(userId)) throw UnauthorizedException()
     }
 
     private fun disableCurrentActiveAddressIfNeedAnotherToBeActive(
