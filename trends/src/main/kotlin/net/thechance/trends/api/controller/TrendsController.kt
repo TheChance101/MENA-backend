@@ -2,7 +2,10 @@ package net.thechance.trends.api.controller
 
 import jakarta.validation.Valid
 import net.thechance.trends.api.dto.base.PagingResponse
-import net.thechance.trends.api.dto.trend.*
+import net.thechance.trends.api.dto.trend.TrendResponse
+import net.thechance.trends.api.dto.trend.UpdateTrendRequest
+import net.thechance.trends.api.dto.trend.UploadTrendResponse
+import net.thechance.trends.api.dto.trend.toResponse
 import net.thechance.trends.service.TrendsService
 import org.springframework.data.domain.Pageable
 import org.springframework.http.ResponseEntity
@@ -23,12 +26,7 @@ class TrendsController(
         @PathVariable(required = false) trendsId: UUID? = null,
         @AuthenticationPrincipal currentUserId: UUID
     ): ResponseEntity<PagingResponse<TrendResponse>> {
-        val trends = trendsService.getAllTrendsForFeed(pageable, currentUserId, trendsId).content.map { trend ->
-            trend.toResponse().withOwnership(
-                currentUserId = currentUserId,
-                ownerId = trend.getTrend().ownerId,
-            )
-        }
+        val trends = trendsService.getAllTrendsForFeed(pageable, currentUserId, trendsId).content.map { trend -> trend.toResponse() }
 
         val result = PagingResponse(
             pageNumber = pageable.pageNumber,
@@ -105,7 +103,7 @@ class TrendsController(
     ): ResponseEntity<TrendResponse> {
         val trend = trendsService.likeTrend(trendId = trendId, currentUserId)
 
-        val trendResponse = trend.toResponse().withOwnership(currentUserId = currentUserId, ownerId = trend.getTrend().ownerId)
+        val trendResponse = trend.toResponse()
         return ResponseEntity.ok(trendResponse)
     }
 
@@ -116,7 +114,7 @@ class TrendsController(
     ): ResponseEntity<TrendResponse>{
         val trend = trendsService.unlikeTrend(trendId, currentUserId)
 
-        val trendResponse = trend.toResponse().withOwnership(currentUserId = currentUserId, ownerId = trend.getTrend().ownerId)
+        val trendResponse = trend.toResponse()
         return ResponseEntity.ok(trendResponse)
     }
 }

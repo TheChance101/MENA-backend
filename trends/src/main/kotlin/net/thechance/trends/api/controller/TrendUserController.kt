@@ -3,7 +3,6 @@ package net.thechance.trends.api.controller
 import net.thechance.trends.api.dto.base.PagingResponse
 import net.thechance.trends.api.dto.trend.TrendResponse
 import net.thechance.trends.api.dto.trend.toResponse
-import net.thechance.trends.api.dto.trend.withOwnership
 import net.thechance.trends.service.TrendsService
 import org.springframework.data.domain.Pageable
 import org.springframework.http.ResponseEntity
@@ -25,12 +24,7 @@ class TrendUserController(
         @AuthenticationPrincipal currentUserId: UUID
     ): ResponseEntity<PagingResponse<TrendResponse>> {
 
-        val trends = trendsService.getAllTrendsByUserId(pageable, currentUserId).content.map { trend ->
-            trend.toResponse().withOwnership(
-                currentUserId = currentUserId,
-                ownerId = trend.getTrend().ownerId
-            )
-        }
+        val trends = trendsService.getAllTrendsByUserId(pageable, currentUserId).content.map { it.toResponse() }
 
         val result = PagingResponse(
             pageNumber = pageable.pageNumber,

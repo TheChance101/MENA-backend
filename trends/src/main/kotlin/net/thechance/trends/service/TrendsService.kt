@@ -6,6 +6,8 @@ import net.thechance.trends.entity.TrendView
 import net.thechance.trends.exception.TrendCategoryNotFoundException
 import net.thechance.trends.exception.TrendNotFoundException
 import net.thechance.trends.models.TrendWithLikeStatus
+import net.thechance.trends.models.TrendWithOwnerShipAndLikeStatus
+import net.thechance.trends.models.withOwnership
 import net.thechance.trends.repository.CategoryRepository
 import net.thechance.trends.repository.TrendLikeRepository
 import net.thechance.trends.repository.TrendViewRepository
@@ -30,7 +32,7 @@ class TrendsService(
     fun getAllTrendsByUserId(
         pageable: Pageable,
         currentUserId: UUID
-    ): Page<TrendWithLikeStatus> {
+    ): Page<TrendWithOwnerShipAndLikeStatus> {
 
         val body = trendsRepository.findByOwnerIdAndIsPublished(
             currentUserId,
@@ -40,7 +42,7 @@ class TrendsService(
                 10,
                 pageable.getSortOr(Sort.by(Sort.Direction.DESC, "createdAt"))
             ),
-        )
+        ).map { it.withOwnership(currentUserId = currentUserId) }
         return body
     }
 
@@ -48,14 +50,16 @@ class TrendsService(
         pageable: Pageable,
         currentUserId: UUID,
         trendId: UUID? = null,
-    ): Page<TrendWithLikeStatus> {
+    ): Page<TrendWithOwnerShipAndLikeStatus> {
         val adjustedPageable = PageRequest.of(
             pageable.pageNumber,
             10,
             pageable.getSortOr(Sort.by(Sort.Direction.DESC, "createdAt"))
         )
 
-        return trendsRepository.getTrendFeedForUser(currentUserId, trendId, adjustedPageable)
+        val trends = trendsRepository.getTrendFeedForUser(currentUserId, trendId, adjustedPageable).map { it.withOwnership(currentUserId = currentUserId) }
+
+        return trends
     }
 
     @Transactional
@@ -66,7 +70,6 @@ class TrendsService(
         trendsRepository.deleteTrendById(id)
         fileStorageService.deleteFile(trendUrls.getTrendVideoUrl())
         fileStorageService.deleteFile(trendUrls.getTrendThumbnailUrl())
-
     }
 
     @Transactional
@@ -122,15 +125,15 @@ class TrendsService(
         trendViewRepository.save(TrendView(trendId = trendId, userId = userId))
     }
 
-    fun likeTrend(trendId: UUID, userId: UUID): TrendWithLikeStatus {
+    fun likeTrend(trendId: UUID, userId: UUID): TrendWithOwnerShipAndLikeStatus {
         trendLikeRepository.save(TrendLike(trendId = trendId, userId = userId))
-        return getTrendOrThrow(trendId, userId)
+        return getTrendOrThrow(trendId, userId).withOwnership(currentUserId = userId)
     }
 
     @Transactional
-    fun unlikeTrend(trendId: UUID, userId: UUID): TrendWithLikeStatus {
+    fun unlikeTrend(trendId: UUID, userId: UUID): TrendWithOwnerShipAndLikeStatus {
         trendLikeRepository.deleteTrendLikeByTrendIdAndUserId(trendId, userId)
-        return getTrendOrThrow(trendId, userId)
+        return getTrendOrThrow(trendId, userId).withOwnership(currentUserId = userId)
     }
 
     fun getTrendOrThrow(trendId: UUID, userId: UUID): TrendWithLikeStatus {

@@ -1,7 +1,7 @@
 package net.thechance.trends.api.dto.trend
 
 import net.thechance.trends.entity.Trend
-import net.thechance.trends.models.TrendWithLikeStatus
+import net.thechance.trends.models.TrendWithOwnerShipAndLikeStatus
 import java.time.LocalDateTime
 import java.util.*
 
@@ -33,22 +33,16 @@ fun Trend.toResponse(isLiked: Boolean = false): TrendResponse {
     )
 }
 
-fun TrendResponse.withOwnership(currentUserId: UUID, ownerId: UUID): TrendResponse {
-    return this.copy(isCurrentUserOwner = currentUserId == ownerId)
-}
-
-fun TrendWithLikeStatus.toResponse(): TrendResponse {
-    val trend = getTrend()
-    val isLiked = getIsLiked()
+fun TrendWithOwnerShipAndLikeStatus.toResponse(): TrendResponse {
     return TrendResponse(
-        trendId = trend.id,
-        thumbnailUrl = trend.thumbnailUrl,
-        videoUrl = trend.videoUrl,
-        description = trend.description,
-        createdAt = trend.createdAt,
-        likesCount = trend.likesCount,
-        viewsCount = trend.viewsCount,
-        isCurrentUserOwner = false,
+        trendId = trendId,
+        thumbnailUrl = thumbnailUrl,
+        videoUrl = videoUrl,
+        description = description,
+        createdAt = createdAt,
+        likesCount = likesCount,
+        viewsCount = viewsCount,
+        isCurrentUserOwner = isLiked,
         isLiked = isLiked
     )
 }
