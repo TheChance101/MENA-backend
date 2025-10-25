@@ -71,7 +71,10 @@ class UserService(
     }
 
     fun deleteUserImage(userId: UUID) {
-        findById(userId).imageUrl
-            ?.let(identityImageStorageService::deleteImage)
+        val user = findById(userId)
+        user.imageUrl?.let { imageUrl ->
+            identityImageStorageService.deleteImage(imageUrl)
+            userRepository.save(user.copy(imageUrl = null))
+        }
     }
 }
