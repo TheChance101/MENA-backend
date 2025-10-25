@@ -2,7 +2,7 @@ package net.thechance.identity.api.controller
 
 import net.thechance.identity.api.dto.GeneralResponse
 import net.thechance.identity.api.dto.ProfileResponse
-import net.thechance.identity.mapper.toResponse
+import net.thechance.identity.api.mapper.toResponse
 import net.thechance.identity.service.UpdateUserProfileImageService
 import net.thechance.identity.service.UserService
 import org.springframework.http.ResponseEntity

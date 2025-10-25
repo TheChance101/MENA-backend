@@ -1,4 +1,4 @@
-package net.thechance.identity.mapper
+package net.thechance.identity.api.mapper
 
 import net.thechance.identity.api.dto.AddressResponse
 import net.thechance.identity.api.dto.CreateAddressRequest

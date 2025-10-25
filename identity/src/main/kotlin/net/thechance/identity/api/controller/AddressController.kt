@@ -4,8 +4,8 @@ import jakarta.validation.Valid
 import net.thechance.identity.api.dto.AddressResponse
 import net.thechance.identity.api.dto.CreateAddressRequest
 import net.thechance.identity.api.dto.UpdateAddressRequest
-import net.thechance.identity.mapper.toAddressModel
-import net.thechance.identity.mapper.toResponse
+import net.thechance.identity.api.mapper.toAddressModel
+import net.thechance.identity.api.mapper.toResponse
 import net.thechance.identity.service.AddressService
 import org.springframework.http.ResponseEntity
 import org.springframework.security.core.annotation.AuthenticationPrincipal
