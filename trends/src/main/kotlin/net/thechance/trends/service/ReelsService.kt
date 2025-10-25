@@ -10,6 +10,7 @@ import net.thechance.trends.repository.CategoryRepository
 import net.thechance.trends.repository.ReelLikeRepository
 import net.thechance.trends.repository.ReelViewRepository
 import net.thechance.trends.repository.ReelsRepository
+import net.thechance.trends.models.ReelWithLikeStatus
 import org.springframework.data.domain.Page
 import org.springframework.data.domain.PageRequest
 import org.springframework.data.domain.Pageable
@@ -30,16 +31,16 @@ class ReelsService(
     fun getAllReelsByUserId(
         pageable: Pageable,
         currentUserId: UUID
-    ): Page<Reel> {
+    ): Page<ReelWithLikeStatus> {
 
         val body = reelsRepository.findByOwnerIdAndIsPublished(
             currentUserId,
             true,
             PageRequest.of(
-                maxOf(0, pageable.pageNumber - 1),
+                pageable.pageNumber,
                 10,
                 pageable.getSortOr(Sort.by(Sort.Direction.DESC, "createdAt"))
-            )
+            ),
         )
         return body
     }
@@ -48,9 +49,9 @@ class ReelsService(
         pageable: Pageable,
         currentUserId: UUID,
         reelId: UUID? = null,
-    ): Page<Reel> {
+    ): Page<ReelWithLikeStatus> {
         val adjustedPageable = PageRequest.of(
-            maxOf(0, pageable.pageNumber - 1),
+            pageable.pageNumber,
             10,
             pageable.getSortOr(Sort.by(Sort.Direction.DESC, "createdAt"))
         )
@@ -60,11 +61,11 @@ class ReelsService(
 
     @Transactional
     fun deleteReelById(id: UUID, currentUserId: UUID) {
-        val reel = reelsRepository.findByIdAndOwnerId(id, currentUserId)
+        val reelVideoUrl = reelsRepository.findVideoUrlByIdAndOwnerId(id, currentUserId)
             ?: throw ReelNotFoundException()
 
         runCatching {
-            if (fileStorageService.deleteVideo(reel.videoUrl)) reelsRepository.deleteById(id)
+            if (reelsRepository.deleteReelById(id) != 0) fileStorageService.deleteVideo(reelVideoUrl)
         }.onFailure {
             throw VideoDeleteFailedException()
         }
@@ -83,7 +84,7 @@ class ReelsService(
         val categories = categoryIds.map { categoryRepository.getReferenceById(it) }.toMutableSet()
         if (categories.isEmpty()) throw TrendCategoryNotFoundException()
 
-        val updatedReel = existingReel.copy(
+        val updatedReel = existingReel.getReel().copy(
             description = newDescription,
             categories = categories,
             isPublished = true
@@ -94,11 +95,7 @@ class ReelsService(
 
 
     fun uploadReel(currentUserId: UUID, file: MultipartFile): UUID {
-        val videoUrl = fileStorageService.uploadVideo(
-            file = file,
-            fileName = file.originalFilename ?: "Untitled",
-            folderName = TRENDS_FOLDER_NAME
-        )
+        val videoUrl = fileStorageService.uploadVideo(file = file)
         val reel = Reel(
             ownerId = currentUserId,
             videoUrl = videoUrl
@@ -115,65 +112,30 @@ class ReelsService(
         val existingReel = reelsRepository.findByIdAndOwnerId(id = reelId, ownerId = ownerId)
             ?: throw ReelNotFoundException()
 
-        val thumbnailUrl = fileStorageService.uploadImage(
-            file = thumbnailFile,
-            fileName = thumbnailFile.originalFilename ?: "thumbnail",
-            folderName = TRENDS_FOLDER_NAME
-        )
+        val thumbnailUrl = fileStorageService.uploadImage(file = thumbnailFile)
 
-        val updatedReel = existingReel.copy(thumbnailUrl = thumbnailUrl)
+        val updatedReel = existingReel.getReel().copy(thumbnailUrl = thumbnailUrl)
 
         return reelsRepository.save(updatedReel)
     }
 
     @Transactional
     fun incrementViewCount(reelId: UUID, userId: UUID) {
-        if (!reelViewRepository.existsByReelIdAndUserId(reelId, userId)) {
-            reelViewRepository.save(ReelView(reelId = reelId, userId = userId))
+        reelViewRepository.save(ReelView(reelId = reelId, userId = userId))
+    }
 
-            reelsRepository.findById(reelId).ifPresent { reel ->
-                reelsRepository.save(reel.copy(viewsCount = reel.viewsCount + 1))
-            }
-        }
+    fun likeReel(reelId: UUID, userId: UUID): ReelWithLikeStatus {
+        reelLikeRepository.save(ReelLike(reelId = reelId, userId = userId))
+        return getReelOrThrow(reelId, userId)
     }
 
     @Transactional
-    fun toggleLike(reelId: UUID, currentUserId: UUID) {
-        val reel = reelsRepository.findById(reelId)
-            .orElseThrow { ReelNotFoundException() }
-
-        val isCurrentlyLiked = reelLikeRepository.existsByReelIdAndUserId(reelId, currentUserId)
-
-        if (isCurrentlyLiked) {
-            unlikeReel(reelId, currentUserId, reel)
-        } else {
-            likeReel(reelId, currentUserId, reel)
-        }
+    fun unlikeReel(reelId: UUID, userId: UUID): ReelWithLikeStatus {
+        reelLikeRepository.deleteReelLikeByReelIdAndUserId(reelId, userId)
+        return getReelOrThrow(reelId, userId)
     }
 
-    private fun likeReel(reelId: UUID, userId: UUID, reel: Reel) {
-        reelLikeRepository.save(ReelLike(reelId = reelId, userId = userId))
-        reelsRepository.save(reel.copy(likesCount = reel.likesCount + 1))
-    }
-
-    private fun unlikeReel(reelId: UUID, userId: UUID, reel: Reel) {
-        reelLikeRepository.deleteByReelIdAndUserId(reelId, userId)
-reelsRepository.save(reel.copy(likesCount = maxOf(0, reel.likesCount - 1)))
-    }
-
-    fun isReelLikedByUser(reelId: UUID, userId: UUID): Boolean {
-        return reelLikeRepository.existsByReelIdAndUserId(reelId, userId)
-    }
-
-    fun getReelDetailsById(reelId: UUID): Reel{
-        val reel = reelsRepository.findById(reelId).orElseThrow {
-            ReelNotFoundException()
-        }
-
-        return reel
-    }
-
-    companion object {
-        private const val TRENDS_FOLDER_NAME = "trends"
+    fun getReelOrThrow(reelId: UUID, userId: UUID): ReelWithLikeStatus {
+        return reelsRepository.findByIdAndIsPublishedWithLikeStatus(reelId = reelId, isPublished = true, userId = userId) ?: throw ReelNotFoundException()
     }
 }

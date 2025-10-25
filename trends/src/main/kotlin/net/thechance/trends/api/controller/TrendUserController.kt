@@ -1,10 +1,9 @@
 package net.thechance.trends.api.controller
 
-import net.thechance.trends.api.dto.PagingResponse
+import net.thechance.trends.api.dto.base.PagingResponse
 import net.thechance.trends.api.dto.reel.ReelResponse
 import net.thechance.trends.api.dto.reel.toResponse
 import net.thechance.trends.api.dto.reel.withOwnership
-import net.thechance.trends.api.dto.trendUser.DoesUserHaveCategoriesResponse
 import net.thechance.trends.service.ReelsService
 import net.thechance.trends.service.TrendUserService
 import org.springframework.data.domain.Pageable
@@ -29,29 +28,18 @@ class TrendUserController(
     ): ResponseEntity<PagingResponse<ReelResponse>> {
 
         val reels = reelService.getAllReelsByUserId(pageable, currentUserId).content.map { reel ->
-            val isLiked = reelService.isReelLikedByUser(reel.id, currentUserId)
-
-            reel.toResponse(isLiked).withOwnership(
+            reel.toResponse().withOwnership(
                 currentUserId = currentUserId,
-                ownerId = reel.ownerId
+                ownerId = reel.getReel().ownerId
             )
         }
 
-        val result = PagingResponse.create(
+        val result = PagingResponse(
             pageNumber = pageable.pageNumber,
             results = reels,
             totalResults = reels.size
         )
 
         return ResponseEntity.ok(result)
-    }
-
-    @GetMapping("/categories/status")
-    fun getDoesUserHaveCategories(
-        @AuthenticationPrincipal userId: UUID,
-    ): ResponseEntity<DoesUserHaveCategoriesResponse> {
-        val doesUserHaveCategories = trendUserService.getDoesUserHaveCategories(userId)
-        val response = DoesUserHaveCategoriesResponse(hasCategory = doesUserHaveCategories)
-        return ResponseEntity.ok(response)
     }
 }

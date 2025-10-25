@@ -4,6 +4,4 @@ import net.thechance.trends.entity.ReelView
 import org.springframework.data.jpa.repository.JpaRepository
 import java.util.*
 
-interface ReelViewRepository : JpaRepository<ReelView, UUID> {
-    fun existsByReelIdAndUserId(reelId: UUID, userId: UUID): Boolean
-}
+interface ReelViewRepository : JpaRepository<ReelView, UUID>

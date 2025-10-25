@@ -1,6 +1,7 @@
 package net.thechance.trends.api.dto.reel
 
 import net.thechance.trends.entity.Reel
+import net.thechance.trends.models.ReelWithLikeStatus
 import java.time.LocalDateTime
 import java.util.*
 
@@ -34,4 +35,20 @@ fun Reel.toResponse(isLiked: Boolean = false): ReelResponse {
 
 fun ReelResponse.withOwnership(currentUserId: UUID, ownerId: UUID): ReelResponse {
     return this.copy(isCurrentUserOwner = currentUserId == ownerId)
+}
+
+fun ReelWithLikeStatus.toResponse(): ReelResponse {
+    val reel = getReel()
+    val isLiked = getIsLiked()
+    return ReelResponse(
+        reelId = reel.id,
+        thumbnailUrl = reel.thumbnailUrl,
+        videoUrl = reel.videoUrl,
+        description = reel.description,
+        createdAt = reel.createdAt,
+        likesCount = reel.likesCount,
+        viewsCount = reel.viewsCount,
+        isCurrentUserOwner = false,
+        isLiked = isLiked
+    )
 }

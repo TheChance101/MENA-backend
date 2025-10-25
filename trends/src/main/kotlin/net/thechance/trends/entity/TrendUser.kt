@@ -11,7 +11,7 @@ import jakarta.persistence.Table
 import java.util.Collections.emptySet
 import java.util.UUID
 
-@Table(name = "user", schema = "trends")
+@Table(name = "users", schema = "trends")
 @Entity
 data class TrendUser(
     @Id
