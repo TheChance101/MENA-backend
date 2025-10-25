@@ -13,6 +13,8 @@ interface AddressRepository : JpaRepository<Address, UUID> {
     fun findByUserIdOrderByCreatedAtAsc(userId: UUID): List<Address>
     fun existsByUserId(userId: UUID): Boolean
 
+    fun existsByIdAndUserIdAndIsActive(id: UUID, userId: UUID, isActive: Boolean): Boolean
+
     @Modifying
     @Transactional
     @Query("UPDATE Address a SET a.isActive = FALSE WHERE a.userId = :userId AND a.isActive = TRUE")

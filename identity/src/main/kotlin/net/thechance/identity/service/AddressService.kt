@@ -2,7 +2,6 @@ package net.thechance.identity.service
 
 import jakarta.transaction.Transactional
 import net.thechance.identity.entity.Address
-import net.thechance.identity.entity.copy
 import net.thechance.identity.exception.*
 import net.thechance.identity.repository.AddressRepository
 import org.springframework.stereotype.Service
@@ -31,7 +30,7 @@ class AddressService(
         if (existingAddress == updatedAddress) {
             return existingAddress
         }
-        return addressRepository.save(updatedAddress)
+        return addressRepository.save(updatedAddress.copy(updatedAt = Instant.now()))
     }
 
     fun getAllAddresses(userId: UUID): List<Address> {
@@ -40,7 +39,8 @@ class AddressService(
 
     @Transactional
     fun deleteAddressById(addressId: UUID, userId: UUID) {
-        if (isActiveAddress(userId, addressId)) throw AddressCanNotBeDeletedException()
+        val isActiveAddress = addressRepository.existsByIdAndUserIdAndIsActive(addressId, userId, true)
+        if (isActiveAddress) throw AddressCanNotBeDeletedException()
         addressRepository.deleteById(addressId)
     }
 
@@ -49,7 +49,7 @@ class AddressService(
     }
 
     private fun disableCurrentActiveAddressIfNeedAnotherToBeActive(
-        addressToUpdate: net.thechance.identity.service.model.Address,
+        addressToUpdate: AddressModel,
         existingAddress: Address,
         userId: UUID,
     ) {
@@ -59,7 +59,7 @@ class AddressService(
     }
 
     private fun throwIfNeedToDisableActiveAddress(
-        addressToUpdate: net.thechance.identity.service.model.Address,
+        addressToUpdate: AddressModel,
         existingAddress: Address,
     ) {
         if (addressToUpdate.isActive == false && existingAddress.isActive) {
@@ -100,12 +100,7 @@ class AddressService(
             longitude = addressToUpdate.longitude ?: existingAddress.longitude,
             addressLine = addressToUpdate.addressLine ?: existingAddress.addressLine,
             addressType = addressToUpdate.addressType ?: existingAddress.addressType,
-            isActive = isActive,
-            updatedAt = Instant.now()
+            isActive = isActive
         )
-    }
-
-    private fun isActiveAddress(userId: UUID, addressId: UUID): Boolean {
-        return addressRepository.findByIdAndUserId(addressId, userId)?.isActive ?: throw AddressNotFoundException()
     }
 }
