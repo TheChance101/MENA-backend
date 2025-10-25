@@ -63,8 +63,10 @@ class UserService(
         imageFile: MultipartFile
     ): String {
         val user = findById(userId)
-        user.imageUrl?.let(identityImageStorageService::deleteImage)
-        val newImageUrl = identityImageStorageService.uploadImage(file = imageFile)
+        val newImageUrl = identityImageStorageService.uploadImage(
+            file = imageFile,
+            fileName = "${user.id}",
+        )
         val updatedUser = user.copy(imageUrl = newImageUrl)
         userRepository.save(updatedUser)
         return newImageUrl

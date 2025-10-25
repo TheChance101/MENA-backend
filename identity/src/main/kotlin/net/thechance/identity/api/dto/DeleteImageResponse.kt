@@ -1,5 +1,5 @@
 package net.thechance.identity.api.dto
 
-data class GeneralResponse(
+data class DeleteImageResponse(
     val message: String
 )

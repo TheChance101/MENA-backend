@@ -12,7 +12,6 @@ import software.amazon.awssdk.services.s3.model.DeleteObjectRequest
 import software.amazon.awssdk.services.s3.model.ObjectCannedACL
 import software.amazon.awssdk.services.s3.model.PutObjectRequest
 import java.time.LocalDateTime
-import java.util.*
 
 @Service
 @EnableConfigurationProperties(IdentityStorageProperties::class)
@@ -22,7 +21,7 @@ class IdentityImageStorageService(
 ) {
     fun uploadImage(
         file: MultipartFile,
-        fileName: String = UUID.randomUUID().toString(),
+        fileName: String,
         folderName: String = "profile"
     ): String {
         val mimeType = file.contentType ?: throw InvalidImageException("null")

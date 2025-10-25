@@ -1,9 +1,10 @@
 package net.thechance.identity.api.controller
 
 import jakarta.validation.Valid
-import net.thechance.identity.api.dto.ProfileResponse
 import net.thechance.identity.api.dto.UpdateProfileRequest
-import net.thechance.identity.api.utils.jsonBody
+import net.thechance.identity.api.dto.DeleteImageResponse
+import net.thechance.identity.api.dto.ProfileResponse
+import net.thechance.identity.api.dto.UpdateImageResponse
 import net.thechance.identity.mapper.toResponse
 import net.thechance.identity.service.UserService
 import net.thechance.identity.service.model.UserServiceModel
@@ -42,15 +43,17 @@ class ProfileController(
     fun updateUserImage(
         @AuthenticationPrincipal userId: UUID,
         @RequestPart("file") file: MultipartFile,
-    ): ResponseEntity<String> {
+    ): ResponseEntity<UpdateImageResponse> {
         val imageUrl = userService.updateUserImage(userId, file)
-        return ResponseEntity.ok().jsonBody(IMAGE_URL_KEY, imageUrl)
+        val response = UpdateImageResponse(imageUrl)
+        return ResponseEntity.ok(response)
     }
 
     @DeleteMapping("/image")
-    fun deleteUserImage(@AuthenticationPrincipal userId: UUID): ResponseEntity<String> {
+    fun deleteUserImage(@AuthenticationPrincipal userId: UUID): ResponseEntity<DeleteImageResponse> {
         userService.deleteUserImage(userId)
-        return ResponseEntity.ok().jsonBody(MESSAGE_KEY, "Image deleted successfully")
+        val response = DeleteImageResponse("Image deleted successfully")
+        return ResponseEntity.ok(response)
     }
 
     private fun UpdateProfileRequest.toServiceModel(id: UUID) = UserServiceModel(
@@ -61,9 +64,4 @@ class ProfileController(
         birthDate = LocalDate.parse(birthDate),
         gender = gender
     )
-
-    private companion object {
-        private const val IMAGE_URL_KEY = "imageUrl"
-        private const val MESSAGE_KEY = "message"
-    }
 }
