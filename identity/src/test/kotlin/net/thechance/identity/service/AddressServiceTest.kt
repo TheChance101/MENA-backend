@@ -169,7 +169,7 @@ class AddressServiceTest {
         val addresses = listOf(dummyAddress, dummyAddress.copy(id = UUID.randomUUID()))
         every { addressRepository.findByUserIdOrderByCreatedAtAsc(dummyUserId) } returns addresses
 
-        val result = addressService.getAllAddresses(dummyUserId)
+        val result = addressService.getAllAddressesByUserId(dummyUserId)
 
         assertThat(result).hasSize(2)
         assertThat(result).containsExactlyElementsIn(addresses)
@@ -179,7 +179,7 @@ class AddressServiceTest {
     fun `getAllAddresses() should return empty list when user has no addresses`() {
         every { addressRepository.findByUserIdOrderByCreatedAtAsc(dummyUserId) } returns emptyList()
 
-        val result = addressService.getAllAddresses(dummyUserId)
+        val result = addressService.getAllAddressesByUserId(dummyUserId)
 
         assertThat(result).isEmpty()
     }
