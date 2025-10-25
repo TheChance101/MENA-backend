@@ -27,6 +27,6 @@ data class TrendLike(
 )
 
 data class TrendLikeId(
-    val trendId: UUID,
-    val userId: UUID
+    val trendId: UUID = UUID.randomUUID(),
+    val userId: UUID = UUID.randomUUID()
 ) : Serializable
