@@ -62,13 +62,13 @@ class FileStorageService(
         }
     }
 
-    fun deleteVideo(videoUrl: String): Boolean {
+    fun deleteFile(fileUrl: String): Boolean {
         val prefix = trendsStorageProperties.cdnEndpoint
-        if (!videoUrl.startsWith(prefix)) {
+        if (!fileUrl.startsWith(prefix)) {
             throw InvalidTrendInputException()
         }
 
-        val key = videoUrl.removePrefix(prefix)
+        val key = fileUrl.removePrefix(prefix)
 
         val deleteRequest = DeleteObjectRequest.builder().bucket(trendsStorageProperties.bucket).key(key).build()
 

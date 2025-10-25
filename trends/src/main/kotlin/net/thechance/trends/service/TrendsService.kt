@@ -5,7 +5,6 @@ import net.thechance.trends.entity.TrendLike
 import net.thechance.trends.entity.TrendView
 import net.thechance.trends.exception.TrendCategoryNotFoundException
 import net.thechance.trends.exception.TrendNotFoundException
-import net.thechance.trends.exception.VideoDeleteFailedException
 import net.thechance.trends.models.TrendWithLikeStatus
 import net.thechance.trends.repository.CategoryRepository
 import net.thechance.trends.repository.TrendLikeRepository
@@ -61,14 +60,13 @@ class TrendsService(
 
     @Transactional
     fun deleteTrendById(id: UUID, currentUserId: UUID) {
-        val trendVideoUrl = trendsRepository.findVideoUrlByIdAndOwnerId(id, currentUserId)
+        val trendUrls = trendsRepository.findVideoUrlByIdAndOwnerId(id, currentUserId)
             ?: throw TrendNotFoundException()
 
-        runCatching {
-            if (trendsRepository.deleteTrendById(id) != 0) fileStorageService.deleteVideo(trendVideoUrl)
-        }.onFailure {
-            throw VideoDeleteFailedException()
-        }
+        trendsRepository.deleteTrendById(id)
+        fileStorageService.deleteFile(trendUrls.getTrendVideoUrl())
+        fileStorageService.deleteFile(trendUrls.getTrendThumbnailUrl())
+
     }
 
     @Transactional
