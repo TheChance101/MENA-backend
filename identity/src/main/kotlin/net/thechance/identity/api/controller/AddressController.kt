@@ -4,6 +4,7 @@ import jakarta.validation.Valid
 import net.thechance.identity.api.dto.AddressResponse
 import net.thechance.identity.api.dto.CreateAddressRequest
 import net.thechance.identity.api.dto.UpdateAddressRequest
+import net.thechance.identity.mapper.toAddressModel
 import net.thechance.identity.mapper.toResponse
 import net.thechance.identity.service.AddressService
 import org.springframework.http.ResponseEntity
@@ -22,7 +23,7 @@ class AddressController(
         @PathVariable id: UUID,
         @Valid @RequestBody request: UpdateAddressRequest
     ): ResponseEntity<AddressResponse> {
-        val updateAddressResponse = addressService.updateAddressById(id, userId, request).toResponse()
+        val updateAddressResponse = addressService.updateAddressById(id, userId, request.toAddressModel()).toResponse()
         return ResponseEntity.ok(updateAddressResponse)
     }
 
@@ -31,7 +32,7 @@ class AddressController(
         @AuthenticationPrincipal userId: UUID,
         @Valid @RequestBody request: CreateAddressRequest
     ): ResponseEntity<AddressResponse> {
-        val createAddressResponse = addressService.addAddress(userId, request).toResponse()
+        val createAddressResponse = addressService.addAddress(userId, request.toAddressModel()).toResponse()
         return ResponseEntity.ok(createAddressResponse)
     }
 

@@ -19,14 +19,14 @@ class AddressControllerAdvice {
 
     @ExceptionHandler(MethodArgumentNotValidException::class)
     @ResponseStatus(HttpStatus.BAD_REQUEST)
-    fun handleValidationExceptions(exception: MethodArgumentNotValidException): ResponseEntity<Map<String, String?>> {
+    fun handleValidationExceptions(exception: MethodArgumentNotValidException): ResponseEntity<ErrorResponse?> {
         val errors = exception.bindingResult.fieldErrors.associate {
             it.field to it.defaultMessage
         }
         logger.error("Validation failed: $errors", exception)
         return ResponseEntity
             .status(HttpStatus.BAD_REQUEST)
-            .body(errors)
+            .body(ErrorResponse("Data not valid"))
     }
 
     @ExceptionHandler(AddressNotFoundException::class)
@@ -83,5 +83,13 @@ class AddressControllerAdvice {
         return ResponseEntity
             .status(HttpStatus.FORBIDDEN)
             .body(ErrorResponse(exception.message ?: "Address Can Not Be Updated"))
+    }
+
+    @ExceptionHandler(DataNotValidException::class)
+    fun handleDataNotValidException(exception: DataNotValidException): ResponseEntity<ErrorResponse?> {
+        logger.error(exception.message)
+        return ResponseEntity
+            .status(HttpStatus.BAD_REQUEST)
+            .body(ErrorResponse(exception.message ?: "Data not valid"))
     }
 }
