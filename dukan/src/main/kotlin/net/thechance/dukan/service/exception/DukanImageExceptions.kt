@@ -1,7 +1,7 @@
-package net.thechance.dukan.api.exception
+package net.thechance.dukan.service.exception
 
-import net.thechance.dukan.api.constants.ErrorCodes.IMAGE_UPLOAD_FAILED
-import net.thechance.dukan.api.constants.ErrorCodes.INVALID_IMAGE_FORMAT
+import net.thechance.dukan.api.utils.ErrorCodes.IMAGE_UPLOAD_FAILED
+import net.thechance.dukan.api.utils.ErrorCodes.INVALID_IMAGE_FORMAT
 import org.springframework.http.HttpStatus
 
 class InvalidImageFormatException : DukanException(

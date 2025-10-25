@@ -2,7 +2,7 @@ package net.thechance.dukan.api.controller
 
 import jakarta.validation.Valid
 import jakarta.validation.constraints.NotBlank
-import net.thechance.dukan.api.constants.EndPoints.DUKAN_PATH
+import net.thechance.dukan.api.utils.EndPoints.DUKAN_PATH
 import net.thechance.dukan.api.dto.category.DukanCategoryResponse
 import net.thechance.dukan.api.dto.color.DukanColorResponse
 import net.thechance.dukan.api.dto.dukan.*

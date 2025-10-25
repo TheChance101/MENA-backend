@@ -1,4 +1,4 @@
-package net.thechance.dukan.api.exception
+package net.thechance.dukan.service.exception
 
 import org.springframework.http.HttpStatus
 

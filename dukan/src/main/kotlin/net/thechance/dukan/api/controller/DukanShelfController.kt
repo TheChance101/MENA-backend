@@ -1,7 +1,7 @@
 package net.thechance.dukan.api.controller
 
 import jakarta.validation.Valid
-import net.thechance.dukan.api.constants.EndPoints.DUKAN_PATH
+import net.thechance.dukan.api.utils.EndPoints.DUKAN_PATH
 import net.thechance.dukan.api.dto.shelf.DukanShelfCreationRequest
 import net.thechance.dukan.api.dto.shelf.DukanShelfResponse
 import net.thechance.dukan.entity.DukanShelf

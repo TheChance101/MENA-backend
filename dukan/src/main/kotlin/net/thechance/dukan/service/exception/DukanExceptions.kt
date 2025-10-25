@@ -1,7 +1,7 @@
-package net.thechance.dukan.api.exception
+package net.thechance.dukan.service.exception
 
-import net.thechance.dukan.api.constants.ErrorCodes.DUKAN_CREATION_FAILED
-import net.thechance.dukan.api.constants.ErrorCodes.DUKAN_NOT_FOUND
+import net.thechance.dukan.api.utils.ErrorCodes.DUKAN_CREATION_FAILED
+import net.thechance.dukan.api.utils.ErrorCodes.DUKAN_NOT_FOUND
 import org.springframework.http.HttpStatus
 
 

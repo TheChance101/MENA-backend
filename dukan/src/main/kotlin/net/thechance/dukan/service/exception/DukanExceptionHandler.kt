@@ -1,4 +1,4 @@
-package net.thechance.dukan.api.exception
+package net.thechance.dukan.service.exception
 
 import net.thechance.dukan.api.dto.ErrorResponse
 import org.springframework.core.annotation.Order

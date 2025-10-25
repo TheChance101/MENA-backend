@@ -1,7 +1,7 @@
 package net.thechance.dukan.service
 
-import net.thechance.dukan.api.exception.ImageUploadFailedException
-import net.thechance.dukan.api.exception.InvalidImageFormatException
+import net.thechance.dukan.service.exception.ImageUploadFailedException
+import net.thechance.dukan.service.exception.InvalidImageFormatException
 import org.springframework.boot.context.properties.ConfigurationProperties
 import org.springframework.boot.context.properties.EnableConfigurationProperties
 import org.springframework.stereotype.Service

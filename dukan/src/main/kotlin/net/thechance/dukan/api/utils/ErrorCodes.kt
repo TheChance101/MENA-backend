@@ -1,4 +1,4 @@
-package net.thechance.dukan.api.constants
+package net.thechance.dukan.api.utils
 
 internal object ErrorCodes {
     const val DUKAN_CREATION_FAILED = 1101
