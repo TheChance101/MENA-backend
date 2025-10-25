@@ -6,11 +6,7 @@ import java.time.Instant
 import java.time.LocalDate
 
 @Entity
-@Table(
-    name = "day_prayer_timings",
-    schema = "faith",
-    indexes = [Index(name = "idx_date_latitude_longitude", columnList = "date, latitude, longitude")]
-)
+@Table(name = "day_prayer_timings", schema = "faith")
 data class DayPrayerTimings(
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -23,9 +19,9 @@ data class DayPrayerTimings(
     @CreationTimestamp
     @Column(nullable = false, updatable = false)
     val savedIn: Instant = Instant.now(),
-
     @Column(nullable = false)
     val date: LocalDate,
+
     @Column(nullable = false)
     val hijriDate: String,
     @Column(nullable = false)

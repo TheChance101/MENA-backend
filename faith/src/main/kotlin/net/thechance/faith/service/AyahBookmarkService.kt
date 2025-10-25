@@ -21,8 +21,8 @@ class AyahBookmarkService(
 
     @Transactional
     fun deleteByIdAndUserId(id: Int, userId: UUID) {
-        val exists = ayahBookmarkRepository.deleteByUserIdAndId(userId, id) > 0
-        if (exists.not()) throw AyahBookmarkNotFoundException("Bookmark with id '$id' not found")
+        val deleted = ayahBookmarkRepository.deleteByUserIdAndId(userId, id) > 0
+        if (deleted.not()) throw AyahBookmarkNotFoundException("Bookmark with id '$id' not found")
     }
 
     fun getBookmarks(userId: UUID, pageable: Pageable): Page<AyahBookmark> {

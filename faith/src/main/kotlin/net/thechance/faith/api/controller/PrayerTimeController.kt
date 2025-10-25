@@ -3,7 +3,6 @@ package net.thechance.faith.api.controller
 import net.thechance.faith.api.dto.prayertime.DayPrayerTimingsResponse
 import net.thechance.faith.api.dto.prayertime.toResponse
 import net.thechance.faith.service.PrayerService
-import net.thechance.faith.utils.orZero
 import org.springframework.http.ResponseEntity
 import org.springframework.web.bind.annotation.*
 import java.time.LocalDate
@@ -29,12 +28,6 @@ class PrayerTimeController(
     }
 
     private fun String.toLocalDate(): LocalDate = runCatching {
-        this.split('-').let {
-            val day = it[0].toIntOrNull().orZero()
-            val month = it[1].toIntOrNull().orZero()
-            val year = it[2].toIntOrNull().orZero()
-            LocalDate.of(year, month, day)
-
-        }
+        LocalDate.parse(this)
     }.getOrDefault(LocalDate.of(1970, 1, 1))
 }

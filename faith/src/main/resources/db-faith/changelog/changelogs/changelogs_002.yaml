@@ -63,10 +63,6 @@ databaseChangeLog:
             isha              TIMESTAMP(6) WITH TIME ZONE NOT NULL
             );
 
-        - sql:
-            CREATE INDEX idx_date_latitude_longitude
-            ON faith.day_prayer_timings (date, latitude, longitude);
-
   - changeSet:
       id: 7-faith
       author: marwanqashwa
