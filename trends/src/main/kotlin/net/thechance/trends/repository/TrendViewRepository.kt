@@ -1,7 +1,7 @@
 package net.thechance.trends.repository
 
-import net.thechance.trends.entity.ReelView
+import net.thechance.trends.entity.TrendView
 import org.springframework.data.jpa.repository.JpaRepository
 import java.util.*
 
-interface ReelViewRepository : JpaRepository<ReelView, UUID>
+interface TrendViewRepository : JpaRepository<TrendView, UUID>

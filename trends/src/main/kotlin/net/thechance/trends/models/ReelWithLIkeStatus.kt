@@ -1,8 +1,8 @@
 package net.thechance.trends.models
 
-import net.thechance.trends.entity.Reel
+import net.thechance.trends.entity.Trend
 
-interface ReelWithLikeStatus {
-    fun getReel(): Reel
+interface TrendWithLikeStatus {
+    fun getTrend(): Trend
     fun getIsLiked(): Boolean
 }

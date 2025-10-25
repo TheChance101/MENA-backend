@@ -10,7 +10,7 @@ import org.springframework.web.bind.annotation.*
 import java.util.*
 
 @RestController
-@RequestMapping("/${Constants.TRENDS_PATH}/categories")
+@RequestMapping("/trends/categories")
 class CategoryController(
     private val trendUserService: TrendUserService,
 ) {

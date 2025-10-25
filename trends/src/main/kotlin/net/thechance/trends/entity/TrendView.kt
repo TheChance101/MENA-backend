@@ -6,16 +6,16 @@ import java.time.LocalDateTime
 import java.util.*
 
 @Table(
-    name = "reel_views",
+    name = "trend_views",
     schema = "trends",
-    uniqueConstraints = [UniqueConstraint(columnNames = ["reel_id", "user_id"])]
+    uniqueConstraints = [UniqueConstraint(columnNames = ["trend_id", "user_id"])]
 )
 @Entity
-@IdClass(ReelViewId::class)
-data class ReelView(
+@IdClass(TrendViewId::class)
+data class TrendView(
     @Id
-    @Column(name = "reel_id", nullable = false)
-    val reelId: UUID,
+    @Column(name = "trend_id", nullable = false)
+    val trendId: UUID,
 
     @Id
     @Column(name = "user_id", nullable = false)
@@ -25,7 +25,7 @@ data class ReelView(
     val viewedAt: LocalDateTime = LocalDateTime.now()
 )
 
-data class ReelViewId(
-    val reelId: UUID,
+data class TrendViewId(
+    val trendId: UUID,
     val userId: UUID
 ) : Serializable

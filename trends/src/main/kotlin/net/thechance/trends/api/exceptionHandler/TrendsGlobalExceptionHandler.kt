@@ -4,7 +4,7 @@ import net.thechance.trends.exception.InvalidFileTypeException
 import net.thechance.trends.exception.InvalidThumbnailException
 import net.thechance.trends.exception.InvalidTrendInputException
 import net.thechance.trends.exception.InvalidVideoException
-import net.thechance.trends.exception.ReelNotFoundException
+import net.thechance.trends.exception.TrendNotFoundException
 import net.thechance.trends.exception.ThumbnailUploadFailedException
 import net.thechance.trends.exception.TrendCategoryNotFoundException
 import net.thechance.trends.exception.TrendUserNotFoundException
@@ -17,8 +17,8 @@ import org.springframework.web.bind.annotation.RestControllerAdvice
 @RestControllerAdvice(basePackages = ["net.thechance.trends.api.controller"])
 class TrendsGlobalExceptionHandler {
 
-    @ExceptionHandler(ReelNotFoundException::class)
-    fun handleReelNotFoundException(exception: ReelNotFoundException): ResponseEntity<String> {
+    @ExceptionHandler(TrendNotFoundException::class)
+    fun handleTrendNotFoundException(exception: TrendNotFoundException): ResponseEntity<String> {
         val message = exception.localizedMessage
 
         return ResponseEntity.status(HttpStatus.NOT_FOUND).body(message)

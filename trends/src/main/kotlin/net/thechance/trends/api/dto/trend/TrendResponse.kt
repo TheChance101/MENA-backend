@@ -1,12 +1,12 @@
-package net.thechance.trends.api.dto.reel
+package net.thechance.trends.api.dto.trend
 
-import net.thechance.trends.entity.Reel
-import net.thechance.trends.models.ReelWithLikeStatus
+import net.thechance.trends.entity.Trend
+import net.thechance.trends.models.TrendWithLikeStatus
 import java.time.LocalDateTime
 import java.util.*
 
-data class ReelResponse(
-    val reelId: UUID,
+data class TrendResponse(
+    val trendId: UUID,
     val thumbnailUrl: String?,
     val videoUrl: String,
     val description: String,
@@ -19,9 +19,9 @@ data class ReelResponse(
     val profilePictureUrl: String = "",
 )
 
-fun Reel.toResponse(isLiked: Boolean = false): ReelResponse {
-    return ReelResponse(
-        reelId = id,
+fun Trend.toResponse(isLiked: Boolean = false): TrendResponse {
+    return TrendResponse(
+        trendId = id,
         thumbnailUrl = thumbnailUrl,
         videoUrl = videoUrl,
         description = description,
@@ -33,21 +33,21 @@ fun Reel.toResponse(isLiked: Boolean = false): ReelResponse {
     )
 }
 
-fun ReelResponse.withOwnership(currentUserId: UUID, ownerId: UUID): ReelResponse {
+fun TrendResponse.withOwnership(currentUserId: UUID, ownerId: UUID): TrendResponse {
     return this.copy(isCurrentUserOwner = currentUserId == ownerId)
 }
 
-fun ReelWithLikeStatus.toResponse(): ReelResponse {
-    val reel = getReel()
+fun TrendWithLikeStatus.toResponse(): TrendResponse {
+    val trend = getTrend()
     val isLiked = getIsLiked()
-    return ReelResponse(
-        reelId = reel.id,
-        thumbnailUrl = reel.thumbnailUrl,
-        videoUrl = reel.videoUrl,
-        description = reel.description,
-        createdAt = reel.createdAt,
-        likesCount = reel.likesCount,
-        viewsCount = reel.viewsCount,
+    return TrendResponse(
+        trendId = trend.id,
+        thumbnailUrl = trend.thumbnailUrl,
+        videoUrl = trend.videoUrl,
+        description = trend.description,
+        createdAt = trend.createdAt,
+        likesCount = trend.likesCount,
+        viewsCount = trend.viewsCount,
         isCurrentUserOwner = false,
         isLiked = isLiked
     )
