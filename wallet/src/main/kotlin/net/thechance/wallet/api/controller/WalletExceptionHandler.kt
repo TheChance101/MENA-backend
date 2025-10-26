@@ -2,12 +2,15 @@ package net.thechance.wallet.api.controller
 
 import net.thechance.wallet.api.dto.error.ErrorResponse
 import net.thechance.wallet.exception.NoTransactionsFoundException
+import org.springframework.core.Ordered
+import org.springframework.core.annotation.Order
 import org.springframework.http.HttpStatus
 import org.springframework.http.ResponseEntity
 import org.springframework.web.bind.annotation.ExceptionHandler
 import org.springframework.web.bind.annotation.RestControllerAdvice
 
 @RestControllerAdvice(basePackages = ["net.thechance.wallet"])
+@Order(Ordered.HIGHEST_PRECEDENCE)
 class WalletExceptionHandler {
 
     @ExceptionHandler(NoTransactionsFoundException::class)
