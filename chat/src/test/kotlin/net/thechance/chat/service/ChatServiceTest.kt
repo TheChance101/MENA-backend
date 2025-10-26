@@ -56,8 +56,7 @@ class ChatServiceTest {
 
     private fun testChat(id: UUID = UUID.randomUUID()) = Chat(
         id = id,
-        users = mutableSetOf(),
-        messages = mutableSetOf()
+        users = mutableSetOf()
     )
 
     @BeforeEach
@@ -74,8 +73,7 @@ class ChatServiceTest {
             chatRepository,
             contactUserService,
             attachmentStorageService,
-            contactService,
-            entityManager,
+            contactService
         )
     }
 
@@ -120,20 +118,18 @@ class ChatServiceTest {
         val chat = testChat()
         val messageDto = MessageRequestDto(
             chatId = chat.id,
-            text = "message 1",
-            messageId = null
+            text = "message 1"
         )
 
-        every { entityManager.getReference(Chat::class.java, chat.id) } returns chat
         every { messageRepository.findById(any()) } answers { Optional.empty() }
         every { messageRepository.save(any()) } answers { firstArg<Message>() }
 
-        service.saveMessage(MessageRequestArgs(chat.id, UUID.randomUUID(), messageDto.text, null))
+        service.saveMessage(MessageRequestArgs(chat.id, UUID.randomUUID(), messageDto.text))
 
         verify {
             messageRepository.save(
                 withArg {
-                    assertThat(it.chat).isEqualTo(chat)
+                    assertThat(it.chatId).isEqualTo(chat.id)
                     assertThat(it.text).isEqualTo("message 1")
                 }
             )
@@ -144,15 +140,14 @@ class ChatServiceTest {
     fun `saveMessage throws if chat not found`() {
         val messageDto = MessageRequestDto(
             chatId = UUID.randomUUID(),
-            text = "message 1",
-            messageId = null
+            text = "message 1"
         )
 
         every { entityManager.getReference(Chat::class.java, messageDto.chatId) } throws EntityNotFoundException()
         every { messageRepository.findById(any()) } answers { Optional.empty() }
 
         assertThrows<EntityNotFoundException> {
-            service.saveMessage(MessageRequestArgs(messageDto.chatId, UUID.randomUUID(), messageDto.text, null))
+            service.saveMessage(MessageRequestArgs(messageDto.chatId, UUID.randomUUID(), messageDto.text))
         }
     }
 
@@ -168,15 +163,14 @@ class ChatServiceTest {
             MessageImageRequestArgs(
                 chatId = chat.id,
                 senderId = senderId,
-                image = image,
-                messageId = null
+                image = image
             )
         )
 
         verify {
             messageRepository.save(
                 withArg {
-                    assertThat(it.chat).isEqualTo(chat)
+                    assertThat(it.chatId).isEqualTo(chat.id)
                     assertThat(it.text).isEqualTo(null)
                     assertThat(it.senderId).isEqualTo(senderId)
                 }
@@ -251,7 +245,7 @@ class ChatServiceTest {
             text = lastMessageText,
             sentAt = Instant.now(),
             senderId = otherUser.id,
-            chat = chat,
+            chatId = chat.id,
             isRead = false
         )
 
@@ -280,7 +274,7 @@ class ChatServiceTest {
             text = "My message",
             sentAt = Instant.now(),
             senderId = userId,
-            chat = chat,
+            chatId = chat.id,
             isRead = false
         )
 
