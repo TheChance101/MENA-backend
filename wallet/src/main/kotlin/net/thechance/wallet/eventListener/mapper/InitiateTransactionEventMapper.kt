@@ -6,6 +6,7 @@ import net.thechance.wallet.service.model.input.InitiateTransactionParams
 
 fun InitiateTransactionEvent.toInitiateTransactionParams(): InitiateTransactionParams {
     return InitiateTransactionParams(
+        transactionId = transactionId,
         type = type.toTransactionType(),
         senderId = senderId,
         receiverId = receiverId,

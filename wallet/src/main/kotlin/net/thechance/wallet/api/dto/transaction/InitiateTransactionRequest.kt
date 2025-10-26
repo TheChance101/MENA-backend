@@ -18,5 +18,6 @@ fun InitiateTransactionRequest.toInitiateTransactionParam(
         senderId = senderId,
         receiverId = receiverId,
         amount = amount,
+        transactionId = UUID.randomUUID()
     )
 }

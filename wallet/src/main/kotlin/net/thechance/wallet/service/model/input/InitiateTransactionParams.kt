@@ -6,6 +6,7 @@ import net.thechance.wallet.entity.WalletUser
 import java.util.*
 
 data class InitiateTransactionParams(
+    val transactionId: UUID,
     val type: Transaction.Type,
     val senderId: UUID,
     val receiverId: UUID,
@@ -17,6 +18,7 @@ fun InitiateTransactionParams.toPendingTransaction(
     receiver: WalletUser,
 ): PendingTransaction {
     return PendingTransaction(
+        id = transactionId,
         type = type,
         sender = sender,
         receiver = receiver,
