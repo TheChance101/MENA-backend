@@ -77,6 +77,12 @@ class DukanProductService(
         return dukanProductRepository.findAllByShelfId(shelfId, pageable)
     }
 
+    fun getProductById(productId: UUID): DukanProduct {
+        return dukanProductRepository.findById(productId).orElseThrow {
+            ProductNotFoundException()
+        }
+    }
+
     companion object {
         private const val PRODUCT_FOLDER_NAME = "product"
     }
