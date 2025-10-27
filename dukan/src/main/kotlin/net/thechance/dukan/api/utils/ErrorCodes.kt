@@ -5,6 +5,8 @@ internal object ErrorCodes {
     const val DUKAN_NOT_FOUND = 1102
     const val INVALID_IMAGE_FORMAT = 1201
     const val IMAGE_UPLOAD_FAILED = 1202
+
+    const val IMAGE_DELETION_FAILED = 1203
     const val PRODUCT_NOT_FOUND = 1301
     const val DUKAN_PRODUCT_CREATION_FAILED = 1302
     const val PRODUCT_NAME_ALREADY_TAKEN = 1303

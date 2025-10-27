@@ -8,6 +8,8 @@ import net.thechance.dukan.service.exception.ProductNameAlreadyTakenException
 import net.thechance.dukan.service.exception.ProductNotFoundException
 import net.thechance.dukan.repository.DukanProductRepository
 import net.thechance.dukan.repository.DukanShelfRepository
+import net.thechance.dukan.service.exception.ImageDeleteFailedException
+import net.thechance.dukan.service.exception.ImageUploadFailedException
 import net.thechance.dukan.service.exception.ProductUpdateFailedException
 import net.thechance.dukan.service.model.DukanProductCreationParams
 import net.thechance.dukan.service.model.DukanProductUpdateParams
@@ -85,7 +87,7 @@ class DukanProductService(
 
     fun updateProduct(
         productId: UUID, params: DukanProductUpdateParams
-    ): DukanProduct {
+    ): UUID {
         val product = dukanProductRepository
             .findByIdAndDukan_OwnerId(productId, params.ownerId)
             .orElseThrow {
@@ -98,22 +100,50 @@ class DukanProductService(
 
         val shelf = dukanShelfRepository.getReferenceById(params.shelfId)
 
-        product.imageUrls
-            .filterNot { it in params.imageUrls }
-            .forEach { imageStorageService.deleteImage(it) }
+        deleteProductImages(product.imageUrls, params.imageUrls)
 
-        return product.copy(
+        val updatedProductId = product.copy(
             name = params.name.trim(),
             price = params.price,
             imageUrls = params.imageUrls,
             description = params.description.trim(),
             shelf = shelf
-        ).also { dukanProductRepository.save(it) }
+        ).also { dukanProductRepository.save(it) }.id
+
+        return updatedProductId
+    }
+
+    fun uploadProductImage(ownerId: UUID, productId: UUID, file: MultipartFile): String {
+        val product = dukanProductRepository
+            .findByIdAndDukan_OwnerId(productId, ownerId)
+            .orElseThrow { ProductNotFoundException() }
+        val imageUrl = imageStorageService.uploadImage(
+            file = file,
+            fileName = product.name,
+            folderName = PRODUCT_FOLDER_NAME
+        )
+        return imageUrl
     }
 
     private fun existingProductByDukanIdAndName(dukanId: UUID, name: String) {
         if (dukanProductRepository.existsByDukanIdAndNameIgnoreCase(dukanId, name)) {
             throw ProductNameAlreadyTakenException()
+        }
+    }
+
+    private fun deleteProductImages(oldImageUrls: List<String>, updatedImageUrls: List<String>) {
+        try {
+            oldImageUrls
+                .filterNot { it in updatedImageUrls }
+                .forEach {
+                    if (imageStorageService.deleteImage(it).not()) {
+                        throw ImageDeleteFailedException()
+                    }
+                }
+        } catch (_: Exception)
+        {
+            // TODO save failed images table and try to delete them later
+            throw ImageDeleteFailedException()
         }
     }
 
