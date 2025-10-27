@@ -42,7 +42,7 @@ fun TrendWithOwnerShipAndLikeStatus.toResponse(): TrendResponse {
         createdAt = createdAt,
         likesCount = likesCount,
         viewsCount = viewsCount,
-        isCurrentUserOwner = isLiked,
+        isCurrentUserOwner = isCurrentUserOwner,
         isLiked = isLiked
     )
 }
