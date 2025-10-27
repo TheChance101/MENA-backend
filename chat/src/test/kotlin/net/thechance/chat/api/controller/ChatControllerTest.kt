@@ -58,6 +58,7 @@ class ChatControllerTest {
         )
 
         every { chatService.saveMessage(any()) } returns savedMessage
+        every { chatService.getChatUsersIds(chatId) } returns listOf(userId)
         justRun { messagingTemplate.convertAndSendToUser(any(), any(), any()) }
 
         controller.sendPrivateMessage(dto, principal)
@@ -86,6 +87,7 @@ class ChatControllerTest {
 
         every { chatService.saveMessageImage(any()) } returns savedMessage
         every { chatService.saveMessage(any()) } returns savedMessage
+        every { chatService.getChatUsersIds(chatId) } returns listOf(userId)
         justRun { messagingTemplate.convertAndSendToUser(any(), any(), any()) }
 
         val messageImageArgs = MessageImageRequest(chatId, image)
@@ -164,12 +166,13 @@ class ChatControllerTest {
         every { principal.name } returns userId.toString()
         justRun { messagingTemplate.convertAndSendToUser(any(), any(), any()) }
         every { chatService.markChatMessagesAsRead(chatId, userId) } returns 1
+        every { chatService.getChatUsersIds(chatId) } returns listOf(userId)
 
         controller.markMessagesAsRead(markAsReadRequest, principal)
 
         verify {
             messagingTemplate.convertAndSendToUser(
-                chatId.toString(),
+                userId.toString(),
                 PRIVATE_MESSAGES,
                 MarkAsReadResponse(userId, chatId, true)
             )
