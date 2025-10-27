@@ -39,7 +39,7 @@ class AttachmentStorageService(
             menaS3Client.putObject(putReq, RequestBody.fromBytes(file.bytes))
             return "${props.cdnEndpoint}/$key"
         } catch (e: Exception) {
-            throw ImageUploadFailedException("fail uploading image: ${e.message}")
+            throw ImageUploadFailedException("failed uploading image: ${e.message}")
         }
     }
 
