@@ -69,19 +69,18 @@ class ChatController(
     ): ResponseEntity<MessageResponse> {
         val senderId = UUID.fromString(principal.name)
         val messageImageArgs = request.toRequestArgs(senderId)
-        val message = chatService.saveMessageImage(messageImageArgs).toResponse(senderId)
-
+        val message = chatService.saveMessageImage(messageImageArgs)
         chatService
             .getChatUsersIds(chatId = request.chatId)
             .forEach { chatParticipantId ->
                 messagingTemplate.convertAndSendToUser(
                     chatParticipantId.toString(),
                     PRIVATE_MESSAGES,
-                    message
+                    message.toResponse(chatParticipantId)
                 )
             }
 
-        return ResponseEntity.ok(message)
+        return ResponseEntity.ok(message.toResponse(senderId))
     }
 
     @MessageMapping("/chat.markAsRead")

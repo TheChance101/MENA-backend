@@ -25,40 +25,53 @@ class IdentityController(
         httpRequest: HttpServletRequest
     ): ResponseEntity<AuthResponse> {
         val ipAddress = httpRequest.remoteAddr ?: throw InvalidIpException("Invalid IP")
-        val authResponse = authenticationService.login(request.phoneNumber, request.password, ipAddress)
+        val authResponse = authenticationService.login(
+            phoneNumber = request.phoneNumber,
+            password = request.password,
+            ipAddress = ipAddress
+        )
         return ResponseEntity.ok(authResponse)
     }
 
     @PostMapping("/refresh")
-    fun refresh(@RequestBody @Valid request: RefreshTokenRequest): ResponseEntity<AuthResponse> {
-        return ResponseEntity.ok(authenticationService.refreshToken(request.refreshToken))
+    fun refresh(
+        @RequestBody @Valid request: RefreshTokenRequest
+    ): ResponseEntity<AuthResponse> {
+        val response = authenticationService.refreshToken(request.refreshToken)
+        return ResponseEntity.ok(response)
     }
 
     @PostMapping("/request-reset-password-otp")
     fun requestResetPasswordOtp(
         @RequestBody @Valid request: RequestOtpRequest,
-        httpRequest: HttpServletRequest
     ): ResponseEntity<RequestOtpResponse> {
-        val response = resetPasswordService.requestOtp(request.phoneNumber, request.defaultRegion)
+        val response = resetPasswordService.requestOtp(
+            phoneNumber = request.phoneNumber,
+            defaultRegion = request.defaultRegion
+        )
         return ResponseEntity.ok(response)
     }
 
     @PostMapping("/verify-reset-password-otp")
     fun verifyOtp(
         @RequestBody @Valid request: VerifyOtpRequest,
-        httpRequest: HttpServletRequest
     ): ResponseEntity<Unit> {
-        return ResponseEntity.ok(resetPasswordService.verifyOtp(request.otp, UUID.fromString(request.sessionId)))
+        val response = resetPasswordService.verifyOtp(
+            otp = request.otp,
+            sessionId = UUID.fromString(request.sessionId)
+        )
+        return ResponseEntity.ok(response)
     }
 
     @PostMapping("/reset-password")
-    fun resetPassword(@RequestBody @Valid request: ResetPasswordRequest): ResponseEntity<Unit> {
-        return ResponseEntity.ok(
-            resetPasswordService.resetPassword(
-                request.newPassword,
-                request.confirmPassword,
-                UUID.fromString(request.sessionId)
-            )
+    fun resetPassword(
+        @RequestBody @Valid request: ResetPasswordRequest
+    ): ResponseEntity<Unit> {
+        val response = resetPasswordService.resetPassword(
+            newPassword = request.newPassword,
+            confirmPassword = request.confirmPassword,
+            sessionId = UUID.fromString(request.sessionId)
         )
+        return ResponseEntity.ok(response)
     }
 }

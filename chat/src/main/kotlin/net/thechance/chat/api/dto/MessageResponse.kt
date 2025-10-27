@@ -7,8 +7,7 @@ import java.util.*
 
 data class MessageRequestDto(
     val chatId: UUID,
-    val text: String?,
-    val messageId: UUID?
+    val text: String?
 )
 
 data class MessageResponse(
@@ -16,22 +15,21 @@ data class MessageResponse(
     val senderId: UUID,
     val chatId: UUID,
     val text: String?,
-    val images: List<String>,
+    val imageUrl: String?,
     val sendAt: Instant,
     val isRead: Boolean,
     val isMine: Boolean
 )
 
-
 fun Message.toResponse(requesterId: UUID): MessageResponse {
     return MessageResponse(
-        id = this.id,
-        senderId = this.senderId,
-        chatId = this.chat.id,
-        text = this.text,
-        images = this.images,
-        sendAt = this.sentAt,
-        isRead = this.isRead,
+        id = id,
+        senderId = senderId,
+        chatId = chatId,
+        text = text,
+        imageUrl = imageUrl,
+        sendAt = sentAt,
+        isRead = isRead,
         isMine = requesterId == senderId
     )
 }

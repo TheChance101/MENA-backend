@@ -47,7 +47,7 @@ class ChatControllerTest {
     fun `sendPrivateMessage should save message and send to user`() {
         val chatId = UUID.randomUUID()
         val senderId = UUID.randomUUID()
-        val dto = MessageRequestDto(chatId, "message1", null)
+        val dto = MessageRequestDto(chatId, "message1")
 
         val principal = mockk<Principal>()
         every { principal.name } returns senderId.toString()
@@ -59,6 +59,7 @@ class ChatControllerTest {
         )
 
         every { chatService.saveMessage(any()) } returns savedMessage
+        every { chatService.getChatUsersIds(chatId) } returns listOf(userId)
         justRun { messagingTemplate.convertAndSendToUser(any(), any(), any()) }
 
         controller.sendPrivateMessage(dto, principal)
@@ -87,13 +88,14 @@ class ChatControllerTest {
 
         every { chatService.saveMessageImage(any()) } returns savedMessage
         every { chatService.saveMessage(any()) } returns savedMessage
+        every { chatService.getChatUsersIds(chatId) } returns listOf(userId)
         justRun { messagingTemplate.convertAndSendToUser(any(), any(), any()) }
 
-        val messageImageArgs = MessageImageRequest(chatId, image, null)
+        val messageImageArgs = MessageImageRequest(chatId, image)
         controller.sendMessageImage(messageImageArgs, principal)
 
         verify {
-            chatService.saveMessageImage(match { it == MessageImageRequestArgs(chatId, senderId, image, null) })
+            chatService.saveMessageImage(match { it == MessageImageRequestArgs(chatId, senderId, image) })
         }
     }
 
@@ -136,7 +138,7 @@ class ChatControllerTest {
         val messages = listOf(
             Message(
                 id = UUID.randomUUID(),
-                chat = chat,
+                chatId = chatId,
                 senderId = UUID.randomUUID(),
                 text = "Hi",
                 sentAt = Instant.now(),
@@ -164,13 +166,15 @@ class ChatControllerTest {
 
         every { principal.name } returns userId.toString()
         justRun { messagingTemplate.convertAndSendToUser(any(), any(), any()) }
+        every { chatService.markChatMessagesAsRead(chatId, userId) } returns 1
+        every { chatService.getChatUsersIds(chatId) } returns listOf(userId)
         every { chatService.markChatMessagesAsRead(chatId, userId) } just runs
 
         controller.markMessagesAsRead(markAsReadRequest, principal)
 
         verify {
             messagingTemplate.convertAndSendToUser(
-                chatId.toString(),
+                userId.toString(),
                 PRIVATE_MESSAGES,
                 MarkAsReadResponse(userId, chatId, true)
             )
@@ -215,10 +219,9 @@ class ChatControllerTest {
         private fun testMessage(senderId: UUID, chat: Chat, text: String? = null) = Message(
             id = UUID.randomUUID(),
             senderId = senderId,
-            chat = chat,
+            chatId = chatId,
             text = text,
-            sentAt = Instant.now(),
-            images = emptyList()
+            sentAt = Instant.now()
         )
     }
 }

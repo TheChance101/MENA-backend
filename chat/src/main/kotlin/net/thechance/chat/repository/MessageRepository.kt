@@ -16,7 +16,7 @@ interface MessageRepository : JpaRepository<Message, UUID> {
 
     @Modifying
     @Transactional
-    @Query("UPDATE Message m SET m.isRead = true WHERE m.chat.id = :chatId AND m.senderId <> :userId AND m.isRead = false")
+    @Query("UPDATE Message m SET m.isRead = true WHERE m.chatId = :chatId AND m.senderId <> :userId AND m.isRead = false")
     fun updateIsReadByChatIdAndSenderIdNot(chatId: UUID, userId: UUID): Int
 
     fun findTopByChatIdOrderBySentAtDesc(chatId: UUID): Message?
@@ -25,7 +25,7 @@ interface MessageRepository : JpaRepository<Message, UUID> {
         nativeQuery = true,
         value = """
         SELECT DISTINCT ON (m.chat_id) 
-        m.chat_id, m.id, m.text, m.sender_id, m.sent_at, m.is_read
+        m.chat_id, m.id, m.text, m.image_url, m.sender_id, m.sent_at, m.is_read
         FROM chat.messages m
         WHERE m.chat_id IN :chatIds
         ORDER BY m.chat_id, m.sent_at DESC
@@ -33,4 +33,4 @@ interface MessageRepository : JpaRepository<Message, UUID> {
     )
     fun findLastMessagesForChats(@Param("chatIds") chatIds: List<UUID>): List<Message>
 
-    }
+}

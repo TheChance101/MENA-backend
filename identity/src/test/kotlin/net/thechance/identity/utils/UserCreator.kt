@@ -1,6 +1,7 @@
 package net.thechance.identity.utils
 
 import net.thechance.identity.entity.User
+import java.time.LocalDate
 import java.util.UUID
 
 fun createUser(
@@ -10,7 +11,9 @@ fun createUser(
     firstName: String = "Thoraya",
     lastName: String = "Hamdy",
     username: String = "ss",
-    imageUrl: String = ""
+    imageUrl: String = "",
+    birthDate: LocalDate = LocalDate.now(),
+    gender: Int = User.Gender.MALE.toInt()
 ): User {
     return User(
         id = id,
@@ -19,6 +22,8 @@ fun createUser(
         firstName = firstName,
         lastName = lastName,
         username = username,
-        imageUrl = imageUrl
+        imageUrl = imageUrl,
+        birthDate = birthDate,
+        gender = gender
     )
 }
