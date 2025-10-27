@@ -1,6 +1,7 @@
 package net.thechance.chat.api.controller
 
 import net.thechance.chat.api.dto.ErrorResponse
+import net.thechance.chat.service.exception.ErrorCodes
 import net.thechance.chat.service.exception.ImageUploadFailedException
 import net.thechance.chat.service.exception.InvalidImageFormatException
 import net.thechance.chat.service.exception.NotFoundException
@@ -25,6 +26,7 @@ class ChatControllerAdvice : ResponseEntityExceptionHandler() {
     @ExceptionHandler(InvalidImageFormatException:: class)
     fun handleInvalidImageFormatException(e: InvalidImageFormatException): ResponseEntity<ErrorResponse>{
         val error = ErrorResponse(
+            code = ErrorCodes.INVALID_IMAGE_FORMAT,
             message = e.message
         )
         return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(error)
@@ -33,6 +35,7 @@ class ChatControllerAdvice : ResponseEntityExceptionHandler() {
     @ExceptionHandler(ImageUploadFailedException:: class)
     fun handleImageUploadException(e: ImageUploadFailedException): ResponseEntity<ErrorResponse>{
         val error = ErrorResponse(
+            code = ErrorCodes.IMAGE_UPLOAD_FAILED,
             message = e.message
         )
         return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(error)

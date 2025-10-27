@@ -2,7 +2,6 @@ package net.thechance.chat.service.exception
 
 
 open class ChatException(
-    val code: Int?= null,
     override val message: String,
 ) : Exception(message)
 
