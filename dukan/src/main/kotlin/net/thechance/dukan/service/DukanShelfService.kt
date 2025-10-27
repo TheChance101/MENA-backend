@@ -32,6 +32,21 @@ class DukanShelfService(
         )
     }
 
+    fun renameShelf(ownerId: UUID, shelfId: UUID, newTitle: String) {
+        val dukan = dukanService.getDukanByOwnerId(ownerId)
+
+        if (dukanShelfRepository.existsByTitleAndDukanId(newTitle, dukan.id)) {
+            throw ShelfNameAlreadyTakenException()
+        }
+
+        val shelf = dukanShelfRepository.findByIdAndDukanId(shelfId, dukan.id)
+            ?: throw ShelfNotFoundException()
+
+        val newShelf = shelf.copy(title = newTitle)
+        dukanShelfRepository.save(newShelf)
+    }
+
+
     fun deleteShelf(shelfId: UUID, ownerId: UUID) {
         val shelf = getShelfById(shelfId, ownerId)
 
