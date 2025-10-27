@@ -1,8 +1,8 @@
 package net.thechance.wallet.api.dto.transaction
 
-import net.thechance.wallet.entity.InitiateTransactionParams
 import net.thechance.wallet.entity.Transaction
-import java.util.UUID
+import net.thechance.wallet.service.model.input.InitiateTransactionParams
+import java.util.*
 
 data class InitiateTransactionRequest(
     val receiverId: UUID,
@@ -18,5 +18,6 @@ fun InitiateTransactionRequest.toInitiateTransactionParam(
         senderId = senderId,
         receiverId = receiverId,
         amount = amount,
+        transactionId = UUID.randomUUID()
     )
 }

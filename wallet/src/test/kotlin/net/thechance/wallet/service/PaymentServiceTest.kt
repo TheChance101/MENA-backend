@@ -5,7 +5,7 @@ import io.mockk.*
 import net.thechance.wallet.entity.Block
 import net.thechance.wallet.entity.PendingTransaction
 import net.thechance.wallet.entity.Transaction
-import net.thechance.wallet.entity.user.WalletUser
+import net.thechance.wallet.entity.WalletUser
 import net.thechance.wallet.repository.PendingTransactionRepository
 import net.thechance.wallet.repository.TransactionRepository
 import org.junit.Assert.assertThrows
@@ -18,7 +18,7 @@ import java.util.*
 class PaymentServiceTest {
     private val pendingTransactionRepository = mockk<PendingTransactionRepository>()
     private val transactionRepository = mockk<TransactionRepository>()
-    private val walletService = mockk<WalletService>()
+    private val balanceService = mockk<BalanceService>()
     private val blockService = mockk<BlockService>()
     private lateinit var paymentService: PaymentService
 
@@ -27,8 +27,8 @@ class PaymentServiceTest {
     private val transactionId = UUID.randomUUID()
     private val blockId = UUID.randomUUID()
     private val block = Block(id = blockId, previousBlockHash = "prev", timestamp = LocalDateTime.now())
-    private val sender = WalletUser(userId = userId, userName = "sender", firstName = "Sender", lastName = "User", imageUrl = null)
-    private val receiver = WalletUser(userId = receiverId, userName = "receiver", firstName = "Receiver", lastName = "User", imageUrl = null)
+    private val sender = WalletUser(userId = userId, firstName = "Sender", lastName = "User", imageUrl = null)
+    private val receiver = WalletUser(userId = receiverId, firstName = "Receiver", lastName = "User", imageUrl = null)
     private val pendingTransaction = PendingTransaction(
         id = transactionId,
         sender = sender,
@@ -53,7 +53,7 @@ class PaymentServiceTest {
         paymentService = PaymentService(
             pendingTransactionRepository,
             transactionRepository,
-            walletService,
+            balanceService,
             blockService
         )
     }
@@ -103,7 +103,7 @@ class PaymentServiceTest {
     fun `pay throws if insufficient balance`() {
         every { transactionRepository.existsById(transactionId) } returns false
         every { pendingTransactionRepository.findById(transactionId) } returns Optional.of(pendingTransaction)
-        every { walletService.getUserBalance(userId) } returns 5.0
+        every { balanceService.getUserBalance(userId) } returns 5.0
         val ex = assertThrows(IllegalArgumentException::class.java) {
             paymentService.pay(userId, transactionId)
         }
@@ -114,7 +114,7 @@ class PaymentServiceTest {
     fun `pay uses existing block if not full`() {
         every { transactionRepository.existsById(transactionId) } returns false
         every { pendingTransactionRepository.findById(transactionId) } returns Optional.of(pendingTransaction)
-        every { walletService.getUserBalance(userId) } returns 100.0
+        every { balanceService.getUserBalance(userId) } returns 100.0
         every { blockService.getCurrentBlock() } returns block
         every { transactionRepository.save(any()) } returns transaction
         every { pendingTransactionRepository.deleteById(transactionId) } just Runs
@@ -128,7 +128,7 @@ class PaymentServiceTest {
     fun `pay creates new block if last block is full`() {
         every { transactionRepository.existsById(transactionId) } returns false
         every { pendingTransactionRepository.findById(transactionId) } returns Optional.of(pendingTransaction)
-        every { walletService.getUserBalance(userId) } returns 100.0
+        every { balanceService.getUserBalance(userId) } returns 100.0
         every { blockService.getCurrentBlock() } returns block.copy(id = UUID.randomUUID())
         every { transactionRepository.save(any()) } returns transaction
         every { pendingTransactionRepository.deleteById(transactionId) } just Runs
@@ -143,7 +143,7 @@ class PaymentServiceTest {
     fun `pay creates new block if no previous block exists`() {
         every { transactionRepository.existsById(transactionId) } returns false
         every { pendingTransactionRepository.findById(transactionId) } returns Optional.of(pendingTransaction)
-        every { walletService.getUserBalance(userId) } returns 100.0
+        every { balanceService.getUserBalance(userId) } returns 100.0
         every { blockService.getCurrentBlock() } returns block
         every { transactionRepository.save(any()) } returns transaction
         every { pendingTransactionRepository.deleteById(transactionId) } just Runs
