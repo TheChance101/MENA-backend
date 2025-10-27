@@ -44,7 +44,7 @@ class DukanProductController(
         return ResponseEntity.ok(DukanProductCreationResponse(productId))
     }
 
-    @GetMapping("/{shelfId}")
+    @GetMapping
     fun getProductsByShelf(
         @RequestParam shelfId: UUID,
         @PageableDefault(size = 10, page = 0, sort = ["createdAt"], direction = Sort.Direction.DESC)
