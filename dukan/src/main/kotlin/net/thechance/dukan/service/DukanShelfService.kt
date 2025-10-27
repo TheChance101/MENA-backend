@@ -32,7 +32,7 @@ class DukanShelfService(
         )
     }
 
-    fun renameShelf(ownerId: UUID, shelfId: UUID, newTitle: String) {
+    fun updateShelf(ownerId: UUID, shelfId: UUID, newTitle: String) {
         val dukan = dukanService.getDukanByOwnerId(ownerId)
 
         if (dukanShelfRepository.existsByTitleAndDukanId(newTitle, dukan.id)) {

@@ -34,12 +34,12 @@ class DukanShelfController(
     }
 
     @PutMapping("/{shelfId}")
-    fun renameShelf(
+    fun updateShelf(
         @Valid @RequestBody requestBody: DukanShelfTitleRequest,
         @PathVariable shelfId: UUID,
         @AuthenticationPrincipal userId: UUID
     ):ResponseEntity<Unit>{
-        dukanShelfService.renameShelf(ownerId = userId,shelfId = shelfId, newTitle = requestBody.title)
+        dukanShelfService.updateShelf(ownerId = userId,shelfId = shelfId, newTitle = requestBody.title)
         return ResponseEntity.noContent().build()
     }
 
