@@ -3,6 +3,7 @@ package net.thechance.faith.api.controller.exceptionhandler
 import net.thechance.faith.api.dto.error.ApiErrorResponse
 import net.thechance.faith.exception.AyahBookmarkNotFoundException
 import net.thechance.faith.exception.FailedToGetPrayerTimesException
+import net.thechance.faith.exception.InvalidDateFormatException
 import org.slf4j.LoggerFactory
 import org.springframework.http.HttpStatus
 import org.springframework.http.ResponseEntity
@@ -29,6 +30,15 @@ class FaithExceptionHandler {
             message = "failed to get prayer times",
             exception = exception,
             status = HttpStatus.SERVICE_UNAVAILABLE,
+        )
+    }
+
+    @ExceptionHandler(InvalidDateFormatException::class)
+    fun onInvalidDateFormatError(exception: InvalidDateFormatException): ResponseEntity<ApiErrorResponse> {
+        return createErrorResponse(
+            message = "Invalid date format.",
+            exception = exception,
+            status = HttpStatus.BAD_REQUEST,
         )
     }
 

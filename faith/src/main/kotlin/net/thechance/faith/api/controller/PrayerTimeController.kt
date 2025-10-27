@@ -2,6 +2,7 @@ package net.thechance.faith.api.controller
 
 import net.thechance.faith.api.dto.prayertime.DayPrayerTimingsResponse
 import net.thechance.faith.api.dto.prayertime.toResponse
+import net.thechance.faith.exception.InvalidDateFormatException
 import net.thechance.faith.service.PrayerService
 import org.springframework.http.ResponseEntity
 import org.springframework.web.bind.annotation.*
@@ -29,5 +30,5 @@ class PrayerTimeController(
 
     private fun String.toLocalDate(): LocalDate = runCatching {
         LocalDate.parse(this)
-    }.getOrDefault(LocalDate.of(1970, 1, 1))
+    }.getOrElse { throw InvalidDateFormatException() }
 }
