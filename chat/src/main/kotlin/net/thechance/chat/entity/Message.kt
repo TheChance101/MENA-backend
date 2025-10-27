@@ -17,13 +17,9 @@ data class Message(
     val sentAt: Instant = Instant.now(),
     @Column(nullable = false)
     val isRead: Boolean = false,
+    @Column(name = "image_url", nullable = true)
+    val imageUrl: String? = null,
 
-    @ElementCollection(targetClass = String::class, fetch = FetchType.EAGER)
-    @CollectionTable(name = "message_images", schema = "chat", joinColumns = [JoinColumn(name = "message_id")])
-    @Column(name = "url", nullable = false)
-    val images: List<String> = emptyList(),
-
-    @ManyToOne(optional = false)
-    @JoinColumn(name = "chat_id", referencedColumnName = "id", nullable = false)
-    val chat: Chat
+    @Column(name = "chat_id", columnDefinition = "uuid", nullable = false, updatable = false)
+    val chatId: UUID
 )

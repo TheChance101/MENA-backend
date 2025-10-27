@@ -6,15 +6,13 @@ import java.util.*
 
 data class MessageImageRequest(
     val chatId: UUID,
-    val image: MultipartFile,
-    val messageId: UUID?
+    val image: MultipartFile
 )
 
 fun MessageImageRequest.toRequestArgs(senderId: UUID): MessageImageRequestArgs {
     return MessageImageRequestArgs(
         chatId = this.chatId,
         senderId = senderId,
-        image = this.image,
-        messageId = this.messageId
+        image = this.image
     )
 }
