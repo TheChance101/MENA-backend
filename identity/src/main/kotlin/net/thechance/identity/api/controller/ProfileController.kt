@@ -2,7 +2,6 @@ package net.thechance.identity.api.controller
 
 import jakarta.validation.Valid
 import net.thechance.identity.api.dto.UpdateProfileRequest
-import net.thechance.identity.api.dto.DeleteImageResponse
 import net.thechance.identity.api.dto.ProfileResponse
 import net.thechance.identity.api.dto.UpdateImageResponse
 import net.thechance.identity.mapper.toResponse
@@ -50,10 +49,9 @@ class ProfileController(
     }
 
     @DeleteMapping("/image")
-    fun deleteUserImage(@AuthenticationPrincipal userId: UUID): ResponseEntity<DeleteImageResponse> {
+    fun deleteUserImage(@AuthenticationPrincipal userId: UUID): ResponseEntity<Unit> {
         userService.deleteUserImage(userId)
-        val response = DeleteImageResponse("Image deleted successfully")
-        return ResponseEntity.ok(response)
+        return ResponseEntity.ok().build()
     }
 
     private fun UpdateProfileRequest.toServiceModel(id: UUID) = UserServiceModel(
