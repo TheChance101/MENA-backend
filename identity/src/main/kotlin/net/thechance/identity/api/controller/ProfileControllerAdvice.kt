@@ -30,7 +30,7 @@ class ProfileControllerAdvice {
         logger.error("Invalid image: ${exception.message}", exception)
         return ResponseEntity
             .status(HttpStatus.BAD_REQUEST)
-            .body(ErrorResponse("Image extesion ${exception.extension} is not supported"))
+            .body(ErrorResponse("Image extension ${exception.extension} is not supported"))
     }
 
     @ExceptionHandler(UnknownErrorException::class)

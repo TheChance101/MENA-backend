@@ -100,7 +100,7 @@ class AddressService(
     ): Address {
         var isActive = existingAddress.isActive
         if (addressToUpdate.isActive == true && !existingAddress.isActive) {
-            isActive = addressToUpdate.isActive
+            isActive = true
         }
         return existingAddress.copy(
             latitude = addressToUpdate.latitude ?: existingAddress.latitude,

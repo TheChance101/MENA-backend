@@ -1,8 +1,11 @@
 package net.thechance.identity.api.dto
 
 data class ProfileResponse(
-	val username: String,
-	val firstName: String,
-	val lastName: String,
-	val profileImageUrl: String?
+    val id: String,
+    val username: String,
+    val firstName: String,
+    val lastName: String,
+    val imageUrl: String?,
+    val birthDate: String,
+    val gender: Int,
 )
