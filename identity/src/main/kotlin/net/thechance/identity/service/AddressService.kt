@@ -67,6 +67,10 @@ class AddressService(
         return addressRepository.findByIdAndUserId(addressId, userId) ?: throw AddressNotFoundException()
     }
 
+    fun getActiveAddress(userId: UUID): Address {
+        return addressRepository.findByIsActiveAndUserId(true, userId) ?: throw NoActiveAddressException()
+    }
+
     private fun createAddress(user: User, addressToAdd: CreateAddressRequest, isActive: Boolean = false): Address {
         return Address(
             user = user,
