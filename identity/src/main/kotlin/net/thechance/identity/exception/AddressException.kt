@@ -8,3 +8,4 @@ class AddressNotUpdatedException(message: String = "Address Not Updated"): Addre
 class AddressNotDeletedException(message: String = "Address Not Deleted"): AddressException(message)
 class AtLeastAddressValueNeededException(message: String = "At least one value needed to update"): AddressException(message)
 class AddressCanNotBeUpdatedException(message: String = "Address Can Not Be Updated"): AddressException(message)
+class NoActiveAddressException(message: String = "No active address"): AddressException(message)
