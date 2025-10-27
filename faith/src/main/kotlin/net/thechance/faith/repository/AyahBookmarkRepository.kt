@@ -8,6 +8,5 @@ import java.util.*
 
 interface AyahBookmarkRepository : JpaRepository<AyahBookmark, Int> {
     fun findByUserId(ownerId: UUID, pageable: Pageable): Page<AyahBookmark>
-    fun existsByUserIdAndId(userId: UUID, id: Int): Boolean
-
+    fun deleteByUserIdAndId(userId: UUID, id: Int): Int
 }

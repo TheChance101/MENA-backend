@@ -60,8 +60,8 @@ class DukanProductController(
 
     @GetMapping("/{productId}")
     fun getProductById(@PathVariable("productId") productId: UUID): ResponseEntity<DukanProductResponse> {
-        val product = dukanProductService.getProductById(productId)
-        return ResponseEntity.ok(product.toProductResponse())
+        val productResponse = dukanProductService.getProductById(productId).toProductResponse()
+        return ResponseEntity.ok(productResponse)
     }
 
     @PutMapping("/{productId}")

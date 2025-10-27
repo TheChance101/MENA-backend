@@ -1,6 +1,5 @@
 package net.thechance.chat.service
 
-import jakarta.persistence.EntityManager
 import net.thechance.chat.entity.*
 import net.thechance.chat.repository.ChatRepository
 import net.thechance.chat.repository.MessageRepository
@@ -22,8 +21,7 @@ class ChatService(
     private val chatRepository: ChatRepository,
     private val contactUserService: ContactUserService,
     private val attachmentStorageService: AttachmentStorageService,
-    private val contactService: ContactService,
-    private val entityManager: EntityManager
+    private val contactService: ContactService
 ) {
     @Transactional
     fun getOrCreateConversationByParticipants(userId: UUID, receiverId: UUID): Chat {
@@ -40,35 +38,30 @@ class ChatService(
 
     @Transactional
     fun saveMessage(args: MessageRequestArgs): Message {
-        args.messageId?.let { messageId ->
-            messageRepository.findById(messageId).orElse(null)?.let { return it }
-        }
-        val chat = entityManager.getReference(Chat::class.java, args.chatId)
-        val message = Message(
-            id = UUID.randomUUID(),
-            senderId = args.senderId,
-            chat = chat,
-            text = args.text,
-            sentAt = Instant.now(),
+        return messageRepository.save(
+            Message(
+                senderId = args.senderId,
+                chatId = args.chatId,
+                text = args.text,
+            )
         )
-
-        return messageRepository.save(message)
     }
 
     @Transactional
     fun saveMessageImage(args: MessageImageRequestArgs): Message {
-        val message = saveMessage(MessageRequestArgs(args.chatId, args.senderId, null, args.messageId))
         val imageUrl = attachmentStorageService.uploadImage(
             file = args.image,
-            fileName = args.image.originalFilename ?: "${message.id}-Untitled",
+            fileName = args.image.originalFilename ?: "${Instant.now()}-Untitled",
             folderName = FOLDER_NAME
         )
-        val updatedMessage = message.copy(
-            images = message.images.toMutableList().apply {
-                add(imageUrl)
-            }
+
+        return messageRepository.save(
+            Message(
+                senderId = args.senderId,
+                chatId = args.chatId,
+                imageUrl = imageUrl
+            )
         )
-        return messageRepository.save(updatedMessage)
     }
 
     fun getAllChatMessages(chatId: UUID, pageable: Pageable) =
@@ -90,7 +83,7 @@ class ChatService(
             chat.toSummary(
                 userId,
                 otherUser,
-                lastMessages.firstOrNull { it.chat.id == chat.id },
+                lastMessages.firstOrNull { it.chatId == chat.id },
                 unreadCounts.firstOrNull { it.chatId == chat.id }?.unreadCount ?: 0
             )
         }

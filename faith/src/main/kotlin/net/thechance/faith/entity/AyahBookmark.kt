@@ -6,7 +6,7 @@ import java.time.Instant
 import java.util.*
 
 @Entity
-@Table(name = "ayah_bookmark", schema = "faith")
+@Table(name = "ayah_bookmarks", schema = "faith")
 data class AyahBookmark(
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
