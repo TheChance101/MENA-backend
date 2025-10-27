@@ -1,5 +1,6 @@
 package net.thechance.trends.repository
 
+import jakarta.persistence.QueryHint
 import net.thechance.trends.entity.Trend
 import net.thechance.trends.models.TrendUrls
 import net.thechance.trends.models.TrendWithLikeStatus
@@ -7,6 +8,7 @@ import org.springframework.data.domain.Page
 import org.springframework.data.domain.Pageable
 import org.springframework.data.jpa.repository.JpaRepository
 import org.springframework.data.jpa.repository.Query
+import org.springframework.data.jpa.repository.QueryHints
 import java.util.*
 
 interface TrendsRepository : JpaRepository<Trend, UUID> {
@@ -68,35 +70,39 @@ interface TrendsRepository : JpaRepository<Trend, UUID> {
 
     @Query(
         """
-        SELECT DISTINCT t AS trend, 
-               CASE WHEN tl IS NOT NULL THEN true ELSE false END AS isLiked
-        FROM Trend t
-        JOIN FETCH t.categories tc
-        LEFT JOIN TrendLike tl ON tl.trendId = t.id AND tl.userId = :userId
-        WHERE t.isPublished = true
-        AND tc.id IN (
+    SELECT DISTINCT t AS trend, 
+           CASE WHEN tl IS NOT NULL THEN true ELSE false END AS isLiked
+    FROM Trend t
+    LEFT JOIN TrendLike tl ON tl.trendId = t.id AND tl.userId = :userId
+    WHERE t.isPublished = true
+    AND EXISTS (
+        SELECT 1 FROM t.categories tc
+        WHERE tc.id IN (
             SELECT uc.id FROM TrendUser u
             JOIN u.categories uc
             WHERE u.userId = :userId
         )
-        AND (:trendId IS NULL OR t.createdAt <= (
-            SELECT t2.createdAt FROM Trend t2 WHERE t2.id = :trendId
-        ))
-        """,
+    )
+    AND (:trendId IS NULL OR t.createdAt <= (
+        SELECT t2.createdAt FROM Trend t2 WHERE t2.id = :trendId
+    ))
+    """,
         countQuery = """
-        SELECT COUNT(DISTINCT t.id)
-        FROM Trend t
-        JOIN t.categories tc
-        WHERE t.isPublished = true
-        AND tc.id IN (
+    SELECT COUNT(DISTINCT t.id)
+    FROM Trend t
+    WHERE t.isPublished = true
+    AND EXISTS (
+        SELECT 1 FROM t.categories tc
+        WHERE tc.id IN (
             SELECT uc.id FROM TrendUser u
             JOIN u.categories uc
             WHERE u.userId = :userId
         )
-        AND (:trendId IS NULL OR t.createdAt <= (
-            SELECT t2.createdAt FROM Trend t2 WHERE t2.id = :trendId
-        ))
-        """
+    )
+    AND (:trendId IS NULL OR t.createdAt <= (
+        SELECT t2.createdAt FROM Trend t2 WHERE t2.id = :trendId
+    ))
+    """
     )
     fun getTrendFeedForUser(
         userId: UUID,
