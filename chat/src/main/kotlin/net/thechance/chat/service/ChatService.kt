@@ -54,7 +54,7 @@ class ChatService(
         val imageUrl = attachmentStorageService.uploadImage(
             file = args.image,
             fileName = args.image.originalFilename ?: "${Instant.now()}-Untitled",
-            folderName = FOLDER_NAME
+            folderName = args.chatId.toString()
         )
 
         return messageRepository.save(
@@ -93,7 +93,7 @@ class ChatService(
         }
         return chatsSummaries
     }
-
+    @Transactional
     fun getUserChatSummaryById(chatId: UUID, userId: UUID): ChatSummary {
         val chat =
             chatRepository.findByIdOrNull(chatId) ?: throw NotFoundException("no chat was found with id: $chatId")
@@ -129,6 +129,33 @@ class ChatService(
         return chat.users.map { it.id }
     }
 
+    fun deleteChatId(chatId: UUID){
+        val currentChat = chatRepository.findByIdOrNull(chatId) ?: throw NotFoundException("no chat found with this id $chatId")
+        try {
+            deleteImageFolderOfChat(currentChat)
+            deleteAllChatData(currentChat)
+        }catch (e: Exception){
+            throw e
+        }
+    }
+
+    private fun deleteImageFolderOfChat(chat: Chat){
+        try {
+            attachmentStorageService.deleteFolder(chat.id.toString())
+        }catch (e: Exception){
+            chatRepository.save(chat.setCleanUpStatus(CleanUpStatus.S3_DELETED_FAILED))
+            throw e
+        }
+    }
+@Transactional
+    private fun deleteAllChatData(chat: Chat){
+        try {
+            chatRepository.deleteChatById(chat.id)
+        }catch (e: Exception){
+            chatRepository.save(chat.setCleanUpStatus(CleanUpStatus.CLEANUP_FAILED))
+            throw e
+        }
+    }
     private fun getChatName(contact: Contact?, user: ContactUser?): String {
         return contact?.let { "${it.firstName} ${it.lastName}" }
             ?: user?.let { "${it.firstName} ${it.lastName}" }.orEmpty()
@@ -136,6 +163,6 @@ class ChatService(
 
 
     companion object {
-        private const val FOLDER_NAME = "chat_attachments"
+        //private const val FOLDER_NAME = "chat_attachments"
     }
 }
