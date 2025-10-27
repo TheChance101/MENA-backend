@@ -57,6 +57,6 @@ class BlockService(
     }
 
     private companion object {
-        const val TRANSACTION_COUNT_LIMIT_PER_BLOCK = 15
+        const val TRANSACTION_COUNT_LIMIT_PER_BLOCK = 100
     }
 }
