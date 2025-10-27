@@ -40,11 +40,9 @@ class ChatService(
     fun saveMessage(args: MessageRequestArgs): Message {
         return messageRepository.save(
             Message(
-                id = UUID.randomUUID(),
                 senderId = args.senderId,
                 chatId = args.chatId,
                 text = args.text,
-                sentAt = Instant.now(),
             )
         )
     }
@@ -59,10 +57,8 @@ class ChatService(
 
         return messageRepository.save(
             Message(
-                id = UUID.randomUUID(),
                 senderId = args.senderId,
                 chatId = args.chatId,
-                sentAt = Instant.now(),
                 imageUrl = imageUrl
             )
         )
