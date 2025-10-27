@@ -1,8 +1,10 @@
-package net.thechance.wallet.entity
+package net.thechance.wallet.service.model.output
 
+import net.thechance.wallet.entity.PendingTransaction
+import net.thechance.wallet.entity.Transaction
 import net.thechance.wallet.entity.Transaction.Status
 import net.thechance.wallet.entity.Transaction.Type
-import net.thechance.wallet.entity.user.WalletUser
+import net.thechance.wallet.entity.WalletUser
 import java.math.BigDecimal
 import java.time.LocalDateTime
 import java.util.*

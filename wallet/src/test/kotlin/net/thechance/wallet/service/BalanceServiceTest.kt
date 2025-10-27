@@ -5,19 +5,18 @@ import io.mockk.every
 import io.mockk.mockk
 import net.thechance.wallet.repository.TransactionRepository
 import org.junit.Test
-import java.math.BigDecimal
 import java.util.*
 
-class WalletServiceTest {
+class BalanceServiceTest {
     private val transactionRepository = mockk<TransactionRepository>()
-    private val walletService = WalletService(transactionRepository = transactionRepository)
+    private val balanceService = BalanceService(transactionRepository = transactionRepository)
 
     @Test
     fun `getUserBalance should return total user balance when it is called`() {
         every { transactionRepository.sumAmountBySenderId(USER_ID) } returns SENT
         every { transactionRepository.sumAmountByReceiverId(USER_ID) } returns RECEIVED
 
-        val result = walletService.getUserBalance(USER_ID)
+        val result = balanceService.getUserBalance(USER_ID)
 
         assertThat(result).isEqualTo(EXPECTED_BALANCE)
     }
@@ -27,7 +26,7 @@ class WalletServiceTest {
         every { transactionRepository.sumAmountBySenderId(USER_ID) } returns null
         every { transactionRepository.sumAmountByReceiverId(USER_ID) } returns null
 
-        val result = walletService.getUserBalance(USER_ID)
+        val result = balanceService.getUserBalance(USER_ID)
 
         assertThat(result).isEqualTo(0.0)
     }

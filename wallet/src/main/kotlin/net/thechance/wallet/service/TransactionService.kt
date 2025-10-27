@@ -1,11 +1,18 @@
 package net.thechance.wallet.service
 
 import jakarta.persistence.EntityNotFoundException
-import net.thechance.wallet.entity.*
+import net.thechance.wallet.entity.PendingTransaction
+import net.thechance.wallet.entity.Transaction
 import net.thechance.wallet.repository.PendingTransactionRepository
 import net.thechance.wallet.repository.TransactionRepository
 import net.thechance.wallet.repository.WalletUserRepository
-import net.thechance.wallet.service.helper.*
+import net.thechance.wallet.service.model.input.InitiateTransactionParams
+import net.thechance.wallet.service.model.input.TransactionFilterParams
+import net.thechance.wallet.service.model.input.toPendingTransaction
+import net.thechance.wallet.service.model.output.TransactionDetailsModel
+import net.thechance.wallet.service.model.output.toTransactionDetailsModel
+import net.thechance.wallet.service.utils.atEndOfDay
+import net.thechance.wallet.service.utils.orNow
 import org.springframework.data.domain.Page
 import org.springframework.data.domain.Pageable
 import org.springframework.data.repository.findByIdOrNull
@@ -26,12 +33,10 @@ class TransactionService(
         pageable: Pageable,
     ): Page<Transaction> {
 
-        val startDate =
-            transactionFilterParams.startDate?.atStartOfDay()
-                ?: getUserFirstTransactionDate(currentUserId = currentUserId)
-                ?: LocalDateTime.now()
+        val startDate = transactionFilterParams.startDate?.atStartOfDay()
+                ?: getUserFirstTransactionDate(currentUserId = currentUserId).orNow()
 
-        val endDate = transactionFilterParams.endDate?.atTime(23, 59, 59, 59) ?: LocalDateTime.now()
+        val endDate = transactionFilterParams.endDate?.atEndOfDay().orNow()
 
         return transactionRepository.findFilteredTransactions(
             status = transactionFilterParams.status,

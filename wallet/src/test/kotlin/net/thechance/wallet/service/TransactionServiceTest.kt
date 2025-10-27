@@ -5,16 +5,16 @@ import io.mockk.every
 import io.mockk.mockk
 import jakarta.persistence.EntityNotFoundException
 import net.thechance.wallet.entity.Transaction
-import net.thechance.wallet.entity.toTransactionDetailsModel
-import net.thechance.wallet.entity.user.WalletUser
+import net.thechance.wallet.entity.WalletUser
 import net.thechance.wallet.repository.PendingTransactionRepository
 import net.thechance.wallet.repository.TransactionRepository
+import net.thechance.wallet.service.model.output.toTransactionDetailsModel
+import org.junit.Assert.assertThrows
 import org.junit.Test
+import org.springframework.data.repository.findByIdOrNull
 import java.math.BigDecimal
 import java.time.LocalDateTime
-import java.util.UUID
-import org.junit.Assert.assertThrows
-import org.springframework.data.repository.findByIdOrNull
+import java.util.*
 
 class TransactionServiceTest {
 
@@ -92,8 +92,8 @@ class TransactionServiceTest {
 
         val FAKE_TRANSACTION = Transaction(
             id = TRANSACTION_ID,
-            sender = WalletUser(userId = USER_ID, userName = "user", firstName = "First", lastName = "Last", imageUrl = null),
-            receiver = WalletUser(userId = OTHER_USER_ID, userName = "otherUser", firstName = "Other", lastName = "User", imageUrl = null),
+            sender = WalletUser(userId = USER_ID, firstName = "First", lastName = "Last", imageUrl = null),
+            receiver = WalletUser(userId = OTHER_USER_ID, firstName = "Other", lastName = "User", imageUrl = null),
             amount = BigDecimal.TEN,
             createdAt = LocalDateTime.now().minusDays(5),
             status = Transaction.Status.SUCCESS,

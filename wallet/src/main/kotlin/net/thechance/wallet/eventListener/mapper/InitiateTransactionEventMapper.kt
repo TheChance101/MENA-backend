@@ -1,11 +1,12 @@
-package net.thechance.wallet.eventListener
+package net.thechance.wallet.eventListener.mapper
 
 import net.thechance.events.wallet.InitiateTransactionEvent
-import net.thechance.wallet.entity.InitiateTransactionParams
 import net.thechance.wallet.entity.Transaction
+import net.thechance.wallet.service.model.input.InitiateTransactionParams
 
 fun InitiateTransactionEvent.toInitiateTransactionParams(): InitiateTransactionParams {
     return InitiateTransactionParams(
+        transactionId = transactionId,
         type = type.toTransactionType(),
         senderId = senderId,
         receiverId = receiverId,
