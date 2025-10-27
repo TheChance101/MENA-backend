@@ -2,8 +2,10 @@ package net.thechance.chat.api.controller
 
 import com.google.common.truth.Truth.assertThat
 import io.mockk.every
+import io.mockk.just
 import io.mockk.justRun
 import io.mockk.mockk
+import io.mockk.runs
 import io.mockk.verify
 import net.thechance.chat.api.controller.ChatController.Companion.PRIVATE_MESSAGES
 import net.thechance.chat.api.dto.*
@@ -38,7 +40,6 @@ class ChatControllerTest {
         ChatController(
             messagingTemplate,
             chatService,
-            contactService,
         )
     }
 
@@ -58,6 +59,7 @@ class ChatControllerTest {
         )
 
         every { chatService.saveMessage(any()) } returns savedMessage
+        every { chatService.getChatUsersIds(chatId) } returns listOf(userId)
         justRun { messagingTemplate.convertAndSendToUser(any(), any(), any()) }
 
         controller.sendPrivateMessage(dto, principal)
@@ -86,6 +88,7 @@ class ChatControllerTest {
 
         every { chatService.saveMessageImage(any()) } returns savedMessage
         every { chatService.saveMessage(any()) } returns savedMessage
+        every { chatService.getChatUsersIds(chatId) } returns listOf(userId)
         justRun { messagingTemplate.convertAndSendToUser(any(), any(), any()) }
 
         val messageImageArgs = MessageImageRequest(chatId, image)
@@ -97,7 +100,7 @@ class ChatControllerTest {
     }
 
     @Test
-    fun `getOrCreateConversation should return conversation`() {
+    fun `getChatByUserIds should return conversation`() {
         val userId = UUID.randomUUID()
         val receiverId = UUID.randomUUID()
         val chatId = UUID.randomUUID()
@@ -117,9 +120,9 @@ class ChatControllerTest {
                 ContactUser(id = receiverId, firstName = "User2", lastName = "Test", phoneNumber = "777777777")
             )
         )
-        every { chatService.getOrCreateConversationByParticipants(userId, receiverId) } returns chat
+        every { chatService.getChatByUserIds(userId, receiverId) } returns chatModel
 
-        val response = controller.getOrCreateConversation(userId, receiverId)
+        val response = controller.getChatByUserIds(userId, receiverId)
 
         assertThat(response.statusCode).isEqualTo(HttpStatus.OK)
         assertThat(response.body?.id).isEqualTo(chatId)
@@ -164,12 +167,14 @@ class ChatControllerTest {
         every { principal.name } returns userId.toString()
         justRun { messagingTemplate.convertAndSendToUser(any(), any(), any()) }
         every { chatService.markChatMessagesAsRead(chatId, userId) } returns 1
+        every { chatService.getChatUsersIds(chatId) } returns listOf(userId)
+        every { chatService.markChatMessagesAsRead(chatId, userId) } just runs
 
         controller.markMessagesAsRead(markAsReadRequest, principal)
 
         verify {
             messagingTemplate.convertAndSendToUser(
-                chatId.toString(),
+                userId.toString(),
                 PRIVATE_MESSAGES,
                 MarkAsReadResponse(userId, chatId, true)
             )

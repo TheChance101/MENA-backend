@@ -15,7 +15,8 @@ import org.springframework.data.repository.findByIdOrNull
 
 class UserServiceTest {
     private val userRepository: UserRepository = mockk(relaxed = true)
-    private val userService = UserService(userRepository)
+    private val identityImageStorageService: IdentityImageStorageService = mockk(relaxed = true)
+    private val userService = UserService(userRepository, identityImageStorageService)
 
     @Test
     fun `findByPhoneNumber() should return User when user exists`() {

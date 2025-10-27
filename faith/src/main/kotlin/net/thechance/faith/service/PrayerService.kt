@@ -1,11 +1,12 @@
 package net.thechance.faith.service
 
-import net.thechance.faith.api.controller.exception.CannotGetPrayerTimesException
 import net.thechance.faith.entity.DayPrayerTimings
+import net.thechance.faith.exception.FailedToGetPrayerTimesException
 import net.thechance.faith.remote.PrayerRemoteClient
-import net.thechance.faith.remote.mapper.DayPrayerTimings
+import net.thechance.faith.remote.dto.prayertime.toDayPrayerTimings
 import net.thechance.faith.repository.PrayerRepository
-import org.springframework.scheduling.annotation.Scheduled
+import org.slf4j.Logger
+import org.slf4j.LoggerFactory
 import org.springframework.stereotype.Service
 import java.time.Instant
 import java.time.LocalDate
@@ -14,35 +15,69 @@ import java.time.ZoneId
 @Service
 class PrayerService(
     private val prayerRepository: PrayerRepository,
-    private val prayerRemoteClient: PrayerRemoteClient
+    private val prayerRemoteClient: PrayerRemoteClient,
+    private val logger: Logger = LoggerFactory.getLogger(PrayerService::class.java)
 ) {
 
-    private val today: LocalDate = LocalDate.now(ZoneId.systemDefault())
+    fun getPrayerTimes(latitude: Double, longitude: Double, date: LocalDate): DayPrayerTimings {
+        return runCatching {
 
-    fun getPrayerTimes(latitude: Double, longitude: Double, date: String): DayPrayerTimings {
-        val entity = runCatching {
-            val cached = prayerRepository.findByLatitudeAndLongitudeAndGregorianDate(
+            val localPrayerTimes: DayPrayerTimings? = getLocalPrayerTimesIfNotExpired(
+                latitude = latitude,
+                longitude = longitude,
+                date = date
+            )
+            if (localPrayerTimes != null) return localPrayerTimes
+
+            val remotePrayerTimes = prayerRemoteClient.getPrayerTimes(latitude, longitude, date).toDayPrayerTimings(
+                latitude = latitude,
+                longitude = longitude
+            )
+            safeCachePrayerTimes(remotePrayerTimes)
+
+            remotePrayerTimes
+        }.getOrElse {
+            throw FailedToGetPrayerTimesException(it.message.orEmpty())
+        }
+    }
+
+    private fun getLocalPrayerTimesIfNotExpired(
+        latitude: Double,
+        longitude: Double,
+        date: LocalDate
+    ): DayPrayerTimings? = runCatching {
+        val cachedPrayerTimes: DayPrayerTimings? =
+            prayerRepository.findByLatitudeAndLongitudeAndDateSortedByNearestLocation(
                 longitude = longitude,
                 latitude = latitude,
                 date = date
-            )
-            if (cached != null && isDateExpired(cacheDate = cached.savedIn).not()) return cached
-            val remoteData = prayerRemoteClient.getPrayerTimes(latitude, longitude, date)
-            remoteData.DayPrayerTimings(latitude, longitude)
-        }.getOrElse { throw CannotGetPrayerTimesException("Failed to get prayer times") }
+            ).firstOrNull()
+        return if (cachedPrayerTimes != null && isDateExpired(cacheDate = cachedPrayerTimes.savedIn).not())
+            cachedPrayerTimes
+        else
+            null
+    }.getOrElse {
+        logger.error("Error getting local prayer times", it)
+        null
+    }
 
-        runCatching { prayerRepository.save(entity) }
-        return entity
+    private fun safeCachePrayerTimes(prayerTimes: DayPrayerTimings) = runCatching {
+        prayerRepository.save(prayerTimes)
     }
 
     private fun isDateExpired(cacheDate: Instant): Boolean {
-        val cacheLocalDate = cacheDate.atZone(ZoneId.systemDefault()).toLocalDate()
+        val today: LocalDate = LocalDate.now(ZONE_ID)
+        val cacheLocalDate = cacheDate.atZone(ZONE_ID).toLocalDate()
         return cacheLocalDate.isBefore(today)
     }
 
-    @Scheduled(cron = "0 0 0 * * *")
     fun clearOldCache() {
-        val startOfToday = today.atStartOfDay(ZoneId.systemDefault()).toInstant()
+        val today: LocalDate = LocalDate.now(ZONE_ID)
+        val startOfToday = today.atStartOfDay(ZONE_ID).toInstant()
         prayerRepository.deleteOlderThan(startOfToday)
+    }
+
+    private companion object {
+        val ZONE_ID: ZoneId = ZoneId.systemDefault()
     }
 }

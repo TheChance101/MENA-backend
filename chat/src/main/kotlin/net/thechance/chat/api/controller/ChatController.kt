@@ -2,7 +2,6 @@ package net.thechance.chat.api.controller
 
 import net.thechance.chat.api.dto.*
 import net.thechance.chat.service.ChatService
-import net.thechance.chat.service.ContactService
 import net.thechance.chat.service.model.toRequestArgs
 import org.springframework.data.domain.Pageable
 import org.springframework.http.ResponseEntity
@@ -20,7 +19,6 @@ import java.util.*
 class ChatController(
     private val messagingTemplate: SimpMessagingTemplate,
     private val chatService: ChatService,
-    private val contactService: ContactService,
 ) {
 
     @MessageMapping("/chat.privateMessage")
@@ -44,19 +42,17 @@ class ChatController(
 
     @GetMapping
     @ResponseBody
-    fun getOrCreateConversation(
+    fun getChatByUserIds(
         @AuthenticationPrincipal userId: UUID,
         @RequestParam receiverId: UUID
     ): ResponseEntity<ChatResponse> {
-        val contact = contactService.getContactByOwnerIdAndContactUserId(userId, receiverId)
-        val chat = chatService.getOrCreateConversationByParticipants(userId, receiverId)
-            .toResponse(userId, contact)
+        val chat = chatService.getChatByUserIds(userId, receiverId).toResponse()
         return ResponseEntity.ok(chat)
     }
 
-    @GetMapping("/history")
+    @GetMapping("/{chatId}/messages")
     fun getChatHistory(
-        @RequestParam chatId: UUID,
+        @PathVariable chatId: UUID,
         @AuthenticationPrincipal userId: UUID,
         pageable: Pageable
     ): ResponseEntity<PagedResponse<MessageResponse>> {
@@ -115,7 +111,7 @@ class ChatController(
         return ResponseEntity.ok(chats.toPagedResponse())
     }
 
-    @GetMapping("/chatsSummary/{chatId}")
+    @GetMapping("/{chatId}/summary")
     fun getUserChatSummaryById(
         @AuthenticationPrincipal userId: UUID,
         @PathVariable chatId: UUID,

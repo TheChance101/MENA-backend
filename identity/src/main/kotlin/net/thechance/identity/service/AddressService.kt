@@ -67,6 +67,10 @@ class AddressService(
         return addressRepository.findByIdAndUserId(addressId, userId) ?: throw AddressNotFoundException()
     }
 
+    fun getActiveAddress(userId: UUID): Address {
+        return addressRepository.findByIsActiveAndUserId(true, userId) ?: throw NoActiveAddressException()
+    }
+
     private fun createAddress(user: User, addressToAdd: CreateAddressRequest, isActive: Boolean = false): Address {
         return Address(
             user = user,
@@ -96,7 +100,7 @@ class AddressService(
     ): Address {
         var isActive = existingAddress.isActive
         if (addressToUpdate.isActive == true && !existingAddress.isActive) {
-            isActive = addressToUpdate.isActive
+            isActive = true
         }
         return existingAddress.copy(
             latitude = addressToUpdate.latitude ?: existingAddress.latitude,
