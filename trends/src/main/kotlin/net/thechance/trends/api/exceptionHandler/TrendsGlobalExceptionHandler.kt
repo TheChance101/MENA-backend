@@ -1,5 +1,6 @@
-package net.thechance.trends.exception
+package net.thechance.trends.api.exceptionHandler
 
+import net.thechance.trends.exception.*
 import org.springframework.http.HttpStatus
 import org.springframework.http.ResponseEntity
 import org.springframework.web.bind.annotation.ExceptionHandler
@@ -8,8 +9,8 @@ import org.springframework.web.bind.annotation.RestControllerAdvice
 @RestControllerAdvice(basePackages = ["net.thechance.trends.api.controller"])
 class TrendsGlobalExceptionHandler {
 
-    @ExceptionHandler(ReelNotFoundException::class)
-    fun handleReelNotFoundException(exception: ReelNotFoundException): ResponseEntity<String> {
+    @ExceptionHandler(TrendNotFoundException::class)
+    fun handleTrendNotFoundException(exception: TrendNotFoundException): ResponseEntity<String> {
         val message = exception.localizedMessage
 
         return ResponseEntity.status(HttpStatus.NOT_FOUND).body(message)

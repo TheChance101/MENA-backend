@@ -1,11 +1,12 @@
 package net.thechance.trends.service
 
-import net.thechance.trends.api.dto.PatchMetadata
-import net.thechance.trends.entity.Category
+import net.thechance.trends.api.dto.base.PatchMetadata
+import net.thechance.trends.api.dto.category.toUserSelectedCategories
 import net.thechance.trends.entity.TrendUser
 import net.thechance.trends.exception.InvalidTrendInputException
 import net.thechance.trends.exception.TrendCategoryNotFoundException
 import net.thechance.trends.exception.TrendUserNotFoundException
+import net.thechance.trends.models.UserSelectedCategories
 import net.thechance.trends.repository.CategoryRepository
 import net.thechance.trends.repository.TrendUserRepository
 import org.springframework.stereotype.Service
@@ -18,7 +19,8 @@ import kotlin.jvm.optionals.getOrNull
 @Transactional
 class TrendUserService(
     private val trendUserRepository: TrendUserRepository,
-    private val categoryRepository: CategoryRepository
+    private val categoryRepository: CategoryRepository,
+    private val categoryService: CategoryService,
 ) {
     fun saveCategoriesToUser(userId: UUID, categoryIds: List<UUID>) {
         validateCategoriesNotEmpty(categoryIds)
@@ -33,7 +35,7 @@ class TrendUserService(
         trendUserRepository.save(updatedUser)
     }
 
-    fun patchUserCategories(
+    fun updateUserCategories(
         userId: UUID,
         categoriesToAdd: List<UUID>,
         categoriesToRemove: List<UUID>
@@ -63,12 +65,13 @@ class TrendUserService(
         return PatchMetadata(addedCount = actualAdded.size, removedCount = actualRemoved.size)
     }
 
-    fun getUserSelectedCategories(userId: UUID): Set<Category> {
-        return trendUserRepository.findById(userId).getOrNull()?.categories.orEmpty()
-    }
+    fun getUserSelectedCategories(userId: UUID): List<UserSelectedCategories> {
+        val allCategories = categoryService.getAllCategories()
+        val userCategories = trendUserRepository.findById(userId).getOrNull()?.categories.orEmpty()
 
-    fun getDoesUserHaveCategories(userId: UUID): Boolean {
-        return trendUserRepository.findById(userId).getOrNull()?.categories?.isNotEmpty() ?: false
+        return allCategories.map { category ->
+            category.toUserSelectedCategories(isSelected = category in userCategories)
+        }
     }
 
     private fun getUserOrThrow(userId: UUID) =
