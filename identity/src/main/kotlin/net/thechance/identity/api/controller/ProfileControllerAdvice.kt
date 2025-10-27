@@ -2,6 +2,7 @@ package net.thechance.identity.api.controller
 
 import net.thechance.identity.api.dto.ErrorResponse
 import net.thechance.identity.exception.InvalidImageException
+import net.thechance.identity.exception.UnauthorizedException
 import net.thechance.identity.exception.UnknownErrorException
 import net.thechance.identity.exception.UserNotFoundException
 import org.slf4j.Logger
@@ -39,5 +40,13 @@ class ProfileControllerAdvice {
         return ResponseEntity
             .status(HttpStatus.INTERNAL_SERVER_ERROR)
             .body(ErrorResponse("Internal server error"))
+    }
+
+    @ExceptionHandler(UnauthorizedException::class)
+    fun handleUnauthorizedException(exception: UnauthorizedException): ResponseEntity<ErrorResponse?> {
+        logger.error("Unauthorized: ${exception.message}", exception)
+        return ResponseEntity
+            .status(HttpStatus.UNAUTHORIZED)
+            .body(ErrorResponse(exception.message ?: "Unauthorized"))
     }
 }
