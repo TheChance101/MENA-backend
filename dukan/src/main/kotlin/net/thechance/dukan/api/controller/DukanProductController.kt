@@ -66,11 +66,11 @@ class DukanProductController(
 
     @PutMapping("/{productId}")
     fun updateProduct(
-        @AuthenticationPrincipal ownerId: UUID,
+        @AuthenticationPrincipal userId: UUID,
         @PathVariable("productId") productId: UUID,
         @Valid @RequestBody request: DukanProductUpdateRequest,
     ): DukanProductUpdateResponse {
-        val productUpdateParams = request.toProductUpdateParams(ownerId)
+        val productUpdateParams = request.toProductUpdateParams(userId)
         val productId = dukanProductService.updateProduct(productId, productUpdateParams)
 
         return DukanProductUpdateResponse(productId)
@@ -81,8 +81,8 @@ class DukanProductController(
         @AuthenticationPrincipal ownerId: UUID,
         @PathVariable productId: UUID,
         @RequestParam("file") file: MultipartFile,
-    ):String{
-        val imageUrl = dukanProductService.uploadProductImage(ownerId,productId,file)
+    ): String {
+        val imageUrl = dukanProductService.uploadProductImage(ownerId, productId, file)
         return imageUrl
     }
 }

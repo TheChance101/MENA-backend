@@ -86,7 +86,8 @@ class DukanProductService(
     }
 
     fun updateProduct(
-        productId: UUID, params: DukanProductUpdateParams
+        productId: UUID,
+        params: DukanProductUpdateParams
     ): UUID {
         val product = dukanProductRepository
             .findByIdAndDukan_OwnerId(productId, params.ownerId)
@@ -140,8 +141,7 @@ class DukanProductService(
                         throw ImageDeleteFailedException()
                     }
                 }
-        } catch (_: Exception)
-        {
+        } catch (_: Exception) {
             // TODO save failed images table and try to delete them later
             throw ImageDeleteFailedException()
         }
