@@ -8,9 +8,6 @@ import net.thechance.dukan.service.exception.ProductNameAlreadyTakenException
 import net.thechance.dukan.service.exception.ProductNotFoundException
 import net.thechance.dukan.repository.DukanProductRepository
 import net.thechance.dukan.repository.DukanShelfRepository
-import net.thechance.dukan.service.exception.ImageDeleteFailedException
-import net.thechance.dukan.service.exception.ImageUploadFailedException
-import net.thechance.dukan.service.exception.ProductUpdateFailedException
 import net.thechance.dukan.service.model.DukanProductCreationParams
 import net.thechance.dukan.service.model.DukanProductUpdateParams
 import org.springframework.data.domain.Page
@@ -58,7 +55,7 @@ class DukanProductService(
         try {
             val dukan = dukanService.getDukanByOwnerId(params.ownerId)
             val shelf = dukanShelfRepository.getReferenceById(params.shelfId)
-            existingProductByDukanIdAndName(dukan.id, params.name)
+            checkProductNameExistence(dukan.id, params.name)
             val product = dukanProductRepository.save(
                 DukanProduct(
                     name = params.name.trim(),
@@ -87,34 +84,36 @@ class DukanProductService(
 
     fun updateProduct(
         productId: UUID,
-        params: DukanProductUpdateParams
+        updateParams: DukanProductUpdateParams
     ): UUID {
         val product = dukanProductRepository
-            .findByIdAndDukan_OwnerId(productId, params.ownerId)
-            .orElseThrow {
-                ProductNotFoundException()
-            }
+            .findByIdAndDukan_OwnerId(productId, updateParams.ownerId)
+            .orElseThrow { ProductNotFoundException() }
 
-        if (product.name != params.name) {
-            existingProductByDukanIdAndName(product.dukan.id, params.name)
+        if (product.name != updateParams.name) {
+            checkProductNameExistence(product.dukan.id, updateParams.name)
         }
 
-        val shelf = dukanShelfRepository.getReferenceById(params.shelfId)
+        val shelf = dukanShelfRepository.getReferenceById(updateParams.shelfId)
 
-        deleteProductImages(product.imageUrls, params.imageUrls)
+        deleteUnusedProductImages(product.imageUrls, updateParams.imageUrls)
 
-        val updatedProductId = product.copy(
-            name = params.name.trim(),
-            price = params.price,
-            imageUrls = params.imageUrls,
-            description = params.description.trim(),
+        val updatedProduct = product.copy(
+            name = updateParams.name.trim(),
+            price = updateParams.price,
+            imageUrls = updateParams.imageUrls,
+            description = updateParams.description.trim(),
             shelf = shelf
-        ).also { dukanProductRepository.save(it) }.id
+        )
 
-        return updatedProductId
+        return dukanProductRepository.save(updatedProduct).id
     }
 
-    fun uploadProductImage(ownerId: UUID, productId: UUID, file: MultipartFile): String {
+    fun uploadProductImage(
+        ownerId: UUID,
+        productId: UUID,
+        file: MultipartFile
+    ): String {
         val product = dukanProductRepository
             .findByIdAndDukan_OwnerId(productId, ownerId)
             .orElseThrow { ProductNotFoundException() }
@@ -126,13 +125,13 @@ class DukanProductService(
         return imageUrl
     }
 
-    private fun existingProductByDukanIdAndName(dukanId: UUID, name: String) {
+    private fun checkProductNameExistence(dukanId: UUID, name: String) {
         if (dukanProductRepository.existsByDukanIdAndNameIgnoreCase(dukanId, name)) {
             throw ProductNameAlreadyTakenException()
         }
     }
 
-    private fun deleteProductImages(oldImageUrls: List<String>, updatedImageUrls: List<String>) {
+    private fun deleteUnusedProductImages(oldImageUrls: List<String>, updatedImageUrls: List<String>) {
         try {
             oldImageUrls
                 .filterNot { it in updatedImageUrls }

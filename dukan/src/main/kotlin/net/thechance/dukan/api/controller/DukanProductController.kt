@@ -78,11 +78,11 @@ class DukanProductController(
 
     @PostMapping("/{productId}/image")
     fun uploadProductImage(
-        @AuthenticationPrincipal ownerId: UUID,
+        @AuthenticationPrincipal userId: UUID,
         @PathVariable productId: UUID,
         @RequestParam("file") file: MultipartFile,
     ): String {
-        val imageUrl = dukanProductService.uploadProductImage(ownerId, productId, file)
+        val imageUrl = dukanProductService.uploadProductImage(userId, productId, file)
         return imageUrl
     }
 }
