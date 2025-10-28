@@ -42,7 +42,9 @@ class TrendsService(
                 10,
                 pageable.getSortOr(Sort.by(Sort.Direction.DESC, "createdAt"))
             ),
-        ).map { it.withOwnership(currentUserId = currentUserId) }
+        ).map {
+            generatePresignedUrlsForTrend(it).withOwnership(currentUserId)
+        }
         return body
     }
 
@@ -57,7 +59,8 @@ class TrendsService(
             pageable.getSortOr(Sort.by(Sort.Direction.DESC, "createdAt"))
         )
 
-        val trends = trendsRepository.getTrendFeedForUser(currentUserId, trendId, adjustedPageable).map { it.withOwnership(currentUserId = currentUserId) }
+        val trends = trendsRepository.getTrendFeedForUser(currentUserId, trendId, adjustedPageable)
+            .map { generatePresignedUrlsForTrend(it).withOwnership(currentUserId) }
 
         return trends
     }
@@ -137,6 +140,35 @@ class TrendsService(
     }
 
     fun getTrendOrThrow(trendId: UUID, userId: UUID): TrendWithLikeStatus {
-        return trendsRepository.findByIdAndIsPublishedWithLikeStatus(trendId = trendId, isPublished = true, userId = userId) ?: throw TrendNotFoundException()
+        return trendsRepository.findByIdAndIsPublishedWithLikeStatus(
+            trendId = trendId,
+            isPublished = true,
+            userId = userId
+        ) ?: throw TrendNotFoundException()
+    }
+
+    private fun generatePresignedUrlsForTrend(
+        trendWithLikeStatus: TrendWithLikeStatus
+    ): TrendWithLikeStatus {
+
+        runCatching {
+            val trend = trendWithLikeStatus.getTrend()
+            val signedUrls = fileStorageService.generatePresignedUrlsForTrend(
+                videoKey = trend.videoUrl,
+                thumbnailKey = trend.thumbnailUrl
+            )
+
+            val updatedTrend = trend.copy(
+                videoUrl = signedUrls.videoUrl,
+                thumbnailUrl = signedUrls.thumbnailUrl
+            )
+
+            return object : TrendWithLikeStatus {
+                override fun getTrend(): Trend = updatedTrend
+                override fun getIsLiked(): Boolean = trendWithLikeStatus.getIsLiked()
+            }
+        }.getOrElse {
+            return trendWithLikeStatus
+        }
     }
 }
