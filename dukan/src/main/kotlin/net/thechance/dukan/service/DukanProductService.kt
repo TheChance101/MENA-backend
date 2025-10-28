@@ -138,12 +138,11 @@ class DukanProductService(
                 .filterNot { it in updatedImageUrls }
                 .forEach {
                     if (imageStorageService.deleteImage(it).not()) {
-                        throw ImageDeleteFailedException()
+                        // TODO save failed images table and try to delete them later
                     }
                 }
         } catch (_: Exception) {
             // TODO save failed images table and try to delete them later
-            throw ImageDeleteFailedException()
         }
     }
 
