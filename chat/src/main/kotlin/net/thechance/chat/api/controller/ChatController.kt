@@ -134,7 +134,7 @@ class ChatController(
         @PathVariable chatId: UUID
     ): ResponseEntity<DeleteChatResponse> {
         chatService.deleteChatById(chatId)
-        return ResponseEntity.ok(DeleteChatResponse(success = true))
+        return ResponseEntity.ok(DeleteChatResponse(success = true, message = "Successfully deleted chat $chatId"))
     }
 
     companion object {
