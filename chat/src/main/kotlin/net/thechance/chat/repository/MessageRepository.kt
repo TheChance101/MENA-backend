@@ -33,4 +33,10 @@ interface MessageRepository : JpaRepository<Message, UUID> {
     )
     fun findLastMessagesForChats(@Param("chatIds") chatIds: List<UUID>): List<Message>
 
+    @Modifying
+    @Query(
+        nativeQuery = true,
+        value = "DELETE FROM chat.messages WHERE chat.messages.chat_id = :chatId"
+    )
+    fun deleteAllByChatId(chatId: UUID)
 }

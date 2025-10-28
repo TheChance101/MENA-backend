@@ -45,17 +45,19 @@ interface ChatRepository : JpaRepository<Chat, UUID> {
         @Param("chatIds") chatIds: List<UUID>
     ): List<ChatUnreadMessagesCount>
 
-    @Transactional
     @Modifying
     @Query(
         nativeQuery = true,
-        value = """
-            DELETE messages, chats from chats INNER JOIN messages ON messages.chat_id = chat.id 
-            where chat.id = :chatId
-        """
-
+        value = "DELETE FROM chat.chats WHERE chat.chats.id = :chatId"
     )
     fun deleteChatById(chatId: UUID)
+
+    @Modifying
+    @Query(
+        nativeQuery = true,
+        value = "DELETE FROM chat.chat_users WHERE chat.chat_users.chat_id = :chatId"
+    )
+    fun deleteChatUsersByChatId(chatId: UUID)
 
     fun findAllByCleanUpStatusIn(cleanUpStatus: List<CleanUpStatus>): List<Chat>
 }
