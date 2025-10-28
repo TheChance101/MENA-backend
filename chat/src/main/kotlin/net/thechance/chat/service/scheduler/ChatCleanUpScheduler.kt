@@ -26,8 +26,7 @@ class ChatCleanUpScheduler(
                 if(it.cleanUpStatus == CleanUpStatus.S3_DELETED_FAILED){
                     cleanUpImages(it.id.toString())
                 }
-                if(it.cleanUpStatus == CleanUpStatus.CLEANUP_FAILED){
-                    cleanUpChatData(it.id)                }
+                cleanUpChatData(it.id)
             }
         }catch (e: Exception){
             println("failing of chat clean up scheduler: ${e.message}")
@@ -43,7 +42,6 @@ class ChatCleanUpScheduler(
                 break
             }catch (e: Exception){
                 attempts++
-                println("Attempt $attempts failed to delete images of chat $folderName : ${e.message}")
                 Thread.sleep(1000L * attempts)
             }
         }
@@ -58,7 +56,6 @@ class ChatCleanUpScheduler(
                 break
             }catch (e: Exception){
                 attempts++
-                println("Attempt $attempts failed to delete chat $chatId : ${e.message}")
                 Thread.sleep(1000L * attempts)
             }
 
