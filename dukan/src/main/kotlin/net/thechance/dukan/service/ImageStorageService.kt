@@ -4,7 +4,6 @@ import net.thechance.dukan.service.exception.ImageUploadFailedException
 import net.thechance.dukan.service.exception.InvalidImageFormatException
 import org.springframework.boot.context.properties.ConfigurationProperties
 import org.springframework.boot.context.properties.EnableConfigurationProperties
-import org.springframework.cglib.core.CollectionUtils.bucket
 import org.springframework.stereotype.Service
 import org.springframework.web.multipart.MultipartFile
 import software.amazon.awssdk.core.sync.RequestBody
@@ -25,7 +24,6 @@ data class DukanStorageProperties(
 class ImageStorageService(
     private val dukanS3Client: S3Client,
     private val props: DukanStorageProperties,
-    private val dukanStorageProperties: DukanStorageProperties,
 ) {
     fun uploadImage(
         file: MultipartFile,
@@ -46,7 +44,7 @@ class ImageStorageService(
     }
 
     fun deleteImage(imageUrl: String): Boolean {
-        val prefix = dukanStorageProperties.cdnEndpoint
+        val prefix = props.cdnEndpoint
         if (!imageUrl.startsWith(prefix)) {
             throw Exception()
         }
@@ -54,7 +52,7 @@ class ImageStorageService(
 
         return dukanS3Client.deleteObject(
             DeleteObjectRequest.builder()
-                .bucket(dukanStorageProperties.bucket)
+                .bucket(props.bucket)
                 .key(key).build()
         ).sdkHttpResponse().isSuccessful
     }
