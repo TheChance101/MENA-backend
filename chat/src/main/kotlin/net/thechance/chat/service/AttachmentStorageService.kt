@@ -1,5 +1,6 @@
 package net.thechance.chat.service
 
+import net.thechance.chat.service.exception.DeleteImagesFolderException
 import net.thechance.chat.service.exception.ImageUploadFailedException
 import net.thechance.chat.service.exception.InvalidImageFormatException
 import org.springframework.boot.context.properties.ConfigurationProperties
@@ -38,7 +39,7 @@ class AttachmentStorageService(
         val extension = allowedMimeTypes[mimeType] ?: throw InvalidImageFormatException()
         try {
             val finalFileName = "${fileName}_${LocalDateTime.now()}.$extension"
-            val key = "images/chat_attachments/$folderName/$finalFileName"
+            val key = "$CHAT_ATTACHMENTS_PATH/$folderName/$finalFileName"
             val putReq = createObjectRequest(key, mimeType)
             menaS3Client.putObject(putReq, RequestBody.fromBytes(file.bytes))
             return "${props.cdnEndpoint}/$key"
@@ -49,12 +50,13 @@ class AttachmentStorageService(
 
     fun deleteFolder(folderName: String) {
         try {
+            val folderPath = "$CHAT_ATTACHMENTS_PATH/$folderName"
             var continuationToken: String? = null
 
             do {
                 val listResponse = menaS3Client.listObjectsV2 { builder ->
                     builder.bucket(props.bucket)
-                        .prefix(folderName)
+                        .prefix(folderPath)
                         .continuationToken(continuationToken)
                 }
 
@@ -71,7 +73,7 @@ class AttachmentStorageService(
                 continuationToken = listResponse.nextContinuationToken()
             } while (continuationToken != null)
         } catch (e: Exception) {
-            throw e
+            throw DeleteImagesFolderException("error clean up image: ${e.message}")
         }
 
 
@@ -118,5 +120,6 @@ class AttachmentStorageService(
             "image/webp" to "webp",
         )
         const val MAX_RETRIES = 3
+        const val CHAT_ATTACHMENTS_PATH = "images/chat_attachments"
     }
 }
