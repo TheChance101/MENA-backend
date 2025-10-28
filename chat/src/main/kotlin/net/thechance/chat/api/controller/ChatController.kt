@@ -129,6 +129,14 @@ class ChatController(
         return ResponseEntity.ok(chat.toResponse())
     }
 
+    @DeleteMapping("/delete/{chatId}")
+    fun deleteChatById(
+        @PathVariable chatId: UUID
+    ): ResponseEntity<DeleteChatResponse> {
+        chatService.deleteChatById(chatId)
+        return ResponseEntity.ok(DeleteChatResponse(success = true))
+    }
+
     companion object {
         const val PRIVATE_MESSAGES = "/private/messages"
     }
