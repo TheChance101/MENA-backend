@@ -3,6 +3,7 @@ package net.thechance.chat.service
 import net.thechance.chat.entity.*
 import net.thechance.chat.repository.ChatRepository
 import net.thechance.chat.repository.MessageRepository
+import net.thechance.chat.service.exception.DeleteChatException
 import net.thechance.chat.service.exception.NotFoundException
 import net.thechance.chat.service.model.ChatModel
 import net.thechance.chat.service.model.ChatSummary
@@ -142,19 +143,17 @@ class ChatService(
         return chat.users.map { it.id }
     }
 
-    fun deleteChatId(chatId: UUID){
+    @Transactional
+    fun deleteChatById(chatId: UUID){
         val currentChat = chatRepository.findByIdOrNull(chatId) ?: throw NotFoundException("no chat found with this id $chatId")
-        try {
-            deleteImageFolderOfChat(currentChat)
-            deleteAllChatData(currentChat)
-        }catch (e: Exception){
-            throw e
-        }
+        deleteImageFolderOfChat(currentChat)
+        deleteAllChatData(currentChat)
     }
 
     private fun deleteImageFolderOfChat(chat: Chat){
         try {
             attachmentStorageService.deleteFolder(chat.id.toString())
+            println("successfully deleting images folder")
         }catch (e: Exception){
             chatRepository.save(chat.setCleanUpStatus(CleanUpStatus.S3_DELETED_FAILED))
             throw e
@@ -163,10 +162,12 @@ class ChatService(
 @Transactional
     private fun deleteAllChatData(chat: Chat){
         try {
+            messageRepository.deleteAllByChatId(chat.id)
+            chatRepository.deleteChatUsersByChatId(chat.id)
             chatRepository.deleteChatById(chat.id)
         }catch (e: Exception){
             chatRepository.save(chat.setCleanUpStatus(CleanUpStatus.CLEANUP_FAILED))
-            throw e
+            throw DeleteChatException("Error clean up chat data: ${e.message}")
         }
     }
     private fun getChatName(contact: Contact?, user: ContactUser?): String {
@@ -175,7 +176,4 @@ class ChatService(
     }
 
 
-    companion object {
-        //private const val FOLDER_NAME = "chat_attachments"
-    }
 }

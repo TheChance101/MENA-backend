@@ -1,6 +1,8 @@
 package net.thechance.chat.api.controller
 
 import net.thechance.chat.api.dto.ErrorResponse
+import net.thechance.chat.service.exception.DeleteChatException
+import net.thechance.chat.service.exception.DeleteImagesFolderException
 import net.thechance.chat.service.exception.ErrorCodes
 import net.thechance.chat.service.exception.ImageUploadFailedException
 import net.thechance.chat.service.exception.InvalidImageFormatException
@@ -36,6 +38,22 @@ class ChatControllerAdvice : ResponseEntityExceptionHandler() {
     fun handleImageUploadException(e: ImageUploadFailedException): ResponseEntity<ErrorResponse>{
         val error = ErrorResponse(
             code = ErrorCodes.IMAGE_UPLOAD_FAILED,
+            message = e.message
+        )
+        return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(error)
+    }
+
+    @ExceptionHandler(DeleteImagesFolderException::class)
+    fun handleDeleteImagesFolderException(e: DeleteImagesFolderException): ResponseEntity<ErrorResponse>{
+        val error = ErrorResponse(
+            message = e.message
+        )
+        return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(error)
+    }
+
+    @ExceptionHandler(DeleteChatException::class)
+    fun handleDeleteChatException(e: DeleteChatException): ResponseEntity<ErrorResponse>{
+        val error = ErrorResponse(
             message = e.message
         )
         return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(error)
