@@ -43,7 +43,12 @@ class ProfileController(
         @AuthenticationPrincipal userId: UUID,
         @RequestBody @Valid request: ChangePasswordRequest
     ): ResponseEntity<GeneralResponse> {
-        changePasswordService.changePassword(userId, request)
+        changePasswordService.changePassword(
+            userId = userId,
+            currentPassword = request.currentPassword,
+            newPassword = request.newPassword,
+            confirmPassword = request.confirmPassword
+        )
         val response = GeneralResponse("Password changed successfully")
         return ResponseEntity.ok(response)
     }

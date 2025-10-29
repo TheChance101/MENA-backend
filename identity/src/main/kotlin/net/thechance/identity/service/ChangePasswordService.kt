@@ -16,19 +16,19 @@ class ChangePasswordService(
     private val userRepository: UserRepository,
     private val passwordEncoder: PasswordEncoder
 ) {
-    fun changePassword(userId: UUID, request: ChangePasswordRequest) {
+    fun changePassword(userId: UUID, currentPassword: String, newPassword: String, confirmPassword: String) {
         runCatching {
-            validateRequest(request)
-            findAndVerifyUser(userId, request.currentPassword)
+            validateRequest(newPassword, confirmPassword)
+            findAndVerifyUser(userId, currentPassword)
         }.map { verifiedUser ->
-            updateUserWithNewPassword(verifiedUser, request.newPassword)
+            updateUserWithNewPassword(verifiedUser, newPassword)
         }.onSuccess { updatedUser ->
             userRepository.save(updatedUser)
         }.getOrThrow()
     }
 
-    private fun validateRequest(request: ChangePasswordRequest) {
-        (request.newPassword == request.confirmPassword).takeIf { it } ?: throw PasswordMismatchException()
+    private fun validateRequest(newPassword: String, confirmPassword: String) {
+        (newPassword == confirmPassword).takeIf { it } ?: throw PasswordMismatchException()
     }
 
     private fun findAndVerifyUser(userId: UUID, currentRawPassword: String): User {
