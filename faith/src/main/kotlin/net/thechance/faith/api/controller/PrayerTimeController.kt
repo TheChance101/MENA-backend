@@ -19,27 +19,16 @@ class PrayerTimeController(
     fun getPrayerTimes(
         @PathVariable date: String,
         @RequestParam latitude: Double,
-        @RequestParam longitude: Double
+        @RequestParam longitude: Double,
+        @RequestParam(required = false, defaultValue = "false") isHijri: Boolean
     ): ResponseEntity<DayPrayerTimingsResponse> {
+        val parsedDate = if (isHijri) date.hijriDateToLocalDate() else date.toLocalDate()
         val prayerTimes = prayerService.getPrayerTimes(
             latitude = latitude,
             longitude = longitude,
-            date = date.toLocalDate()
+            date = parsedDate
         ).toResponse()
-        return ResponseEntity.ok(prayerTimes)
-    }
 
-    @GetMapping("hijri/{date}")
-    fun getPrayerTimesByHijri(
-        @PathVariable date: String,
-        @RequestParam latitude: Double,
-        @RequestParam longitude: Double
-    ): ResponseEntity<DayPrayerTimingsResponse> {
-        val prayerTimes = prayerService.getPrayerTimes(
-            latitude = latitude,
-            longitude = longitude,
-            date = date.hijriDateToLocalDate()
-        ).toResponse()
         return ResponseEntity.ok(prayerTimes)
     }
 
