@@ -34,8 +34,8 @@ class ChangePasswordService(
     private fun findAndVerifyUser(userId: UUID, currentRawPassword: String): User {
         return userRepository.findByIdOrNull(userId)
             .takeIf { it != null }
-            .also { user ->
-                passwordEncoder.matches(currentRawPassword, user?.password)
+            ?.also { user ->
+                passwordEncoder.matches(currentRawPassword, user.password)
                     .takeIf { it } ?: throw UnauthorizedException()
             }
             ?: throw UserNotFoundException("User not found")
