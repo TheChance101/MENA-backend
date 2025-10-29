@@ -22,11 +22,11 @@ class PrayerTimeController(
         @RequestParam longitude: Double,
         @RequestParam(required = false, defaultValue = "false") isHijri: Boolean
     ): ResponseEntity<DayPrayerTimingsResponse> {
-        val parsedDate = if (isHijri) date.hijriDateToLocalDate() else date.toLocalDate()
+        val localDate = if (isHijri) date.hijriDateToLocalDate() else date.toLocalDate()
         val prayerTimes = prayerService.getPrayerTimes(
             latitude = latitude,
             longitude = longitude,
-            date = parsedDate
+            date = localDate
         ).toResponse()
 
         return ResponseEntity.ok(prayerTimes)
