@@ -19,7 +19,7 @@ class AddressControllerAdvice {
 
     @ExceptionHandler(MethodArgumentNotValidException::class)
     @ResponseStatus(HttpStatus.BAD_REQUEST)
-    fun handleValidationExceptions(exception: MethodArgumentNotValidException): ResponseEntity<ErrorResponse?> {
+    fun handleValidationExceptions(exception: MethodArgumentNotValidException): ResponseEntity<ErrorResponse> {
         val errors = exception.bindingResult.fieldErrors.associate {
             it.field to it.defaultMessage
         }
@@ -30,7 +30,7 @@ class AddressControllerAdvice {
     }
 
     @ExceptionHandler(AddressNotFoundException::class)
-    fun handleAddressNotFoundException(exception: AddressNotFoundException): ResponseEntity<ErrorResponse?> {
+    fun handleAddressNotFoundException(exception: AddressNotFoundException): ResponseEntity<ErrorResponse> {
         logger.error(exception.message)
         return ResponseEntity
             .status(HttpStatus.NOT_FOUND)
@@ -38,7 +38,7 @@ class AddressControllerAdvice {
     }
 
     @ExceptionHandler(AddressCanNotBeDeletedException::class)
-    fun handleAddressCanNotBeDeletedException(exception: AddressCanNotBeDeletedException): ResponseEntity<ErrorResponse?> {
+    fun handleAddressCanNotBeDeletedException(exception: AddressCanNotBeDeletedException): ResponseEntity<ErrorResponse> {
         logger.error(exception.message)
         return ResponseEntity
             .status(HttpStatus.FORBIDDEN)
@@ -46,7 +46,7 @@ class AddressControllerAdvice {
     }
 
     @ExceptionHandler(AtLeastAddressValueNeededException::class)
-    fun handleAtLeastAddressValueNeededException(exception: AtLeastAddressValueNeededException): ResponseEntity<ErrorResponse?> {
+    fun handleAtLeastAddressValueNeededException(exception: AtLeastAddressValueNeededException): ResponseEntity<ErrorResponse> {
         logger.error(exception.message)
         return ResponseEntity
             .status(HttpStatus.BAD_REQUEST)
@@ -54,7 +54,7 @@ class AddressControllerAdvice {
     }
 
     @ExceptionHandler(AddressCanNotBeUpdatedException::class)
-    fun handleAddressCanNotBeUpdatedException(exception: AddressCanNotBeUpdatedException): ResponseEntity<ErrorResponse?> {
+    fun handleAddressCanNotBeUpdatedException(exception: AddressCanNotBeUpdatedException): ResponseEntity<ErrorResponse> {
         logger.error(exception.message)
         return ResponseEntity
             .status(HttpStatus.FORBIDDEN)
@@ -62,7 +62,7 @@ class AddressControllerAdvice {
     }
 
     @ExceptionHandler(DataNotValidException::class)
-    fun handleDataNotValidException(exception: DataNotValidException): ResponseEntity<ErrorResponse?> {
+    fun handleDataNotValidException(exception: DataNotValidException): ResponseEntity<ErrorResponse> {
         logger.error(exception.message)
         return ResponseEntity
             .status(HttpStatus.BAD_REQUEST)

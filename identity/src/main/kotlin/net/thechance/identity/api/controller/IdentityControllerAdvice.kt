@@ -19,7 +19,7 @@ class IdentityControllerAdvice {
 
     @ExceptionHandler(MethodArgumentNotValidException::class)
     @ResponseStatus(HttpStatus.BAD_REQUEST)
-    fun handleValidationExceptions(exception: MethodArgumentNotValidException): ResponseEntity<ErrorResponse?> {
+    fun handleValidationExceptions(exception: MethodArgumentNotValidException): ResponseEntity<ErrorResponse> {
         val errors = exception.bindingResult.fieldErrors.associate {
             it.field to it.defaultMessage
         }
@@ -30,7 +30,7 @@ class IdentityControllerAdvice {
     }
 
 	@ExceptionHandler(UserIsBlockedException::class)
-	fun handleUserIsBlockedException(exception: UserIsBlockedException): ResponseEntity<ErrorResponse?> {
+	fun handleUserIsBlockedException(exception: UserIsBlockedException): ResponseEntity<ErrorResponse> {
 		logger.error("User is blocked: ${exception.message}", exception)
 		return ResponseEntity
 			.status(HttpStatus.FORBIDDEN)
@@ -38,7 +38,7 @@ class IdentityControllerAdvice {
 	}
 
 	@ExceptionHandler(InvalidCredentialsException::class)
-	fun handleInvalidCredentialsException(exception: InvalidCredentialsException): ResponseEntity<ErrorResponse?> {
+	fun handleInvalidCredentialsException(exception: InvalidCredentialsException): ResponseEntity<ErrorResponse> {
 		logger.error("Invalid credentials: ${exception.message}", exception)
 		return ResponseEntity
 			.status(HttpStatus.NOT_FOUND)
@@ -46,7 +46,7 @@ class IdentityControllerAdvice {
 	}
 
 	@ExceptionHandler(InvalidIpException::class)
-	fun handleInvalidIpException(exception: InvalidIpException): ResponseEntity<ErrorResponse?> {
+	fun handleInvalidIpException(exception: InvalidIpException): ResponseEntity<ErrorResponse> {
 		logger.error("Invalid IP: ${exception.message}", exception)
 		return ResponseEntity
 			.status(HttpStatus.BAD_REQUEST)
@@ -54,7 +54,7 @@ class IdentityControllerAdvice {
 	}
 
 	@ExceptionHandler(InvalidRefreshTokenException::class)
-	fun handleInvalidRefreshTokenException(exception: InvalidRefreshTokenException): ResponseEntity<ErrorResponse?> {
+	fun handleInvalidRefreshTokenException(exception: InvalidRefreshTokenException): ResponseEntity<ErrorResponse> {
 		logger.error("Invalid refresh token: ${exception.message}", exception)
 		return ResponseEntity
 			.status(HttpStatus.UNAUTHORIZED)
@@ -62,7 +62,7 @@ class IdentityControllerAdvice {
 	}
 
 	@ExceptionHandler(UserNotFoundException::class)
-	fun handleUserNotFoundException(exception: UserNotFoundException): ResponseEntity<ErrorResponse?> {
+	fun handleUserNotFoundException(exception: UserNotFoundException): ResponseEntity<ErrorResponse> {
 		logger.error(exception.message)
 		return ResponseEntity
 			.status(HttpStatus.NOT_FOUND)
@@ -70,7 +70,7 @@ class IdentityControllerAdvice {
 	}
 
     @ExceptionHandler(InvalidPhoneNumberException::class)
-    fun handleInvalidPhoneNumberException(exception: InvalidPhoneNumberException): ResponseEntity<ErrorResponse?> {
+    fun handleInvalidPhoneNumberException(exception: InvalidPhoneNumberException): ResponseEntity<ErrorResponse> {
         logger.error("Invalid phone number: ${exception.message}", exception)
         return ResponseEntity
             .status(HttpStatus.BAD_REQUEST)
@@ -86,7 +86,7 @@ class IdentityControllerAdvice {
     }
 
     @ExceptionHandler(InvalidOtpException::class)
-    fun handleInvalidOtpException(exception: InvalidOtpException): ResponseEntity<ErrorResponse?> {
+    fun handleInvalidOtpException(exception: InvalidOtpException): ResponseEntity<ErrorResponse> {
         logger.error("OTP is invalid: ${exception.message}", exception)
         return ResponseEntity
             .status(HttpStatus.UNAUTHORIZED)
@@ -94,7 +94,7 @@ class IdentityControllerAdvice {
     }
 
     @ExceptionHandler(OtpExpiredException::class)
-    fun handleOtpExpiredException(exception: OtpExpiredException): ResponseEntity<ErrorResponse?> {
+    fun handleOtpExpiredException(exception: OtpExpiredException): ResponseEntity<ErrorResponse> {
         logger.error("OTP is expired: ${exception.message}", exception)
         return ResponseEntity
             .status(HttpStatus.BAD_REQUEST)
@@ -102,7 +102,7 @@ class IdentityControllerAdvice {
     }
 
     @ExceptionHandler(PasswordMismatchException::class)
-    fun handlePasswordMismatchException(exception: PasswordMismatchException): ResponseEntity<ErrorResponse?> {
+    fun handlePasswordMismatchException(exception: PasswordMismatchException): ResponseEntity<ErrorResponse> {
         logger.error("Password mismatch: ${exception.message}", exception)
         return ResponseEntity
             .status(HttpStatus.BAD_REQUEST)
@@ -110,7 +110,7 @@ class IdentityControllerAdvice {
     }
 
     @ExceptionHandler(PasswordNotUpdatedException::class)
-    fun handlePasswordNotUpdatedException(exception: PasswordNotUpdatedException): ResponseEntity<ErrorResponse?> {
+    fun handlePasswordNotUpdatedException(exception: PasswordNotUpdatedException): ResponseEntity<ErrorResponse> {
         logger.error("Password not updated: ${exception.message}", exception)
         return ResponseEntity
             .status(HttpStatus.INTERNAL_SERVER_ERROR)
@@ -118,7 +118,7 @@ class IdentityControllerAdvice {
     }
 
     @ExceptionHandler(UnauthorizedException::class)
-    fun handleUnauthorizedException(exception: UnauthorizedException): ResponseEntity<ErrorResponse?> {
+    fun handleUnauthorizedException(exception: UnauthorizedException): ResponseEntity<ErrorResponse> {
         logger.error("Unauthorized: ${exception.message}", exception)
         return ResponseEntity
             .status(HttpStatus.UNAUTHORIZED)

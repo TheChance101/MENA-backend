@@ -18,7 +18,7 @@ class ProfileControllerAdvice {
     private val logger: Logger = LoggerFactory.getLogger(ProfileController::class.java)
 
     @ExceptionHandler(UserNotFoundException::class)
-    fun handleUserNotFoundException(exception: UserNotFoundException): ResponseEntity<ErrorResponse?> {
+    fun handleUserNotFoundException(exception: UserNotFoundException): ResponseEntity<ErrorResponse> {
         logger.error(exception.message)
         return ResponseEntity
             .status(HttpStatus.NOT_FOUND)
@@ -26,7 +26,7 @@ class ProfileControllerAdvice {
     }
 
     @ExceptionHandler(InvalidImageException::class)
-    fun handleInvalidImageException(exception: InvalidImageException): ResponseEntity<ErrorResponse?> {
+    fun handleInvalidImageException(exception: InvalidImageException): ResponseEntity<ErrorResponse> {
         logger.error("Invalid image: ${exception.message}", exception)
         return ResponseEntity
             .status(HttpStatus.BAD_REQUEST)
@@ -34,7 +34,7 @@ class ProfileControllerAdvice {
     }
 
     @ExceptionHandler(UnknownErrorException::class)
-    fun handleException(exception: Exception): ResponseEntity<ErrorResponse?> {
+    fun handleException(exception: Exception): ResponseEntity<ErrorResponse> {
         logger.error(exception.message, exception)
         return ResponseEntity
             .status(HttpStatus.INTERNAL_SERVER_ERROR)
