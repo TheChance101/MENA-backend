@@ -57,13 +57,7 @@ class DukanProductService(
             throw e
         }
         dukanProductRepository.save(product.copy(imageUrls = imageUrls)).also {
-            eventPublisher.publish(
-                DukanSearchEvent(
-                    id = productId,
-                    index = DukanSearchEvent.SearchIndex.PRODUCT_INDEX,
-                    action = DukanSearchEvent.Action.SAVE
-                )
-            )
+            publishSearchEvents(product.id,product.dukan.id)
         }
         return imageUrls
     }
@@ -85,13 +79,7 @@ class DukanProductService(
                     imageUrls = emptyList() // Images will be uploaded using a different endpoint
                 )
             )
-            eventPublisher.publish(
-                DukanSearchEvent(
-                    id = product.id,
-                    index = DukanSearchEvent.SearchIndex.PRODUCT_INDEX,
-                    action = DukanSearchEvent.Action.SAVE
-                )
-            )
+            publishSearchEvents(product.id,product.dukan.id)
             return product.id
         } catch (_: EntityNotFoundException) {
             throw DukanProductCreationFailedException()
@@ -106,6 +94,23 @@ class DukanProductService(
         return dukanProductRepository.findById(productId).orElseThrow {
             ProductNotFoundException()
         }
+    }
+
+    private fun publishSearchEvents( productId: UUID,dukanId:UUID) {
+        eventPublisher.publish(
+            DukanSearchEvent(
+                id = productId,
+                index = DukanSearchEvent.SearchIndex.PRODUCT_INDEX,
+                action = DukanSearchEvent.Action.SAVE
+            )
+        )
+        eventPublisher.publish(
+            DukanSearchEvent(
+                id = dukanId,
+                index = DukanSearchEvent.SearchIndex.DUKAN_INDEX,
+                action = DukanSearchEvent.Action.SAVE
+            )
+        )
     }
 
     companion object {

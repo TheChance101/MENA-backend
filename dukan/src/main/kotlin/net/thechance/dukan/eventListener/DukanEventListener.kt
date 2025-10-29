@@ -1,5 +1,6 @@
 package net.thechance.dukan.eventListener
 
+import net.thechance.dukan.entity.Dukan
 import net.thechance.dukan.entity.DukanProduct
 import net.thechance.dukan.repository.DukanProductRepository
 import net.thechance.dukan.repository.DukanProductSearchRepository
@@ -38,7 +39,9 @@ class DukanEventListener(
 
     private fun saveDukanDocument(dukanId: UUID) {
         val dukan = dukanRepository.findById(dukanId).orElse(null) ?: return
-        dukanSearchRepository.save(dukan.toDocument())
+        val hasShelfs = dukan.shelves.isNotEmpty()
+        val isApproved = dukan.status == Dukan.Status.APPROVED
+        if (hasShelfs && isApproved) dukanSearchRepository.save(dukan.toDocument())
     }
 
     private fun handleProductSearchEvent(productId: UUID, action: DukanSearchEvent.Action) {

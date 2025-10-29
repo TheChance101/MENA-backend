@@ -56,15 +56,7 @@ class DukanService(
                 color = color,
                 categories = categories
             )
-            return dukanRepository.save(dukan).also {
-                eventPublisher.publish(
-                    DukanSearchEvent(
-                        id = dukan.id,
-                        index = DukanSearchEvent.SearchIndex.DUKAN_INDEX,
-                        action = DukanSearchEvent.Action.SAVE
-                    )
-                )
-            }
+            return dukanRepository.save(dukan)
         } catch (_: EntityNotFoundException) {
             throw DukanCreationFailedException()
         }
@@ -79,15 +71,7 @@ class DukanService(
                 fileName = "${dukan.name}-${file.originalFilename}",
                 folderName = DUKAN_FOLDER_NAME
             )
-        dukanRepository.save(dukan.copy(imageUrl = imageUrl)).also {
-            eventPublisher.publish(
-                DukanSearchEvent(
-                    id = dukan.id,
-                    index = DukanSearchEvent.SearchIndex.DUKAN_INDEX,
-                    action = DukanSearchEvent.Action.SAVE
-                )
-            )
-        }
+        dukanRepository.save(dukan.copy(imageUrl = imageUrl))
         return imageUrl
     }
 
