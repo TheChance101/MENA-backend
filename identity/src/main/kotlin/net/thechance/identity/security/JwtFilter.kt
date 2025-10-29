@@ -7,6 +7,7 @@ import jakarta.servlet.http.HttpServletRequest
 import jakarta.servlet.http.HttpServletResponse
 import net.thechance.identity.security.handler.AuthErrorResponder
 import net.thechance.identity.service.UserService
+import net.thechance.identity.repository.AdminUserRepository
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken
 import org.springframework.security.core.context.SecurityContextHolder
 import org.springframework.security.web.authentication.WebAuthenticationDetailsSource
@@ -18,6 +19,7 @@ import java.util.*
 class JwtFilter(
     private val jwtService: JwtService,
     private val userService: UserService,
+    private val adminUserRepository: AdminUserRepository,
     private val authErrorResponder: AuthErrorResponder
 ) : OncePerRequestFilter() {
 
@@ -33,7 +35,13 @@ class JwtFilter(
 
             if (token != null && SecurityContextHolder.getContext().authentication == null) {
                 val userId = jwtService.extractUserId(token)
-                if (!userService.userExists(userId)) throw IllegalStateException("User not found")
+
+                if (jwtService.isAdminToken(token)) {
+                    if (!adminUserRepository.existsById(userId)) throw IllegalStateException("Admin user not found")
+                } else {
+                    if (!userService.userExists(userId)) throw IllegalStateException("User not found")
+                }
+
                 val authentication = UsernamePasswordAuthenticationToken(
                     userId,
                     null,
