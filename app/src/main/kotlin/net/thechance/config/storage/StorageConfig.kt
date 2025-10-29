@@ -20,6 +20,10 @@ class StorageConfig(
         buildClient(props.mena.endpoint, menaCreds)
 
     @Bean
+    fun faithS3Client(faithCreds: StaticCredentialsProvider): S3Client =
+        buildClient(props.faith.endpoint, faithCreds)
+
+    @Bean
     fun dukanS3Client(dukanCreds: StaticCredentialsProvider): S3Client =
         buildClient(props.dukan.endpoint, dukanCreds)
 
@@ -30,6 +34,7 @@ class StorageConfig(
     @Bean
     fun walletS3Client(walletCreds: StaticCredentialsProvider): S3Client =
         buildClient(props.wallet.endpoint, walletCreds)
+    
     @Bean
     fun menaCreds(): StaticCredentialsProvider {
         return StaticCredentialsProvider.create(AwsBasicCredentials.create(props.mena.key, props.mena.secret))
@@ -38,6 +43,11 @@ class StorageConfig(
     @Bean
     fun dukanCreds(): StaticCredentialsProvider {
         return StaticCredentialsProvider.create(AwsBasicCredentials.create(props.dukan.key, props.dukan.secret))
+    }
+
+    @Bean
+    fun faithCreds(): StaticCredentialsProvider {
+        return StaticCredentialsProvider.create(AwsBasicCredentials.create(props.faith.key, props.faith.secret))
     }
 
     @Bean
