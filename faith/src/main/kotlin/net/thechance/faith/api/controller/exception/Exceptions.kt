@@ -7,3 +7,7 @@ class AyahBookmarkNotFoundException(
 class CannotGetPrayerTimesException(
     message: String = "Cannot get prayer times"
 ) : RuntimeException(message)
+
+class NearestMosqueNotFoundException(
+    message: String = "Nearest mosque not found"
+) : RuntimeException(message)
