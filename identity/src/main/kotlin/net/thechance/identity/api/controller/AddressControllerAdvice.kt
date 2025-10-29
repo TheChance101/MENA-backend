@@ -76,10 +76,11 @@ class AddressControllerAdvice {
     }
 
     @ExceptionHandler(NoActiveAddressException::class)
-    fun handleNoActiveAddressException(exception: NoActiveAddressException): ResponseEntity<ErrorResponse?> {
+    fun handleNoActiveAddressException(exception: NoActiveAddressException): ResponseEntity<ErrorResponse> {
         logger.error(exception.message)
+        val errorResponse = ErrorResponse(exception.message ?: "No active address")
         return ResponseEntity
             .status(HttpStatus.NOT_FOUND)
-            .body(ErrorResponse(exception.message ?: "No active address"))
+            .body(errorResponse)
     }
 }
