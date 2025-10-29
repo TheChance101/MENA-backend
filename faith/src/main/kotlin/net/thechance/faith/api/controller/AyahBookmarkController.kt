@@ -7,9 +7,7 @@ import net.thechance.faith.api.dto.bookmark.toBookmark
 import net.thechance.faith.api.dto.bookmark.toBookmarkResponse
 import net.thechance.faith.service.AyahBookmarkService
 import org.springframework.data.domain.Page
-import org.springframework.data.domain.PageRequest
 import org.springframework.data.domain.Pageable
-import org.springframework.data.domain.Sort
 import org.springframework.data.domain.Sort.Direction
 import org.springframework.data.web.PageableDefault
 import org.springframework.http.ResponseEntity
@@ -18,7 +16,7 @@ import org.springframework.web.bind.annotation.*
 import java.util.*
 
 @RestController
-@RequestMapping("faith/ayah/bookmark")
+@RequestMapping("faith/ayah/bookmarks")
 class AyahBookmarkController(
     private val ayahBookmarkService: AyahBookmarkService
 ) {

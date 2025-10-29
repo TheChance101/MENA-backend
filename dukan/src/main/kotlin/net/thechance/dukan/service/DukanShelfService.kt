@@ -1,9 +1,9 @@
 package net.thechance.dukan.service
 
 import net.thechance.dukan.entity.DukanShelf
-import net.thechance.dukan.exception.ShelfDeletionNotAllowedException
-import net.thechance.dukan.exception.ShelfNameAlreadyTakenException
-import net.thechance.dukan.exception.ShelfNotFoundException
+import net.thechance.dukan.service.exception.ShelfDeletionNotAllowedException
+import net.thechance.dukan.service.exception.ShelfNameAlreadyTakenException
+import net.thechance.dukan.service.exception.ShelfNotFoundException
 import net.thechance.dukan.repository.DukanProductRepository
 import net.thechance.dukan.repository.DukanShelfRepository
 import org.springframework.data.domain.Page

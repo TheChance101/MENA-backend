@@ -1,15 +1,24 @@
 package net.thechance.faith.service
 
-import io.mockk.verify
 import com.google.common.truth.Truth.assertThat
 import io.mockk.every
 import io.mockk.mockk
-import net.thechance.faith.api.controller.exception.CannotGetPrayerTimesException
+import io.mockk.verify
+import net.thechance.faith.exception.FailedToGetPrayerTimesException
 import net.thechance.faith.entity.DayPrayerTimings
 import net.thechance.faith.remote.PrayerRemoteClient
+import net.thechance.faith.remote.dto.prayertime.DateInfoRemoteDto
+import net.thechance.faith.remote.dto.prayertime.GregorianRemoteDto
+import net.thechance.faith.remote.dto.prayertime.HijriRemoteDto
+import net.thechance.faith.remote.dto.prayertime.MetaRemoteDto
+import net.thechance.faith.remote.dto.prayertime.MonthGregorianRemoteDto
+import net.thechance.faith.remote.dto.prayertime.PrayerDataRemoteDto
+import net.thechance.faith.remote.dto.prayertime.PrayerTimingsRemoteDto
+import net.thechance.faith.remote.dto.prayertime.TimingsRemoteDto
 import net.thechance.faith.repository.PrayerRepository
 import org.junit.Assert.assertThrows
 import java.time.Instant
+import java.time.LocalDate
 import kotlin.test.Test
 
 class PrayerServiceTest {
@@ -18,19 +27,19 @@ class PrayerServiceTest {
     private val service: PrayerService = PrayerService(prayerRepository = repository, prayerRemoteClient = remoteClient)
 
     @Test
-    fun `getPrayerTimes should cached data when its not expired`() {
+    fun `getPrayerTimes should get cached data when its not expired`() {
         //Given
         every {
-            repository.findByLatitudeAndLongitudeAndGregorianDate(
+            repository.findByLatitudeAndLongitudeAndDateSortedByNearestLocation(
                 latitude = LATITUDE,
                 longitude = LONGITUDE,
-                date = DATE
+                date = LOCAL_DATE
             )
-        } returns cachedDatePrayerTimes
+        } returns listOf(cachedPrayerTimes)
         //When
-        val result = service.getPrayerTimes(LATITUDE, LONGITUDE, DATE)
+        val result = service.getPrayerTimes(LATITUDE, LONGITUDE, LOCAL_DATE)
         //Then
-        assertThat(result).isEqualTo(cachedDatePrayerTimes)
+        assertThat(result).isEqualTo(cachedPrayerTimes)
         verify(exactly = 0) {
             remoteClient.getPrayerTimes(any(), any(), any())
         }
@@ -40,12 +49,12 @@ class PrayerServiceTest {
     fun `getPrayerTimes should call remote client when cached data is expired`() {
         //Given
         every {
-            repository.findByLatitudeAndLongitudeAndGregorianDate(
+            repository.findByLatitudeAndLongitudeAndDateSortedByNearestLocation(
                 latitude = LATITUDE,
                 longitude = LONGITUDE,
-                date = DATE
+                date = LOCAL_DATE
             )
-        } returns cachedDatePrayerTimes.copy(savedIn = Instant.parse("2025-10-07T10:00:00Z"))
+        } returns listOf(cachedPrayerTimes.copy(savedIn = Instant.now().minusSeconds(86400 * 3)))
         every {
             repository.save(any<DayPrayerTimings>())
         } returns mockk(relaxed = true)
@@ -53,11 +62,11 @@ class PrayerServiceTest {
             remoteClient.getPrayerTimes(
                 latitude = LATITUDE,
                 longitude = LONGITUDE,
-                date = DATE
+                date = LOCAL_DATE
             )
-        } returns mockk(relaxed = true)
+        } returns remotePrayerTimes
         //When
-        service.getPrayerTimes(LATITUDE, LONGITUDE, DATE)
+        service.getPrayerTimes(LATITUDE, LONGITUDE, LOCAL_DATE)
         //Then
         verify(exactly = 1) {
             remoteClient.getPrayerTimes(any(), any(), any())
@@ -68,57 +77,76 @@ class PrayerServiceTest {
     fun `getPrayerTimes should throw CannotGetPrayerTimesException when fetch data fails`() {
         //Given
         every {
-            repository.findByLatitudeAndLongitudeAndGregorianDate(
+            repository.findByLatitudeAndLongitudeAndDateSortedByNearestLocation(
                 latitude = LATITUDE,
                 longitude = LONGITUDE,
-                date = DATE
+                date = LOCAL_DATE
             )
-        } returns cachedDatePrayerTimes.copy(savedIn = Instant.parse("2025-10-07T10:00:00Z"))
+        } returns listOf(cachedPrayerTimes.copy(savedIn = Instant.parse("2025-10-07T10:00:00Z")))
         every {
             remoteClient.getPrayerTimes(
                 latitude = LATITUDE,
                 longitude = LONGITUDE,
-                date = DATE
+                date = LOCAL_DATE
             )
-        } throws CannotGetPrayerTimesException()
+        } throws FailedToGetPrayerTimesException()
         //When //Then
-        assertThrows(CannotGetPrayerTimesException::class.java) {
-            service.getPrayerTimes(LATITUDE, LONGITUDE, DATE)
+        assertThrows(FailedToGetPrayerTimesException::class.java) {
+            service.getPrayerTimes(LATITUDE, LONGITUDE, LOCAL_DATE)
         }
     }
 
     private companion object {
         const val LATITUDE = 30.0
         const val LONGITUDE = 31.0
-        const val DATE = "2025-10-09"
-        val cachedDatePrayerTimes = DayPrayerTimings(
+        val LOCAL_DATE: LocalDate = LocalDate.now()
+
+        val cachedPrayerTimes = DayPrayerTimings(
             id = 1,
             latitude = 30.0444,
             longitude = 31.2357,
             savedIn = Instant.now(),
-            gregorianDate = "2025-10-09",
-            dateTimestamp = "2025-10-08T00:00:00Z",
-            gregorianReadableDate = "08 October 2025",
-            gregorianDay = "08",
-            gregorianDayName = "Wednesday",
-            gregorianMonth = 10,
-            gregorianMonthName = "October",
-            gregorianYear = "2025",
-            hijriDate = "1447-04-15",
-            hijriReadableDate = "15 Rabiʻ al-Thani 1447",
-            hijriDay = "15",
-            hijriDayName = "Al-Arba'a",
-            hijriDayArabicName = "الأربعاء",
-            hijriMonth = 4,
-            hijriYear = "1447",
-            hijriMonthName = "Rabiʻ al-Thani",
-            hijriMonthArabicName = "ربيع الآخر",
-            fajr = "04:28",
-            sunrise = "05:53",
-            dhuhr = "11:41",
-            asr = "15:02",
-            maghrib = "17:29",
-            isha = "18:49"
+            date = LocalDate.of(2025, 10, 9),
+            hijriDate = "17-04-1447",
+            fajr = Instant.parse("2025-10-09T02:26:00Z"),
+            sunrise = Instant.parse("2025-10-09T03:53:00Z"),
+            dhuhr = Instant.parse("2025-10-09T09:42:00Z"),
+            asr = Instant.parse("2025-10-09T13:02:00Z"),
+            maghrib = Instant.parse("2025-10-09T15:30:00Z"),
+            isha = Instant.parse("2025-10-09T16:47:00Z")
+        )
+        val remotePrayerTimes = PrayerTimingsRemoteDto(
+            code = 1,
+            status = "",
+            data = PrayerDataRemoteDto(
+                timings = TimingsRemoteDto(
+                    fajr = "02:26",
+                    sunrise = "03:53",
+                    dhuhr = "09:42",
+                    asr = "13:02",
+                    maghrib = "15:30",
+                    isha = "16:47"
+                ),
+                date = DateInfoRemoteDto(
+                    timestamp = "1696828800",
+                    hijri = HijriRemoteDto(
+                        date = "17-04-1447",
+                        format = "DD-MM-YYYY"
+                    ),
+                    gregorian = GregorianRemoteDto(
+                        date = "09-10-2025",
+                        format = "DD-MM-YYYY",
+                        day = "1",
+                        month = MonthGregorianRemoteDto(
+                            number = 2
+                        ),
+                        year = "2025"
+                    )
+                ),
+                meta = MetaRemoteDto(
+                    timezone = "Africa/Cairo"
+                )
+            )
         )
     }
 }

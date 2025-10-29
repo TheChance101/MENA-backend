@@ -1,37 +1,40 @@
 package net.thechance.faith.remote
 
 import kotlinx.serialization.json.Json
-import net.thechance.faith.api.controller.exception.CannotGetPrayerTimesException
-import net.thechance.faith.remote.dto.PrayerTimingsRemoteDto
+import net.thechance.faith.exception.FailedToGetPrayerTimesException
+import net.thechance.faith.remote.dto.prayertime.PrayerTimingsRemoteDto
 import org.springframework.stereotype.Component
-import org.springframework.web.reactive.function.client.WebClient
+import org.springframework.web.client.RestTemplate
+import org.springframework.web.util.UriComponentsBuilder
+import java.time.LocalDate
+import java.time.format.DateTimeFormatter
 
 @Component
 class PrayerRemoteClient(
-    private val json: Json = Json { ignoreUnknownKeys = true }
+    private val json: Json = Json { ignoreUnknownKeys = true },
+    private val restTemplate: RestTemplate = RestTemplate()
 ) {
 
-    private val webClient: WebClient = WebClient
-        .builder()
-        .baseUrl(BASE_URL)
-        .build()
+    fun getPrayerTimes(latitude: Double, longitude: Double, date: LocalDate): PrayerTimingsRemoteDto {
+        return runCatching {
+            val url = UriComponentsBuilder.fromHttpUrl(BASE_URL)
+                .path("$PATH${date.formatAsDdMmYyyy()}")
+                .queryParam(QUERY_LATITUDE, latitude)
+                .queryParam(QUERY_LONGITUDE, longitude)
+                .build()
+                .toUriString()
 
-    fun getPrayerTimes(latitude: Double, longitude: Double, date: String): PrayerTimingsRemoteDto = runCatching {
-        val rawJson = webClient.get()
-            .uri { uriBuilder ->
-                uriBuilder
-                    .path("$PATH$date")
-                    .queryParam(QUERY_LATITUDE, latitude)
-                    .queryParam(QUERY_LONGITUDE, longitude)
-                    .build()
-            }
-            .retrieve()
-            .bodyToMono(String::class.java)
-            .block() ?: throw CannotGetPrayerTimesException()
-        json.decodeFromString(PrayerTimingsRemoteDto.serializer(), rawJson)
-    }.getOrElse {
-        throw CannotGetPrayerTimesException()
+            val rawJson = restTemplate.getForObject(url, String::class.java)
+                ?: throw FailedToGetPrayerTimesException(
+                    "failed to fetch prayer times from remote: response body is null"
+                )
+
+            json.decodeFromString(PrayerTimingsRemoteDto.serializer(), rawJson)
+        }.getOrElse { throw FailedToGetPrayerTimesException("failed to fetch prayer times from remote") }
     }
+
+    private fun LocalDate.formatAsDdMmYyyy(): String =
+        this.format(DateTimeFormatter.ofPattern("dd-MM-yyyy"))
 
     private companion object {
         const val BASE_URL = "https://api.aladhan.com"

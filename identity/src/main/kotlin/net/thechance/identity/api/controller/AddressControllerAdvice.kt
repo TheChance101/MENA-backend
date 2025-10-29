@@ -74,4 +74,12 @@ class AddressControllerAdvice {
             .status(HttpStatus.BAD_REQUEST)
             .body(errorResponse)
     }
+
+    @ExceptionHandler(NoActiveAddressException::class)
+    fun handleNoActiveAddressException(exception: NoActiveAddressException): ResponseEntity<ErrorResponse?> {
+        logger.error(exception.message)
+        return ResponseEntity
+            .status(HttpStatus.NOT_FOUND)
+            .body(ErrorResponse(exception.message ?: "No active address"))
+    }
 }

@@ -11,6 +11,7 @@ import java.util.*
 interface AddressRepository : JpaRepository<Address, UUID> {
     fun findByIdAndUserId(id: UUID, userId: UUID): Address?
     fun findByUserIdOrderByCreatedAtAsc(userId: UUID): List<Address>
+    fun findByIsActiveAndUserId(isActive: Boolean, userId: UUID): Address?
     fun existsByUserId(userId: UUID): Boolean
 
     fun existsByIdAndUserIdAndIsActive(id: UUID, userId: UUID, isActive: Boolean): Boolean

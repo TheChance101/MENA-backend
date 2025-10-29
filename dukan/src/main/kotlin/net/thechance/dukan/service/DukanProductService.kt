@@ -3,9 +3,9 @@ package net.thechance.dukan.service
 import jakarta.persistence.EntityNotFoundException
 import jakarta.transaction.Transactional
 import net.thechance.dukan.entity.DukanProduct
-import net.thechance.dukan.exception.DukanProductCreationFailedException
-import net.thechance.dukan.exception.ProductNameAlreadyTakenException
-import net.thechance.dukan.exception.ProductNotFoundException
+import net.thechance.dukan.service.exception.DukanProductCreationFailedException
+import net.thechance.dukan.service.exception.ProductNameAlreadyTakenException
+import net.thechance.dukan.service.exception.ProductNotFoundException
 import net.thechance.dukan.repository.DukanProductRepository
 import net.thechance.dukan.repository.DukanShelfRepository
 import net.thechance.dukan.service.model.DukanProductCreationParams
@@ -75,6 +75,12 @@ class DukanProductService(
 
     fun getProductsByShelf(shelfId: UUID, pageable: Pageable): Page<DukanProduct> {
         return dukanProductRepository.findAllByShelfId(shelfId, pageable)
+    }
+
+    fun getProductById(productId: UUID): DukanProduct {
+        return dukanProductRepository.findById(productId).orElseThrow {
+            ProductNotFoundException()
+        }
     }
 
     companion object {
