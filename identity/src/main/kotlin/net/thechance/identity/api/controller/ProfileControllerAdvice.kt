@@ -2,6 +2,7 @@ package net.thechance.identity.api.controller
 
 import net.thechance.identity.api.dto.ErrorResponse
 import net.thechance.identity.exception.InvalidImageException
+import net.thechance.identity.exception.PasswordMismatchException
 import net.thechance.identity.exception.UnauthorizedException
 import net.thechance.identity.exception.UnknownErrorException
 import net.thechance.identity.exception.UserNotFoundException
@@ -62,5 +63,13 @@ class ProfileControllerAdvice {
         return ResponseEntity
             .status(HttpStatus.UNAUTHORIZED)
             .body(ErrorResponse(exception.message ?: "Unauthorized"))
+    }
+
+    @ExceptionHandler(PasswordMismatchException::class)
+    fun handlePasswordMismatchException(exception: PasswordMismatchException): ResponseEntity<ErrorResponse?> {
+        logger.error("Password mismatch: ${exception.message}", exception)
+        return ResponseEntity
+            .status(HttpStatus.BAD_REQUEST)
+            .body(ErrorResponse(exception.message ?: "Password and Confirm Password do not match"))
     }
 }
