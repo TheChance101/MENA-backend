@@ -41,7 +41,6 @@ class DukanEventListener(
         dukanSearchRepository.save(dukan.toDocument())
     }
 
-
     private fun handleProductSearchEvent(productId: UUID, action: DukanSearchEvent.Action) {
         when (action) {
             DukanSearchEvent.Action.SAVE -> saveProductDocument(productId)
@@ -49,11 +48,8 @@ class DukanEventListener(
         }
     }
 
-
     private fun saveProductDocument(productId: UUID) {
         val product = productRepository.findById(productId).orElse(null) ?: return
         productSearchRepository.save(product.toDocument())
     }
-
-
 }

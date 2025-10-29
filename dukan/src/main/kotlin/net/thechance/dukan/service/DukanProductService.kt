@@ -9,6 +9,8 @@ import net.thechance.dukan.service.exception.ProductNotFoundException
 import net.thechance.dukan.repository.DukanProductRepository
 import net.thechance.dukan.repository.DukanShelfRepository
 import net.thechance.dukan.service.model.DukanProductCreationParams
+import net.thechance.events.dukan.DukanSearchEvent
+import net.thechance.events.publisher.MenaEventPublisher
 import org.springframework.data.domain.Page
 import org.springframework.data.domain.Pageable
 import org.springframework.stereotype.Service
@@ -23,6 +25,7 @@ class DukanProductService(
     private val dukanShelfRepository: DukanShelfRepository,
     private val dukanService: DukanService,
     private val imageStorageService: ImageStorageService,
+    private val eventPublisher: MenaEventPublisher
 ) {
     @Transactional
     fun uploadProductImages(productId: UUID, files: List<MultipartFile>): List<String> {
@@ -43,10 +46,25 @@ class DukanProductService(
         } catch (e: Exception) {
             //Uploading the images is part of creating the product. If something went wrong while uploading the images,
             //We need to delete the product from the database.
-            dukanProductRepository.delete(product)
+            dukanProductRepository.delete(product).also {
+                eventPublisher.publish(DukanSearchEvent(
+                    id = productId,
+                    index = DukanSearchEvent.SearchIndex.PRODUCT_INDEX,
+                    action = DukanSearchEvent.Action.DELETE
+                ))
+            }
+
             throw e
         }
-        dukanProductRepository.save(product.copy(imageUrls = imageUrls))
+        dukanProductRepository.save(product.copy(imageUrls = imageUrls)).also {
+            eventPublisher.publish(
+                DukanSearchEvent(
+                    id = productId,
+                    index = DukanSearchEvent.SearchIndex.PRODUCT_INDEX,
+                    action = DukanSearchEvent.Action.SAVE
+                )
+            )
+        }
         return imageUrls
     }
 
@@ -65,6 +83,13 @@ class DukanProductService(
                     price = params.price,
                     description = params.description.trim(),
                     imageUrls = emptyList() // Images will be uploaded using a different endpoint
+                )
+            )
+            eventPublisher.publish(
+                DukanSearchEvent(
+                    id = product.id,
+                    index = DukanSearchEvent.SearchIndex.PRODUCT_INDEX,
+                    action = DukanSearchEvent.Action.SAVE
                 )
             )
             return product.id
