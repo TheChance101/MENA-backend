@@ -10,13 +10,27 @@ import org.slf4j.LoggerFactory
 import org.springframework.core.annotation.Order
 import org.springframework.http.HttpStatus
 import org.springframework.http.ResponseEntity
+import org.springframework.web.bind.MethodArgumentNotValidException
 import org.springframework.web.bind.annotation.ExceptionHandler
+import org.springframework.web.bind.annotation.ResponseStatus
 import org.springframework.web.bind.annotation.RestControllerAdvice
 
 @RestControllerAdvice(assignableTypes = [ProfileController::class])
 @Order(1)
 class ProfileControllerAdvice {
     private val logger: Logger = LoggerFactory.getLogger(IdentityController::class.java)
+
+    @ExceptionHandler(MethodArgumentNotValidException::class)
+    @ResponseStatus(HttpStatus.BAD_REQUEST)
+    fun handleValidationExceptions(exception: MethodArgumentNotValidException): ResponseEntity<ErrorResponse?> {
+        val error = exception.bindingResult.fieldErrors.first().let {
+            it.defaultMessage ?: "Error in field: $it.field"
+        }
+        logger.error("Validation failed: $error", exception)
+        return ResponseEntity
+            .status(HttpStatus.BAD_REQUEST)
+            .body(ErrorResponse(error))
+    }
 
     @ExceptionHandler(UserNotFoundException::class)
     fun handleUserNotFoundException(exception: UserNotFoundException): ResponseEntity<ErrorResponse?> {
