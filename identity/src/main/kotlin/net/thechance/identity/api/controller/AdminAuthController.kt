@@ -12,7 +12,7 @@ import org.springframework.web.bind.annotation.RequestMapping
 import org.springframework.web.bind.annotation.RestController
 
 @RestController
-@RequestMapping("/admin/auth")
+@RequestMapping("/identity/admin/authentication")
 class AdminAuthController(
     private val adminAuthenticationService: AdminAuthenticationService
 ) {
