@@ -10,8 +10,12 @@ import net.thechance.identity.exception.AddressCanNotBeDeletedException
 import net.thechance.identity.exception.AddressNotFoundException
 import net.thechance.identity.exception.AtLeastAddressValueNeededException
 import net.thechance.identity.repository.AddressRepository
-import org.junit.jupiter.api.Assertions.assertThrows
-import org.junit.jupiter.api.Test
+import org.junit.Assert.assertThrows
+import org.junit.Test
+import org.springframework.data.domain.Page
+import org.springframework.data.domain.PageImpl
+import org.springframework.data.domain.PageRequest
+import org.springframework.data.domain.Pageable
 import java.util.*
 import net.thechance.identity.service.model.Address as AddressModel
 
@@ -115,26 +119,38 @@ class AddressServiceTest {
 
     //endregion
 
-    //region Get All Addresses
+    //region Get Addresses
     @Test
-    fun `getAllAddresses() should return list of addresses when user has addresses`() {
-        val addresses = listOf(dummyAddress, dummyAddress.copy(id = UUID.randomUUID()))
-        every { addressRepository.findByUserIdOrderByCreatedAtAsc(dummyUserId) } returns addresses
+    fun `getPageableAddresses() should return page of addresses when user has addresses`() {
+        every { addressRepository.findByUserIdOrderByCreatedAtAsc(dummyUserId, pageable) } returns expectedPage
 
-        val result = addressService.getAllAddresses(dummyUserId)
+        val resultPage = addressService.getPageableAddresses(dummyUserId, pageable)
 
-        assertThat(result).hasSize(2)
-        assertThat(result).containsExactlyElementsIn(addresses)
+        assertThat(resultPage.content).hasSize(2)
+        assertThat(resultPage.content).contains(addresses[0])
+        assertThat(resultPage.totalPages).isEqualTo(1)
+        assertThat(resultPage.totalElements).isEqualTo(2)
     }
 
     @Test
-    fun `getAllAddresses() should return empty list when user has no addresses`() {
-        every { addressRepository.findByUserIdOrderByCreatedAtAsc(dummyUserId) } returns emptyList()
+    fun `getPageableAddresses() should return empty page when user has no addresses`() {
+        every { addressRepository.findByUserIdOrderByCreatedAtAsc(dummyUserId, pageable) } returns emptyPage
 
-        val result = addressService.getAllAddresses(dummyUserId)
+        val resultPage = addressService.getPageableAddresses(dummyUserId, pageable)
 
-        assertThat(result).isEmpty()
+        assertThat(resultPage).isEmpty()
+        assertThat(resultPage.content).isEmpty()
     }
+
+    @Test
+    fun `getPageableAddresses() should call repository one time when called`() {
+        every { addressRepository.findByUserIdOrderByCreatedAtAsc(dummyUserId, pageable) } returns emptyPage
+
+        addressService.getPageableAddresses(dummyUserId, pageable)
+
+        verify(exactly = 1) { addressRepository.findByUserIdOrderByCreatedAtAsc(dummyUserId, pageable) }
+    }
+
     //endregion
 
     //region Delete Address
@@ -233,5 +249,9 @@ class AddressServiceTest {
             addressType = null,
             isActive = null
         )
+        private val addresses = listOf(dummyAddress, dummyAddress.copy(id = UUID.randomUUID()))
+        private val pageable: Pageable = PageRequest.of(0, 10)
+        private val expectedPage: Page<Address> = PageImpl(addresses, pageable, addresses.size.toLong())
+        private val emptyPage: Page<Address> = Page.empty(pageable)
     }
 }
