@@ -84,11 +84,10 @@ class DukanProductService(
 
     @Transactional
     fun updateProduct(
-        productId: UUID,
         updateParams: DukanProductUpdateParams
     ): UUID {
         val product = dukanProductRepository
-            .findByIdAndDukan_OwnerId(productId, updateParams.ownerId)
+            .findByIdAndDukanOwnerId(updateParams.productId, updateParams.ownerId)
             .orElseThrow { ProductNotFoundException() }
 
         if (product.name != updateParams.name) {
@@ -117,7 +116,7 @@ class DukanProductService(
         file: MultipartFile
     ): String {
         val product = dukanProductRepository
-            .findByIdAndDukan_OwnerId(productId, ownerId)
+            .findByIdAndDukanOwnerId(productId, ownerId)
             .orElseThrow { ProductNotFoundException() }
         val imageUrl = imageStorageService.uploadImage(
             file = file,

@@ -70,8 +70,8 @@ class DukanProductController(
         @PathVariable("productId") productId: UUID,
         @Valid @RequestBody request: DukanProductUpdateRequest,
     ): DukanProductUpdateResponse {
-        val productUpdateParams = request.toProductUpdateParams(userId)
-        val productId = dukanProductService.updateProduct(productId, productUpdateParams)
+        val productUpdateParams = request.toProductUpdateParams(userId,productId)
+        val productId = dukanProductService.updateProduct(productUpdateParams)
 
         return DukanProductUpdateResponse(productId)
     }

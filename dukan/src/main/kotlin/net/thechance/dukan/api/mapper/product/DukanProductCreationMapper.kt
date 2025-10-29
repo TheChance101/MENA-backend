@@ -14,7 +14,7 @@ fun DukanProductCreationRequest.toProductCreationParams(ownerId: UUID) = DukanPr
     price = price,
 )
 
-fun DukanProductUpdateRequest.toProductUpdateParams(ownerId: UUID): DukanProductUpdateParams {
+fun DukanProductUpdateRequest.toProductUpdateParams(ownerId: UUID, productId : UUID): DukanProductUpdateParams {
     return DukanProductUpdateParams(
         name = name,
         description = description,
@@ -22,5 +22,6 @@ fun DukanProductUpdateRequest.toProductUpdateParams(ownerId: UUID): DukanProduct
         shelfId = shelfId,
         ownerId = ownerId,
         imageUrls = imageUrls,
+        productId = productId,
     )
 }
