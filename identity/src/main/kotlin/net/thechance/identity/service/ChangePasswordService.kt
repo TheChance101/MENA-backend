@@ -28,17 +28,22 @@ class ChangePasswordService(
     }
 
     private fun validateRequest(request: ChangePasswordRequest) {
-        if (request.newPassword != request.confirmPassword) throw PasswordMismatchException()
+        (request.newPassword == request.confirmPassword).takeIf { it } ?: throw PasswordMismatchException()
     }
 
     private fun findAndVerifyUser(userId: UUID, currentRawPassword: String): User {
-        val user = userRepository.findByIdOrNull(userId) ?: throw UserNotFoundException("User not found")
-        if (!passwordEncoder.matches(currentRawPassword, user.password)) throw UnauthorizedException()
-        return user
+        return userRepository.findByIdOrNull(userId)
+            .takeIf { it != null }
+            .also { user ->
+                passwordEncoder.matches(currentRawPassword, user?.password)
+                    .takeIf { it } ?: throw UnauthorizedException()
+            }
+            ?: throw UserNotFoundException("User not found")
     }
 
     private fun updateUserWithNewPassword(user: User, newRawPassword: String): User {
-        val encodedNewPassword = passwordEncoder.encode(newRawPassword)
-        return user.copy(password = encodedNewPassword)
+        return passwordEncoder.encode(newRawPassword).let { encodedNewPassword ->
+            user.copy(password = encodedNewPassword)
+        }
     }
 }
