@@ -58,10 +58,7 @@ class JwtService(
             .parseClaimsJws(token)
             .body
 
-        return when (val adminClaim = claims[ADMIN_CLAIM]) {
-            is Boolean -> adminClaim
-            else -> false
-        }
+        return claims[ADMIN_CLAIM] as? Boolean ?: false
     }
 
     companion object {
