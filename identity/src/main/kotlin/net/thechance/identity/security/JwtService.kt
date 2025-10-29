@@ -58,9 +58,8 @@ class JwtService(
             .parseClaimsJws(token)
             .body
 
-        return when (val adminClaim = claims[ADMIN_CLAIM]) { //TODO: check if always Boolean
+        return when (val adminClaim = claims[ADMIN_CLAIM]) {
             is Boolean -> adminClaim
-            is String -> adminClaim.toBoolean()
             else -> false
         }
     }
