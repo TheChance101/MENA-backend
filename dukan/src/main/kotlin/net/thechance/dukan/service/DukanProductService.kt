@@ -82,6 +82,7 @@ class DukanProductService(
         }
     }
 
+    @Transactional
     fun updateProduct(
         productId: UUID,
         updateParams: DukanProductUpdateParams
@@ -109,6 +110,7 @@ class DukanProductService(
         return dukanProductRepository.save(updatedProduct).id
     }
 
+    @Transactional
     fun uploadProductImage(
         ownerId: UUID,
         productId: UUID,
