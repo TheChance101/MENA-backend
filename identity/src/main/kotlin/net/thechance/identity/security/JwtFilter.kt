@@ -36,11 +36,7 @@ class JwtFilter(
             if (token != null && SecurityContextHolder.getContext().authentication == null) {
                 val userId = jwtService.extractUserId(token)
 
-                if (jwtService.isAdminToken(token)) {
-                    if (!adminUserRepository.existsById(userId)) throw IllegalStateException("Admin user not found")
-                } else {
-                    if (!userService.userExists(userId)) throw IllegalStateException("User not found")
-                }
+                validateAccessForToken(token, request, userId)
 
                 val authentication = UsernamePasswordAuthenticationToken(
                     userId,
@@ -58,6 +54,16 @@ class JwtFilter(
             authErrorResponder.handleInvalidToken(response)
         } catch (_: Exception) {
             authErrorResponder.handleGeneralAuthError(response)
+        }
+    }
+
+    private fun validateAccessForToken(token: String, request: HttpServletRequest, userId: UUID) {
+        if (jwtService.isAdminToken(token)) {
+            if (!request.requestURI.contains("/admin")) throw IllegalStateException("Not authorized for user access")
+            if (!adminUserRepository.existsById(userId)) throw IllegalStateException("Admin user not found")
+        } else {
+            if (request.requestURI.contains("/admin")) throw IllegalStateException("Not authorized for admin access")
+            if (!userService.userExists(userId)) throw IllegalStateException("User not found")
         }
     }
 

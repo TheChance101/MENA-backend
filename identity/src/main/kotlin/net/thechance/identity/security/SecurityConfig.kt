@@ -27,7 +27,7 @@ class SecurityConfig(
         http
             .csrf { it.disable() }
             .authorizeHttpRequests {
-                it.requestMatchers("/identity/authentication/**").permitAll()
+                it.requestMatchers("/identity/authentication/**", "/identity/admin/authentication/**").permitAll()
                 it.anyRequest().authenticated()
             }
             .sessionManagement { it.sessionCreationPolicy(SessionCreationPolicy.STATELESS) }
