@@ -4,6 +4,8 @@ import jakarta.transaction.Transactional
 import net.thechance.identity.entity.Address
 import net.thechance.identity.exception.*
 import net.thechance.identity.repository.AddressRepository
+import org.springframework.data.domain.Page
+import org.springframework.data.domain.Pageable
 import org.springframework.stereotype.Service
 import java.time.Instant
 import java.util.*
@@ -33,8 +35,8 @@ class AddressService(
         return addressRepository.save(updatedAddress.copy(updatedAt = Instant.now()))
     }
 
-    fun getAllAddresses(userId: UUID): List<Address> {
-        return addressRepository.findByUserIdOrderByCreatedAtAsc(userId)
+    fun getPageableAddresses(userId: UUID, pageable: Pageable): Page<Address> {
+        return addressRepository.findByUserIdOrderByCreatedAtAsc(userId, pageable)
     }
 
     @Transactional

@@ -7,6 +7,8 @@ import net.thechance.identity.api.dto.UpdateAddressRequest
 import net.thechance.identity.api.mapper.toAddressModel
 import net.thechance.identity.api.mapper.toResponse
 import net.thechance.identity.service.AddressService
+import org.springframework.data.domain.Pageable
+import org.springframework.data.web.PageableDefault
 import org.springframework.http.ResponseEntity
 import org.springframework.security.core.annotation.AuthenticationPrincipal
 import org.springframework.web.bind.annotation.*
@@ -46,11 +48,14 @@ class AddressController(
     }
 
     @GetMapping
-    fun getAllAddresses(
+    fun getAddresses(
+        @PageableDefault(page = 0, size = 20)
+        pageable: Pageable,
         @AuthenticationPrincipal userId: UUID
     ): ResponseEntity<List<AddressResponse>> {
-        val getAllAddressesResponse = addressService.getAllAddresses(userId).map { it.toResponse() }
-        return ResponseEntity.ok(getAllAddressesResponse)
+        val getPageableAddressesResponse =
+            addressService.getPageableAddresses(userId, pageable).content.map { it.toResponse() }
+        return ResponseEntity.ok(getPageableAddressesResponse)
     }
 
     @GetMapping("/active")

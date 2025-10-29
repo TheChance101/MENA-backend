@@ -1,6 +1,8 @@
 package net.thechance.identity.repository
 
 import net.thechance.identity.entity.Address
+import org.springframework.data.domain.Page
+import org.springframework.data.domain.Pageable
 import org.springframework.data.jpa.repository.JpaRepository
 import org.springframework.data.jpa.repository.Modifying
 import org.springframework.data.jpa.repository.Query
@@ -10,7 +12,7 @@ import java.util.*
 
 interface AddressRepository : JpaRepository<Address, UUID> {
     fun findByIdAndUserId(id: UUID, userId: UUID): Address?
-    fun findByUserIdOrderByCreatedAtAsc(userId: UUID): List<Address>
+    fun findByUserIdOrderByCreatedAtAsc(userId: UUID, pageable: Pageable): Page<Address>
     fun findByIsActiveAndUserId(isActive: Boolean, userId: UUID): Address?
     fun existsByUserId(userId: UUID): Boolean
 
