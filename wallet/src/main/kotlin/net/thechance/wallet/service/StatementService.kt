@@ -1,45 +1,76 @@
 package net.thechance.wallet.service
 
-import net.thechance.wallet.service.helper.UserTransactionType
 import net.thechance.wallet.entity.Transaction
 import net.thechance.wallet.exception.NoTransactionsFoundException
-import net.thechance.wallet.repository.TransactionRepository
 import net.thechance.wallet.repository.WalletUserRepository
+import net.thechance.wallet.service.model.input.TransactionFilterParams
+import net.thechance.wallet.service.model.input.UserTransactionType
+import net.thechance.wallet.service.model.output.StatementData
+import net.thechance.wallet.service.utils.atEndOfDay
+import net.thechance.wallet.service.utils.orNow
 import org.springframework.data.domain.Page
 import org.springframework.data.domain.PageRequest
 import org.springframework.data.domain.Sort
 import org.springframework.stereotype.Service
+import java.math.BigDecimal
 import java.time.LocalDate
 import java.time.LocalDateTime
 import java.util.*
 
 @Service
 class StatementService(
-    private val transactionRepository: TransactionRepository,
+    private val balanceService: BalanceService,
+    private val transactionService: TransactionService,
     private val walletUserRepository: WalletUserRepository,
 ) {
-    fun getUserName(userId: UUID): String {
+    fun getStatementData(
+        userId: UUID,
+        types: List<UserTransactionType>?,
+        startDate: LocalDate?,
+        endDate: LocalDate?
+    ): StatementData {
+        val startDateTime = getStartDateTime(startDate, userId)
+        val endDateTime = getEndDateTime(endDate)
+
+        return StatementData(
+            userId = userId,
+            username = getUserName(userId),
+            types = types,
+            startDateTime = startDateTime,
+            endDateTime = endDateTime,
+            openingBalance = getOpeningBalance(userId, startDate),
+            closingBalance = getClosingBalance(userId, endDate)
+        )
+    }
+
+    private fun getStartDateTime(startDate: LocalDate?, userId: UUID): LocalDateTime {
+        return startDate?.atStartOfDay() ?: transactionService.getUserFirstTransactionDate(userId).orNow()
+    }
+
+    private fun getEndDateTime(endDate: LocalDate?): LocalDateTime {
+        return endDate?.atEndOfDay().orNow()
+    }
+
+    private fun getUserName(userId: UUID): String {
         return walletUserRepository.findById(userId)
             .orElseThrow { IllegalArgumentException("User not found") }
             .userName
     }
 
-    fun getOpeningBalance(userId: UUID, startDate: LocalDate?): Double {
-        val startDateTime = startDate?.atStartOfDay() ?: return 0.0
-
-        return transactionRepository.sumNetUserTransactions(
-            endDate = startDateTime,
-            currentUserId = userId
-        ) ?: 0.0
+    private fun getOpeningBalance(userId: UUID, startDate: LocalDate?): Double {
+        val startDateTime = startDate?.atStartOfDay()
+        return balanceService.getUserBalance(
+            userId = userId,
+            startDate = startDateTime
+        )
     }
 
-    fun getClosingBalance(userId: UUID, endDate: LocalDate?): Double {
-        val endDateTime = endDate?.plusDays(1)?.atStartOfDay() ?: LocalDateTime.now()
-
-        return transactionRepository.sumNetUserTransactions(
-            endDate = endDateTime,
-            currentUserId = userId
-        ) ?: 0.0
+    private fun getClosingBalance(userId: UUID, endDate: LocalDate?): Double {
+        val endDateTime = endDate?.plusDays(1)?.atStartOfDay()
+        return balanceService.getUserBalance(
+            userId = userId,
+            endDate = endDateTime
+        )
     }
 
     fun getTransactionsPage(
@@ -49,25 +80,40 @@ class StatementService(
         types: List<UserTransactionType>?,
         pageNum: Int
     ): Page<Transaction> {
-
-        val transactionsPage = transactionRepository.findFilteredTransactions(
-            status = Transaction.Status.SUCCESS,
-            transactionTypes = types?.map { it.name },
-            startDate = startDateTime,
-            endDate = endDateTime,
+        return transactionService.getFilteredTransactions(
+            transactionFilterParams = TransactionFilterParams(
+                status = Transaction.Status.SUCCESS,
+                types = types,
+                startDate = startDateTime.toLocalDate(),
+                endDate = endDateTime.toLocalDate()
+            ),
+            currentUserId = userId,
             pageable = PageRequest.of(
                 pageNum,
                 PAGE_SIZE,
                 Sort.by(Sort.Direction.ASC, Transaction::createdAt.name)
-            ),
-            currentUserId = userId
-        )
-
-        if (transactionsPage.content.isEmpty()) {
-            throw NoTransactionsFoundException("No transactions found for the specified filters")
+            )
+        ).also {
+            if(pageNum == 0 && it.isEmpty) throw NoTransactionsFoundException("No transactions found for the specified period.")
         }
+    }
 
-        return transactionsPage
+    fun getPageInflows(transactions: Page<Transaction>, userId: UUID): BigDecimal {
+        return transactions.sumOf { transaction ->
+            when {
+                transaction.receiver.userId == userId -> transaction.amount
+                else -> 0.toBigDecimal()
+            }
+        }
+    }
+
+    fun getPageOutflows(transactions: Page<Transaction>, userId: UUID): BigDecimal {
+        return transactions.sumOf { transaction ->
+            when {
+                transaction.sender.userId == userId -> transaction.amount
+                else -> 0.toBigDecimal()
+            }
+        }
     }
 
     private companion object {
