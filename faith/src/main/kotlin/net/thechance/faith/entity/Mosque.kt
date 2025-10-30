@@ -22,6 +22,11 @@ data class Mosque(
     val createdAt: LocalDate,
 
     @ElementCollection
+    @CollectionTable(
+        name = "mosque_images",
+        schema = "faith",
+        joinColumns = [JoinColumn(name = "mosque_id")]
+    )
     @Column(name = "image_url", nullable = false)
-    val imageUrls: List<String>? = null,
+    val imageUrls: List<String> = emptyList()
 )
