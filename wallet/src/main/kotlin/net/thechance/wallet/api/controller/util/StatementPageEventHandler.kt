@@ -64,7 +64,7 @@ class StatementPageEventHandler(
         canvas.beginText()
             .setFontAndSize(madimiRegular, 14f)
             .setColor(DeviceRgb(39, 55, 77), true)
-            .moveText((pageSize.right - 32 - menaWidth).toDouble(), (pageSize.top - 72).toDouble())
+            .moveText((pageSize.right - 32 - menaWidth).toDouble(), (pageSize.top - 80).toDouble())
             .showText(menaText)
             .endText()
     }
@@ -82,7 +82,7 @@ class StatementPageEventHandler(
 
             val logoWidth = 40f
             val logoX = pageSize.right - 32 - logoWidth
-            val logoY = pageSize.top - 32 - 20f
+            val logoY = pageSize.top - 48 - 20f
 
             canvas.addXObjectAt(processor, logoX, logoY)
 
@@ -100,14 +100,14 @@ class StatementPageEventHandler(
         canvas.beginText()
             .setFontAndSize(titleFont, 14f)
             .setColor(DeviceRgb(14, 16, 23), true)
-            .moveText(32.0, (pageSize.top - 32).toDouble())
+            .moveText(32.0, (pageSize.top - 44).toDouble())
             .showText("Statement Period")
             .endText()
 
         canvas.beginText()
             .setFontAndSize(bodyFont, 12f)
             .setColor(DeviceRgb(62, 66, 82), true)
-            .moveText(32.0, (pageSize.top - 58).toDouble())
+            .moveText(32.0, (pageSize.top - 70).toDouble())
             .showText("${statementData.startDateTime.formatHeaderDate()} – ${statementData.endDateTime.formatHeaderDate()}")
             .endText()
     }

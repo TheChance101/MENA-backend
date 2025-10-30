@@ -18,7 +18,7 @@
             background-color: white;
             overflow: hidden;
             page-break-inside: auto;
-            margin-top: 24pt;
+            margin-top: 8pt;
         }
 
         table {
@@ -134,6 +134,7 @@
             font-size: 20pt;
             line-height: 22pt;
             margin-bottom: 12pt;
+            margin-top: 12pt
         }
 
         .balance {
@@ -163,7 +164,7 @@
 <div class="user-info" th:if="${isFirstPage}">
     <p class="user-name" th:text="${userName}">John Doe</p>
     <p class="balance" th:text="'Opening Balance: ' + ${openingBalance} + ' Silvers'">Opening Balance: 1,000 Silvers</p>
-    <p class="balance" style="margin-top: 4pt" th:text="'Closing Balance: ' + ${closingBalance} + ' Silvers'">Closing Balance: 1,250 Silvers</p>
+    <p class="balance" style="margin-top: 4pt; margin-bottom: 16pt;" th:text="'Closing Balance: ' + ${closingBalance} + ' Silvers'">Closing Balance: 1,250 Silvers</p>
 </div>
 
 <div class="table-container">
