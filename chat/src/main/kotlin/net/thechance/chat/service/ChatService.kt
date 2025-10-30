@@ -2,11 +2,14 @@ package net.thechance.chat.service
 
 import net.thechance.chat.entity.*
 import net.thechance.chat.repository.ChatRepository
+import net.thechance.chat.repository.MessageReactionRepository
 import net.thechance.chat.repository.MessageRepository
 import net.thechance.chat.service.exception.NotFoundException
 import net.thechance.chat.service.model.ChatModel
 import net.thechance.chat.service.model.MessageImageRequestArgs
+import net.thechance.chat.service.model.MessageReactionRequestArgs
 import net.thechance.chat.service.model.MessageRequestArgs
+import net.thechance.chat.service.model.MessageWithReactions
 import org.springframework.data.domain.Page
 import org.springframework.data.domain.Pageable
 import org.springframework.data.repository.findByIdOrNull
@@ -18,6 +21,7 @@ import java.util.*
 @Service
 class ChatService(
     private val messageRepository: MessageRepository,
+    private val messageReactionRepository: MessageReactionRepository,
     private val chatRepository: ChatRepository,
     private val contactUserService: ContactUserService,
     private val attachmentStorageService: AttachmentStorageService,
@@ -64,8 +68,48 @@ class ChatService(
         )
     }
 
+    fun addReaction(args: MessageReactionRequestArgs): MessageReaction {
+        messageRepository.findByIdOrNull(args.messageId)
+            ?: throw NotFoundException("no message was found with id: ${args.messageId}")
+
+        if (!isValidEmoji(args.emoji)) {
+            throw IllegalArgumentException("Invalid emoji")
+        }
+
+        return messageReactionRepository.save(
+            MessageReaction(
+                messageId = args.messageId,
+                userId = args.userId,
+                emoji = args.emoji
+            )
+        )
+    }
+
+    fun deleteReaction(args: MessageReactionRequestArgs) {
+        messageReactionRepository.deleteByMessageIdAndUserIdAndEmoji(args.messageId, args.userId, args.emoji)
+    }
+
+    private fun isValidEmoji(input: String): Boolean {
+        val regex = Regex("[\\p{So}\\p{Sk}\\p{Emoji_Presentation}\\p{Extended_Pictographic}]+")
+        return regex.matches(input)
+    }
+
     fun getAllChatMessages(chatId: UUID, pageable: Pageable) =
         messageRepository.getAllByChatIdOrderBySentAtDesc(chatId, pageable)
+
+    fun getAllChatMessagesWithReactions(chatId: UUID, pageable: Pageable): Page<MessageWithReactions> {
+        val messagesPage = messageRepository.getAllByChatIdOrderBySentAtDesc(chatId, pageable)
+        if (messagesPage.isEmpty) return Page.empty(pageable)
+
+        val messageIds = messagesPage.content.map { it.id }
+        val reactions = messageReactionRepository.findByMessageIdIn(messageIds)
+        val reactionsByMessageId = reactions.groupBy { it.messageId }
+
+        return messagesPage.map { message ->
+            val reactionsForMessage = reactionsByMessageId[message.id] ?: emptyList()
+            MessageWithReactions(message, reactionsForMessage)
+        }
+    }
 
 
     fun markChatMessagesAsRead(chatId: UUID, userId: UUID) =

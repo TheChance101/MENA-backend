@@ -61,7 +61,8 @@ class ChatController(
         pageable: Pageable
     ): ResponseEntity<PagedResponse<MessageResponse>> {
         return ResponseEntity.ok(
-            chatService.getAllChatMessages(chatId, pageable).toPagedMessageResponse(userId)
+            chatService.getAllChatMessagesWithReactions(chatId, pageable)
+                .toPagedMessageResponse(userId)
         )
     }
 
@@ -85,6 +86,34 @@ class ChatController(
             }
 
         return ResponseEntity.ok(message.toResponse(senderId))
+    }
+
+    @PostMapping("/{messageId}/reactions")
+    fun addReaction(
+        @PathVariable messageId: UUID,
+        @RequestBody body: MessageReactionRequest,
+        principal: Principal
+    ): ResponseEntity<MessageReactionResponse> {
+        val userId = UUID.fromString(principal.name)
+        val reaction = chatService.addReaction(body.toRequestArgs(messageId, userId))
+
+        // todo send add reaction event via websocket
+
+        return ResponseEntity.ok(reaction.toResponse())
+    }
+
+    @DeleteMapping("/{messageId}/reactions")
+    fun deleteReaction(
+        @PathVariable messageId: UUID,
+        @RequestBody body: MessageReactionRequest,
+        principal: Principal
+    ): ResponseEntity<Unit> {
+        val userId = UUID.fromString(principal.name)
+        chatService.deleteReaction(body.toRequestArgs(messageId, userId))
+
+        // todo send add reaction event via websocket
+
+        return ResponseEntity.noContent().build()
     }
 
     @MessageMapping("/chat.markAsRead")
