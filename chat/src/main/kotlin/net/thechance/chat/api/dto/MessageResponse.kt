@@ -2,7 +2,6 @@ package net.thechance.chat.api.dto
 
 import net.thechance.chat.api.dto.MessageResponse.Reaction
 import net.thechance.chat.entity.Message
-import net.thechance.chat.entity.MessageReaction
 import net.thechance.chat.service.model.MessageWithReactions
 import org.springframework.data.domain.Page
 import java.time.Instant

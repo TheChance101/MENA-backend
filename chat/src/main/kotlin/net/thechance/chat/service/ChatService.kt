@@ -15,6 +15,7 @@ import org.springframework.data.domain.Pageable
 import org.springframework.data.repository.findByIdOrNull
 import org.springframework.stereotype.Service
 import org.springframework.transaction.annotation.Transactional
+import java.text.Normalizer
 import java.time.Instant
 import java.util.*
 
@@ -90,8 +91,12 @@ class ChatService(
     }
 
     private fun isValidEmoji(input: String): Boolean {
-        val regex = Regex("[\\p{So}\\p{Sk}\\p{Emoji_Presentation}\\p{Extended_Pictographic}]+")
-        return regex.matches(input)
+        val emojiRange = """(?:\u00A9|\u00AE|[\u2000-\u206F]|[\u2190-\u2BFF]|[\u2E00-\u2E7F]|[\u2300-\u23FF]|[\u24C2-\u1F251]|\u00A9|\u00AE|\u203C|\u2049|[\u2122\u2139]|\u{1F3F4}[\u{E006E}-\u{E007A}]+|\u{1F3F4}[\u{E006E}-\u{E007A}]*\u{E007F}|[\u{1F1E6}-\u{1F1FF}]{2}|[\u{1F3F4}\u{E006E}-\u{E007A}]+|\u{1F3F4}\u{E007F}|\u{1F3F3}\u{1F3F4}|[\u{1F6F7}-\u{1F6F8}\u{1F3FB}-\u{1F3FF}]|[\u{1F1E6}-\u{1F1FF}][\u{1F1E6}-\u{1F1FF}]|[\u{1F1F2}-\u{1F1F4}\u{1F1E6}-\u{1F1FF}\u{1F1F2}-\u{1F1F4}]|[\u{1F1E6}-\u{1F1FF}\u{1F1E6}-\u{1F1FF}]|[\u{1F30D}\u{E0067}-\u{E007F}]|[\u26F9\u2708-\u270D\u26FD]|[\u{1F3C2}-\u{1F3C4}\u{1F3FB}-\u{1F3FF}]|[\u{1F3CA}-\u{1F3CB}\u{1F3FB}-\u{1F3FF}]|[\u{1F680}-\u{1F6C5}\u{1F3FB}-\u{1F3FF}]|[\u{1F693}-\u{1F6A5}\u{1F3FB}-\u{1F3FF}]|[\u{1F6B2}\u{1F3FB}-\u{1F3FF}]|[\u{1F6C0}\u{1F3FB}-\u{1F3FF}]|[\u{1F6CC}\u{1F3FB}-\u{1F3FF}]|[\u{1F6F4}\u{1F3FB}-\u{1F3FF}]|[\u{1F6F9}\u{1F3FB}-\u{1F3FF}]|[\u{1F918}-\u{1F919}\u{1F3FB}-\u{1F3FF}]|[\u{1F93E}\u{1F3FB}-\u{1F3FF}]|[\u{1F9D1}-\u{1F9DD}\u{1F3FB}-\u{1F3FF}]|[\u{1F9DE}\u{1F3FB}-\u{1F3FF}]|[\u{1F9DF}\u{1F3FB}-\u{1F3FF}]|[\u{1FAF1}\u{1F3FB}-\u{1F3FF}]|[\u{1F9E6}\u{1F3FB}-\u{1F3FF}])"""
+        val emojiRegex = Regex("^$emojiRange$", RegexOption.MULTILINE)
+
+        val normalized = Normalizer.normalize(input.trim(), Normalizer.Form.NFC)
+        if (normalized.isEmpty()) return false
+        return emojiRegex.matches(normalized)
     }
 
     fun getAllChatMessages(chatId: UUID, pageable: Pageable) =
