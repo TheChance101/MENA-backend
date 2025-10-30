@@ -9,6 +9,7 @@ import net.thechance.dukan.service.exception.ProductNotFoundException
 import net.thechance.dukan.repository.DukanProductRepository
 import net.thechance.dukan.repository.DukanShelfRepository
 import net.thechance.dukan.service.model.DukanProductCreationParams
+import net.thechance.dukan.service.model.DukanProductUpdateParams
 import org.springframework.data.domain.Page
 import org.springframework.data.domain.Pageable
 import org.springframework.stereotype.Service
@@ -54,9 +55,7 @@ class DukanProductService(
         try {
             val dukan = dukanService.getDukanByOwnerId(params.ownerId)
             val shelf = dukanShelfRepository.getReferenceById(params.shelfId)
-            if (dukanProductRepository.existsByDukanIdAndNameIgnoreCase(dukan.id, params.name)) {
-                throw ProductNameAlreadyTakenException()
-            }
+            checkProductNameExistence(dukan.id, params.name)
             val product = dukanProductRepository.save(
                 DukanProduct(
                     name = params.name.trim(),
@@ -76,6 +75,77 @@ class DukanProductService(
     fun getProductsByShelf(shelfId: UUID, pageable: Pageable): Page<DukanProduct> {
         return dukanProductRepository.findAllByShelfId(shelfId, pageable)
     }
+
+    fun getProductById(productId: UUID): DukanProduct {
+        return dukanProductRepository.findById(productId).orElseThrow {
+            ProductNotFoundException()
+        }
+    }
+
+    @Transactional
+    fun updateProduct(
+        updateParams: DukanProductUpdateParams
+    ): UUID {
+        val product = dukanProductRepository
+            .findByIdAndDukanOwnerId(updateParams.productId, updateParams.ownerId)
+            .orElseThrow { ProductNotFoundException() }
+
+        if (product.name != updateParams.name) {
+            checkProductNameExistence(product.dukan.id, updateParams.name)
+        }
+
+        val shelf = dukanShelfRepository.getReferenceById(updateParams.shelfId)
+
+        deleteUnusedProductImages(product.imageUrls, updateParams.imageUrls)
+
+        val updatedProduct = product.copy(
+            name = updateParams.name.trim(),
+            price = updateParams.price,
+            imageUrls = updateParams.imageUrls,
+            description = updateParams.description.trim(),
+            shelf = shelf
+        )
+
+        return dukanProductRepository.save(updatedProduct).id
+    }
+
+    @Transactional
+    fun uploadProductImage(
+        ownerId: UUID,
+        productId: UUID,
+        file: MultipartFile
+    ): String {
+        val product = dukanProductRepository
+            .findByIdAndDukanOwnerId(productId, ownerId)
+            .orElseThrow { ProductNotFoundException() }
+        val imageUrl = imageStorageService.uploadImage(
+            file = file,
+            fileName = product.name,
+            folderName = PRODUCT_FOLDER_NAME
+        )
+        return imageUrl
+    }
+
+    private fun checkProductNameExistence(dukanId: UUID, name: String) {
+        if (dukanProductRepository.existsByDukanIdAndNameIgnoreCase(dukanId, name)) {
+            throw ProductNameAlreadyTakenException()
+        }
+    }
+
+    private fun deleteUnusedProductImages(oldImageUrls: List<String>, updatedImageUrls: List<String>) {
+        try {
+            oldImageUrls
+                .filterNot { it in updatedImageUrls }
+                .forEach {
+                    if (imageStorageService.deleteImage(it).not()) {
+                        // TODO save failed images table and try to delete them later
+                    }
+                }
+        } catch (_: Exception) {
+            // TODO save failed images table and try to delete them later
+        }
+    }
+
 
     companion object {
         private const val PRODUCT_FOLDER_NAME = "product"

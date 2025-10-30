@@ -12,4 +12,5 @@ interface DukanProductRepository : JpaRepository<DukanProduct, UUID> {
     fun existsByDukanIdAndNameIgnoreCase(dukanId: UUID, name: String): Boolean
     fun findAllByShelfId(shelfId: UUID, pageable: Pageable): Page<DukanProduct>
     fun existsByShelfId(shelfId: UUID): Boolean
+    fun findByIdAndDukanOwnerId(id: UUID, ownerId: UUID): Optional<DukanProduct>
 }

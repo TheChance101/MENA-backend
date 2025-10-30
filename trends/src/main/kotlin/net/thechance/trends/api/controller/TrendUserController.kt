@@ -1,12 +1,9 @@
 package net.thechance.trends.api.controller
 
-import net.thechance.trends.api.dto.PagingResponse
-import net.thechance.trends.api.dto.reel.ReelResponse
-import net.thechance.trends.api.dto.reel.toResponse
-import net.thechance.trends.api.dto.reel.withOwnership
-import net.thechance.trends.api.dto.trendUser.DoesUserHaveCategoriesResponse
-import net.thechance.trends.service.ReelsService
-import net.thechance.trends.service.TrendUserService
+import net.thechance.trends.api.dto.base.PagingResponse
+import net.thechance.trends.api.dto.trend.TrendResponse
+import net.thechance.trends.api.dto.trend.toResponse
+import net.thechance.trends.service.TrendsService
 import org.springframework.data.domain.Pageable
 import org.springframework.http.ResponseEntity
 import org.springframework.security.core.annotation.AuthenticationPrincipal
@@ -16,42 +13,25 @@ import org.springframework.web.bind.annotation.RestController
 import java.util.*
 
 @RestController
-@RequestMapping("/${Constants.TRENDS_PATH}/user")
+@RequestMapping("/trends/user")
 class TrendUserController(
-    private val trendUserService: TrendUserService,
-    private val reelService: ReelsService
+    private val trendsService: TrendsService
 ) {
 
-    @GetMapping("/reels")
-    fun getAllReelsByUserId(
+    @GetMapping
+    fun getAllTrendsByUserId(
         pageable: Pageable,
         @AuthenticationPrincipal currentUserId: UUID
-    ): ResponseEntity<PagingResponse<ReelResponse>> {
+    ): ResponseEntity<PagingResponse<TrendResponse>> {
 
-        val reels = reelService.getAllReelsByUserId(pageable, currentUserId).content.map { reel ->
-            val isLiked = reelService.isReelLikedByUser(reel.id, currentUserId)
+        val trends = trendsService.getAllTrendsByUserId(pageable, currentUserId).content.map { it.toResponse() }
 
-            reel.toResponse(isLiked).withOwnership(
-                currentUserId = currentUserId,
-                ownerId = reel.ownerId
-            )
-        }
-
-        val result = PagingResponse.create(
+        val result = PagingResponse(
             pageNumber = pageable.pageNumber,
-            results = reels,
-            totalResults = reels.size
+            results = trends,
+            totalResults = trends.size
         )
 
         return ResponseEntity.ok(result)
-    }
-
-    @GetMapping("/categories/status")
-    fun getDoesUserHaveCategories(
-        @AuthenticationPrincipal userId: UUID,
-    ): ResponseEntity<DoesUserHaveCategoriesResponse> {
-        val doesUserHaveCategories = trendUserService.getDoesUserHaveCategories(userId)
-        val response = DoesUserHaveCategoriesResponse(hasCategory = doesUserHaveCategories)
-        return ResponseEntity.ok(response)
     }
 }

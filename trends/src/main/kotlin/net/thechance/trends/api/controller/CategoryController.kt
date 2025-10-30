@@ -2,7 +2,6 @@ package net.thechance.trends.api.controller
 
 import jakarta.validation.Valid
 import net.thechance.trends.api.dto.category.*
-import net.thechance.trends.service.CategoryService
 import net.thechance.trends.service.TrendUserService
 import org.springframework.http.ResponseEntity
 import org.springframework.security.core.annotation.AuthenticationPrincipal
@@ -10,9 +9,8 @@ import org.springframework.web.bind.annotation.*
 import java.util.*
 
 @RestController
-@RequestMapping("/${Constants.TRENDS_PATH}/categories")
+@RequestMapping("/trends/categories")
 class CategoryController(
-    private val categoryService: CategoryService,
     private val trendUserService: TrendUserService,
 ) {
 
@@ -34,14 +32,8 @@ class CategoryController(
     fun getSelectedCategories(
         @AuthenticationPrincipal userId: UUID
     ): ResponseEntity<List<CategoryResponse>> {
-        val allCategories = categoryService.getAllCategories()
         val userCategories = trendUserService.getUserSelectedCategories(userId)
-
-        return ResponseEntity.ok(
-            allCategories.map { category ->
-                category.toCategoryResponse(isSelected = category in userCategories)
-            }
-        )
+        return ResponseEntity.ok(userCategories.map { it.toCategoryResponse() })
     }
 
     @PatchMapping
@@ -49,14 +41,14 @@ class CategoryController(
         @RequestBody @Valid patchRequest: PatchUserCategoriesRequest,
         @AuthenticationPrincipal userId: UUID
     ): ResponseEntity<PatchUserCategoriesResponse> {
-        val patchMetadata = trendUserService.patchUserCategories(
+        val patchMetadata = trendUserService.updateUserCategories(
             userId = userId,
             categoriesToAdd = patchRequest.add,
             categoriesToRemove = patchRequest.remove
         )
 
         val userCategories = trendUserService.getUserSelectedCategories(userId).map { category ->
-            category.toCategoryResponse(isSelected = true)
+            category.toCategoryResponse()
         }
 
         return ResponseEntity.ok(
