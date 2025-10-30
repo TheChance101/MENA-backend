@@ -1,7 +1,6 @@
 package net.thechance.wallet.entity
 
 import jakarta.persistence.*
-import net.thechance.wallet.entity.user.WalletUser
 import java.math.BigDecimal
 import java.time.LocalDateTime
 import java.util.*

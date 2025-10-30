@@ -14,8 +14,7 @@ import java.time.LocalDateTime
 
 @ConfigurationProperties(prefix = "storage.trends")
 data class TrendsStorageProperties(
-    val bucket: String,
-    val cdnEndpoint: String
+    val bucket: String, val cdnEndpoint: String
 )
 
 @Service
@@ -26,42 +25,35 @@ class FileStorageService(
 ) {
     fun uploadVideo(
         file: MultipartFile,
-        fileName: String,
-        folderName: String,
     ): String {
         val mimeType = file.contentType ?: throw InvalidVideoException()
         val extension = allowedVideoMimeTypes[mimeType] ?: throw InvalidVideoException()
 
-        val newFileName = "${fileName}_${LocalDateTime.now()}.$extension"
-        val key = "video/$folderName/$newFileName"
+        val newFileName = "${LocalDateTime.now()}.$extension"
+        val key = "video/$newFileName"
 
         val putRequest = createObjectRequest(key, mimeType)
 
-        return try {
+        runCatching {
             file.inputStream.use { inputStream ->
                 trendsS3Client.putObject(
-                    putRequest,
-                    RequestBody.fromInputStream(inputStream, file.size)
+                    putRequest, RequestBody.fromInputStream(inputStream, file.size)
                 )
             }
-
-            "${trendsStorageProperties.cdnEndpoint}/$key"
-        } catch (ex: Exception) {
-            ex.printStackTrace()
+            return "${trendsStorageProperties.cdnEndpoint}/$key"
+        }.getOrElse {
             throw VideoUploadFailedException()
         }
     }
 
     fun uploadImage(
         file: MultipartFile,
-        fileName: String,
-        folderName: String,
     ): String {
         val mimeType = file.contentType ?: throw InvalidThumbnailException()
         val extension = allowedImageMimeTypes[mimeType] ?: throw InvalidThumbnailException()
         runCatching {
-            val newFileName = "${fileName}_${LocalDateTime.now()}.$extension"
-            val key = "thumbnail/$folderName/$newFileName"
+            val newFileName = "${LocalDateTime.now()}.$extension"
+            val key = "thumbnail/$newFileName"
             val putReq = createObjectRequest(key, mimeType)
             trendsS3Client.putObject(putReq, RequestBody.fromBytes(file.bytes))
             return "${trendsStorageProperties.cdnEndpoint}/$key"
@@ -70,18 +62,15 @@ class FileStorageService(
         }
     }
 
-    fun deleteVideo(videoUrl: String): Boolean {
+    fun deleteFile(fileUrl: String): Boolean {
         val prefix = trendsStorageProperties.cdnEndpoint
-        if (!videoUrl.startsWith(prefix)) {
+        if (!fileUrl.startsWith(prefix)) {
             throw InvalidTrendInputException()
         }
 
-        val key = videoUrl.removePrefix(prefix)
+        val key = fileUrl.removePrefix(prefix)
 
-        val deleteRequest = DeleteObjectRequest.builder()
-            .bucket(trendsStorageProperties.bucket)
-            .key(key)
-            .build()
+        val deleteRequest = DeleteObjectRequest.builder().bucket(trendsStorageProperties.bucket).key(key).build()
 
         val response = trendsS3Client.deleteObject(deleteRequest)
 
@@ -89,26 +78,17 @@ class FileStorageService(
     }
 
     private fun createObjectRequest(key: String, contentType: String): PutObjectRequest? {
-        return PutObjectRequest.builder()
-            .bucket(trendsStorageProperties.bucket)
-            .key(key)
-            .contentType(contentType)
-            .acl(ObjectCannedACL.PUBLIC_READ)
-            .build()
+        return PutObjectRequest.builder().bucket(trendsStorageProperties.bucket).key(key).contentType(contentType)
+            .acl(ObjectCannedACL.PUBLIC_READ).build()
     }
 
     private companion object {
         val allowedVideoMimeTypes = mapOf(
-            "video/mp4" to "mp4",
-            "video/quicktime" to "mov",
-            "video/x-matroska" to "mkv"
+            "video/mp4" to "mp4", "video/quicktime" to "mov", "video/x-matroska" to "mkv"
         )
 
         val allowedImageMimeTypes = mapOf(
-            "image/jpeg" to "jpg",
-            "image/jpg" to "jpg",
-            "image/png" to "png",
-            "image/webp" to "webp"
+            "image/jpeg" to "jpg", "image/jpg" to "jpg", "image/png" to "png", "image/webp" to "webp"
         )
     }
 }

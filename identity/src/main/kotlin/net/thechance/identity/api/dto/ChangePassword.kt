@@ -11,3 +11,5 @@ data class ChangePasswordRequest(
     @field:Length(min = 8, message = "confirm password must be more than or equals 8 characters")
     val confirmPassword: String,
 )
+
+data class ChangePasswordResponse(val message: String)
