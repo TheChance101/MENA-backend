@@ -3,7 +3,6 @@ package net.thechance.faith.remote
 import kotlinx.serialization.json.Json
 import net.thechance.faith.exception.FailedToGetPrayerTimesException
 import net.thechance.faith.remote.dto.prayertime.PrayerTimingsRemoteDto
-import net.thechance.faith.service.PrayerService
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
 import org.springframework.stereotype.Component
@@ -35,8 +34,8 @@ class PrayerRemoteClient(
 
             json.decodeFromString(PrayerTimingsRemoteDto.serializer(), rawJson)
         }.getOrElse {
-            logger.error("failed to get prayer times from remote: ${it.message}")
-            throw FailedToGetPrayerTimesException("failed to fetch prayer times from remote")
+            logger.error("failed to get prayer times from remote: ex: $it")
+            throw FailedToGetPrayerTimesException("failed to fetch prayer times from remote: $it")
         }
     }
 
