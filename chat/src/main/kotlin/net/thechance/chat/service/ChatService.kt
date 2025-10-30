@@ -51,7 +51,6 @@ class ChatService(
     fun saveMessageImage(args: MessageImageRequestArgs): Message {
         val imageUrl = attachmentStorageService.uploadImage(
             file = args.image,
-            fileName = args.image.originalFilename ?: "${Instant.now()}-Untitled",
             folderName = FOLDER_NAME
         )
 

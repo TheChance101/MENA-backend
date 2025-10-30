@@ -1,10 +1,10 @@
 package net.thechance.identity.api.controller
 
 import jakarta.validation.Valid
-import net.thechance.identity.api.dto.UpdateProfileRequest
 import net.thechance.identity.api.dto.ProfileResponse
 import net.thechance.identity.api.dto.UpdateImageResponse
-import net.thechance.identity.mapper.toResponse
+import net.thechance.identity.api.dto.UpdateProfileRequest
+import net.thechance.identity.api.mapper.toResponse
 import net.thechance.identity.service.UserService
 import net.thechance.identity.service.model.UserServiceModel
 import org.springframework.beans.factory.annotation.Value
