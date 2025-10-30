@@ -8,6 +8,7 @@ import org.springframework.stereotype.Service
 import org.springframework.web.multipart.MultipartFile
 import software.amazon.awssdk.core.sync.RequestBody
 import software.amazon.awssdk.services.s3.S3Client
+import software.amazon.awssdk.services.s3.model.DeleteObjectRequest
 import software.amazon.awssdk.services.s3.model.ObjectCannedACL
 import software.amazon.awssdk.services.s3.model.PutObjectRequest
 import java.time.LocalDateTime
@@ -40,6 +41,20 @@ class ImageStorageService(
         } catch (_: Exception) {
             throw ImageUploadFailedException()
         }
+    }
+
+    fun deleteImage(imageUrl: String): Boolean {
+        val prefix = props.cdnEndpoint
+        if (!imageUrl.startsWith(prefix)) {
+            throw Exception()
+        }
+        val key = imageUrl.removePrefix(prefix)
+
+        return dukanS3Client.deleteObject(
+            DeleteObjectRequest.builder()
+                .bucket(props.bucket)
+                .key(key).build()
+        ).sdkHttpResponse().isSuccessful
     }
 
     private fun createObjectRequest(key: String, contentType: String): PutObjectRequest? {
