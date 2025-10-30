@@ -1,0 +1,12 @@
+package net.thechance.dukan.api.mapper.dukan
+
+import net.thechance.dukan.api.dto.dukan.DukanResponse
+import net.thechance.dukan.entity.Dukan
+
+fun Dukan.toDukanResponse(): DukanResponse {
+    return DukanResponse(
+        id =  id,
+        name = name,
+        imageUrl = imageUrl.orEmpty()
+    )
+}

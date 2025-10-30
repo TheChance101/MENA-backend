@@ -2,7 +2,7 @@ package net.thechance.trends.repository
 
 import net.thechance.trends.entity.Category
 import org.springframework.data.jpa.repository.JpaRepository
-import java.util.UUID
+import java.util.*
 
 interface CategoryRepository : JpaRepository<Category, UUID> {
     fun countByIdIn(ids: MutableCollection<UUID>): Long

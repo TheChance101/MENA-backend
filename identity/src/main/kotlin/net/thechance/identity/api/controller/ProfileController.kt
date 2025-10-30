@@ -1,36 +1,65 @@
 package net.thechance.identity.api.controller
 
-import net.thechance.identity.api.dto.GeneralResponse
+import jakarta.validation.Valid
 import net.thechance.identity.api.dto.ProfileResponse
-import net.thechance.identity.mapper.toResponse
-import net.thechance.identity.service.UpdateUserProfileImageService
+import net.thechance.identity.api.dto.UpdateImageResponse
+import net.thechance.identity.api.dto.UpdateProfileRequest
+import net.thechance.identity.api.mapper.toResponse
 import net.thechance.identity.service.UserService
+import net.thechance.identity.service.model.UserServiceModel
+import org.springframework.beans.factory.annotation.Value
 import org.springframework.http.ResponseEntity
 import org.springframework.security.core.annotation.AuthenticationPrincipal
 import org.springframework.web.bind.annotation.*
 import org.springframework.web.multipart.MultipartFile
+import java.time.LocalDate
 import java.util.*
 
 @RestController
 @RequestMapping("/identity/profile")
 class ProfileController(
     private val userService: UserService,
-    private val updateUserProfileImageService: UpdateUserProfileImageService
+    @param:Value("storage.mena.cdn-endpoint") private val cdnEndpoint: String,
 ) {
 
-    @GetMapping("/me")
-    fun getCurrentUserProfile(@AuthenticationPrincipal userId: UUID): ResponseEntity<ProfileResponse> {
-        val response = userService.findById(userId).toResponse()
+    @PostMapping
+    fun updateUserProfile(
+        @AuthenticationPrincipal userId: UUID,
+        @Valid @RequestBody updateProfileRequest: UpdateProfileRequest,
+    ): ResponseEntity<ProfileResponse> {
+        val userServiceModel = updateProfileRequest.toServiceModel(userId)
+        val updatedUser = userService.updateUserProfile(userServiceModel)
+        return ResponseEntity.ok(updatedUser.toResponse(cdnEndpoint))
+    }
+
+    @GetMapping
+    fun getUserProfile(@AuthenticationPrincipal userId: UUID): ResponseEntity<ProfileResponse> {
+        val response = userService.findById(userId).toResponse(cdnEndpoint)
         return ResponseEntity.ok(response)
     }
 
     @PostMapping("/image")
-    fun uploadProfileImage(
+    fun updateUserImage(
         @AuthenticationPrincipal userId: UUID,
-        @RequestParam("file") file: MultipartFile,
-    ): ResponseEntity<GeneralResponse> {
-        updateUserProfileImageService(userId, file)
-        val response = GeneralResponse("Profile image uploaded successfully")
+        @RequestPart("file") file: MultipartFile,
+    ): ResponseEntity<UpdateImageResponse> {
+        val imageUrl = userService.updateUserImage(userId, file)
+        val response = UpdateImageResponse(imageUrl)
         return ResponseEntity.ok(response)
     }
+
+    @DeleteMapping("/image")
+    fun deleteUserImage(@AuthenticationPrincipal userId: UUID): ResponseEntity<Unit> {
+        userService.deleteUserImage(userId)
+        return ResponseEntity.ok().build()
+    }
+
+    private fun UpdateProfileRequest.toServiceModel(id: UUID) = UserServiceModel(
+        id = id,
+        username = username,
+        firstName = firstName,
+        lastName = lastName,
+        birthDate = LocalDate.parse(birthDate),
+        gender = gender
+    )
 }

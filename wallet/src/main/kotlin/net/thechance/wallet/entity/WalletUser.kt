@@ -1,0 +1,27 @@
+package net.thechance.wallet.entity
+
+import jakarta.persistence.*
+import java.util.*
+
+@Entity
+@Table(name = "users", schema = "wallet")
+data class WalletUser(
+    @Id
+    val userId: UUID,
+
+    @Column(nullable = false)
+    val firstName: String,
+
+    @Column(nullable = false)
+    val lastName: String,
+
+    @Column(nullable = true)
+    val imageUrl: String?,
+
+    @OneToOne(cascade = [CascadeType.ALL], fetch = FetchType.EAGER)
+    @JoinColumn(name = "dukan_id", referencedColumnName = "dukanId")
+    val dukan: WalletDukan? = null
+) {
+    val userName: String
+        get() = "$firstName $lastName"
+}

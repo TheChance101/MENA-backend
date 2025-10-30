@@ -4,8 +4,11 @@ import jakarta.validation.Valid
 import net.thechance.identity.api.dto.AddressResponse
 import net.thechance.identity.api.dto.CreateAddressRequest
 import net.thechance.identity.api.dto.UpdateAddressRequest
-import net.thechance.identity.mapper.toResponse
+import net.thechance.identity.api.mapper.toAddressModel
+import net.thechance.identity.api.mapper.toResponse
 import net.thechance.identity.service.AddressService
+import org.springframework.data.domain.Pageable
+import org.springframework.data.web.PageableDefault
 import org.springframework.http.ResponseEntity
 import org.springframework.security.core.annotation.AuthenticationPrincipal
 import org.springframework.web.bind.annotation.*
@@ -22,7 +25,7 @@ class AddressController(
         @PathVariable id: UUID,
         @Valid @RequestBody request: UpdateAddressRequest
     ): ResponseEntity<AddressResponse> {
-        val updateAddressResponse = addressService.updateAddressById(id, userId, request).toResponse()
+        val updateAddressResponse = addressService.updateAddressById(id, userId, request.toAddressModel()).toResponse()
         return ResponseEntity.ok(updateAddressResponse)
     }
 
@@ -31,7 +34,7 @@ class AddressController(
         @AuthenticationPrincipal userId: UUID,
         @Valid @RequestBody request: CreateAddressRequest
     ): ResponseEntity<AddressResponse> {
-        val createAddressResponse = addressService.addAddress(userId, request).toResponse()
+        val createAddressResponse = addressService.addAddress(userId, request.toAddressModel()).toResponse()
         return ResponseEntity.ok(createAddressResponse)
     }
 
@@ -45,11 +48,22 @@ class AddressController(
     }
 
     @GetMapping
-    fun getAllAddresses(
+    fun getAddresses(
+        @PageableDefault(page = 0, size = 20)
+        pageable: Pageable,
         @AuthenticationPrincipal userId: UUID
     ): ResponseEntity<List<AddressResponse>> {
-        val getAllAddressesResponse = addressService.getAllAddresses(userId).map { it.toResponse() }
-        return ResponseEntity.ok(getAllAddressesResponse)
+        val getPageableAddressesResponse =
+            addressService.getPageableAddresses(userId, pageable).content.map { it.toResponse() }
+        return ResponseEntity.ok(getPageableAddressesResponse)
+    }
+
+    @GetMapping("/active")
+    fun getActiveAddress(
+        @AuthenticationPrincipal userId: UUID
+    ): ResponseEntity<AddressResponse> {
+        val activeAddressResponse = addressService.getActiveAddress(userId).toResponse()
+        return ResponseEntity.ok(activeAddressResponse)
     }
 
     @DeleteMapping("/{id}")

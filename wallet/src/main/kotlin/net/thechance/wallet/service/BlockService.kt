@@ -7,6 +7,7 @@ import org.springframework.data.domain.Pageable
 import org.springframework.stereotype.Service
 import java.security.MessageDigest
 import java.time.LocalDateTime
+import java.util.*
 
 @Service
 class BlockService(
@@ -16,22 +17,25 @@ class BlockService(
 
     fun getCurrentBlock(): Block {
         val latestBlock = blockRepository.findTopByOrderByTimestampDesc()
-        if (latestBlock != null) {
-            val transactionCount = transactionRepository.countAllByBlockId(latestBlock.id)
-            if (transactionCount < TRANSACTION_COUNT_LIMIT_PER_BLOCK) {
-                return latestBlock
-            }
+        return if (latestBlock != null && !isBlockFull(latestBlock)) {
+            latestBlock
+        } else {
+            createNewBlock(latestBlock)
         }
-        val previousBlockHash = calculatePreviousBlockHash(latestBlock)
-        return blockRepository.save(Block(previousBlockHash = previousBlockHash))
     }
 
-    private fun calculatePreviousBlockHash(latestBlock: Block?): String {
-        if (latestBlock == null) return "0".repeat(64)
+    private fun isBlockFull(block: Block): Boolean {
+        val transactionCount = transactionRepository.countAllByBlockId(block.id)
+        return transactionCount >= TRANSACTION_COUNT_LIMIT_PER_BLOCK
+    }
 
-        val transactionsData = transactionRepository
-            .getAllByBlockId(latestBlock.id, Pageable.ofSize(TRANSACTION_COUNT_LIMIT_PER_BLOCK))
-            .joinToString(separator = "|") { it.toString() }
+    private fun createNewBlock(previousBlock: Block?): Block {
+        val previousHash = previousBlock?.let { calculatePreviousBlockHash(it) } ?: "0".repeat(64)
+        return blockRepository.save(Block(previousBlockHash = previousHash))
+    }
+
+    private fun calculatePreviousBlockHash(latestBlock: Block): String {
+        val transactionsData = getTransactionsData(latestBlock.id)
 
         val input = latestBlock.id.toString() +
                 latestBlock.timestamp.toString() +
@@ -41,12 +45,18 @@ class BlockService(
         return hashWithSha256(input)
     }
 
+    private fun getTransactionsData(blockId: UUID): String {
+        val transactions = transactionRepository
+            .getAllByBlockId(blockId, Pageable.ofSize(TRANSACTION_COUNT_LIMIT_PER_BLOCK))
+        return transactions.joinToString(separator = "|") { it.toString() }
+    }
+
     private fun hashWithSha256(input: String): String {
         val bytes = MessageDigest.getInstance("SHA-256").digest(input.toByteArray())
         return bytes.joinToString("") { "%02x".format(it) }
     }
 
     private companion object {
-        const val TRANSACTION_COUNT_LIMIT_PER_BLOCK = 15
+        const val TRANSACTION_COUNT_LIMIT_PER_BLOCK = 100
     }
 }

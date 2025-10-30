@@ -10,7 +10,6 @@ import org.springframework.transaction.annotation.Transactional
 class CategoryService(
     private val categoryRepository: CategoryRepository
 ) {
-
     fun getAllCategories(): List<Category> {
         return categoryRepository.findAll()
     }

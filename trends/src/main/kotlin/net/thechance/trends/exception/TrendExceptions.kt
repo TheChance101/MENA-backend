@@ -3,7 +3,7 @@ package net.thechance.trends.exception
 
 open class TrendExceptions(messages: String): Exception(messages)
 
-class ReelNotFoundException: TrendExceptions("Reel not found")
+class TrendNotFoundException: TrendExceptions("Trend not found")
 
 class TrendUserNotFoundException: TrendExceptions("User not found")
 
