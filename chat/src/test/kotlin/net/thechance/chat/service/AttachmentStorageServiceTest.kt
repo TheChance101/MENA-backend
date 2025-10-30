@@ -45,9 +45,9 @@ class AttachmentStorageServiceTest {
             menaS3Client.putObject(any<PutObjectRequest>(), any<RequestBody>())
         } returns mockk()
 
-        val result = service.uploadImage(file, fileName, folderName)
+        val result = service.uploadImage(file, fileName)
 
-        assertThat(result).startsWith("${props.cdnEndpoint}/images/$folderName/")
+        assertThat(result).startsWith("${props.cdnEndpoint}/images/$fileName/")
         assertThat(result).endsWith(".jpg")
 
         verify {
@@ -55,7 +55,7 @@ class AttachmentStorageServiceTest {
                 withArg<PutObjectRequest> {
                     assertThat(it.bucket()).isEqualTo(props.bucket)
                     assertThat(it.acl()).isEqualTo(ObjectCannedACL.PUBLIC_READ)
-                    assertThat(it.key()).contains("images/$folderName/")
+                    assertThat(it.key()).contains("images/$fileName/")
                 },
                 any<RequestBody>()
             )
@@ -69,7 +69,7 @@ class AttachmentStorageServiceTest {
         every { file.contentType } returns null
 
         assertThrows<InvalidImageFormatException> {
-            service.uploadImage(file, "file1", "chat_attachments")
+            service.uploadImage(file, "chat_attachments")
         }
     }
 
@@ -80,7 +80,7 @@ class AttachmentStorageServiceTest {
         every { file.contentType } returns "application/pdf"
 
         assertThrows<InvalidImageFormatException> {
-            service.uploadImage(file, "file1", "chat_attachments")
+            service.uploadImage(file,  "chat_attachments")
         }
     }
 
@@ -98,7 +98,7 @@ class AttachmentStorageServiceTest {
         } throws RuntimeException("S3 failed")
 
         assertThrows<ImageUploadFailedException> {
-            service.uploadImage(file, "file2", "chat_attachments")
+            service.uploadImage(file, "chat_attachments")
         }
     }
 }
