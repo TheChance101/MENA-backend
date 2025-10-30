@@ -6,7 +6,7 @@ import net.thechance.identity.api.dto.ChangePasswordRequest
 import net.thechance.identity.api.dto.ChangePasswordResponse
 import net.thechance.identity.api.dto.ProfileResponse
 import net.thechance.identity.api.dto.UpdateImageResponse
-import net.thechance.identity.mapper.toResponse
+import net.thechance.identity.api.mapper.toResponse
 import net.thechance.identity.service.ChangePasswordService
 import net.thechance.identity.service.UserService
 import net.thechance.identity.service.model.UserServiceModel
@@ -16,7 +16,7 @@ import org.springframework.security.core.annotation.AuthenticationPrincipal
 import org.springframework.web.bind.annotation.*
 import org.springframework.web.multipart.MultipartFile
 import java.time.LocalDate
-import java.util.*
+import java.util.UUID
 
 @RestController
 @RequestMapping("/identity/profile")

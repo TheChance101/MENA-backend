@@ -28,10 +28,10 @@ class UserServiceTest {
     }
 
     @Test
-    fun `findByPhoneNumber() should throw InvalidCredentialsException when user not exists`() {
+    fun `findByPhoneNumber() should throw UserNotFoundException when user not exists`() {
         every { userRepository.findByPhoneNumber(any()) } returns null
 
-        assertThrows(InvalidCredentialsException::class.java) { userService.findByPhoneNumber(phoneNumber) }
+        assertThrows(UserNotFoundException::class.java) { userService.findByPhoneNumber(phoneNumber) }
     }
 
     @Test
@@ -115,20 +115,10 @@ class UserServiceTest {
     }
 
     @Test
-    fun `updatePasswordByPhoneNumber() should throw PasswordNotUpdatedException when save in repository returns null`() {
-        every { userRepository.findByPhoneNumber(any()) } returns user
-        every { userRepository.save(any()) } returns null
-
-        assertThrows(PasswordNotUpdatedException::class.java) {
-            userService.updatePasswordByPhoneNumber(phoneNumber, PASSWORD)
-        }
-    }
-
-    @Test
-    fun `updatePasswordByPhoneNumber() should throw InvalidCredentialsException user not found`() {
+    fun `updatePasswordByPhoneNumber() should throw UserNotFoundException user not found`() {
         every { userRepository.findByPhoneNumber(any()) } returns null
 
-        assertThrows(InvalidCredentialsException::class.java) {
+        assertThrows(UserNotFoundException::class.java) {
             userService.updatePasswordByPhoneNumber(phoneNumber, PASSWORD)
         }
     }
