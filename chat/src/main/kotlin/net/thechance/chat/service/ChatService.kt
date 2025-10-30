@@ -77,17 +77,13 @@ class ChatService(
             throw IllegalArgumentException("Invalid emoji")
         }
 
-        return messageReactionRepository.save(
-            MessageReaction(
-                messageId = args.messageId,
-                userId = args.userId,
-                emoji = args.emoji
-            )
-        )
+        val existing = messageReactionRepository.findByMessageIdAndUserId(args.messageId, args.userId)
+        return existing?.copy(emoji = args.emoji)?.let { messageReactionRepository.save(it) }
+            ?: messageReactionRepository.save(MessageReaction(messageId = args.messageId, userId = args.userId, emoji = args.emoji))
     }
 
-    fun deleteReaction(args: MessageReactionRequestArgs) {
-        messageReactionRepository.deleteByMessageIdAndUserIdAndEmoji(args.messageId, args.userId, args.emoji)
+    fun deleteReaction(messageId: UUID, userId: UUID) {
+        messageReactionRepository.deleteByMessageIdAndUserId(messageId, userId)
     }
 
     private fun isValidEmoji(input: String): Boolean {

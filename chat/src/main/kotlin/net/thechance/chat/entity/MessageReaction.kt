@@ -7,7 +7,7 @@ import java.util.UUID
 @Table(
     name = "message_reactions",
     schema = "chat",
-    uniqueConstraints = [UniqueConstraint(columnNames = ["message_id", "user_id", "emoji"])]
+    uniqueConstraints = [UniqueConstraint(columnNames = ["message_id", "user_id"])]
 )
 data class MessageReaction(
     @Id @Column(columnDefinition = "uuid", updatable = false, nullable = false)

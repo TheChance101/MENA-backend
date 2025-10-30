@@ -109,7 +109,7 @@ class ChatController(
         principal: Principal
     ): ResponseEntity<Unit> {
         val userId = UUID.fromString(principal.name)
-        chatService.deleteReaction(body.toRequestArgs(messageId, userId))
+        chatService.deleteReaction(messageId, userId)
 
         // todo send add reaction event via websocket
 
