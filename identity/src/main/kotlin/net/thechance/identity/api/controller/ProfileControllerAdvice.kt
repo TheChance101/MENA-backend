@@ -24,14 +24,17 @@ class ProfileControllerAdvice {
     @ExceptionHandler(MethodArgumentNotValidException::class)
     @ResponseStatus(HttpStatus.BAD_REQUEST)
     fun handleValidationExceptions(exception: MethodArgumentNotValidException): ResponseEntity<ErrorResponse?> {
-        val error = exception.bindingResult.fieldErrors.first().let {
-            it.defaultMessage ?: "Error in field: $it.field"
-        }
-        logger.error("Validation failed: $error", exception)
+        val firstException = exception.getFirstException()
+        logger.error("Validation failed: $firstException", exception)
         return ResponseEntity
             .status(HttpStatus.BAD_REQUEST)
-            .body(ErrorResponse(error))
+            .body(ErrorResponse(firstException))
     }
+
+    private fun MethodArgumentNotValidException.getFirstException(): String =
+        bindingResult.fieldErrors.first().let {
+            it.defaultMessage ?: "Error in field: $it.field"
+        }
 
     @ExceptionHandler(UserNotFoundException::class)
     fun handleUserNotFoundException(exception: UserNotFoundException): ResponseEntity<ErrorResponse?> {
