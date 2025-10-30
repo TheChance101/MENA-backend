@@ -3,6 +3,7 @@ package net.thechance.chat.service.scheduler
 import jakarta.transaction.Transactional
 import net.thechance.chat.entity.CleanUpStatus
 import net.thechance.chat.repository.ChatRepository
+import net.thechance.chat.repository.MessageRepository
 import net.thechance.chat.service.AttachmentStorageService
 import org.springframework.scheduling.annotation.Scheduled
 import org.springframework.stereotype.Component
@@ -11,6 +12,7 @@ import java.util.*
 @Component
 class ChatCleanUpScheduler(
     val chatRepository: ChatRepository,
+    val messageRepository: MessageRepository,
     val attachmentStorageService: AttachmentStorageService,
 ){
 
@@ -52,7 +54,7 @@ class ChatCleanUpScheduler(
         var attempts = 0
         while (attempts < MAX_ATTEMPTS){
             try {
-                chatRepository.deleteChatById(chatId)
+                messageRepository.deleteAllByChatId(chatId)
                 break
             }catch (e: Exception){
                 attempts++

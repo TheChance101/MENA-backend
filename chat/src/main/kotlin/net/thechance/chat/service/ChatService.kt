@@ -159,12 +159,10 @@ class ChatService(
             throw e
         }
     }
-@Transactional
+    @Transactional
     private fun deleteAllChatData(chat: Chat){
         try {
             messageRepository.deleteAllByChatId(chat.id)
-            chatRepository.deleteChatUsersByChatId(chat.id)
-            chatRepository.deleteChatById(chat.id)
         }catch (e: Exception){
             chatRepository.save(chat.setCleanUpStatus(CleanUpStatus.CLEANUP_FAILED))
             throw DeleteChatException("Error clean up chat data: ${e.message}")
