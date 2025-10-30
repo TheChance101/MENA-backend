@@ -1,6 +1,5 @@
 package net.thechance.chat.api.controller
 
-import net.thechance.chat.api.dto.DeleteChatResponse
 import net.thechance.chat.api.dto.ErrorResponse
 import net.thechance.chat.service.exception.DeleteChatException
 import net.thechance.chat.service.exception.DeleteImagesFolderException
@@ -45,19 +44,17 @@ class ChatControllerAdvice : ResponseEntityExceptionHandler() {
     }
 
     @ExceptionHandler(DeleteImagesFolderException::class)
-    fun handleDeleteImagesFolderException(e: DeleteImagesFolderException): ResponseEntity<DeleteChatResponse>{
-        val error = DeleteChatResponse(
+    fun handleDeleteImagesFolderException(e: DeleteImagesFolderException): ResponseEntity<ErrorResponse>{
+        val error = ErrorResponse(
             message = e.message,
-            success = false
         )
         return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(error)
     }
 
     @ExceptionHandler(DeleteChatException::class)
-    fun handleDeleteChatException(e: DeleteChatException): ResponseEntity<DeleteChatResponse>{
-        val error = DeleteChatResponse(
+    fun handleDeleteChatException(e: DeleteChatException): ResponseEntity<ErrorResponse>{
+        val error = ErrorResponse(
             message = e.message,
-            success = false
         )
         return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(error)
     }

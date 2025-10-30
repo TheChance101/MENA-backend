@@ -132,11 +132,21 @@ class ChatController(
     @DeleteMapping("/delete/{chatId}")
     fun deleteChatById(
         @PathVariable chatId: UUID
-    ): ResponseEntity<DeleteChatResponse> {
+    ): ResponseEntity<Unit> {
         chatService.deleteChatById(chatId)
-        return ResponseEntity.ok(DeleteChatResponse(success = true, message = "Successfully deleted chat $chatId"))
+        sendEventToUsers(chatId, DeleteChatResponse(chatId))
+        return ResponseEntity.ok().body(Unit)
     }
 
+    private fun sendEventToUsers(chatId: UUID, eventPayload: Any) {
+        chatService.getChatUsersIds(chatId).forEach { chatParticipantId ->
+            messagingTemplate.convertAndSendToUser(
+                chatParticipantId.toString(),
+                PRIVATE_MESSAGES,
+                eventPayload
+            )
+        }
+    }
     companion object {
         const val PRIVATE_MESSAGES = "/private/messages"
     }
