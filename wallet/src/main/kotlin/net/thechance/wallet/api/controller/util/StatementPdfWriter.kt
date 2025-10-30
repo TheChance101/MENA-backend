@@ -4,7 +4,12 @@ import com.itextpdf.html2pdf.ConverterProperties
 import com.itextpdf.html2pdf.HtmlConverter
 import com.itextpdf.kernel.pdf.PdfDocument
 import com.itextpdf.kernel.pdf.PdfWriter
+import com.itextpdf.kernel.pdf.event.PdfDocumentEvent
+import com.itextpdf.layout.Document
+import com.itextpdf.layout.element.AreaBreak
+import com.itextpdf.layout.element.IBlockElement
 import com.itextpdf.layout.font.FontProvider
+import com.itextpdf.layout.properties.AreaBreakType
 import net.thechance.wallet.service.StatementService
 import net.thechance.wallet.service.model.input.UserTransactionType
 import net.thechance.wallet.service.model.output.StatementData
@@ -27,14 +32,17 @@ class StatementPdfWriter(
         startDate: LocalDate?,
         endDate: LocalDate?,
         outputStream: OutputStream
-    ) : StatementMetadata {
+    ): StatementMetadata {
         val statementData = statementService.getStatementData(userId, types, startDate, endDate)
 
         val writer = PdfWriter(outputStream)
         val pdf = PdfDocument(writer)
+        val document = Document(pdf)
+        pdf.addEventHandler(PdfDocumentEvent.END_PAGE, StatementPageEventHandler(resourceLoader, statementData))
+        document.setMargins(100f, 32f, 60f, 32f)
         val converterProperties = setupConverterProperties()
 
-        val metadata = writePages(statementData, pdf, converterProperties)
+        val metadata = writePages(statementData, document, converterProperties)
 
         pdf.close()
         outputStream.flush()
@@ -44,9 +52,9 @@ class StatementPdfWriter(
 
     private fun writePages(
         statementData: StatementData,
-        pdf: PdfDocument,
+        pdf: Document,
         converterProperties: ConverterProperties
-    ) : StatementMetadata{
+    ): StatementMetadata {
         var pageNum = 0
         var totalPages: Int
         var totalInflows: BigDecimal = 0.toBigDecimal()
@@ -62,13 +70,20 @@ class StatementPdfWriter(
             )
 
             val htmlContent = statementHtmlGenerator.generateForPage(statementData, page)
-            HtmlConverter.convertToPdf(htmlContent, pdf, converterProperties)
+            val elements = HtmlConverter.convertToElements(htmlContent, converterProperties)
+            elements.forEach { element ->
+                pdf.add(element as IBlockElement)
+            }
 
             totalInflows += statementService.getPageInflows(page, statementData.userId)
             totalOutflows += statementService.getPageOutflows(page, statementData.userId)
 
             totalPages = page.totalPages
             pageNum++
+
+            if (pageNum < totalPages) {
+                pdf.add(AreaBreak(AreaBreakType.NEXT_PAGE))
+            }
         } while (pageNum < totalPages)
 
         return StatementMetadata(
