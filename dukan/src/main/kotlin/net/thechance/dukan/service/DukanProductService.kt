@@ -2,7 +2,10 @@ package net.thechance.dukan.service
 
 import jakarta.persistence.EntityNotFoundException
 import jakarta.transaction.Transactional
+import net.thechance.dukan.api.dto.product.DukanProductResponse
+import net.thechance.dukan.api.mapper.product.toProductResponse
 import net.thechance.dukan.entity.DukanProduct
+import net.thechance.dukan.repository.CartRepository
 import net.thechance.dukan.service.exception.DukanProductCreationFailedException
 import net.thechance.dukan.service.exception.ProductNameAlreadyTakenException
 import net.thechance.dukan.service.exception.ProductNotFoundException
@@ -23,6 +26,7 @@ class DukanProductService(
     private val dukanShelfRepository: DukanShelfRepository,
     private val dukanService: DukanService,
     private val imageStorageService: ImageStorageService,
+    private val cartRepository: CartRepository
 ) {
     @Transactional
     fun uploadProductImages(productId: UUID, files: List<MultipartFile>): List<String> {
@@ -72,15 +76,27 @@ class DukanProductService(
             throw DukanProductCreationFailedException()
         }
     }
+    @Transactional
+    fun getProductsByShelf(userId: UUID, shelfId: UUID, pageable: Pageable): Page<DukanProductResponse> {
+        val productsPage = dukanProductRepository.findAllByShelfIdWithDukan(shelfId, pageable)
+        val shelf = productsPage.content.firstOrNull()?.shelf
+            ?: return productsPage.map { it.toProductResponse(0) }
 
-    fun getProductsByShelf(shelfId: UUID, pageable: Pageable): Page<DukanProduct> {
-        return dukanProductRepository.findAllByShelfId(shelfId, pageable)
-    }
+        val cart = cartRepository.findByUserIdAndDukanIdWithItemsAndProducts(userId, shelf.dukan.id)
+        val quantityMap = cart?.items?.associate { it.product.id to it.quantity } ?: emptyMap()
 
-    fun getProductById(productId: UUID): DukanProduct {
-        return dukanProductRepository.findById(productId).orElseThrow {
-            ProductNotFoundException()
+        return productsPage.map { product ->
+            val quantity = quantityMap[product.id] ?: 0
+            product.toProductResponse(quantity)
         }
+    }
+    @Transactional
+    fun getProductById(userId: UUID, productId: UUID): DukanProductResponse {
+        val product = dukanProductRepository.findByIdWithDukan(productId)
+        val cart = cartRepository.findByUserIdAndDukanIdWithItemsAndProducts(userId, product.shelf.dukan.id)
+        val quantity = cart?.items?.find { it.product.id == product.id }?.quantity ?: 0
+
+        return product.toProductResponse(quantity)
     }
 
     companion object {

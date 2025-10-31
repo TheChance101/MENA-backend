@@ -1,6 +1,8 @@
 package net.thechance.dukan.api.mapper.cart
 
 import net.thechance.dukan.api.dto.cart.CartItemResponse
+import net.thechance.dukan.api.dto.cart.CartResponse
+import net.thechance.dukan.entity.Cart
 import net.thechance.dukan.entity.CartItem
 
 fun CartItem.toResponse(): CartItemResponse {
@@ -11,5 +13,12 @@ fun CartItem.toResponse(): CartItemResponse {
         quantity = this.quantity,
         price = this.product.price,
         imageUrl = this.product.imageUrls.firstOrNull()
+    )
+}
+
+fun Cart.toResponse(totalPrice : Double): CartResponse {
+    return CartResponse(
+        id = this.id,
+        totalPrice = totalPrice
     )
 }

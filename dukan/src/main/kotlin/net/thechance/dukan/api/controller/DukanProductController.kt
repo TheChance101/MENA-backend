@@ -46,18 +46,20 @@ class DukanProductController(
 
     @GetMapping
     fun getProductsByShelf(
+        @AuthenticationPrincipal userId: UUID,
         @RequestParam shelfId: UUID,
         @PageableDefault(size = 10, page = 0, sort = ["createdAt"], direction = Sort.Direction.DESC)
         pageable: Pageable
     ): ResponseEntity<Page<DukanProductResponse>> {
-        val products = dukanProductService.getProductsByShelf(shelfId, pageable)
-        val productsResponse = products.map { it.toProductResponse() }
-        return ResponseEntity.ok(productsResponse)
+        val products = dukanProductService.getProductsByShelf(userId,shelfId, pageable)
+        return ResponseEntity.ok(products)
     }
 
     @GetMapping("/{productId}")
-    fun getProductById(@PathVariable("productId") productId: UUID): ResponseEntity<DukanProductResponse> {
-        val productResponse = dukanProductService.getProductById(productId).toProductResponse()
+    fun getProductById(
+        @AuthenticationPrincipal userId: UUID,
+        @PathVariable("productId") productId: UUID): ResponseEntity<DukanProductResponse> {
+        val productResponse = dukanProductService.getProductById(userId,productId)
         return ResponseEntity.ok(productResponse)
     }
 }

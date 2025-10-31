@@ -3,7 +3,7 @@ package net.thechance.dukan.api.mapper.product
 import net.thechance.dukan.api.dto.product.DukanProductResponse
 import net.thechance.dukan.entity.DukanProduct
 
-fun DukanProduct.toProductResponse(): DukanProductResponse {
+fun DukanProduct.toProductResponse(quantityInCart: Int = 0): DukanProductResponse {
     return DukanProductResponse(
         id = this.id,
         name = this.name,
@@ -11,6 +11,7 @@ fun DukanProduct.toProductResponse(): DukanProductResponse {
         price = this.price,
         description = this.description,
         imageUrls = this.imageUrls,
+        quantityInCart = quantityInCart,
         createdAt = this.createdAt
     )
 }
