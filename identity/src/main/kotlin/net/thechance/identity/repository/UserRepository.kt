@@ -6,4 +6,6 @@ import java.util.UUID
 
 interface UserRepository: JpaRepository<User, UUID> {
     fun findByPhoneNumber(phoneNumber: String): User?
+    fun existsByUsername(username: String): Boolean
+    fun existsByPhoneNumber(phoneNumber: String): Boolean
 }
