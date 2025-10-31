@@ -4,7 +4,6 @@ import com.google.common.truth.Truth.assertThat
 import io.mockk.every
 import io.mockk.mockk
 import io.mockk.verify
-import net.thechance.identity.exception.InvalidCredentialsException
 import net.thechance.identity.exception.PasswordNotUpdatedException
 import net.thechance.identity.exception.UserNotFoundException
 import net.thechance.identity.repository.UserRepository
@@ -16,7 +15,7 @@ import org.springframework.data.repository.findByIdOrNull
 class UserServiceTest {
     private val userRepository: UserRepository = mockk(relaxed = true)
     private val identityImageStorageService: IdentityImageStorageService = mockk(relaxed = true)
-    private val userService = UserService(userRepository, identityImageStorageService)
+    private val userService = UserService(userRepository, identityImageStorageService, "test-directory")
 
     @Test
     fun `findByPhoneNumber() should return User when user exists`() {
