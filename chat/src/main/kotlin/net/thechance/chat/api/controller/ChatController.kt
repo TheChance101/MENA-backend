@@ -31,16 +31,9 @@ class ChatController(
         val senderId = UUID.fromString(principal.name)
         val message = chatService.saveMessage(chatMessage.toRequestArgs(senderId))
 
-        chatService
-            .getChatUsersIds(chatId = chatMessage.chatId)
-            .forEach { chatParticipantId ->
-                messagingTemplate.convertAndSendToUser(
-                    chatParticipantId.toString(),
-                    PRIVATE_MESSAGES,
-                    message.toResponse(chatParticipantId)
-                )
-            }
+        sendToChatUser(chatId = chatMessage.chatId) { message.toResponse(it) }
     }
+
 
     @GetMapping
     @ResponseBody
@@ -75,43 +68,36 @@ class ChatController(
         val senderId = UUID.fromString(principal.name)
         val messageImageArgs = request.toRequestArgs(senderId)
         val message = chatService.saveMessageImage(messageImageArgs)
-        chatService
-            .getChatUsersIds(chatId = request.chatId)
-            .forEach { chatParticipantId ->
-                messagingTemplate.convertAndSendToUser(
-                    chatParticipantId.toString(),
-                    PRIVATE_MESSAGES,
-                    message.toResponse(chatParticipantId)
-                )
-            }
+
+        sendToChatUser(chatId = request.chatId) { message.toResponse(it) }
 
         return ResponseEntity.ok(message.toResponse(senderId))
     }
 
-    @PostMapping("/{messageId}/reactions")
+    @MessageMapping("/chat.addMessageReaction")
     fun addReaction(
-        @PathVariable messageId: UUID,
         @RequestBody body: MessageReactionRequest,
         principal: Principal
     ): ResponseEntity<MessageReactionResponse> {
         val userId = UUID.fromString(principal.name)
-        val reaction = chatService.addReaction(body.toRequestArgs(messageId, userId))
+        val message = chatService.getMessageById(body.messageId)
+        val reactionResponse = chatService.addReaction(body.toRequestArgs(userId)).toResponse()
 
-        // todo send add reaction event via websocket
+        sendToChatUser(message.chatId, ADD_REACTION) { reactionResponse }
 
-        return ResponseEntity.ok(reaction.toResponse())
+        return ResponseEntity.ok(reactionResponse)
     }
 
-    @DeleteMapping("/{messageId}/reactions")
+    @MessageMapping("/chat.deleteMessageReaction")
     fun deleteReaction(
-        @PathVariable messageId: UUID,
         @RequestBody body: MessageReactionRequest,
         principal: Principal
     ): ResponseEntity<Unit> {
         val userId = UUID.fromString(principal.name)
-        chatService.deleteReaction(messageId, userId)
+        val message = chatService.getMessageById(body.messageId)
+        val deletedReaction = chatService.deleteReaction(body.toRequestArgs(userId))
 
-        // todo send add reaction event via websocket
+        sendToChatUser(message.chatId, DELETE_REACTION) { deletedReaction.toResponse() }
 
         return ResponseEntity.noContent().build()
     }
@@ -124,15 +110,9 @@ class ChatController(
         val userId = UUID.fromString(principal.name)
         chatService.markChatMessagesAsRead(markAsReadRequest.chatId, userId)
 
-        chatService
-            .getChatUsersIds(chatId = markAsReadRequest.chatId)
-            .forEach { chatParticipantId ->
-                messagingTemplate.convertAndSendToUser(
-                    chatParticipantId.toString(),
-                    PRIVATE_MESSAGES,
-                    MarkAsReadResponse(userId, markAsReadRequest.chatId, chatParticipantId == userId)
-                )
-            }
+        sendToChatUser(chatId = markAsReadRequest.chatId) { chatParticipantId ->
+            MarkAsReadResponse(userId, markAsReadRequest.chatId, chatParticipantId == userId)
+        }
     }
 
     @GetMapping("/chatsSummary")
@@ -162,7 +142,25 @@ class ChatController(
         return ResponseEntity.ok(chat.toResponse())
     }
 
+    private fun sendToChatUser(
+        chatId: UUID,
+        destination: String = PRIVATE_MESSAGES,
+        payload: (userId: UUID) -> Any
+    ) {
+        chatService
+            .getChatUsersIds(chatId = chatId)
+            .forEach { chatParticipantId ->
+                messagingTemplate.convertAndSendToUser(
+                    chatParticipantId.toString(),
+                    destination,
+                    payload(chatParticipantId)
+                )
+            }
+    }
+
     companion object {
         const val PRIVATE_MESSAGES = "/private/messages"
+        const val ADD_REACTION = "/private/addReaction"
+        const val DELETE_REACTION = "/private/deleteReaction"
     }
 }

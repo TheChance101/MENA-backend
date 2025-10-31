@@ -5,11 +5,7 @@ import net.thechance.chat.repository.ChatRepository
 import net.thechance.chat.repository.MessageReactionRepository
 import net.thechance.chat.repository.MessageRepository
 import net.thechance.chat.service.exception.NotFoundException
-import net.thechance.chat.service.model.ChatModel
-import net.thechance.chat.service.model.MessageImageRequestArgs
-import net.thechance.chat.service.model.MessageReactionRequestArgs
-import net.thechance.chat.service.model.MessageRequestArgs
-import net.thechance.chat.service.model.MessageWithReactions
+import net.thechance.chat.service.model.*
 import org.springframework.data.domain.Page
 import org.springframework.data.domain.Pageable
 import org.springframework.data.repository.findByIdOrNull
@@ -69,26 +65,34 @@ class ChatService(
         )
     }
 
-    fun addReaction(args: MessageReactionRequestArgs): MessageReaction {
-        messageRepository.findByIdOrNull(args.messageId)
-            ?: throw NotFoundException("no message was found with id: ${args.messageId}")
+    fun getMessageById(messageId: UUID): Message {
+        return messageRepository.findByIdOrNull(messageId)
+            ?: throw NotFoundException("no message was found with id: $messageId")
+    }
 
+    fun addReaction(args: MessageReactionRequestArgs): MessageReaction {
         if (!isValidEmoji(args.emoji)) {
             throw IllegalArgumentException("Invalid emoji")
         }
 
         val existing = messageReactionRepository.findByMessageIdAndUserId(args.messageId, args.userId)
         return existing?.copy(emoji = args.emoji)?.let { messageReactionRepository.save(it) }
-            ?: messageReactionRepository.save(MessageReaction(messageId = args.messageId, userId = args.userId, emoji = args.emoji))
+            ?: messageReactionRepository.save(
+                MessageReaction(
+                    messageId = args.messageId,
+                    userId = args.userId,
+                    emoji = args.emoji
+                )
+            )
     }
 
-    fun deleteReaction(messageId: UUID, userId: UUID) {
-        messageReactionRepository.deleteByMessageIdAndUserId(messageId, userId)
+    fun deleteReaction(args: MessageReactionRequestArgs): MessageReaction {
+        return messageReactionRepository.deleteByMessageIdAndUserId(args.messageId, args.userId)
+            ?: throw NotFoundException("no message reactions was found")
     }
 
     private fun isValidEmoji(input: String): Boolean {
-        val emojiRange = """(?:\u00A9|\u00AE|[\u2000-\u206F]|[\u2190-\u2BFF]|[\u2E00-\u2E7F]|[\u2300-\u23FF]|[\u24C2-\u1F251]|\u00A9|\u00AE|\u203C|\u2049|[\u2122\u2139]|\u{1F3F4}[\u{E006E}-\u{E007A}]+|\u{1F3F4}[\u{E006E}-\u{E007A}]*\u{E007F}|[\u{1F1E6}-\u{1F1FF}]{2}|[\u{1F3F4}\u{E006E}-\u{E007A}]+|\u{1F3F4}\u{E007F}|\u{1F3F3}\u{1F3F4}|[\u{1F6F7}-\u{1F6F8}\u{1F3FB}-\u{1F3FF}]|[\u{1F1E6}-\u{1F1FF}][\u{1F1E6}-\u{1F1FF}]|[\u{1F1F2}-\u{1F1F4}\u{1F1E6}-\u{1F1FF}\u{1F1F2}-\u{1F1F4}]|[\u{1F1E6}-\u{1F1FF}\u{1F1E6}-\u{1F1FF}]|[\u{1F30D}\u{E0067}-\u{E007F}]|[\u26F9\u2708-\u270D\u26FD]|[\u{1F3C2}-\u{1F3C4}\u{1F3FB}-\u{1F3FF}]|[\u{1F3CA}-\u{1F3CB}\u{1F3FB}-\u{1F3FF}]|[\u{1F680}-\u{1F6C5}\u{1F3FB}-\u{1F3FF}]|[\u{1F693}-\u{1F6A5}\u{1F3FB}-\u{1F3FF}]|[\u{1F6B2}\u{1F3FB}-\u{1F3FF}]|[\u{1F6C0}\u{1F3FB}-\u{1F3FF}]|[\u{1F6CC}\u{1F3FB}-\u{1F3FF}]|[\u{1F6F4}\u{1F3FB}-\u{1F3FF}]|[\u{1F6F9}\u{1F3FB}-\u{1F3FF}]|[\u{1F918}-\u{1F919}\u{1F3FB}-\u{1F3FF}]|[\u{1F93E}\u{1F3FB}-\u{1F3FF}]|[\u{1F9D1}-\u{1F9DD}\u{1F3FB}-\u{1F3FF}]|[\u{1F9DE}\u{1F3FB}-\u{1F3FF}]|[\u{1F9DF}\u{1F3FB}-\u{1F3FF}]|[\u{1FAF1}\u{1F3FB}-\u{1F3FF}]|[\u{1F9E6}\u{1F3FB}-\u{1F3FF}])"""
-        val emojiRegex = Regex("^$emojiRange$", RegexOption.MULTILINE)
+        val emojiRegex = Regex("^$EMOJI_RANGE$", RegexOption.MULTILINE)
 
         val normalized = Normalizer.normalize(input.trim(), Normalizer.Form.NFC)
         if (normalized.isEmpty()) return false
@@ -178,5 +182,8 @@ class ChatService(
 
     companion object {
         private const val FOLDER_NAME = "chat_attachments"
+        private const val EMOJI_RANGE =
+            """(?:\u00A9|\u00AE|[\u2000-\u206F]|[\u2190-\u2BFF]|[\u2E00-\u2E7F]|[\u2300-\u23FF]|[\u24C2-\u1F251]|\u00A9|\u00AE|\u203C|\u2049|[\u2122\u2139]|\u{1F3F4}[\u{E006E}-\u{E007A}]+|\u{1F3F4}[\u{E006E}-\u{E007A}]*\u{E007F}|[\u{1F1E6}-\u{1F1FF}]{2}|[\u{1F3F4}\u{E006E}-\u{E007A}]+|\u{1F3F4}\u{E007F}|\u{1F3F3}\u{1F3F4}|[\u{1F6F7}-\u{1F6F8}\u{1F3FB}-\u{1F3FF}]|[\u{1F1E6}-\u{1F1FF}][\u{1F1E6}-\u{1F1FF}]|[\u{1F1F2}-\u{1F1F4}\u{1F1E6}-\u{1F1FF}\u{1F1F2}-\u{1F1F4}]|[\u{1F1E6}-\u{1F1FF}\u{1F1E6}-\u{1F1FF}]|[\u{1F30D}\u{E0067}-\u{E007F}]|[\u26F9\u2708-\u270D\u26FD]|[\u{1F3C2}-\u{1F3C4}\u{1F3FB}-\u{1F3FF}]|[\u{1F3CA}-\u{1F3CB}\u{1F3FB}-\u{1F3FF}]|[\u{1F680}-\u{1F6C5}\u{1F3FB}-\u{1F3FF}]|[\u{1F693}-\u{1F6A5}\u{1F3FB}-\u{1F3FF}]|[\u{1F6B2}\u{1F3FB}-\u{1F3FF}]|[\u{1F6C0}\u{1F3FB}-\u{1F3FF}]|[\u{1F6CC}\u{1F3FB}-\u{1F3FF}]|[\u{1F6F4}\u{1F3FB}-\u{1F3FF}]|[\u{1F6F9}\u{1F3FB}-\u{1F3FF}]|[\u{1F918}-\u{1F919}\u{1F3FB}-\u{1F3FF}]|[\u{1F93E}\u{1F3FB}-\u{1F3FF}]|[\u{1F9D1}-\u{1F9DD}\u{1F3FB}-\u{1F3FF}]|[\u{1F9DE}\u{1F3FB}-\u{1F3FF}]|[\u{1F9DF}\u{1F3FB}-\u{1F3FF}]|[\u{1FAF1}\u{1F3FB}-\u{1F3FF}]|[\u{1F9E6}\u{1F3FB}-\u{1F3FF}])"""
+
     }
 }
