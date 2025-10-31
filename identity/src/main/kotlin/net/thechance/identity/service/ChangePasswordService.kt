@@ -1,6 +1,5 @@
 package net.thechance.identity.service
 
-import net.thechance.identity.api.dto.ChangePasswordRequest
 import net.thechance.identity.entity.User
 import net.thechance.identity.exception.PasswordMismatchException
 import net.thechance.identity.exception.UnauthorizedException
@@ -17,14 +16,10 @@ class ChangePasswordService(
     private val passwordEncoder: PasswordEncoder
 ) {
     fun changePassword(userId: UUID, currentPassword: String, newPassword: String, confirmPassword: String) {
-        runCatching {
-            validateRequest(newPassword, confirmPassword)
-            findAndVerifyUser(userId, currentPassword)
-        }.map { verifiedUser ->
-            updateUserWithNewPassword(verifiedUser, newPassword)
-        }.onSuccess { updatedUser ->
-            userRepository.save(updatedUser)
-        }.getOrThrow()
+        validateRequest(newPassword, confirmPassword)
+        findAndVerifyUser(userId, currentPassword)
+            .run { updateUserWithNewPassword(this, newPassword) }
+            .also { updatedUser -> userRepository.save(updatedUser) }
     }
 
     private fun validateRequest(newPassword: String, confirmPassword: String) {
