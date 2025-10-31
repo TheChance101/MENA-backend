@@ -48,7 +48,7 @@ class AuthenticationService(
     ) {
         val loginLog = LoginLog(user = user, isSuccess = isSuccess, ipAddress = ipAddress)
         loginLogService.addLoginLog(loginLog)
-        userService.updateUserLastLoginTime(userId = user.id, time = LocalDateTime.now())
+        if(isSuccess) userService.updateUserLastLoginTime(userId = user.id, time = LocalDateTime.now())
     }
 
     private fun isUserBlocked(ipAddress: String): Boolean {
