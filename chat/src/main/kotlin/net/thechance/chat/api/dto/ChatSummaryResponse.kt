@@ -3,7 +3,7 @@ package net.thechance.chat.api.dto
 import net.thechance.chat.service.model.ChatSummary
 import org.springframework.data.domain.Page
 import java.time.Instant
-import java.util.*
+import java.util.UUID
 
 data class ChatSummaryResponse(
     val id: UUID,

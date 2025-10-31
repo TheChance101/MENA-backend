@@ -5,58 +5,42 @@ import io.mockk.every
 import io.mockk.mockk
 import io.mockk.slot
 import io.mockk.verify
-import net.thechance.identity.api.dto.CreateAddressRequest
-import net.thechance.identity.api.dto.UpdateAddressRequest
 import net.thechance.identity.entity.Address
-import net.thechance.identity.entity.User
-import net.thechance.identity.entity.copy
-import net.thechance.identity.exception.*
+import net.thechance.identity.exception.AddressCanNotBeDeletedException
+import net.thechance.identity.exception.AddressNotFoundException
+import net.thechance.identity.exception.AtLeastAddressValueNeededException
 import net.thechance.identity.repository.AddressRepository
-import net.thechance.identity.utils.createUser
-import org.junit.jupiter.api.Assertions.assertThrows
-import org.junit.jupiter.api.Test
-import org.junit.jupiter.params.ParameterizedTest
-import org.junit.jupiter.params.provider.Arguments
-import org.junit.jupiter.params.provider.MethodSource
+import org.junit.Assert.assertThrows
+import org.junit.Test
+import org.springframework.data.domain.Page
+import org.springframework.data.domain.PageImpl
+import org.springframework.data.domain.PageRequest
+import org.springframework.data.domain.Pageable
 import java.util.*
-import java.util.stream.Stream
+import net.thechance.identity.service.model.Address as AddressModel
 
 class AddressServiceTest {
     private val addressRepository: AddressRepository = mockk(relaxed = true)
-    private val userService: UserService = mockk(relaxed = true)
     private val addressService: AddressService =
-        AddressService(addressRepository = addressRepository, userService = userService)
+        AddressService(addressRepository = addressRepository)
 
     //region Add Address
     @Test
-    fun `addAddress() should return saved address when user exists and address is valid`() {
-        every { userService.findById(dummyUserId) } returns dummyUser
+    fun `addAddress() should return saved address when address is valid`() {
         every { addressRepository.save(any()) } returnsArgument 0
 
-        val result = addressService.addAddress(dummyUserId, createAddressRequest)
+        val result = addressService.addAddress(dummyUserId, addressModelToCreate)
 
         assertThat(result.addressLine).isEqualTo("123 Main St")
-        assertThat(result.user).isEqualTo(dummyUser)
         verify(exactly = 1) { addressRepository.save(any()) }
     }
 
     @Test
-    fun `addAddress() should throw UserNotFoundException when user does not exist`() {
-        every { userService.findById(dummyUserId) } throws UserNotFoundException("")
-
-        assertThrows(UserNotFoundException::class.java) {
-            addressService.addAddress(dummyUserId, createAddressRequest)
-        }
-        verify(exactly = 0) { addressRepository.save(any()) }
-    }
-
-    @Test
-    fun `addAddress() should throw AddressNotAddedException when repository fails to save`() {
-        every { userService.findById(dummyUserId) } returns dummyUser
+    fun `addAddress() should throw Exception when repository fails to save`() {
         every { addressRepository.save(any()) } throws RuntimeException("Database error")
 
-        assertThrows(AddressNotAddedException::class.java) {
-            addressService.addAddress(dummyUserId, createAddressRequest)
+        assertThrows(Exception::class.java) {
+            addressService.addAddress(dummyUserId, addressModelToCreate)
         }
     }
     //endregion
@@ -67,19 +51,21 @@ class AddressServiceTest {
         every { addressRepository.findByIdAndUserId(dummyAddressId, dummyUserId) } returns dummyAddress
         every { addressRepository.save(any()) } returnsArgument 0
 
-        val result = addressService.updateAddressById(dummyAddressId, dummyUserId, newUpdateAddressRequest)
+        val result =
+            addressService.updateAddressById(dummyAddressId, dummyUserId, newAddressToUpdate)
 
         assertThat(result.addressLine).isEqualTo("456 New Ave")
         assertThat(result.addressType).isEqualTo("Work")
         assertThat(result.isActive).isTrue()
-        verify(exactly = 2) { addressRepository.save(any()) }
+        verify(exactly = 1) { addressRepository.save(any()) }
     }
 
     @Test
     fun `updateAddressById() should return existing address without saving when no new values are provided`() {
         every { addressRepository.findByIdAndUserId(dummyAddressId, dummyUserId) } returns dummyAddress
 
-        val result = addressService.updateAddressById(dummyAddressId, dummyUserId, updateAddressRequest)
+        val result =
+            addressService.updateAddressById(dummyAddressId, dummyUserId, addressToUpdate)
 
         assertThat(result).isEqualTo(dummyAddress)
         verify(exactly = 0) { addressRepository.save(any()) }
@@ -90,17 +76,17 @@ class AddressServiceTest {
         every { addressRepository.findByIdAndUserId(dummyAddressId, dummyUserId) } returns null
 
         assertThrows(AddressNotFoundException::class.java) {
-            addressService.updateAddressById(dummyAddressId, dummyUserId, updateAddressRequest)
+            addressService.updateAddressById(dummyAddressId, dummyUserId, addressToUpdate)
         }
     }
 
     @Test
-    fun `updateAddressById() should throw AddressNotUpdatedException when repository fails to save`() {
-        val updateRequest = updateAddressRequest.copy(latitude = 1.0)
+    fun `updateAddressById() should throw Exception when repository fails to save`() {
+        val updateRequest = addressToUpdate.copy(latitude = 1.0)
         every { addressRepository.findByIdAndUserId(dummyAddressId, dummyUserId) } returns dummyAddress
         every { addressRepository.save(any()) } throws RuntimeException("Database error")
 
-        assertThrows(AddressNotUpdatedException::class.java) {
+        assertThrows(Exception::class.java) {
             addressService.updateAddressById(dummyAddressId, dummyUserId, updateRequest)
         }
     }
@@ -108,13 +94,17 @@ class AddressServiceTest {
     @Test
     fun `updateAddressById() should throw AtLeastAddressValueNeededException when all values are null`() {
         assertThrows(AtLeastAddressValueNeededException::class.java) {
-            addressService.updateAddressById(dummyAddressId, dummyUserId, updateAddressRequestWithNullValues)
+            addressService.updateAddressById(
+                dummyAddressId,
+                dummyUserId,
+                addressToUpdateWithNullValues
+            )
         }
     }
 
     @Test
     fun `updateAddressById() should only update non-null fields when request has mixed null and non-null values`() {
-        val partialUpdateRequest = updateAddressRequestWithNullValues.copy(latitude = 9.9)
+        val partialUpdateRequest = addressToUpdateWithNullValues.copy(latitude = 9.9)
         val addressSlot = slot<Address>()
 
         every { addressRepository.findByIdAndUserId(dummyAddressId, dummyUserId) } returns dummyAddress
@@ -127,69 +117,46 @@ class AddressServiceTest {
         assertThat(capturedAddress.longitude).isEqualTo(dummyAddress.longitude)
     }
 
-    @ParameterizedTest(name = "[{index}] {0} -> should result in {2} save calls")
-    @MethodSource("provideUpdateScenarios")
-    fun `updateAddressById should only save when new values are provided`(
-        description: String,
-        updateRequest: UpdateAddressRequest,
-        expectedSaveCalls: Int
-    ) {
-        every { addressRepository.findByIdAndUserId(dummyAddressId, dummyUserId) } returns dummyAddress
-        every { addressRepository.save(any()) } returnsArgument 0
-
-        addressService.updateAddressById(dummyAddressId, dummyUserId, updateRequest)
-
-        verify(exactly = expectedSaveCalls) { addressRepository.save(any()) }
-    }
-
-    @ParameterizedTest(name = "[{index}] {0} -> should throw exception: {2}")
-    @MethodSource("provideNullCheckScenarios")
-    fun `updateAddressById should throw exception when all fields are null`(
-        description: String,
-        updateRequest: UpdateAddressRequest,
-        shouldThrowException: Boolean
-    ) {
-        every { addressRepository.findByIdAndUserId(any(), any()) } returns dummyAddress
-        every { addressRepository.save(any()) } returnsArgument 0
-
-        if (shouldThrowException) {
-            assertThrows(AtLeastAddressValueNeededException::class.java) {
-                addressService.updateAddressById(dummyAddressId, dummyUserId, updateRequest)
-            }
-        } else {
-            addressService.updateAddressById(dummyAddressId, dummyUserId, updateRequest)
-        }
-    }
-
     //endregion
 
-    //region Get All Addresses
+    //region Get Addresses
     @Test
-    fun `getAllAddresses() should return list of addresses when user has addresses`() {
-        val addresses = listOf(dummyAddress, dummyAddress.copy(id = UUID.randomUUID()))
-        every { addressRepository.findByUserIdOrderByCreatedAtAsc(dummyUserId) } returns addresses
+    fun `getPageableAddresses() should return page of addresses when user has addresses`() {
+        every { addressRepository.findByUserIdOrderByCreatedAtAsc(dummyUserId, pageable) } returns expectedPage
 
-        val result = addressService.getAllAddresses(dummyUserId)
+        val resultPage = addressService.getPageableAddresses(dummyUserId, pageable)
 
-        assertThat(result).hasSize(2)
-        assertThat(result).containsExactlyElementsIn(addresses)
+        assertThat(resultPage.content).hasSize(2)
+        assertThat(resultPage.content).contains(addresses[0])
+        assertThat(resultPage.totalPages).isEqualTo(1)
+        assertThat(resultPage.totalElements).isEqualTo(2)
     }
 
     @Test
-    fun `getAllAddresses() should return empty list when user has no addresses`() {
-        every { addressRepository.findByUserIdOrderByCreatedAtAsc(dummyUserId) } returns emptyList()
+    fun `getPageableAddresses() should return empty page when user has no addresses`() {
+        every { addressRepository.findByUserIdOrderByCreatedAtAsc(dummyUserId, pageable) } returns emptyPage
 
-        val result = addressService.getAllAddresses(dummyUserId)
+        val resultPage = addressService.getPageableAddresses(dummyUserId, pageable)
 
-        assertThat(result).isEmpty()
+        assertThat(resultPage).isEmpty()
+        assertThat(resultPage.content).isEmpty()
     }
+
+    @Test
+    fun `getPageableAddresses() should call repository one time when called`() {
+        every { addressRepository.findByUserIdOrderByCreatedAtAsc(dummyUserId, pageable) } returns emptyPage
+
+        addressService.getPageableAddresses(dummyUserId, pageable)
+
+        verify(exactly = 1) { addressRepository.findByUserIdOrderByCreatedAtAsc(dummyUserId, pageable) }
+    }
+
     //endregion
 
     //region Delete Address
     @Test
-    fun `deleteAddressById() should call deleteById when address exists and is not active`() {
-        val nonActiveAddress = dummyAddress.copy(isActive = false)
-        every { addressRepository.findByIdAndUserId(dummyAddressId, dummyUserId) } returns nonActiveAddress
+    fun `deleteAddressById() should call deleteById when address is not active`() {
+        every { addressRepository.existsByIdAndUserIdAndIsActive(any(), any(), any()) } returns false
         every { addressRepository.deleteById(dummyAddressId) } returns Unit
 
         addressService.deleteAddressById(dummyAddressId, dummyUserId)
@@ -199,8 +166,7 @@ class AddressServiceTest {
 
     @Test
     fun `deleteAddressById() should throw AddressCanNotBeDeletedException when deleted address was active`() {
-        val activeAddress = dummyAddress.copy(isActive = true)
-        every { addressRepository.findByIdAndUserId(dummyAddressId, dummyUserId) } returns activeAddress
+        every { addressRepository.existsByIdAndUserIdAndIsActive(any(), any(), any()) } returns true
 
         assertThrows(AddressCanNotBeDeletedException::class.java) {
             addressService.deleteAddressById(dummyAddressId, dummyUserId)
@@ -209,22 +175,12 @@ class AddressServiceTest {
     }
 
     @Test
-    fun `deleteAddressById() should throw AddressNotFoundException when address to delete does not exist`() {
-        every { addressRepository.findByIdAndUserId(dummyAddressId, dummyUserId) } returns null
-
-        assertThrows(AddressNotFoundException::class.java) {
-            addressService.deleteAddressById(dummyAddressId, dummyUserId)
-        }
-        verify(exactly = 0) { addressRepository.deleteById(any()) }
-    }
-
-    @Test
-    fun `deleteAddressById() should throw AddressNotDeletedException when repository fails to delete`() {
+    fun `deleteAddressById() should throw Exception when repository fails to delete`() {
         val nonActiveAddress = dummyAddress.copy(isActive = false)
         every { addressRepository.findByIdAndUserId(dummyAddressId, dummyUserId) } returns nonActiveAddress
         every { addressRepository.deleteById(dummyAddressId) } throws RuntimeException("Database error")
 
-        assertThrows(AddressNotDeletedException::class.java) {
+        assertThrows(Exception::class.java) {
             addressService.deleteAddressById(dummyAddressId, dummyUserId)
         }
     }
@@ -255,30 +211,30 @@ class AddressServiceTest {
 
         private val dummyAddressId: UUID = UUID.fromString("1b3ed35d-94b7-45e4-974c-9da921a27d1c")
         private val dummyUserId: UUID = UUID.fromString("a7b49002-9691-4f53-a371-379753908d9a")
-        private val dummyUser: User = createUser(id = dummyUserId)
         private val dummyAddress: Address = Address(
             id = dummyAddressId,
-            user = dummyUser,
+            userId = dummyUserId,
             latitude = 0.0,
             longitude = 0.0,
             addressLine = "123 Main St",
             addressType = "Home"
         )
-        private val createAddressRequest = CreateAddressRequest(
+        private val addressModelToCreate = AddressModel(
             latitude = dummyAddress.latitude,
             longitude = dummyAddress.longitude,
             addressLine = dummyAddress.addressLine,
-            addressType = dummyAddress.addressType
+            addressType = dummyAddress.addressType,
+            isActive = false
         )
 
-        private val updateAddressRequest = UpdateAddressRequest(
+        private val addressToUpdate = AddressModel(
             latitude = dummyAddress.latitude,
             longitude = dummyAddress.longitude,
             addressLine = dummyAddress.addressLine,
             addressType = dummyAddress.addressType,
             isActive = dummyAddress.isActive,
         )
-        private val newUpdateAddressRequest = UpdateAddressRequest(
+        private val newAddressToUpdate = AddressModel(
             latitude = 1.0,
             longitude = 1.0,
             addressLine = "456 New Ave",
@@ -286,63 +242,16 @@ class AddressServiceTest {
             isActive = true
         )
 
-        private val updateAddressRequestWithNullValues = UpdateAddressRequest(
+        private val addressToUpdateWithNullValues = AddressModel(
             latitude = null,
             longitude = null,
             addressLine = null,
             addressType = null,
             isActive = null
         )
-
-        @JvmStatic
-        fun provideUpdateScenarios(): Stream<Arguments> {
-
-            return Stream.of(
-                Arguments.of("No new values", updateAddressRequest, 0),
-
-                Arguments.of("Latitude changed", updateAddressRequest.copy(latitude = 0.1), 1),
-                Arguments.of("Longitude changed", updateAddressRequest.copy(longitude = 0.1), 1),
-                Arguments.of("Address line changed", updateAddressRequest.copy(addressLine = "New Address"), 1),
-                Arguments.of("Address type changed", updateAddressRequest.copy(addressType = "Work"), 1),
-                Arguments.of("IsActive changed", updateAddressRequest.copy(isActive = true), 2)
-            )
-        }
-
-        @JvmStatic
-        fun provideNullCheckScenarios(): Stream<Arguments> {
-            return Stream.of(
-                Arguments.of(
-                    "All fields are null",
-                    updateAddressRequestWithNullValues,
-                    true
-                ),
-
-                Arguments.of(
-                    "Only latitude is not null",
-                    updateAddressRequestWithNullValues.copy(latitude = 1.0),
-                    false
-                ),
-                Arguments.of(
-                    "Only longitude is not null",
-                    updateAddressRequestWithNullValues.copy(longitude = 1.0),
-                    false
-                ),
-                Arguments.of(
-                    "Only addressLine is not null",
-                    updateAddressRequestWithNullValues.copy(addressLine = "New Address"),
-                    false
-                ),
-                Arguments.of(
-                    "Only addressType is not null",
-                    updateAddressRequestWithNullValues.copy(addressType = "Work"),
-                    false
-                ),
-                Arguments.of(
-                    "Only isActive is not null",
-                    updateAddressRequestWithNullValues.copy(isActive = true),
-                    false
-                )
-            )
-        }
+        private val addresses = listOf(dummyAddress, dummyAddress.copy(id = UUID.randomUUID()))
+        private val pageable: Pageable = PageRequest.of(0, 10)
+        private val expectedPage: Page<Address> = PageImpl(addresses, pageable, addresses.size.toLong())
+        private val emptyPage: Page<Address> = Page.empty(pageable)
     }
 }

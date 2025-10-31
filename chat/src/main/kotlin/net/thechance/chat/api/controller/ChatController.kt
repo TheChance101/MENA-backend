@@ -12,7 +12,7 @@ import org.springframework.security.core.annotation.AuthenticationPrincipal
 import org.springframework.stereotype.Controller
 import org.springframework.web.bind.annotation.*
 import java.security.Principal
-import java.util.*
+import java.util.UUID
 
 @RequestMapping("/chat")
 @Controller

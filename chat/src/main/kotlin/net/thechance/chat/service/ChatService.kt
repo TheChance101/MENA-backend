@@ -16,8 +16,7 @@ import org.springframework.data.domain.Pageable
 import org.springframework.data.repository.findByIdOrNull
 import org.springframework.stereotype.Service
 import org.springframework.transaction.annotation.Transactional
-import java.time.Instant
-import java.util.*
+import java.util.UUID
 
 @Service
 class ChatService(
@@ -68,7 +67,6 @@ class ChatService(
     fun saveMessageImage(args: MessageImageRequestArgs): Message {
         val imageUrl = attachmentStorageService.uploadImage(
             file = args.image,
-            fileName = args.image.originalFilename ?: "${Instant.now()}-Untitled",
             folderName = args.chatId.toString()
         )
 
@@ -107,7 +105,7 @@ class ChatService(
         }
         return chatsSummaries
     }
-    @Transactional
+
     fun getUserChatSummaryById(chatId: UUID, userId: UUID): ChatSummary {
         val chat =
             chatRepository.findByIdOrNull(chatId) ?: throw NotFoundException("no chat was found with id: $chatId")

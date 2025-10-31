@@ -32,20 +32,25 @@ class AttachmentStorageService(
 ) {
     fun uploadImage(
         file: MultipartFile,
-        fileName: String,
         folderName: String,
     ): String {
         val mimeType = file.contentType ?: throw InvalidImageFormatException()
         val extension = allowedMimeTypes[mimeType] ?: throw InvalidImageFormatException()
         try {
-            val finalFileName = "${fileName}_${LocalDateTime.now()}.$extension"
+            val finalFileName = "${LocalDateTime.now()}.$extension"
             val key = "$CHAT_ATTACHMENTS_PATH/$folderName/$finalFileName"
             val putReq = createObjectRequest(key, mimeType)
             menaS3Client.putObject(putReq, RequestBody.fromBytes(file.bytes))
-            return "${props.cdnEndpoint}/$key"
+            return makeUrl(key)
         } catch (e: Exception) {
             throw ImageUploadFailedException("failed uploading image: ${e.message}")
         }
+    }
+
+    private fun makeUrl(key: String): String {
+        val base = props.cdnEndpoint.trimEnd('/')
+        val path = key.trimStart('/')
+        return "$base/$path"
     }
 
     fun deleteFolder(folderName: String) {
