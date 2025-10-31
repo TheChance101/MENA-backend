@@ -15,113 +15,126 @@ import org.springframework.web.bind.annotation.RestControllerAdvice
 @RestControllerAdvice(assignableTypes = [IdentityController::class])
 @Order(1)
 class IdentityControllerAdvice {
-	private val logger: Logger = LoggerFactory.getLogger(IdentityController::class.java)
+    private val logger: Logger = LoggerFactory.getLogger(IdentityController::class.java)
 
     @ExceptionHandler(MethodArgumentNotValidException::class)
     @ResponseStatus(HttpStatus.BAD_REQUEST)
-    fun handleValidationExceptions(exception: MethodArgumentNotValidException): ResponseEntity<Map<String, String?>> {
+    fun handleValidationExceptions(exception: MethodArgumentNotValidException): ResponseEntity<ErrorResponse> {
         val errors = exception.bindingResult.fieldErrors.associate {
             it.field to it.defaultMessage
         }
         logger.error("Validation failed: $errors", exception)
+        val errorResponse = ErrorResponse("Data not valid")
         return ResponseEntity
             .status(HttpStatus.BAD_REQUEST)
-            .body(errors)
+            .body(errorResponse)
     }
 
-	@ExceptionHandler(UserIsBlockedException::class)
-	fun handleUserIsBlockedException(exception: UserIsBlockedException): ResponseEntity<ErrorResponse?> {
-		logger.error("User is blocked: ${exception.message}", exception)
-		return ResponseEntity
-			.status(HttpStatus.FORBIDDEN)
-			.body(ErrorResponse("User is blocked"))
-	}
+    @ExceptionHandler(UserIsBlockedException::class)
+    fun handleUserIsBlockedException(exception: UserIsBlockedException): ResponseEntity<ErrorResponse> {
+        logger.error("User is blocked: ${exception.message}", exception)
+        val errorResponse = ErrorResponse("User is blocked")
+        return ResponseEntity
+            .status(HttpStatus.FORBIDDEN)
+            .body(errorResponse)
+    }
 
-	@ExceptionHandler(InvalidCredentialsException::class)
-	fun handleInvalidCredentialsException(exception: InvalidCredentialsException): ResponseEntity<ErrorResponse?> {
-		logger.error("Invalid credentials: ${exception.message}", exception)
-		return ResponseEntity
-			.status(HttpStatus.NOT_FOUND)
-			.body(ErrorResponse("Invalid credentials"))
-	}
+    @ExceptionHandler(InvalidCredentialsException::class)
+    fun handleInvalidCredentialsException(exception: InvalidCredentialsException): ResponseEntity<ErrorResponse> {
+        logger.error("Invalid credentials: ${exception.message}", exception)
+        val errorResponse = ErrorResponse("Invalid credentials")
+        return ResponseEntity
+            .status(HttpStatus.NOT_FOUND)
+            .body(errorResponse)
+    }
 
-	@ExceptionHandler(InvalidIpException::class)
-	fun handleInvalidIpException(exception: InvalidIpException): ResponseEntity<ErrorResponse?> {
-		logger.error("Invalid IP: ${exception.message}", exception)
-		return ResponseEntity
-			.status(HttpStatus.BAD_REQUEST)
-			.body(ErrorResponse("Invalid IP"))
-	}
-
-	@ExceptionHandler(InvalidRefreshTokenException::class)
-	fun handleInvalidRefreshTokenException(exception: InvalidRefreshTokenException): ResponseEntity<ErrorResponse?> {
-		logger.error("Invalid refresh token: ${exception.message}", exception)
-		return ResponseEntity
-			.status(HttpStatus.UNAUTHORIZED)
-			.body(ErrorResponse("Invalid refresh token"))
-	}
-
-	@ExceptionHandler(UserNotFoundException::class)
-	fun handleUserNotFoundException(exception: UserNotFoundException): ResponseEntity<ErrorResponse?> {
-		logger.error(exception.message)
-		return ResponseEntity
-			.status(HttpStatus.NOT_FOUND)
-			.body(ErrorResponse("User not found"))
-	}
-
-    @ExceptionHandler(InvalidPhoneNumberException::class)
-    fun handleInvalidPhoneNumberException(exception: InvalidPhoneNumberException): ResponseEntity<ErrorResponse?> {
-        logger.error("Invalid phone number: ${exception.message}", exception)
+    @ExceptionHandler(InvalidIpException::class)
+    fun handleInvalidIpException(exception: InvalidIpException): ResponseEntity<ErrorResponse> {
+        logger.error("Invalid IP: ${exception.message}", exception)
+        val errorResponse = ErrorResponse("Invalid IP")
         return ResponseEntity
             .status(HttpStatus.BAD_REQUEST)
-            .body(ErrorResponse(exception.message ?: "Invalid phone number"))
+            .body(errorResponse)
+    }
+
+    @ExceptionHandler(InvalidRefreshTokenException::class)
+    fun handleInvalidRefreshTokenException(exception: InvalidRefreshTokenException): ResponseEntity<ErrorResponse> {
+        logger.error("Invalid refresh token: ${exception.message}", exception)
+        val errorResponse = ErrorResponse("Invalid refresh token")
+        return ResponseEntity
+            .status(HttpStatus.UNAUTHORIZED)
+            .body(errorResponse)
+    }
+
+    @ExceptionHandler(UserNotFoundException::class)
+    fun handleUserNotFoundException(exception: UserNotFoundException): ResponseEntity<ErrorResponse> {
+        logger.error(exception.message)
+        val errorResponse = ErrorResponse("User not found")
+        return ResponseEntity
+            .status(HttpStatus.NOT_FOUND)
+            .body(errorResponse)
+    }
+
+    @ExceptionHandler(InvalidPhoneNumberException::class)
+    fun handleInvalidPhoneNumberException(exception: InvalidPhoneNumberException): ResponseEntity<ErrorResponse> {
+        logger.error("Invalid phone number: ${exception.message}", exception)
+        val errorResponse = ErrorResponse(exception.message ?: "Invalid phone number")
+        return ResponseEntity
+            .status(HttpStatus.BAD_REQUEST)
+            .body(errorResponse)
     }
 
     @ExceptionHandler(FrequentOtpRequestException::class)
     fun handleFrequentOtpRequestException(exception: FrequentOtpRequestException): ResponseEntity<ErrorResponse> {
         logger.error("Frequent otp request: ${exception.message}", exception)
+        val errorResponse = ErrorResponse(exception.message ?: "Frequent otp requests, try again later")
         return ResponseEntity
             .status(HttpStatus.TOO_MANY_REQUESTS)
-            .body(ErrorResponse(exception.message ?: "Frequent otp requests, try again later"))
+            .body(errorResponse)
     }
 
     @ExceptionHandler(InvalidOtpException::class)
-    fun handleInvalidOtpException(exception: InvalidOtpException): ResponseEntity<ErrorResponse?> {
+    fun handleInvalidOtpException(exception: InvalidOtpException): ResponseEntity<ErrorResponse> {
         logger.error("OTP is invalid: ${exception.message}", exception)
+        val errorResponse = ErrorResponse(exception.message ?: "OTP is invalid")
         return ResponseEntity
             .status(HttpStatus.UNAUTHORIZED)
-            .body(ErrorResponse(exception.message ?: "OTP is invalid"))
+            .body(errorResponse)
     }
 
     @ExceptionHandler(OtpExpiredException::class)
-    fun handleOtpExpiredException(exception: OtpExpiredException): ResponseEntity<ErrorResponse?> {
+    fun handleOtpExpiredException(exception: OtpExpiredException): ResponseEntity<ErrorResponse> {
         logger.error("OTP is expired: ${exception.message}", exception)
+        val errorResponse = ErrorResponse(exception.message ?: "OTP is expired")
         return ResponseEntity
             .status(HttpStatus.BAD_REQUEST)
-            .body(ErrorResponse(exception.message ?: "OTP is expired"))
+            .body(errorResponse)
     }
 
     @ExceptionHandler(PasswordMismatchException::class)
-    fun handlePasswordMismatchException(exception: PasswordMismatchException): ResponseEntity<ErrorResponse?> {
+    fun handlePasswordMismatchException(exception: PasswordMismatchException): ResponseEntity<ErrorResponse> {
         logger.error("Password mismatch: ${exception.message}", exception)
+        val errorResponse = ErrorResponse(exception.message ?: "Password and Confirm Password do not match")
         return ResponseEntity
             .status(HttpStatus.BAD_REQUEST)
-            .body(ErrorResponse(exception.message ?: "Password and Confirm Password do not match"))
+            .body(errorResponse)
     }
 
     @ExceptionHandler(PasswordNotUpdatedException::class)
-    fun handlePasswordNotUpdatedException(exception: PasswordNotUpdatedException): ResponseEntity<ErrorResponse?> {
+    fun handlePasswordNotUpdatedException(exception: PasswordNotUpdatedException): ResponseEntity<ErrorResponse> {
         logger.error("Password not updated: ${exception.message}", exception)
+        val errorResponse = ErrorResponse(exception.message ?: "Password not updated")
         return ResponseEntity
             .status(HttpStatus.INTERNAL_SERVER_ERROR)
-            .body(ErrorResponse(exception.message ?: "Password not updated"))
+            .body(errorResponse)
     }
 
     @ExceptionHandler(UnauthorizedException::class)
-    fun handleUnauthorizedException(exception: UnauthorizedException): ResponseEntity<ErrorResponse?> {
+    fun handleUnauthorizedException(exception: UnauthorizedException): ResponseEntity<ErrorResponse> {
         logger.error("Unauthorized: ${exception.message}", exception)
+        val errorResponse = ErrorResponse(exception.message ?: "Unauthorized")
         return ResponseEntity
             .status(HttpStatus.UNAUTHORIZED)
-            .body(ErrorResponse(exception.message ?: "Unauthorized"))
+            .body(errorResponse)
     }
 }

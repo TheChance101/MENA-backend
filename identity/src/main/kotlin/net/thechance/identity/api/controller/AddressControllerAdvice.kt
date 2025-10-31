@@ -19,77 +19,68 @@ class AddressControllerAdvice {
 
     @ExceptionHandler(MethodArgumentNotValidException::class)
     @ResponseStatus(HttpStatus.BAD_REQUEST)
-    fun handleValidationExceptions(exception: MethodArgumentNotValidException): ResponseEntity<Map<String, String?>> {
+    fun handleValidationExceptions(exception: MethodArgumentNotValidException): ResponseEntity<ErrorResponse> {
         val errors = exception.bindingResult.fieldErrors.associate {
             it.field to it.defaultMessage
         }
         logger.error("Validation failed: $errors", exception)
+        val errorResponse = ErrorResponse("Data not valid")
         return ResponseEntity
             .status(HttpStatus.BAD_REQUEST)
-            .body(errors)
+            .body(errorResponse)
     }
 
     @ExceptionHandler(AddressNotFoundException::class)
-    fun handleAddressNotFoundException(exception: AddressNotFoundException): ResponseEntity<ErrorResponse?> {
+    fun handleAddressNotFoundException(exception: AddressNotFoundException): ResponseEntity<ErrorResponse> {
         logger.error(exception.message)
+        val errorResponse = ErrorResponse(exception.message ?: "Address Not Found")
         return ResponseEntity
             .status(HttpStatus.NOT_FOUND)
-            .body(ErrorResponse(exception.message ?: "Address Not Found"))
+            .body(errorResponse)
     }
 
     @ExceptionHandler(AddressCanNotBeDeletedException::class)
-    fun handleAddressCanNotBeDeletedException(exception: AddressCanNotBeDeletedException): ResponseEntity<ErrorResponse?> {
+    fun handleAddressCanNotBeDeletedException(exception: AddressCanNotBeDeletedException): ResponseEntity<ErrorResponse> {
         logger.error(exception.message)
+        val errorResponse = ErrorResponse(exception.message ?: "Address Can Not Be Deleted")
         return ResponseEntity
             .status(HttpStatus.FORBIDDEN)
-            .body(ErrorResponse(exception.message ?: "Address Can Not Be Deleted"))
-    }
-
-    @ExceptionHandler(AddressNotAddedException::class)
-    fun handleAddressNotAddedException(exception: AddressNotAddedException): ResponseEntity<ErrorResponse?> {
-        logger.error(exception.message)
-        return ResponseEntity
-            .status(HttpStatus.NOT_MODIFIED)
-            .body(ErrorResponse(exception.message ?: "Address Not Added"))
-    }
-
-    @ExceptionHandler(AddressNotUpdatedException::class)
-    fun handleAddressNotUpdatedException(exception: AddressNotUpdatedException): ResponseEntity<ErrorResponse?> {
-        logger.error(exception.message)
-        return ResponseEntity
-            .status(HttpStatus.NOT_MODIFIED)
-            .body(ErrorResponse(exception.message ?: "Address Not Updated"))
-    }
-
-    @ExceptionHandler(AddressNotDeletedException::class)
-    fun handleAddressNotDeletedException(exception: AddressNotDeletedException): ResponseEntity<ErrorResponse?> {
-        logger.error(exception.message)
-        return ResponseEntity
-            .status(HttpStatus.NOT_MODIFIED)
-            .body(ErrorResponse(exception.message ?: "Address Not Deleted"))
+            .body(errorResponse)
     }
 
     @ExceptionHandler(AtLeastAddressValueNeededException::class)
-    fun handleAtLeastAddressValueNeededException(exception: AtLeastAddressValueNeededException): ResponseEntity<ErrorResponse?> {
+    fun handleAtLeastAddressValueNeededException(exception: AtLeastAddressValueNeededException): ResponseEntity<ErrorResponse> {
         logger.error(exception.message)
+        val errorResponse = ErrorResponse(exception.message ?: "At least one value needed to update")
         return ResponseEntity
             .status(HttpStatus.BAD_REQUEST)
-            .body(ErrorResponse(exception.message ?: "At least one value needed to update"))
+            .body(errorResponse)
     }
 
     @ExceptionHandler(AddressCanNotBeUpdatedException::class)
-    fun handleAddressCanNotBeUpdatedException(exception: AddressCanNotBeUpdatedException): ResponseEntity<ErrorResponse?> {
+    fun handleAddressCanNotBeUpdatedException(exception: AddressCanNotBeUpdatedException): ResponseEntity<ErrorResponse> {
         logger.error(exception.message)
+        val errorResponse = ErrorResponse(exception.message ?: "Address Can Not Be Updated")
         return ResponseEntity
             .status(HttpStatus.FORBIDDEN)
-            .body(ErrorResponse(exception.message ?: "Address Can Not Be Updated"))
+            .body(errorResponse)
+    }
+
+    @ExceptionHandler(DataNotValidException::class)
+    fun handleDataNotValidException(exception: DataNotValidException): ResponseEntity<ErrorResponse> {
+        logger.error(exception.message)
+        val errorResponse = ErrorResponse(exception.message ?: "Data not valid")
+        return ResponseEntity
+            .status(HttpStatus.BAD_REQUEST)
+            .body(errorResponse)
     }
 
     @ExceptionHandler(NoActiveAddressException::class)
-    fun handleNoActiveAddressException(exception: NoActiveAddressException): ResponseEntity<ErrorResponse?> {
+    fun handleNoActiveAddressException(exception: NoActiveAddressException): ResponseEntity<ErrorResponse> {
         logger.error(exception.message)
+        val errorResponse = ErrorResponse(exception.message ?: "No active address")
         return ResponseEntity
             .status(HttpStatus.NOT_FOUND)
-            .body(ErrorResponse(exception.message ?: "No active address"))
+            .body(errorResponse)
     }
 }

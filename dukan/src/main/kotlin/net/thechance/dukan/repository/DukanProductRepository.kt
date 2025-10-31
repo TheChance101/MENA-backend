@@ -13,6 +13,7 @@ import java.util.*
 interface DukanProductRepository : JpaRepository<DukanProduct, UUID> {
     fun existsByDukanIdAndNameIgnoreCase(dukanId: UUID, name: String): Boolean
     fun existsByShelfId(shelfId: UUID): Boolean
+    fun findByIdAndDukanOwnerId(id: UUID, ownerId: UUID): Optional<DukanProduct>
     @Query("""
         select p from DukanProduct p
         join fetch p.shelf s
