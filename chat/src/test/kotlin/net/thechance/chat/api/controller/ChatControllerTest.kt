@@ -2,8 +2,10 @@ package net.thechance.chat.api.controller
 
 import com.google.common.truth.Truth.assertThat
 import io.mockk.every
+import io.mockk.just
 import io.mockk.justRun
 import io.mockk.mockk
+import io.mockk.runs
 import io.mockk.verify
 import net.thechance.chat.api.controller.ChatController.Companion.PRIVATE_MESSAGES
 import net.thechance.chat.api.dto.*
@@ -38,7 +40,6 @@ class ChatControllerTest {
         ChatController(
             messagingTemplate,
             chatService,
-            contactService,
         )
     }
 
@@ -99,29 +100,12 @@ class ChatControllerTest {
     }
 
     @Test
-    fun `getOrCreateConversation should return conversation`() {
-        val userId = UUID.randomUUID()
-        val receiverId = UUID.randomUUID()
-        val chatId = UUID.randomUUID()
+    fun `getChatByUserIds should return conversation`() {
+        val requester = userId
+        val receiverId = userId2
+        every { chatService.getChatByUserIds(requester, receiverId) } returns chatModel
 
-        every { contactService.getContactByOwnerIdAndContactUserId(userId, receiverId) } returns Contact(
-            id = UUID.randomUUID(),
-            firstName = "Ali",
-            lastName = "Ahmed",
-            phoneNumber = "777777777",
-            contactOwnerId = userId
-        )
-
-        val chat = Chat(
-            id = chatId,
-            users = mutableSetOf(
-                ContactUser(id = userId, firstName = "User1", lastName = "Test", phoneNumber = "123456789"),
-                ContactUser(id = receiverId, firstName = "User2", lastName = "Test", phoneNumber = "777777777")
-            )
-        )
-        every { chatService.getOrCreateConversationByParticipants(userId, receiverId) } returns chat
-
-        val response = controller.getOrCreateConversation(userId, receiverId)
+        val response = controller.getChatByUserIds(requester, receiverId)
 
         assertThat(response.statusCode).isEqualTo(HttpStatus.OK)
         assertThat(response.body?.id).isEqualTo(chatId)
@@ -165,8 +149,9 @@ class ChatControllerTest {
 
         every { principal.name } returns userId.toString()
         justRun { messagingTemplate.convertAndSendToUser(any(), any(), any()) }
-        every { chatService.markChatMessagesAsRead(chatId, userId) } returns 1
+        every { chatService.markChatMessagesAsRead(chatId, userId) } returns Unit
         every { chatService.getChatUsersIds(chatId) } returns listOf(userId)
+        every { chatService.markChatMessagesAsRead(chatId, userId) } just runs
 
         controller.markMessagesAsRead(markAsReadRequest, principal)
 
@@ -199,6 +184,7 @@ class ChatControllerTest {
     private companion object {
         val chatId = UUID.fromString("825265f7-7e30-4ac3-b9fb-16ba3869610e")
         val userId = UUID.fromString("451e4d6c-0380-41ed-95e6-275793c404c6")
+        val userId2 = UUID.fromString("451e4d6c-0380-41ed-95e6-275793c40986")
 
         val chatModel = ChatModel(
             name = "Raouf kamel",
