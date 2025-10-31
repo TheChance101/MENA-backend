@@ -18,26 +18,15 @@ data class SoldProduct(
     @GeneratedValue(strategy = GenerationType.UUID)
     val id: UUID = UUID.randomUUID(),
 
-    @ManyToOne
     @JoinColumn(name = "product_id", nullable = false)
-    val product: DukanProduct,
+    val productId: UUID,
 
-    @ManyToOne
     @JoinColumn(name = "dukan_id", nullable = false)
-    val dukan: Dukan,
+    val dukanId: UUID,
 
     @Column(name = "quantity", nullable = false)
     val quantity: Int,
 
     @Column(name = "sold_at", nullable = false)
     val soldAt: Instant = Instant.now()
-){
-    override fun equals(other: Any?): Boolean {
-        if (this === other) return true
-        if (other == null || this::class != other::class) return false
-        other as SoldProduct
-        return id == other.id
-    }
-
-    override fun hashCode(): Int = id.hashCode()
-}
+)

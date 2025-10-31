@@ -28,7 +28,14 @@ class CartController(
         @AuthenticationPrincipal userId: UUID,
         @Valid @RequestBody request: AddToCartRequest
     ): ResponseEntity<Unit> {
-        cartService.addOrUpdateItem(params = AddOrUpdateCartItemParams(userId, request.dukanId, request.productId, request.quantity))
+        cartService.addOrUpdateItem(
+            params = AddOrUpdateCartItemParams(
+                userId,
+                request.dukanId,
+                request.productId,
+                request.quantity
+            )
+        )
         return ResponseEntity.ok().build()
     }
 
@@ -37,9 +44,9 @@ class CartController(
         @AuthenticationPrincipal userId: UUID,
         @PathVariable dukanId: UUID
     ): ResponseEntity<CartResponse> {
-        val cart = cartService.getCart(userId, dukanId)
-        val totalPrice = cart.items.sumOf { it.product.price * it.quantity }
-        return ResponseEntity.ok(cart.toResponse(totalPrice))
+        val cart = cartService.getCartOrThrow(userId, dukanId)
+       val cartResponse= cart.toResponse()
+        return ResponseEntity.ok(cartResponse)
     }
 
     @GetMapping("/{dukanId}/items")
@@ -50,7 +57,8 @@ class CartController(
         pageable: Pageable
     ): ResponseEntity<Page<CartItemResponse>> {
         val items = cartService.getCartItems(userId, dukanId, pageable)
-        return ResponseEntity.ok(items.map { it.toResponse() })
+        val cartItemsResponse =items.map { it.toResponse() }
+        return ResponseEntity.ok(cartItemsResponse)
     }
 
     @DeleteMapping("/{dukanId}/items/{productId}")

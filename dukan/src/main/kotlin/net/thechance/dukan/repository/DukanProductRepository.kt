@@ -14,23 +14,30 @@ interface DukanProductRepository : JpaRepository<DukanProduct, UUID> {
     fun existsByDukanIdAndNameIgnoreCase(dukanId: UUID, name: String): Boolean
     fun existsByShelfId(shelfId: UUID): Boolean
     fun findByIdAndDukanOwnerId(id: UUID, ownerId: UUID): Optional<DukanProduct>
-    @Query("""
-        select p from DukanProduct p
-        join fetch p.shelf s
-        join fetch s.dukan d
-        where s.id = :shelfId
-    """)
+
+    @Query(
+        """
+        SELECT product 
+        FROM DukanProduct product
+        JOIN FETCH product.shelf shelf
+        JOIN FETCH shelf.dukan dukan
+        WHERE shelf.id = :shelfId
+        """
+    )
     fun findAllByShelfIdWithDukan(
         @Param("shelfId") shelfId: UUID,
         pageable: Pageable
     ): Page<DukanProduct>
 
-    @Query("""
-        select p from DukanProduct p
-        join fetch p.shelf s
-        join fetch s.dukan d
-        where p.id = :productId
-    """)
+    @Query(
+        """
+        SELECT product 
+        FROM DukanProduct product
+        JOIN FETCH product.shelf shelf
+        JOIN FETCH shelf.dukan dukan
+        WHERE product.id = :productId
+        """
+    )
     fun findByIdWithDukan(
         @Param("productId") productId: UUID
     ): DukanProduct

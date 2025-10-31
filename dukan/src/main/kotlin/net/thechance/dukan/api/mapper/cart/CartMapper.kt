@@ -16,7 +16,7 @@ fun CartItem.toResponse(): CartItemResponse {
     )
 }
 
-fun Cart.toResponse(totalPrice : Double): CartResponse {
+fun Cart.toResponse(): CartResponse {
     return CartResponse(
         id = this.id,
         totalPrice = totalPrice

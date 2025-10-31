@@ -54,15 +54,16 @@ class DukanProductController(
         @PageableDefault(size = 10, page = 0, sort = ["createdAt"], direction = Sort.Direction.DESC)
         pageable: Pageable
     ): ResponseEntity<Page<DukanProductResponse>> {
-        val products = dukanProductService.getProductsByShelf(userId,shelfId, pageable)
+        val products = dukanProductService.getProductsByShelf(userId, shelfId, pageable)
         return ResponseEntity.ok(products)
     }
 
     @GetMapping("/{productId}")
     fun getProductById(
         @AuthenticationPrincipal userId: UUID,
-        @PathVariable("productId") productId: UUID): ResponseEntity<DukanProductResponse> {
-        val productResponse = dukanProductService.getProductById(userId,productId)
+        @PathVariable("productId") productId: UUID
+    ): ResponseEntity<DukanProductResponse> {
+        val productResponse = dukanProductService.getProductById(userId, productId)
         return ResponseEntity.ok(productResponse)
     }
 
@@ -72,7 +73,7 @@ class DukanProductController(
         @PathVariable("productId") productId: UUID,
         @Valid @RequestBody request: DukanProductUpdateRequest,
     ): DukanProductUpdateResponse {
-        val productUpdateParams = request.toProductUpdateParams(userId,productId)
+        val productUpdateParams = request.toProductUpdateParams(userId, productId)
         val productId = dukanProductService.updateProduct(productUpdateParams)
 
         return DukanProductUpdateResponse(productId)

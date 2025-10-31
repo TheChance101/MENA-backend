@@ -6,13 +6,15 @@ import org.springframework.data.jpa.repository.Query
 import java.util.*
 
 interface CartRepository : JpaRepository<Cart, UUID> {
-    @Query(
-        """
-        select c from Cart c
-        join fetch c.items i
-        join fetch i.product p
-        where c.userId = :userId and c.dukanId = :dukanId
+@Query(
     """
-    )
+        SELECT cart 
+        FROM Cart cart
+        JOIN FETCH cart.items item
+        JOIN FETCH item.product product
+        WHERE cart.userId = :userId 
+        AND cart.dukanId = :dukanId
+        """
+)
     fun findByUserIdAndDukanIdWithItemsAndProducts(userId: UUID, dukanId: UUID): Cart?
 }

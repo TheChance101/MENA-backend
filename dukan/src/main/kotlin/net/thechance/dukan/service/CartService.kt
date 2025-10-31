@@ -14,7 +14,6 @@ import org.springframework.data.domain.Page
 import org.springframework.data.domain.Pageable
 import org.springframework.stereotype.Service
 import org.springframework.transaction.annotation.Transactional
-import java.time.Instant
 import java.util.*
 
 @Service
@@ -26,47 +25,46 @@ class CartService(
 
     @Transactional
     fun addOrUpdateItem(params: AddOrUpdateCartItemParams): Cart {
-        val cart = getOrCreateCart(params.userId, params.dukanId)
+        val cart = getCartByUserAndDukan(params.userId, params.dukanId)
+            ?: createCart(params.userId, params.dukanId)
         val product = getProduct(params.productId)
-        val item = cart.items.find { it.product.id == product.id }
+        val item = cart.items.find { it.id == product.id }
 
         if (item != null) item.quantity = params.quantity
         else cart.items.add(CartItem(product = product, quantity = params.quantity, cart = cart))
 
-        cart.updatedAt = Instant.now()
         return cartRepository.save(cart)
     }
 
     @Transactional
     fun removeItem(userId: UUID, dukanId: UUID, productId: UUID) {
-        val cart = getCart(userId, dukanId)
-        val item = cart.items.find { it.product.id == productId } ?: throw ProductNotInCartException()
-
+        val cart = getCartOrThrow(userId, dukanId)
+        val item = cart.items.find { it.id == productId }
+            ?: throw ProductNotInCartException()
         cart.items.remove(item)
         if (cart.items.isEmpty()) cartRepository.delete(cart)
         else {
-            cart.updatedAt = Instant.now()
             cartRepository.save(cart)
         }
     }
 
     @Transactional(readOnly = true)
-    fun getCart(userId: UUID, dukanId: UUID): Cart {
+    fun getCartOrThrow(userId: UUID, dukanId: UUID): Cart {
         return cartRepository.findByUserIdAndDukanIdWithItemsAndProducts(userId, dukanId)
             ?: throw CartNotFoundException()
     }
 
     @Transactional(readOnly = true)
     fun getCartItems(userId: UUID, dukanId: UUID, pageable: Pageable): Page<CartItem> {
-        val cart = getCart(userId, dukanId)
+        val cart = getCartOrThrow(userId, dukanId)
         return cartItemRepository.findAllByCartId(cart.id, pageable)
     }
+    private fun getCartByUserAndDukan(userId: UUID, dukanId: UUID): Cart? {
+        return cartRepository.findByUserIdAndDukanIdWithItemsAndProducts(userId, dukanId)
+    }
 
-    private fun getOrCreateCart(userId: UUID, dukanId: UUID): Cart {
-        return synchronized(userId.toString() + dukanId.toString()) {
-            cartRepository.findByUserIdAndDukanIdWithItemsAndProducts(userId, dukanId)
-                ?: cartRepository.saveAndFlush(Cart(userId = userId, dukanId = dukanId))
-        }
+    private fun createCart(userId: UUID, dukanId: UUID): Cart {
+        return cartRepository.saveAndFlush(Cart(userId = userId, dukanId = dukanId))
     }
 
     private fun getProduct(productId: UUID): DukanProduct =
