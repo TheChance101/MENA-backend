@@ -17,12 +17,12 @@ class UserController(
     private val userService: UserService
 ) {
     @GetMapping
-    fun searchUsers(
+    fun getUsers(
         @RequestParam(required = false) query: String = "",
         pageable: Pageable
     ): ResponseEntity<PageResponse<UserResponse>> {
 
-        val response = userService.searchUsers(
+        val response = userService.findUsersByQuery(
             query = query,
             pageable = pageable
         ).toUserResponsePage()

@@ -83,8 +83,8 @@ class UserService(
         }
     }
 
-    fun searchUsers(query: String, pageable: Pageable): Page<User> {
-        return userRepository.searchUsers(query, pageable)
+    fun findUsersByQuery(query: String, pageable: Pageable): Page<User> {
+        return userRepository.findByFullNameOrPhoneNumber(query, pageable)
     }
 
     fun updateUserLastLoginTime(userId: UUID, time: LocalDateTime){

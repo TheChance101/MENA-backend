@@ -17,7 +17,7 @@ interface UserRepository: JpaRepository<User, UUID> {
         LOWER(CONCAT(u.firstName, ' ', u.lastName)) LIKE LOWER(CONCAT('%', :query, '%'))
         OR u.phoneNumber LIKE CONCAT('%', :query, '%')
 """)
-    fun searchUsers(
+    fun findByFullNameOrPhoneNumber(
         @Param("query") query: String,
         pageable: Pageable
     ): Page<User>
