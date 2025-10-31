@@ -18,9 +18,11 @@ import java.util.*
 @RestController
 @RequestMapping("/identity/profile")
 class ProfileController(
+    @Value("\${storage.mena.cdn-endpoint}") cdnEndpoint: String,
+    @Value("\${identity.resources.profile-image-directory}") profileImageDirectory: String,
     private val userService: UserService,
-    @param:Value("storage.mena.cdn-endpoint") private val cdnEndpoint: String,
 ) {
+    private val imagesBaseUrl: String = "$cdnEndpoint/$profileImageDirectory"
 
     @PostMapping
     fun updateUserProfile(
@@ -29,12 +31,12 @@ class ProfileController(
     ): ResponseEntity<ProfileResponse> {
         val userServiceModel = updateProfileRequest.toServiceModel(userId)
         val updatedUser = userService.updateUserProfile(userServiceModel)
-        return ResponseEntity.ok(updatedUser.toResponse(cdnEndpoint))
+        return ResponseEntity.ok(updatedUser.toResponse(imagesBaseUrl))
     }
 
     @GetMapping
     fun getUserProfile(@AuthenticationPrincipal userId: UUID): ResponseEntity<ProfileResponse> {
-        val response = userService.findById(userId).toResponse(cdnEndpoint)
+        val response = userService.findById(userId).toResponse(imagesBaseUrl)
         return ResponseEntity.ok(response)
     }
 
@@ -43,8 +45,8 @@ class ProfileController(
         @AuthenticationPrincipal userId: UUID,
         @RequestPart("file") file: MultipartFile,
     ): ResponseEntity<UpdateImageResponse> {
-        val imageUrl = userService.updateUserImage(userId, file)
-        val response = UpdateImageResponse(imageUrl)
+        val imageUri = userService.updateUserImage(userId, file)
+        val response = UpdateImageResponse(imageUrl= "$imagesBaseUrl/$imageUri")
         return ResponseEntity.ok(response)
     }
 
