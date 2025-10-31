@@ -37,7 +37,7 @@ class AttachmentStorageService(
             val putReq = createObjectRequest(key, mimeType)
             menaS3Client.putObject(putReq, RequestBody.fromBytes(file.bytes))
             return makeUrl(key)
-        } catch (_: Exception) {
+        } catch (e: Exception) {
             throw ImageUploadFailedException("failed uploading image: ${e.message}")
         }
     }
