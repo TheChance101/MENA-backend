@@ -5,9 +5,12 @@ import net.thechance.dukan.api.utils.EndPoints.DUKAN_PATH
 import net.thechance.dukan.api.dto.product.DukanProductCreationRequest
 import net.thechance.dukan.api.dto.product.DukanProductCreationResponse
 import net.thechance.dukan.api.dto.product.DukanProductResponse
+import net.thechance.dukan.api.dto.product.DukanProductUpdateRequest
+import net.thechance.dukan.api.dto.product.DukanProductUpdateResponse
 import net.thechance.dukan.service.DukanProductService
 import net.thechance.dukan.api.mapper.product.toProductCreationParams
 import net.thechance.dukan.api.mapper.product.toProductResponse
+import net.thechance.dukan.api.mapper.product.toProductUpdateParams
 import org.springframework.data.domain.Page
 import org.springframework.data.domain.Pageable
 import org.springframework.data.domain.Sort
@@ -59,5 +62,27 @@ class DukanProductController(
     fun getProductById(@PathVariable("productId") productId: UUID): ResponseEntity<DukanProductResponse> {
         val productResponse = dukanProductService.getProductById(productId).toProductResponse()
         return ResponseEntity.ok(productResponse)
+    }
+
+    @PutMapping("/{productId}")
+    fun updateProduct(
+        @AuthenticationPrincipal userId: UUID,
+        @PathVariable("productId") productId: UUID,
+        @Valid @RequestBody request: DukanProductUpdateRequest,
+    ): DukanProductUpdateResponse {
+        val productUpdateParams = request.toProductUpdateParams(userId,productId)
+        val productId = dukanProductService.updateProduct(productUpdateParams)
+
+        return DukanProductUpdateResponse(productId)
+    }
+
+    @PostMapping("/{productId}/image")
+    fun uploadProductImage(
+        @AuthenticationPrincipal userId: UUID,
+        @PathVariable productId: UUID,
+        @RequestParam("file") file: MultipartFile,
+    ): String {
+        val imageUrl = dukanProductService.uploadProductImage(userId, productId, file)
+        return imageUrl
     }
 }
