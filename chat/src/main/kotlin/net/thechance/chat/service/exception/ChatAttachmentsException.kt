@@ -7,3 +7,11 @@ class InvalidImageFormatException : ChatException(
 class ImageUploadFailedException(message: String) : ChatException(
     message = message
 )
+
+class InvalidAudioFormatException : ChatException(
+    message = "Invalid audio format"
+)
+
+class AudioUploadFailedException :  ChatException(
+    message = "Audio uploading failed"
+)

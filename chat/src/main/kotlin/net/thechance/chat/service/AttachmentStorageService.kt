@@ -1,11 +1,9 @@
 package net.thechance.chat.service
 
+import net.thechance.chat.service.exception.AudioUploadFailedException
 import net.thechance.chat.service.exception.ImageUploadFailedException
+import net.thechance.chat.service.exception.InvalidAudioFormatException
 import net.thechance.chat.service.exception.InvalidImageFormatException
-import net.thechance.chat.exception.ImageUploadFailedException
-import net.thechance.chat.exception.InvalidImageFormatException
-import net.thechance.chat.exception.AudioUploadFailedException
-import net.thechance.chat.exception.InvalidAudioFormatException
 import org.springframework.boot.context.properties.ConfigurationProperties
 import org.springframework.boot.context.properties.EnableConfigurationProperties
 import org.springframework.stereotype.Service

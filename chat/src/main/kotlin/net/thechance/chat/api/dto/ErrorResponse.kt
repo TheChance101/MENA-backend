@@ -2,5 +2,5 @@ package net.thechance.chat.api.dto
 
 data class ErrorResponse(
     val message : String,
-    val code: Int?= null,
+    val code: String?= null,
 )
