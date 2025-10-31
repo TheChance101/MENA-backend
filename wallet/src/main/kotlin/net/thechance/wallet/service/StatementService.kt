@@ -44,9 +44,9 @@ class StatementService(
     }
 
     private fun getStartDateTime(startDate: LocalDate?, userId: UUID): LocalDateTime {
-        val dateTime = startDate?.atStartOfDay()
-            ?: transactionService.getUserFirstTransactionDate(userId).orNow()
-        return dateTime.toLocalDate().atStartOfDay()
+        return startDate?.atStartOfDay()
+            ?: transactionService.getUserFirstTransactionDate(userId)
+                .orNow().toLocalDate().atStartOfDay()
     }
 
     private fun getEndDateTime(endDate: LocalDate?): LocalDateTime {
