@@ -1,6 +1,6 @@
 package net.thechance.faith.api.dto.nearestMosque
 
-import java.time.LocalDate
+import java.time.Instant
 import java.util.UUID
 
 data class MosqueResponse(
@@ -9,6 +9,6 @@ data class MosqueResponse(
     val address: String,
     val latitude: Double,
     val longitude: Double,
-    val imageUrl: List<String>?,
-    val createdAt: LocalDate = LocalDate.now()
+    val imageUrl: String,
+    val createdAt: Instant = Instant.now()
 )
