@@ -12,7 +12,7 @@ import software.amazon.awssdk.services.s3.model.ObjectCannedACL
 import software.amazon.awssdk.services.s3.model.PutObjectRequest
 import java.time.LocalDateTime
 
-@ConfigurationProperties(prefix = "storage.faith")
+@ConfigurationProperties(prefix = "storage.mena")
 data class FaithStorageProperties(
     val bucket: String,
     val cdnEndpoint: String
@@ -21,7 +21,7 @@ data class FaithStorageProperties(
 @Service
 @EnableConfigurationProperties(FaithStorageProperties::class)
 class FaithImageStorageService(
-    private val faithS3Client: S3Client,
+    private val menaS3Client: S3Client,
     private val props: FaithStorageProperties,
 ) {
     fun uploadImage(
@@ -35,7 +35,7 @@ class FaithImageStorageService(
             val fileName = "${fileName}_${LocalDateTime.now()}.$extension"
             val key = "images/$folderName/$fileName"
             val putReq = createObjectRequest(key, mimeType)
-            faithS3Client.putObject(putReq, RequestBody.fromBytes(file.bytes))
+            menaS3Client.putObject(putReq, RequestBody.fromBytes(file.bytes))
             return "${props.cdnEndpoint}/$key"
         } catch (_: Exception) {
             throw ImageUploadFailedException()

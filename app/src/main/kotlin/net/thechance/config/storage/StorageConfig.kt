@@ -27,11 +27,7 @@ class StorageConfig(
     fun trendsS3Client(trendCreds: StaticCredentialsProvider): S3Client =
         buildClient(props.trends.endpoint, trendCreds)
 
-
-    @Bean
-    fun faithS3Client(): S3Client =
-        buildClient(props.trends.endpoint, trendCreds())
-
+    
     @Bean
     fun walletS3Client(walletCreds: StaticCredentialsProvider): S3Client =
         buildClient(props.wallet.endpoint, walletCreds)
@@ -55,10 +51,6 @@ class StorageConfig(
         return StaticCredentialsProvider.create(AwsBasicCredentials.create(props.wallet.key, props.wallet.secret))
     }
 
-    @Bean
-    fun faithCreds(): StaticCredentialsProvider {
-        return StaticCredentialsProvider.create(AwsBasicCredentials.create(props.faith.key, props.faith.secret))
-    }
 
     private fun buildClient(
         endpoint: String,
