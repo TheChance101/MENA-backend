@@ -88,14 +88,12 @@ class UserService(
     }
 
     fun updateUserLastLoginTime(userId: UUID, time: LocalDateTime){
-        val user = findById(userId)
-        val updatedUser = user.copy(lastLoginAt = time)
-        userRepository.save(updatedUser)
+        val updatedUsersCount = userRepository.updateLastLoginTime(userId, time)
+        if (updatedUsersCount == 0) throw UserNotFoundException("User with id: $userId not found")
     }
 
     fun updateUserLastVisitTime(userId: UUID, time: LocalDateTime){
-        val user = findById(userId)
-        val updatedUser = user.copy(lastVisitAt = time)
-        userRepository.save(updatedUser)
+        val updatedUsersCount = userRepository.updateLastVisitTime(userId, time)
+        if (updatedUsersCount == 0) throw UserNotFoundException("User with id: $userId not found")
     }
 }
