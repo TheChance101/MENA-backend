@@ -15,8 +15,16 @@ import java.util.UUID
 data class Contact(
     @Id @Column(columnDefinition = "uuid", updatable = false, nullable = false)
     val id: UUID = UUID.randomUUID(),
-    @Column(nullable = false) val firstName: String,
-    @Column(nullable = false) val lastName: String,
-    @Column(nullable = false) val phoneNumber: String,
-    @Column(nullable = false) val contactOwnerId: UUID
+
+    @Column(nullable = false)
+    val firstName: String,
+
+    @Column(nullable = false)
+    val lastName: String,
+
+    @Column(nullable = false)
+    val phoneNumber: String,
+
+    @Column(nullable = false)
+    val contactOwnerId: UUID
 )
