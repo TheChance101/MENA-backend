@@ -4,7 +4,7 @@ import jakarta.validation.Valid
 import net.thechance.identity.api.dto.ProfileResponse
 import net.thechance.identity.api.dto.UpdateImageResponse
 import net.thechance.identity.api.dto.UpdateProfileRequest
-import net.thechance.identity.api.mapper.toResponse
+import net.thechance.identity.api.mapper.toProfileResponse
 import net.thechance.identity.service.UserService
 import net.thechance.identity.service.model.UserServiceModel
 import org.springframework.beans.factory.annotation.Value
@@ -31,12 +31,12 @@ class ProfileController(
     ): ResponseEntity<ProfileResponse> {
         val userServiceModel = updateProfileRequest.toServiceModel(userId)
         val updatedUser = userService.updateUserProfile(userServiceModel)
-        return ResponseEntity.ok(updatedUser.toResponse(imagesBaseUrl))
+        return ResponseEntity.ok(updatedUser.toProfileResponse(imagesBaseUrl))
     }
 
     @GetMapping
     fun getUserProfile(@AuthenticationPrincipal userId: UUID): ResponseEntity<ProfileResponse> {
-        val response = userService.findById(userId).toResponse(imagesBaseUrl)
+        val response = userService.findById(userId).toProfileResponse(imagesBaseUrl)
         return ResponseEntity.ok(response)
     }
 
