@@ -20,8 +20,6 @@ interface MessageRepository : JpaRepository<Message, UUID> {
     fun updateIsReadByChatIdAndSenderIdNot(chatId: UUID, userId: UUID): Int
 
     fun findTopByChatIdOrderBySentAtDesc(chatId: UUID): Message?
-    fun countByChatIdAndSenderIdNotAndIsReadFalse(chatId: UUID, userId: UUID): Int
-    fun countByChatIdAndIsReadFalse(chatId: UUID): Int
 
     @Query(
         nativeQuery = true,

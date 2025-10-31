@@ -5,6 +5,7 @@ import io.mockk.every
 import io.mockk.mockk
 import net.thechance.chat.entity.ContactUser
 import net.thechance.chat.repository.ContactUserRepository
+import net.thechance.chat.service.exception.NotFoundException
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.assertThrows
 import org.springframework.data.repository.findByIdOrNull
@@ -39,7 +40,7 @@ class ContactUserServiceTest {
 
         every { contactUserRepository.findByIdOrNull(userId) } returns null
 
-        val exception = assertThrows<IllegalArgumentException> { service.getPhoneNumberByUserId(userId) }
-        assertThat(exception).hasMessageThat().contains("User not found")
+        val exception = assertThrows<NotFoundException> { service.getPhoneNumberByUserId(userId) }
+        assertThat(exception).hasMessageThat().contains("User not found with this id $userId")
     }
 }

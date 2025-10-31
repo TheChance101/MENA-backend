@@ -1,3 +1,8 @@
 package net.thechance.chat.service.exception
 
-class NotFoundException(message: String) : RuntimeException(message)
+
+open class ChatException(
+    override val message: String,
+) : Exception(message)
+
+class NotFoundException(message: String) : ChatException(message = message)

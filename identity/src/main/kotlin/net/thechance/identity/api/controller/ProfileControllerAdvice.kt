@@ -15,29 +15,32 @@ import org.springframework.web.bind.annotation.RestControllerAdvice
 @RestControllerAdvice(assignableTypes = [ProfileController::class])
 @Order(1)
 class ProfileControllerAdvice {
-    private val logger: Logger = LoggerFactory.getLogger(IdentityController::class.java)
+    private val logger: Logger = LoggerFactory.getLogger(ProfileController::class.java)
 
     @ExceptionHandler(UserNotFoundException::class)
-    fun handleUserNotFoundException(exception: UserNotFoundException): ResponseEntity<ErrorResponse?> {
+    fun handleUserNotFoundException(exception: UserNotFoundException): ResponseEntity<ErrorResponse> {
         logger.error(exception.message)
+        val errorResponse = ErrorResponse("User not found")
         return ResponseEntity
             .status(HttpStatus.NOT_FOUND)
-            .body(ErrorResponse("User not found"))
+            .body(errorResponse)
     }
 
     @ExceptionHandler(InvalidImageException::class)
-    fun handleInvalidImageException(exception: InvalidImageException): ResponseEntity<ErrorResponse?> {
+    fun handleInvalidImageException(exception: InvalidImageException): ResponseEntity<ErrorResponse> {
         logger.error("Invalid image: ${exception.message}", exception)
+        val errorResponse = ErrorResponse("Image extension ${exception.extension} is not supported")
         return ResponseEntity
             .status(HttpStatus.BAD_REQUEST)
-            .body(ErrorResponse("Image extension ${exception.extension} is not supported"))
+            .body(errorResponse)
     }
 
     @ExceptionHandler(UnknownErrorException::class)
-    fun handleException(exception: Exception): ResponseEntity<ErrorResponse?> {
+    fun handleException(exception: Exception): ResponseEntity<ErrorResponse> {
         logger.error(exception.message, exception)
+        val errorResponse = ErrorResponse("Internal server error")
         return ResponseEntity
             .status(HttpStatus.INTERNAL_SERVER_ERROR)
-            .body(ErrorResponse("Internal server error"))
+            .body(errorResponse)
     }
 }

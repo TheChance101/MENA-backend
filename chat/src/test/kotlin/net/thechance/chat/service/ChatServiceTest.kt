@@ -6,16 +6,18 @@ import io.mockk.mockk
 import io.mockk.verify
 import jakarta.persistence.EntityManager
 import net.thechance.chat.api.dto.MessageRequestDto
+import net.thechance.chat.service.exception.NotFoundException
 import net.thechance.chat.entity.Chat
 import net.thechance.chat.entity.Contact
 import net.thechance.chat.entity.ContactUser
 import net.thechance.chat.entity.Message
 import net.thechance.chat.repository.ChatRepository
 import net.thechance.chat.repository.MessageRepository
-import net.thechance.chat.service.exception.NotFoundException
+import net.thechance.chat.service.ChatServiceTest.Companion.testUser1
 import net.thechance.chat.service.model.ChatModel
 import net.thechance.chat.service.model.MessageImageRequestArgs
 import net.thechance.chat.service.model.MessageRequestArgs
+import net.thechance.chat.service.model.toModel
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.assertThrows
@@ -66,6 +68,7 @@ class ChatServiceTest {
         attachmentStorageService = mockk(relaxed = true)
         entityManager = mockk(relaxed = true)
         contactService = mockk(relaxed = true)
+        otherUser = testUser()
 
         service = ChatService(
             messageRepository,
@@ -77,38 +80,44 @@ class ChatServiceTest {
     }
 
     @Test
-    fun `getOrCreateConversationByParticipants returns existing chat if found`() {
-        val requester = testUser()
-        val theOtherUser = testUser()
-        val chat = testChat().apply { users.addAll(listOf(requester, theOtherUser)) }
+    fun `getChatByUserIds returns existing chat if found`() {
+        val requester = testUser2
+        val theOtherUser = testUser1
+        val chat = Chat(chatId, mutableSetOf(requester, theOtherUser) )
 
-        every { entityManager.getReference(ContactUser::class.java, requester.id) } returns requester
-        every { entityManager.getReference(ContactUser::class.java, theOtherUser.id) } returns theOtherUser
+
+        every { contactUserService.getUserById(requester.id) } returns requester
+        every { contactUserService.getUserById(theOtherUser.id) } returns theOtherUser
+        every { contactService.getContactByOwnerIdAndContactUserId(requester.id, theOtherUser.id) } returns testContact
         every { chatRepository.findByUsersIds(setOf(requester.id, theOtherUser.id)) } returns chat
+        val result = service.getChatByUserIds(requester.id, theOtherUser.id)
 
-        val result = service.getOrCreateConversationByParticipants(requester.id, theOtherUser.id)
-
-        assertThat(chat).isEqualTo(result)
-        verify { chatRepository.findByUsersIds(setOf(requester.id, theOtherUser.id)) }
-        verify(exactly = 0) { chatRepository.save(any()) }
+        assertThat(chat.toModel(
+            chatName = "${testContact.firstName} ${testContact.lastName}",
+            imageUrl = theOtherUser.imageUrl.orEmpty(),
+            requesterId = requester.id
+        )).isEqualTo(result)
     }
 
     @Test
-    fun `getOrCreateConversationByParticipants creates and returns new chat if not found`() {
-        val requester = testUser()
-        val theOtherUser = testUser()
-        val newChat = testChat().apply { users.addAll(listOf(requester, theOtherUser)) }
+    fun `getChatByUserIds creates and returns new chat if not found`() {
+        val requester = testUser2
+        val theOtherUser = testUser1
+        val newChat = Chat(chatId, mutableSetOf(testUser1,testUser2))
 
-        every { entityManager.getReference(ContactUser::class.java, requester.id) } returns requester
-        every { entityManager.getReference(ContactUser::class.java, theOtherUser.id) } returns theOtherUser
         every { chatRepository.findByUsersIds(setOf(requester.id, theOtherUser.id)) } returns null
         every { contactUserService.getUserById(requester.id) } returns requester
         every { contactUserService.getUserById(theOtherUser.id) } returns theOtherUser
         every { chatRepository.save(any()) } returns newChat
+        every { contactService.getContactByOwnerIdAndContactUserId(requester.id, theOtherUser.id)} returns testContact
 
-        val result = service.getOrCreateConversationByParticipants(requester.id, theOtherUser.id)
+        val result = service.getChatByUserIds(requester.id, theOtherUser.id)
 
-        assertThat(newChat).isEqualTo(result)
+        assertThat(newChat.toModel(
+            chatName = "${testContact.firstName} ${testContact.lastName}",
+            imageUrl = theOtherUser.imageUrl.orEmpty(),
+            requesterId = requester.id
+        )).isEqualTo(result)
         verify { chatRepository.save(any()) }
     }
 
@@ -177,18 +186,18 @@ class ChatServiceTest {
     @Test
     fun `getChatById should get chatModel correctly when specific chat exist`() {
         every { chatRepository.findByIdOrNull(testChat.id) } returns testChat
-        every { contactService.getContactByOwnerIdAndContactUserId(meUser.id, testOtherUser.id) } returns testContact
+        every { contactService.getContactByOwnerIdAndContactUserId(testUser2.id, testUser1.id) } returns testContact
 
-        val result = service.getChatById(testChat.id, meUser.id)
+        val result = service.getChatById(testChat.id, testUser2.id)
 
-        assertThat(result).isEqualTo(chatModel)
+        assertThat(result).isEqualTo(testChatModel)
     }
 
 
     @Test
     fun `getChatById should return chat name equal to other contact names when the other user is in our contact list`() {
         every { chatRepository.findByIdOrNull(chatId) } returns testChat
-        every { contactService.getContactByOwnerIdAndContactUserId(userId, testOtherUser.id) } returns testContact
+        every { contactService.getContactByOwnerIdAndContactUserId(userId, testUser1.id) } returns testContact
         val result = service.getChatById(chatId, userId)
 
         assertThat(result.name).isEqualTo("${testContact.firstName} ${testContact.lastName}")
@@ -197,16 +206,16 @@ class ChatServiceTest {
     @Test
     fun `getChatById should return chat name equal to other mina user names when the other user is not in our contact list`() {
         every { chatRepository.findByIdOrNull(chatId) } returns testChat
-        every { contactService.getContactByOwnerIdAndContactUserId(userId, testOtherUser.id) } returns null
+        every { contactService.getContactByOwnerIdAndContactUserId(userId, testUser1.id) } returns null
         val result = service.getChatById(chatId, userId)
 
-        assertThat(result.name).isEqualTo("${testOtherUser.firstName} ${testOtherUser.lastName}")
+        assertThat(result.name).isEqualTo("${testUser1.firstName} ${testUser1.lastName}")
     }
 
     @Test
     fun `getChatById should throw NotFoundException when there is no chat available with specific chat id `() {
         every { chatRepository.findByIdOrNull(notAvailableChatId) } returns null
-        every { contactService.getContactByOwnerIdAndContactUserId(userId, testOtherUser.id) } returns null
+        every { contactService.getContactByOwnerIdAndContactUserId(userId, testUser1.id) } returns null
 
         assertThrows<NotFoundException> {
             service.getChatById(notAvailableChatId, userId)
@@ -311,14 +320,14 @@ class ChatServiceTest {
             phoneNumber = "+967775074564",
             contactOwnerId = userId
         )
-        val testOtherUser = ContactUser(
+        val testUser1 = ContactUser(
             id = UUID.fromString("1804d9db-c870-421d-934b-b00528cb5b93"),
             firstName = "osama",
             lastName = "kamel",
             phoneNumber = "+967775074564",
             imageUrl = null
         )
-        val meUser = ContactUser(
+        val testUser2 = ContactUser(
             id = userId,
             firstName = "omer",
             lastName = "faris",
@@ -326,7 +335,7 @@ class ChatServiceTest {
             imageUrl = null
         )
 
-        val chatModel = ChatModel(
+        val testChatModel = ChatModel(
             name = "Raouf kamel",
             imageUrl = null,
             requesterId = userId,
@@ -335,7 +344,7 @@ class ChatServiceTest {
 
         val testChat = Chat(
             id = chatId,
-            users = mutableSetOf(meUser, testOtherUser),
+            users = mutableSetOf(testUser2, testUser1),
         )
     }
 }
