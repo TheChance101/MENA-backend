@@ -1,5 +1,7 @@
 package net.thechance.chat.service
 
+import net.thechance.chat.service.exception.ImageUploadFailedException
+import net.thechance.chat.service.exception.InvalidImageFormatException
 import net.thechance.chat.exception.ImageUploadFailedException
 import net.thechance.chat.exception.InvalidImageFormatException
 import net.thechance.chat.exception.AudioUploadFailedException
@@ -14,6 +16,7 @@ import software.amazon.awssdk.services.s3.model.ObjectCannedACL
 import software.amazon.awssdk.services.s3.model.PutObjectRequest
 import java.time.LocalDateTime
 
+
 @ConfigurationProperties(prefix = "storage.mena")
 data class ChatStorageProperties(
     val bucket: String,
@@ -26,7 +29,6 @@ class AttachmentStorageService(
     private val menaS3Client: S3Client,
     private val props: ChatStorageProperties,
 ) {
-
     fun uploadImage(
         file: MultipartFile,
         folderName: String,
@@ -39,8 +41,8 @@ class AttachmentStorageService(
             val putReq = createObjectRequest(key, mimeType)
             menaS3Client.putObject(putReq, RequestBody.fromBytes(file.bytes))
             return makeUrl(key)
-        } catch (_: Exception) {
-            throw ImageUploadFailedException()
+        } catch (e: Exception) {
+            throw ImageUploadFailedException("failed uploading image: ${e.message}")
         }
     }
 

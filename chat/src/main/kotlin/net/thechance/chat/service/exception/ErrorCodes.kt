@@ -1,4 +1,4 @@
-package net.thechance.chat.exception
+package net.thechance.chat.service.exception
 
 object ErrorCodes {
     const val INVALID_IMAGE_FORMAT = "1201"

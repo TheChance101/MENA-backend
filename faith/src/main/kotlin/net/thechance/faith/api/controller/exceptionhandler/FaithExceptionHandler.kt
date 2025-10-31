@@ -27,7 +27,7 @@ class FaithExceptionHandler {
     @ExceptionHandler(FailedToGetPrayerTimesException::class)
     fun onCannotGetPrayerTimesError(exception: FailedToGetPrayerTimesException): ResponseEntity<ApiErrorResponse> {
         return createErrorResponse(
-            message = "failed to get prayer times",
+            message = exception.message ?: "failed to get prayer times",
             exception = exception,
             status = HttpStatus.SERVICE_UNAVAILABLE,
         )

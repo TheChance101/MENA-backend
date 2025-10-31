@@ -1,7 +1,7 @@
 package net.thechance.chat.repository
 
 import net.thechance.chat.entity.Chat
-import net.thechance.chat.entity.ChatUnreadMessagesCount
+import net.thechance.chat.service.model.ChatUnreadMessagesCount
 import org.springframework.data.domain.Page
 import org.springframework.data.domain.Pageable
 import org.springframework.data.jpa.repository.JpaRepository
@@ -25,8 +25,6 @@ interface ChatRepository : JpaRepository<Chat, UUID> {
     @Query("SELECT c FROM Chat c JOIN c.users u WHERE u.id = :userId")
     fun findAllByUserId(userId: UUID, pageable: Pageable): Page<Chat>
 
-    @Query("SELECT COUNT(c) FROM Chat c JOIN c.users u WHERE u.id = :userId")
-    fun countByUserId(userId: UUID): Long
 
     @Query(
         nativeQuery = true,

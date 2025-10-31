@@ -5,8 +5,11 @@ import net.thechance.chat.repository.ChatRepository
 import net.thechance.chat.repository.MessageRepository
 import net.thechance.chat.service.exception.NotFoundException
 import net.thechance.chat.service.model.ChatModel
+import net.thechance.chat.service.model.ChatSummary
 import net.thechance.chat.service.model.MessageImageRequestArgs
 import net.thechance.chat.service.model.MessageRequestArgs
+import net.thechance.chat.service.model.toModel
+import net.thechance.chat.service.model.toSummary
 import net.thechance.chat.service.model.MessageAudioRequestArgs
 import org.springframework.data.domain.Page
 import org.springframework.data.domain.Pageable
@@ -24,20 +27,32 @@ class ChatService(
     private val attachmentStorageService: AttachmentStorageService,
     private val contactService: ContactService
 ) {
-
     @Transactional
-    fun getOrCreateConversationByParticipants(userId: UUID, receiverId: UUID): Chat {
-        val users = setOf(userId, receiverId)
-
-        val existingChat = chatRepository.findByUsersIds(users)
-        if (existingChat != null) return existingChat
-
+    fun getChatByUserIds(userId: UUID, receiverId: UUID): ChatModel {
+        val usersId = setOf(userId, receiverId)
         val requester = contactUserService.getUserById(userId)
         val otherUser = contactUserService.getUserById(receiverId)
+        val contact = contactService.getContactByOwnerIdAndContactUserId(userId, otherUser.id)
 
-        return chatRepository.save(Chat(users = mutableSetOf(requester, otherUser)))
+        val chatName = getChatName(contact, otherUser)
+        val imageUrl = otherUser.imageUrl.orEmpty()
+
+        val chat = findOrCreateChat(
+            usersId = usersId,
+            requester = requester,
+            otherUser = otherUser
+        ).toModel(
+            chatName = chatName,
+            imageUrl = imageUrl,
+            requesterId = userId
+        )
+        return chat
     }
 
+    private fun findOrCreateChat(usersId: Set<UUID>, requester: ContactUser, otherUser: ContactUser): Chat {
+        return chatRepository.findByUsersIds(usersId)
+            ?: chatRepository.save(Chat(users = mutableSetOf(requester, otherUser)))
+    }
     @Transactional
     fun saveMessage(args: MessageRequestArgs): Message {
         return messageRepository.save(
@@ -86,8 +101,9 @@ class ChatService(
         messageRepository.getAllByChatIdOrderBySentAtDesc(chatId, pageable)
 
 
-    fun markChatMessagesAsRead(chatId: UUID, userId: UUID) =
+    fun markChatMessagesAsRead(chatId: UUID, userId: UUID) {
         messageRepository.updateIsReadByChatIdAndSenderIdNot(chatId = chatId, userId = userId)
+    }
 
     fun getUserChatsSummaries(userId: UUID, pageable: Pageable): Page<ChatSummary> {
         val chats = chatRepository.findAllByUserId(userId, pageable)
@@ -125,13 +141,13 @@ class ChatService(
     fun getChatById(chatId: UUID, userId: UUID): ChatModel {
         val chat =
             chatRepository.findByIdOrNull(chatId) ?: throw NotFoundException("no chat was found with id: $chatId")
-        val otherUser = chat.users.firstOrNull { it.id != userId }
-        val contact = otherUser?.let {
+        val otherUser = chat.users.first { it.id != userId }
+        val contact = otherUser.let {
             contactService.getContactByOwnerIdAndContactUserId(userId, it.id)
         }
         return ChatModel(
             name = getChatName(contact, otherUser),
-            imageUrl = otherUser?.imageUrl,
+            imageUrl = otherUser.imageUrl,
             requesterId = userId,
             id = chatId
         )
