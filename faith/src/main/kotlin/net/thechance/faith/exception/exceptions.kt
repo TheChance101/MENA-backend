@@ -11,3 +11,7 @@ class FailedToGetPrayerTimesException(
 class InvalidDateFormatException(
     message: String = "Invalid date format."
 ) : RuntimeException(message)
+
+class ReciterNotFoundException(
+    message: String = "Reciter not found."
+) : RuntimeException(message)

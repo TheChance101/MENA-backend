@@ -1,4 +1,4 @@
-package net.thechance.faith.repository.reciters
+package net.thechance.faith.repository
 
 import net.thechance.faith.entity.Reciter
 import org.springframework.data.jpa.repository.JpaRepository
