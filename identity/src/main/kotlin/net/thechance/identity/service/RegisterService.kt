@@ -9,9 +9,11 @@ import net.thechance.identity.service.model.RegisterUserModel
 import net.thechance.identity.service.phoneNumberValidator.PhoneNumberValidatorService
 import net.thechance.identity.service.sms.SmsService
 import org.springframework.security.crypto.password.PasswordEncoder
+import org.springframework.stereotype.Service
 import java.time.LocalDate
 import java.util.*
 
+@Service
 class RegisterService(
     private val phoneNumberValidatorService: PhoneNumberValidatorService,
     private val otpService: OtpService,
