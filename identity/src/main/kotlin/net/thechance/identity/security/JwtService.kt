@@ -3,6 +3,7 @@ package net.thechance.identity.security
 import io.jsonwebtoken.Jwts
 import io.jsonwebtoken.security.Keys
 import net.thechance.identity.entity.User
+import net.thechance.identity.entity.AdminUser
 import org.springframework.beans.factory.annotation.Value
 import org.springframework.stereotype.Service
 import java.time.Duration
@@ -18,13 +19,24 @@ class JwtService(
 ) {
     private val accessExpiration = Duration.ofHours(1)
 
-    private val secretKey: SecretKey = Keys.hmacShaKeyFor(Base64.getDecoder().decode(secret))
+    private val secretKey: SecretKey by lazy {
+        Keys.hmacShaKeyFor(Base64.getDecoder().decode(secret))
+    }
 
     fun generateToken(user: User): String =
         Jwts.builder()
             .setSubject(user.id.toString())
             .setIssuedAt(Date())
             .setExpiration(Date.from(Instant.now().plus(accessExpiration)))
+            .signWith(secretKey)
+            .compact()
+
+    fun generateToken(adminUser: AdminUser): String =
+        Jwts.builder()
+            .setSubject(adminUser.id.toString())
+            .setIssuedAt(Date())
+            .setExpiration(Date.from(Instant.now().plus(accessExpiration)))
+            .claim(ADMIN_CLAIM, true)
             .signWith(secretKey)
             .compact()
 
@@ -37,5 +49,19 @@ class JwtService(
             .subject
 
         return UUID.fromString(subject)
+    }
+
+    fun isAdminToken(token: String): Boolean {
+        val claims = Jwts.parserBuilder()
+            .setSigningKey(secretKey)
+            .build()
+            .parseClaimsJws(token)
+            .body
+
+        return claims[ADMIN_CLAIM] as? Boolean ?: false
+    }
+
+    companion object {
+        const val ADMIN_CLAIM = "admin"
     }
 }

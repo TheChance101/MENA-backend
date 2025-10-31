@@ -1,6 +1,6 @@
 package net.thechance.wallet.repository
 
-import net.thechance.wallet.entity.user.WalletUser
+import net.thechance.wallet.entity.WalletUser
 import org.springframework.data.jpa.repository.JpaRepository
 import java.util.*
 

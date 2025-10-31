@@ -1,13 +1,16 @@
 package net.thechance.wallet.service
 
-import io.mockk.*
+import io.mockk.confirmVerified
+import io.mockk.every
+import io.mockk.mockk
+import io.mockk.verify
 import net.thechance.wallet.entity.Block
 import net.thechance.wallet.entity.Transaction
 import net.thechance.wallet.repository.BlockRepository
 import net.thechance.wallet.repository.TransactionRepository
+import org.junit.Assert.*
 import org.junit.Before
 import org.junit.Test
-import org.junit.Assert.*
 import java.time.LocalDateTime
 import java.util.*
 
@@ -69,7 +72,7 @@ class BlockServiceTest {
         val blockId = UUID.randomUUID()
         val latestBlock = Block(id = blockId, previousBlockHash = "abc", timestamp = LocalDateTime.now())
         every { blockRepository.findTopByOrderByTimestampDesc() } returns latestBlock
-        every { transactionRepository.countAllByBlockId(blockId) } returns 15L
+        every { transactionRepository.countAllByBlockId(blockId) } returns 100L
         every { transactionRepository.getAllByBlockId(eq(blockId), any()) } returns listOf()
         every { blockRepository.save(any()) } answers { firstArg() }
 
@@ -83,7 +86,7 @@ class BlockServiceTest {
         val blockId = UUID.randomUUID()
         val latestBlock = Block(id = blockId, previousBlockHash = "abc", timestamp = LocalDateTime.now())
         every { blockRepository.findTopByOrderByTimestampDesc() } returns latestBlock
-        every { transactionRepository.countAllByBlockId(blockId) } returns 15L
+        every { transactionRepository.countAllByBlockId(blockId) } returns 100L
         every { transactionRepository.getAllByBlockId(eq(blockId), any()) } returns listOf()
         every { blockRepository.save(any()) } answers { firstArg() }
 
@@ -97,7 +100,7 @@ class BlockServiceTest {
         val blockId = UUID.randomUUID()
         val latestBlock = Block(id = blockId, previousBlockHash = "abc", timestamp = LocalDateTime.now())
         every { blockRepository.findTopByOrderByTimestampDesc() } returns latestBlock
-        every { transactionRepository.countAllByBlockId(blockId) } returns 15L
+        every { transactionRepository.countAllByBlockId(blockId) } returns 100L
         every { transactionRepository.getAllByBlockId(eq(blockId), any()) } returns listOf()
         every { blockRepository.save(any()) } answers { firstArg() }
 
@@ -158,7 +161,7 @@ class BlockServiceTest {
         val latestBlock = Block(id = blockId, previousBlockHash = "abc", timestamp = LocalDateTime.now())
         val transaction = mockk<Transaction>()
         every { blockRepository.findTopByOrderByTimestampDesc() } returns latestBlock
-        every { transactionRepository.countAllByBlockId(blockId) } returns 15L
+        every { transactionRepository.countAllByBlockId(blockId) } returns 100L
         every { transactionRepository.getAllByBlockId(eq(blockId), any()) } returns listOf(transaction, transaction)
         every { transaction.toString() } returns "tx"
         every { blockRepository.save(any()) } answers { firstArg() }
@@ -174,7 +177,7 @@ class BlockServiceTest {
         val latestBlock = Block(id = blockId, previousBlockHash = "abc", timestamp = LocalDateTime.now())
         val transaction = mockk<Transaction>()
         every { blockRepository.findTopByOrderByTimestampDesc() } returns latestBlock
-        every { transactionRepository.countAllByBlockId(blockId) } returns 15L
+        every { transactionRepository.countAllByBlockId(blockId) } returns 100L
         every { transactionRepository.getAllByBlockId(eq(blockId), any()) } returns listOf(transaction, transaction)
         every { transaction.toString() } returns "tx"
         every { blockRepository.save(any()) } answers { firstArg() }

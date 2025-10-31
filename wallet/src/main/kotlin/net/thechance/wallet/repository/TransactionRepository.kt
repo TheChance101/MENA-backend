@@ -10,11 +10,33 @@ import java.time.LocalDateTime
 import java.util.*
 
 interface TransactionRepository : JpaRepository<Transaction, UUID> {
-    @Query("SELECT SUM(t.amount) FROM Transaction t WHERE t.receiver.userId = :receiverId AND t.status = 'SUCCESS'")
-    fun sumAmountByReceiverId(@Param("receiverId") receiverId: UUID): Double?
+    @Query(
+        """
+        SELECT SUM(t.amount) FROM Transaction t 
+        WHERE (t.receiver.userId = :receiverId) AND t.status = 'SUCCESS'
+        AND (CAST(:startDate AS timestamp) IS NULL OR t.createdAt >= :startDate)
+        AND (CAST(:endDate AS timestamp) IS NULL OR t.createdAt <= :endDate)
+    """
+    )
+    fun sumAmountByReceiverId(
+        @Param("receiverId") receiverId: UUID,
+        @Param("startDate") startDate: LocalDateTime? = null,
+        @Param("endDate") endDate: LocalDateTime? = null
+    ): Double?
 
-    @Query("SELECT SUM(t.amount) FROM Transaction t WHERE t.sender.userId = :senderId AND t.status = 'SUCCESS'")
-    fun sumAmountBySenderId(@Param("senderId") senderId: UUID): Double?
+    @Query(
+        """
+        SELECT SUM(t.amount) FROM Transaction t 
+        WHERE (t.sender.userId = :senderId) AND t.status = 'SUCCESS'
+        AND (CAST(:startDate AS timestamp) IS NULL OR t.createdAt >= :startDate)
+        AND (CAST(:endDate AS timestamp) IS NULL OR t.createdAt <= :endDate)
+    """
+    )
+    fun sumAmountBySenderId(
+        @Param("senderId") senderId: UUID,
+        @Param("startDate") startDate: LocalDateTime? = null,
+        @Param("endDate") endDate: LocalDateTime? = null
+    ): Double?
 
     @Query(
         """
@@ -48,26 +70,6 @@ interface TransactionRepository : JpaRepository<Transaction, UUID> {
         senderId: UUID,
         receiverId: UUID
     ): Transaction?
-
-    @Query(
-        """
-    SELECT SUM(
-        CASE 
-            WHEN t.sender.userId = :currentUserId THEN -t.amount
-            WHEN t.receiver.userId = :currentUserId THEN t.amount
-            ELSE 0
-        END
-    )
-    FROM Transaction t
-    WHERE (t.sender.userId = :currentUserId OR t.receiver.userId = :currentUserId)
-      AND t.createdAt < :endDate
-      AND t.status = 'SUCCESS'
-    """
-    )
-    fun sumNetUserTransactions(
-        @Param("currentUserId") currentUserId: UUID,
-        @Param("endDate") endDate: LocalDateTime?,
-    ): Double?
 
     fun getAllByBlockId(blockId: UUID, pageable: Pageable): List<Transaction>
     fun countAllByBlockId(blockId: UUID): Long

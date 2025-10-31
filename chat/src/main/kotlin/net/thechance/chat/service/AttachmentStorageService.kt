@@ -1,7 +1,7 @@
 package net.thechance.chat.service
 
-import net.thechance.chat.exception.ImageUploadFailedException
-import net.thechance.chat.exception.InvalidImageFormatException
+import net.thechance.chat.service.exception.ImageUploadFailedException
+import net.thechance.chat.service.exception.InvalidImageFormatException
 import org.springframework.boot.context.properties.ConfigurationProperties
 import org.springframework.boot.context.properties.EnableConfigurationProperties
 import org.springframework.stereotype.Service
@@ -27,20 +27,25 @@ class AttachmentStorageService(
 ) {
     fun uploadImage(
         file: MultipartFile,
-        fileName: String,
         folderName: String,
     ): String {
         val mimeType = file.contentType ?: throw InvalidImageFormatException()
         val extension = allowedMimeTypes[mimeType] ?: throw InvalidImageFormatException()
         try {
-            val finalFileName = "${fileName}_${LocalDateTime.now()}.$extension"
+            val finalFileName = "${LocalDateTime.now()}.$extension"
             val key = "images/$folderName/$finalFileName"
             val putReq = createObjectRequest(key, mimeType)
             menaS3Client.putObject(putReq, RequestBody.fromBytes(file.bytes))
-            return "${props.cdnEndpoint}/$key"
-        } catch (_: Exception) {
-            throw ImageUploadFailedException()
+            return makeUrl(key)
+        } catch (e: Exception) {
+            throw ImageUploadFailedException("failed uploading image: ${e.message}")
         }
+    }
+
+    private fun makeUrl(key: String): String {
+        val base = props.cdnEndpoint.trimEnd('/')
+        val path = key.trimStart('/')
+        return "$base/$path"
     }
 
     private fun createObjectRequest(key: String, contentType: String): PutObjectRequest? {
