@@ -16,11 +16,11 @@ data class Trend(
 
     @Column(name = "owner_id", nullable = false)
     val ownerId: UUID,
-    @Column(name = "thumbnail_url", nullable = true)
+    @Column(name = "thumbnail_url", nullable = true, columnDefinition = "TEXT")
     val thumbnailUrl: String? = null,
-    @Column(name = "video_url", nullable = false)
+    @Column(name = "video_url", nullable = false, columnDefinition = "TEXT")
     val videoUrl: String,
-    @Column(name = "description", nullable = false)
+    @Column(name = "description", nullable = false, columnDefinition = "TEXT")
     val description: String = "",
 
     @Formula("(SELECT COUNT(*) FROM trends.trend_likes rl WHERE rl.trend_id = id)")
