@@ -6,9 +6,12 @@ import net.thechance.identity.exception.UserNotFoundException
 import net.thechance.identity.repository.UserRepository
 import net.thechance.identity.service.model.UserServiceModel
 import org.springframework.beans.factory.annotation.Value
+import org.springframework.data.domain.Page
+import org.springframework.data.domain.Pageable
 import org.springframework.data.repository.findByIdOrNull
 import org.springframework.stereotype.Service
 import org.springframework.web.multipart.MultipartFile
+import java.time.LocalDateTime
 import java.util.*
 
 private typealias ImageUri = String
@@ -78,5 +81,21 @@ class UserService(
             identityImageStorageService.deleteImage(imageUrl)
             userRepository.save(user.copy(imageUrl = null))
         }
+    }
+
+    fun searchUsers(query: String, pageable: Pageable): Page<User> {
+        return userRepository.searchUsers(query, pageable)
+    }
+
+    fun updateUserLastLoginTime(userId: UUID, time: LocalDateTime){
+        val user = findById(userId)
+        val updatedUser = user.copy(lastLoginAt = time)
+        userRepository.save(updatedUser)
+    }
+
+    fun updateUserLastVisitTime(userId: UUID, time: LocalDateTime){
+        val user = findById(userId)
+        val updatedUser = user.copy(lastVisitAt = time)
+        userRepository.save(updatedUser)
     }
 }
