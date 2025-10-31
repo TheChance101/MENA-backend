@@ -15,8 +15,8 @@ class TilawahService(
 
     fun getAyahSoundUrl(surahNumber: Int, ayahNumber: Int, reciterId: Int): String {
         val reciter = recitersRepository.findById(reciterId).getOrElse {
-            throw ReciterNotFoundException("Reciter with id $reciterId not found")
+            throw ReciterNotFoundException(message = "Reciter with id $reciterId not found")
         }
-        return ayahSoundUrlGenerator.generateUrl(surahNumber, ayahNumber, reciter)
+        return ayahSoundUrlGenerator.generateUrl(surahNumber = surahNumber, ayahNumber = ayahNumber, reciter = reciter)
     }
 }

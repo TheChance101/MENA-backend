@@ -12,6 +12,6 @@ class AyahSoundUrlGenerator {
     }
 
     private fun padWithThreeDigits(number: Int): String {
-        return number.toString().padStart(3, '0')
+        return number.toString().padStart(length = 3, padChar = '0')
     }
 }

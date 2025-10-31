@@ -25,7 +25,8 @@ class TilawahController(
 
     @GetMapping("/ayah/sound")
     fun getAyahSoundUrl(
-        @Valid @RequestBody ayahSoundRequest: AyahSoundRequest
+        @Valid @RequestBody
+        ayahSoundRequest: AyahSoundRequest
     ): ResponseEntity<String> {
         val soundUrl = recitersService.getAyahSoundUrl(
             reciterId = ayahSoundRequest.reciterId,
