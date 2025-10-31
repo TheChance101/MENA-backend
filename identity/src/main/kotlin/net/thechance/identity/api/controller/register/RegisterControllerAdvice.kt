@@ -1,10 +1,7 @@
 package net.thechance.identity.api.controller.register
 
 import net.thechance.identity.api.dto.ErrorResponse
-import net.thechance.identity.exception.InvalidOtpException
-import net.thechance.identity.exception.InvalidPhoneNumberException
-import net.thechance.identity.exception.OtpExpiredException
-import net.thechance.identity.exception.UserAlreadyExistsException
+import net.thechance.identity.exception.*
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
 import org.springframework.core.annotation.Order
@@ -69,4 +66,21 @@ class RegisterControllerAdvice {
             .body(errorResponse)
     }
 
+    @ExceptionHandler(InvalidImageException::class)
+    fun handleInvalidImageException(exception: InvalidImageException): ResponseEntity<ErrorResponse> {
+        logger.error("Invalid image: ${exception.message}", exception)
+        val errorResponse = ErrorResponse("Image extension ${exception.extension} is not supported")
+        return ResponseEntity
+            .status(HttpStatus.BAD_REQUEST)
+            .body(errorResponse)
+    }
+
+    @ExceptionHandler(UnknownErrorException::class)
+    fun handleException(exception: Exception): ResponseEntity<ErrorResponse> {
+        logger.error(exception.message, exception)
+        val errorResponse = ErrorResponse("Internal server error")
+        return ResponseEntity
+            .status(HttpStatus.INTERNAL_SERVER_ERROR)
+            .body(errorResponse)
+    }
 }
