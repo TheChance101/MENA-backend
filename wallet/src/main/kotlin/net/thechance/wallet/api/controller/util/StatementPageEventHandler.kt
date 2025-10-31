@@ -21,6 +21,9 @@ class StatementPageEventHandler(
     private val resourceLoader: ResourceLoader,
     private val statementData: StatementData
 ) : AbstractPdfDocumentEventHandler() {
+    private val poppinsRegular by lazy { getPoppinsRegularFont() }
+    private val poppinsSemiBold by lazy { getPoppinsSemiBoldFont() }
+    private val madimiRegular by lazy { getMadimiRegularFont() }
 
     override fun onAcceptedEvent(event: AbstractPdfDocumentEvent?) {
         val docEvent = event as PdfDocumentEvent
@@ -39,23 +42,12 @@ class StatementPageEventHandler(
     }
 
     private fun addHeader(canvas: PdfCanvas, document: Document, pageSize: Rectangle) {
-        try {
-            val poppinsSemiBold = getPoppinsSemiBoldFont()
-            val poppinsRegular = getPoppinsRegularFont()
-            val madimiRegular = getMadimiRegularFont()
-
-            addStatementPeriod(canvas, poppinsSemiBold, poppinsRegular, pageSize)
-
-            addMenaLogo(document, pageSize, canvas)
-            addMenaText(madimiRegular, canvas, pageSize)
-
-        } catch (e: Exception) {
-            e.printStackTrace()
-        }
+        addStatementPeriod(canvas, poppinsSemiBold, poppinsRegular, pageSize)
+        addMenaLogo(document, pageSize, canvas)
+        addMenaText(canvas, pageSize)
     }
 
     private fun addMenaText(
-        madimiRegular: PdfFont,
         canvas: PdfCanvas,
         pageSize: Rectangle
     ) {
@@ -138,23 +130,13 @@ class StatementPageEventHandler(
         pageSize: Rectangle,
         pageNumber: Int
     ) {
-        try {
-            val poppinsRegular = PdfFontFactory.createFont(
-                resourceLoader.getResource("classpath:fonts/Poppins-Regular.ttf").inputStream.readAllBytes(),
-                PdfEncodings.IDENTITY_H
-            )
-
-            val footerText = "Page $pageNumber"
-            canvas.beginText()
-                .setFontAndSize(poppinsRegular, 12f)
-                .setColor(DeviceRgb(62, 66, 82), true)
-                .moveText((pageSize.width / 2 - 40).toDouble(), 40.0)
-                .showText(footerText)
-                .endText()
-
-        } catch (e: Exception) {
-            e.printStackTrace()
-        }
+        val footerText = "Page $pageNumber"
+        canvas.beginText()
+            .setFontAndSize(poppinsRegular, 12f)
+            .setColor(DeviceRgb(62, 66, 82), true)
+            .moveText((pageSize.width / 2 - 40).toDouble(), 40.0)
+            .showText(footerText)
+            .endText()
     }
 
     private fun LocalDateTime.formatHeaderDate(): String =

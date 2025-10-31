@@ -38,9 +38,10 @@ class StatementPdfWriter(
         val writer = PdfWriter(outputStream)
         val pdf = PdfDocument(writer)
         val document = Document(pdf)
+        val converterProperties = setupConverterProperties()
+
         pdf.addEventHandler(PdfDocumentEvent.END_PAGE, StatementPageEventHandler(resourceLoader, statementData))
         document.setMargins(100f, 32f, 60f, 32f)
-        val converterProperties = setupConverterProperties()
 
         val metadata = writePages(statementData, document, converterProperties)
 
