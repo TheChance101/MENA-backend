@@ -1,8 +1,8 @@
 package net.thechance.identity.api.mapper
 
+import net.thechance.identity.api.dto.ManagedUserResponse
 import net.thechance.identity.api.dto.PageResponse
 import net.thechance.identity.api.dto.ProfileResponse
-import net.thechance.identity.api.dto.UserResponse
 import net.thechance.identity.entity.User
 import org.springframework.data.domain.Page
 
@@ -23,7 +23,7 @@ fun User.toProfileResponse(imageBaseUrl: String): ProfileResponse {
     )
 }
 
-private fun User.toUserResponse() = UserResponse(
+private fun User.toManagedUserResponse() = ManagedUserResponse(
     id = id,
     firstName = firstName,
     lastName = lastName,
@@ -33,9 +33,9 @@ private fun User.toUserResponse() = UserResponse(
     status = status
 )
 
-fun Page<User>.toUserResponsePage(): PageResponse<UserResponse> {
+fun Page<User>.toUserResponsePage(): PageResponse<ManagedUserResponse> {
     return PageResponse(
-        items = this.content.map(User::toUserResponse),
+        items = this.content.map(User::toManagedUserResponse),
         page = this.number,
         pageSize = this.size,
         totalElements = this.totalElements,

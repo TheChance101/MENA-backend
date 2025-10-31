@@ -4,7 +4,7 @@ import net.thechance.identity.entity.User
 import java.time.LocalDateTime
 import java.util.*
 
-data class UserResponse(
+data class ManagedUserResponse(
     val id: UUID,
     val firstName: String,
     val lastName: String,
