@@ -5,15 +5,19 @@ import net.thechance.identity.exception.PasswordNotUpdatedException
 import net.thechance.identity.exception.UserNotFoundException
 import net.thechance.identity.repository.UserRepository
 import net.thechance.identity.service.model.UserServiceModel
+import org.springframework.beans.factory.annotation.Value
 import org.springframework.data.repository.findByIdOrNull
 import org.springframework.stereotype.Service
 import org.springframework.web.multipart.MultipartFile
 import java.util.*
 
+private typealias ImageUri = String
+
 @Service
 class UserService(
     private val userRepository: UserRepository,
-    private val identityImageStorageService: IdentityImageStorageService
+    private val identityImageStorageService: IdentityImageStorageService,
+    @param:Value("\${identity.resources.profile-image-directory}") private val profileImageDirectory: String
 ) {
 
     fun findByPhoneNumber(phoneNumber: String): User {
@@ -56,11 +60,12 @@ class UserService(
     fun updateUserImage(
         userId: UUID,
         imageFile: MultipartFile
-    ): String {
+    ): ImageUri {
         val user = findById(userId)
         val newImageUrl = identityImageStorageService.uploadImage(
             file = imageFile,
             fileName = "${user.id}",
+            folderName = profileImageDirectory
         )
         val updatedUser = user.copy(imageUrl = newImageUrl)
         userRepository.save(updatedUser)

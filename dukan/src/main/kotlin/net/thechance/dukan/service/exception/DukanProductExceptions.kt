@@ -3,6 +3,7 @@ package net.thechance.dukan.service.exception
 import net.thechance.dukan.api.utils.ErrorCodes.DUKAN_PRODUCT_CREATION_FAILED
 import net.thechance.dukan.api.utils.ErrorCodes.PRODUCT_NAME_ALREADY_TAKEN
 import net.thechance.dukan.api.utils.ErrorCodes.PRODUCT_NOT_FOUND
+import net.thechance.dukan.api.utils.ErrorCodes.PRODUCT_UPDATE_FAILED
 import org.springframework.http.HttpStatus
 
 class ProductNotFoundException() : DukanException(
@@ -21,4 +22,10 @@ class ProductNameAlreadyTakenException : DukanException(
     code = PRODUCT_NAME_ALREADY_TAKEN,
     status = HttpStatus.CONFLICT,
     message = "Product name already taken"
+)
+
+class ProductUpdateFailedException : DukanException(
+    code = PRODUCT_UPDATE_FAILED,
+    status = HttpStatus.BAD_REQUEST,
+    message = "Product update failed"
 )
