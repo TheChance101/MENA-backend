@@ -50,7 +50,7 @@ class ProfileController(
         @RequestPart("file") file: MultipartFile,
     ): ResponseEntity<UpdateImageResponse> {
         val imageUri = userService.updateUserImage(userId, file)
-        val response = UpdateImageResponse(imageUrl= "$imagesBaseUrl/$imageUri")
+        val response = UpdateImageResponse(imageUrl = "$imagesBaseUrl$imageUri")
         return ResponseEntity.ok(response)
     }
 
