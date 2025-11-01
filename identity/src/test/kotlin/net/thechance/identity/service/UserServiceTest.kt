@@ -142,7 +142,8 @@ class UserServiceTest {
         every {
             identityImageStorageService.uploadImage(
                 file = mockImageFile,
-                fileName = any()
+                fileName = any(),
+                folderName = any()
             )
         } returns NEW_IMAGE_URL
         every { userRepository.save(any()) } returns user.copy(imageUrl = NEW_IMAGE_URL)
