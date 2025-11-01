@@ -3,11 +3,13 @@ package net.thechance.dukan.service
 import jakarta.persistence.EntityNotFoundException
 import jakarta.transaction.Transactional
 import net.thechance.dukan.entity.DukanProduct
+import net.thechance.dukan.entity.FavoriteProduct
 import net.thechance.dukan.service.exception.DukanProductCreationFailedException
 import net.thechance.dukan.service.exception.ProductNameAlreadyTakenException
 import net.thechance.dukan.service.exception.ProductNotFoundException
 import net.thechance.dukan.repository.DukanProductRepository
 import net.thechance.dukan.repository.DukanShelfRepository
+import net.thechance.dukan.repository.FavoriteProductRepository
 import net.thechance.dukan.service.model.DukanProductCreationParams
 import net.thechance.dukan.service.model.DukanProductUpdateParams
 import org.springframework.data.domain.Page
@@ -15,12 +17,13 @@ import org.springframework.data.domain.Pageable
 import org.springframework.stereotype.Service
 import org.springframework.web.multipart.MultipartFile
 import java.lang.Exception
+import java.time.Instant
 import java.util.UUID
-
 
 @Service
 class DukanProductService(
     private val dukanProductRepository: DukanProductRepository,
+    private val favoriteProductRepository: FavoriteProductRepository,
     private val dukanShelfRepository: DukanShelfRepository,
     private val dukanService: DukanService,
     private val imageStorageService: ImageStorageService,
@@ -80,6 +83,38 @@ class DukanProductService(
         return dukanProductRepository.findById(productId).orElseThrow {
             ProductNotFoundException()
         }
+    }
+
+    fun isProductFavorite(userId: UUID, productId: UUID): Boolean {
+        return favoriteProductRepository.findByOwnerIdAndProductId(userId, productId) != null
+    }
+
+    fun toggleFavoriteStatus(userId: UUID, productId: UUID): Boolean {
+        val favorite = favoriteProductRepository.findByOwnerIdAndProductId(userId, productId)
+        return if (favorite != null) {
+            updateFavoriteStatus(favorite)
+        } else {
+            createFavoriteEntry(userId, productId)
+        }
+    }
+
+    private fun createFavoriteEntry(userId: UUID, productId: UUID): Boolean {
+        val newFavorite = FavoriteProduct(
+            ownerId = userId,
+            productId = productId,
+            isFavorite = true
+        )
+        favoriteProductRepository.save(newFavorite)
+        return true
+    }
+
+    private fun updateFavoriteStatus(favorite: FavoriteProduct): Boolean {
+        val updatedFavorite = favorite.copy(
+            isFavorite = !favorite.isFavorite,
+            updatedAt = Instant.now()
+        )
+        favoriteProductRepository.save(updatedFavorite)
+        return updatedFavorite.isFavorite
     }
 
     @Transactional

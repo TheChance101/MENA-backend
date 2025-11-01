@@ -43,24 +43,37 @@ class DukanProductController(
         @AuthenticationPrincipal userId: UUID,
         @Valid @RequestBody request: DukanProductCreationRequest,
     ): ResponseEntity<DukanProductCreationResponse> {
-        val productId = dukanProductService.createProduct(request.toProductCreationParams(userId))
+        val productId = dukanProductService.createProduct(
+            request.toProductCreationParams(userId)
+            )
         return ResponseEntity.ok(DukanProductCreationResponse(productId))
     }
 
     @GetMapping
     fun getProductsByShelf(
+        @AuthenticationPrincipal userId: UUID,
         @RequestParam shelfId: UUID,
         @PageableDefault(size = 10, page = 0, sort = ["createdAt"], direction = Sort.Direction.DESC)
         pageable: Pageable
     ): ResponseEntity<Page<DukanProductResponse>> {
         val products = dukanProductService.getProductsByShelf(shelfId, pageable)
-        val productsResponse = products.map { it.toProductResponse() }
+
+        val productsResponse = products.map {
+            val isProductFavorite = dukanProductService.isProductFavorite(userId, it.id)
+            it.toProductResponse(isProductFavorite)
+        }
         return ResponseEntity.ok(productsResponse)
     }
 
     @GetMapping("/{productId}")
-    fun getProductById(@PathVariable("productId") productId: UUID): ResponseEntity<DukanProductResponse> {
-        val productResponse = dukanProductService.getProductById(productId).toProductResponse()
+    fun getProductById(
+        @AuthenticationPrincipal userId: UUID,
+        @PathVariable("productId") productId: UUID
+    ): ResponseEntity<DukanProductResponse> {
+        val isProductFavorite = dukanProductService.isProductFavorite(userId, productId)
+        val productResponse = dukanProductService
+            .getProductById(productId)
+            .toProductResponse(isProductFavorite)
         return ResponseEntity.ok(productResponse)
     }
 
@@ -70,7 +83,7 @@ class DukanProductController(
         @PathVariable("productId") productId: UUID,
         @Valid @RequestBody request: DukanProductUpdateRequest,
     ): DukanProductUpdateResponse {
-        val productUpdateParams = request.toProductUpdateParams(userId,productId)
+        val productUpdateParams = request.toProductUpdateParams(userId, productId)
         val productId = dukanProductService.updateProduct(productUpdateParams)
 
         return DukanProductUpdateResponse(productId)
@@ -84,5 +97,13 @@ class DukanProductController(
     ): String {
         val imageUrl = dukanProductService.uploadProductImage(userId, productId, file)
         return imageUrl
+    }
+
+    @PostMapping("{productId}/favorite")
+    fun toggleFavoriteStatus(
+        @AuthenticationPrincipal userId: UUID,
+        @PathVariable productId: UUID,
+    ): Boolean {
+        return dukanProductService.toggleFavoriteStatus(userId, productId)
     }
 }
