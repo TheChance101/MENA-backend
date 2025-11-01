@@ -11,8 +11,6 @@ import org.springframework.data.domain.Pageable
 import org.springframework.data.repository.findByIdOrNull
 import org.springframework.stereotype.Service
 import org.springframework.transaction.annotation.Transactional
-import java.text.Normalizer
-import java.time.Instant
 import java.util.*
 
 @Service
@@ -50,6 +48,7 @@ class ChatService(
         return chatRepository.findByUsersIds(usersId)
             ?: chatRepository.save(Chat(users = mutableSetOf(requester, otherUser)))
     }
+
     @Transactional
     fun saveMessage(args: MessageRequestArgs): Message {
         return messageRepository.save(
