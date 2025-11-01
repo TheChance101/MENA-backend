@@ -1,7 +1,7 @@
 package net.thechance.faith.service
 
-import net.thechance.faith.api.controller.exception.ImageUploadFailedException
-import net.thechance.faith.api.controller.exception.InvalidImageFormatException
+import net.thechance.faith.exception.ImageUploadFailedException
+import net.thechance.faith.exception.InvalidImageFormatException
 import org.springframework.boot.context.properties.ConfigurationProperties
 import org.springframework.boot.context.properties.EnableConfigurationProperties
 import org.springframework.stereotype.Service

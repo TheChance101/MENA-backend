@@ -11,3 +11,11 @@ class FailedToGetPrayerTimesException(
 class InvalidDateFormatException(
     message: String = "Invalid date format."
 ) : RuntimeException(message)
+
+class InvalidImageFormatException(
+    message: String = "Invalid picture format"
+) : RuntimeException(message)
+
+class ImageUploadFailedException(
+    message: String = "Image uploading failed"
+) : RuntimeException(message)
