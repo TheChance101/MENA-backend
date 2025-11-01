@@ -89,7 +89,7 @@ class AttachmentStorageService(
             "audio/mpeg" to "mp3",
             "audio/wav" to "wav",
             "audio/ogg" to "ogg",
-            "audio/mp4" to "m4a",
+            "audio/mp4" to "mp4",
         )
     }
 }
