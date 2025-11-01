@@ -10,5 +10,6 @@ data class DukanProductResponse(
     val price:Double,
     val description:String,
     val imageUrls:List<String>,
-    val createdAt: Instant
+    val createdAt: Instant,
+    val isFavorite: Boolean
 )
