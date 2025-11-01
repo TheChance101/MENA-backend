@@ -3,8 +3,8 @@ package net.thechance.chat.service
 import io.mockk.every
 import io.mockk.mockk
 import io.mockk.verify
-import net.thechance.chat.exception.ImageUploadFailedException
-import net.thechance.chat.exception.InvalidImageFormatException
+import net.thechance.chat.service.exception.ImageUploadFailedException
+import net.thechance.chat.service.exception.InvalidImageFormatException
 import org.assertj.core.api.Assertions.assertThat
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
@@ -35,7 +35,6 @@ class AttachmentStorageServiceTest {
     fun `uploadImage should upload image successfully and return cdn url`() {
         val file = mockk<MultipartFile>()
         val fileBytes = "test".toByteArray()
-        val fileName = "message123"
         val folderName = "chat_attachments"
 
         every { file.contentType } returns "image/jpeg"
@@ -45,7 +44,7 @@ class AttachmentStorageServiceTest {
             menaS3Client.putObject(any<PutObjectRequest>(), any<RequestBody>())
         } returns mockk()
 
-        val result = service.uploadImage(file, fileName, folderName)
+        val result = service.uploadImage(file,  folderName)
 
         assertThat(result).startsWith("${props.cdnEndpoint}/images/$folderName/")
         assertThat(result).endsWith(".jpg")
@@ -69,7 +68,7 @@ class AttachmentStorageServiceTest {
         every { file.contentType } returns null
 
         assertThrows<InvalidImageFormatException> {
-            service.uploadImage(file, "file1", "chat_attachments")
+            service.uploadImage(file,  "chat_attachments")
         }
     }
 
@@ -80,7 +79,7 @@ class AttachmentStorageServiceTest {
         every { file.contentType } returns "application/pdf"
 
         assertThrows<InvalidImageFormatException> {
-            service.uploadImage(file, "file1", "chat_attachments")
+            service.uploadImage(file,  "chat_attachments")
         }
     }
 
@@ -98,7 +97,7 @@ class AttachmentStorageServiceTest {
         } throws RuntimeException("S3 failed")
 
         assertThrows<ImageUploadFailedException> {
-            service.uploadImage(file, "file2", "chat_attachments")
+            service.uploadImage(file,  "chat_attachments")
         }
     }
 }

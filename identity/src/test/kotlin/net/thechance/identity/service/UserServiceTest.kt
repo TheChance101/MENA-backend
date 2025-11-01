@@ -16,7 +16,7 @@ import java.util.*
 class UserServiceTest {
     private val userRepository: UserRepository = mockk(relaxed = true)
     private val identityImageStorageService: IdentityImageStorageService = mockk(relaxed = true)
-    private val userService = UserService(userRepository, identityImageStorageService)
+    private val userService = UserService(userRepository, identityImageStorageService, "profile-images")
     private val mockImageFile: MultipartFile = mockk(relaxed = true)
 
     @Test
