@@ -72,30 +72,26 @@ class ChatController(
 
     @MessageMapping("/chat.addMessageReaction")
     fun addReaction(
-        @RequestBody body: MessageReactionRequest,
+        @Payload body: MessageReactionRequest,
         principal: Principal
-    ): ResponseEntity<MessageReactionResponse> {
+    ) {
         val userId = UUID.fromString(principal.name)
         val message = chatService.getMessageById(body.messageId)
         val reactionResponse = chatService.addReaction(body.toRequestArgs(userId)).toResponse()
 
         sendToChatUser(message.chatId, ADD_REACTION) { reactionResponse }
-
-        return ResponseEntity.ok(reactionResponse)
     }
 
     @MessageMapping("/chat.deleteMessageReaction")
     fun deleteReaction(
-        @RequestBody body: MessageReactionRequest,
+        @Payload body: MessageReactionRequest,
         principal: Principal
-    ): ResponseEntity<Unit> {
+    ){
         val userId = UUID.fromString(principal.name)
         val message = chatService.getMessageById(body.messageId)
         val deletedReaction = chatService.deleteReaction(body.toRequestArgs(userId))
 
         sendToChatUser(message.chatId, DELETE_REACTION) { deletedReaction.toResponse() }
-
-        return ResponseEntity.noContent().build()
     }
 
     @MessageMapping("/chat.markAsRead")
@@ -106,7 +102,10 @@ class ChatController(
         val userId = UUID.fromString(principal.name)
         chatService.markChatMessagesAsRead(markAsReadRequest.chatId, userId)
 
-        sendToChatUser(chatId = markAsReadRequest.chatId) { chatParticipantId ->
+        sendToChatUser(
+            chatId = markAsReadRequest.chatId,
+            destination = MARK_AS_READ
+        ) { chatParticipantId ->
             MarkAsReadResponse(userId, markAsReadRequest.chatId, chatParticipantId == userId)
         }
     }
@@ -156,6 +155,7 @@ class ChatController(
 
     companion object {
         const val PRIVATE_MESSAGES = "/private/messages"
+        const val MARK_AS_READ = "/private/markAsRead"
         const val ADD_REACTION = "/private/addReaction"
         const val DELETE_REACTION = "/private/deleteReaction"
     }

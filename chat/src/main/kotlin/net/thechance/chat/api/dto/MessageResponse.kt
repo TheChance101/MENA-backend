@@ -1,7 +1,7 @@
 package net.thechance.chat.api.dto
 
-import net.thechance.chat.api.dto.MessageResponse.Reaction
 import net.thechance.chat.entity.Message
+import net.thechance.chat.entity.MessageReaction
 import net.thechance.chat.service.model.MessageWithReactions
 import org.springframework.data.domain.Page
 import java.time.Instant
@@ -18,16 +18,11 @@ data class MessageResponse(
     val chatId: UUID,
     val text: String?,
     val imageUrl: String?,
-    val reactions: List<Reaction> = emptyList(),
+    val reactions: List<MessageReactionResponse> = emptyList(),
     val sendAt: Instant,
     val isRead: Boolean,
     val isMine: Boolean
-) {
-    data class Reaction(
-        val emoji: String,
-        val userId: UUID
-    )
-}
+)
 
 fun Message.toResponse(requesterId: UUID): MessageResponse {
     return MessageResponse(
@@ -50,7 +45,7 @@ fun MessageWithReactions.toResponse(requesterId: UUID): MessageResponse {
         chatId = message.chatId,
         text = message.text,
         imageUrl = message.imageUrl,
-        reactions = reactions.map { Reaction(emoji = it.emoji, userId = it.userId) },
+        reactions = reactions.map (MessageReaction::toResponse),
         sendAt = message.sentAt,
         isRead = message.isRead,
         isMine = requesterId == message.senderId
