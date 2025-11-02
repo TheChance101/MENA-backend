@@ -30,7 +30,7 @@ class IdentityImageStorageService(
         try {
             val fileName = "${fileName}.$extension"
             val randomParameter = LocalDateTime.now().toString()
-            val key = "$folderName/$fileName"
+            val key = "$folderName$fileName"
             val putReq = createObjectRequest(key, mimeType)
             menaS3Client.putObject(putReq, RequestBody.fromBytes(file.bytes))
             val imageUri = "$fileName?time=$randomParameter"

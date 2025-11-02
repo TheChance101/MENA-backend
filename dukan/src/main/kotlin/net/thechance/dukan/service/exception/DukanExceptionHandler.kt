@@ -1,7 +1,9 @@
 package net.thechance.dukan.service.exception
 
 import net.thechance.dukan.api.dto.ErrorResponse
+import net.thechance.dukan.entity.Dukan
 import org.springframework.core.annotation.Order
+import org.springframework.dao.DataIntegrityViolationException
 import org.springframework.http.HttpStatus
 import org.springframework.http.ResponseEntity
 import org.springframework.web.bind.MethodArgumentNotValidException
@@ -14,11 +16,24 @@ class DukanExceptionHandler {
 
     @ExceptionHandler(Throwable::class)
     fun handleUnexpectedExceptions(ex: Throwable): ResponseEntity<ErrorResponse> {
-        val response = ErrorResponse(
-            message = "Internal server error",
-            errorCode = 500
-        )
-        return ResponseEntity(response, HttpStatus.INTERNAL_SERVER_ERROR)
+        val httpStatus:HttpStatus
+        val response = when{
+            isDukanShelfConstraintException(ex)-> {
+                httpStatus = HttpStatus.CONFLICT
+                ErrorResponse(
+                    message = ShelfNameAlreadyTakenException().message,
+                    errorCode = ShelfNameAlreadyTakenException().code
+                )
+            }
+            else-> {
+                httpStatus = HttpStatus.INTERNAL_SERVER_ERROR
+                ErrorResponse(
+                    message = "Internal server error",
+                    errorCode = 500
+                )
+            }
+        }
+        return ResponseEntity(response, httpStatus)
     }
 
     @ExceptionHandler(MethodArgumentNotValidException::class)
@@ -41,6 +56,15 @@ class DukanExceptionHandler {
             errorCode = dukanException.code
         )
         return ResponseEntity(response, dukanException.status)
+    }
+
+    private fun isDukanShelfConstraintException(ex: Throwable): Boolean {
+        if (ex is DataIntegrityViolationException) {
+            val message = ex.mostSpecificCause?.message ?: ex.message.orEmpty()
+            return message.contains("uq_dukan_shelves_dukan_title", ignoreCase = true) ||
+                    message.contains("ukcdtmkqm7gicyuoymhjywg7w9m", ignoreCase = true)
+        }
+        return false
     }
 
 }

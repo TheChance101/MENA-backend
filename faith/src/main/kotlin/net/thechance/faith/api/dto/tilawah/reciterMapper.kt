@@ -1,4 +1,4 @@
-package net.thechance.faith.api.dto.reciter
+package net.thechance.faith.api.dto.tilawah
 
 import net.thechance.faith.entity.Reciter
 
