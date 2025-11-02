@@ -5,12 +5,12 @@ import net.thechance.identity.service.model.RegisterUserModel
 
 fun RegisterUserRequest.toRegisterUserModel(): RegisterUserModel {
     return RegisterUserModel(
-        phoneNumber = this.phoneNumber,
-        username = this.username,
-        firstName = this.firstName,
-        lastName = this.lastName,
-        birthDate = this.birthDate,
-        gender = this.gender,
-        password = this.password
+        phoneNumber = phoneNumber,
+        username = username,
+        firstName = firstName,
+        lastName = lastName,
+        birthDate = birthDate,
+        gender = gender,
+        password = password
     )
 }
