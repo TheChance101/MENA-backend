@@ -28,18 +28,21 @@ class CartService(
         val cart = getCartByUserAndDukan(params.userId, params.dukanId)
             ?: createCart(params.userId, params.dukanId)
         val product = getProduct(params.productId)
-        val item = cart.items.find { it.id == product.id }
+        val item = cart.items.find { it.product.id == product.id }
 
-        if (item != null) item.quantity = params.quantity
-        else cart.items.add(CartItem(product = product, quantity = params.quantity, cart = cart))
-
+        if (item != null) {
+            item.quantity = params.quantity
+        } else {
+            cart.items.add(CartItem(product = product, quantity = params.quantity, cart = cart))
+        }
+        cart.calculateTotalPrice()
         return cartRepository.save(cart)
     }
 
     @Transactional
     fun removeItem(userId: UUID, dukanId: UUID, productId: UUID) {
         val cart = getCartOrThrow(userId, dukanId)
-        val item = cart.items.find { it.id == productId }
+        val item = cart.items.find { it.product.id == productId }
             ?: throw ProductNotInCartException()
         cart.items.remove(item)
         if (cart.items.isEmpty()) cartRepository.delete(cart)
@@ -59,6 +62,7 @@ class CartService(
         val cart = getCartOrThrow(userId, dukanId)
         return cartItemRepository.findAllByCartId(cart.id, pageable)
     }
+
     private fun getCartByUserAndDukan(userId: UUID, dukanId: UUID): Cart? {
         return cartRepository.findByUserIdAndDukanIdWithItemsAndProducts(userId, dukanId)
     }

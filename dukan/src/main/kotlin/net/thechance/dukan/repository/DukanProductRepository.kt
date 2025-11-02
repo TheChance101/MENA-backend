@@ -41,4 +41,20 @@ interface DukanProductRepository : JpaRepository<DukanProduct, UUID> {
     fun findByIdWithDukan(
         @Param("productId") productId: UUID
     ): DukanProduct
+
+    @Query(
+        """
+    SELECT product.id, COALESCE(cartItem.quantity, 0)
+    FROM DukanProduct product
+    JOIN product.shelf shelf
+    JOIN shelf.dukan dukan
+    LEFT JOIN Cart cart ON cart.userId = :userId AND cart.dukanId = dukan.id
+    LEFT JOIN cart.items cartItem ON cartItem.product.id = product.id
+    WHERE shelf.id = :shelfId
+    """
+    )
+    fun findProductQuantitiesByUserAndShelf(
+        @Param("userId") userId: UUID,
+        @Param("shelfId") shelfId: UUID
+    ): List<Array<Any>>
 }

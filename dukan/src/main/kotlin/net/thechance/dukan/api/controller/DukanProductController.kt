@@ -1,16 +1,12 @@
 package net.thechance.dukan.api.controller
 
 import jakarta.validation.Valid
-import net.thechance.dukan.api.utils.EndPoints.DUKAN_PATH
-import net.thechance.dukan.api.dto.product.DukanProductCreationRequest
-import net.thechance.dukan.api.dto.product.DukanProductCreationResponse
-import net.thechance.dukan.api.dto.product.DukanProductResponse
-import net.thechance.dukan.api.dto.product.DukanProductUpdateRequest
-import net.thechance.dukan.api.dto.product.DukanProductUpdateResponse
-import net.thechance.dukan.service.DukanProductService
+import net.thechance.dukan.api.dto.product.*
 import net.thechance.dukan.api.mapper.product.toProductCreationParams
 import net.thechance.dukan.api.mapper.product.toProductResponse
 import net.thechance.dukan.api.mapper.product.toProductUpdateParams
+import net.thechance.dukan.api.utils.EndPoints.DUKAN_PATH
+import net.thechance.dukan.service.DukanProductService
 import org.springframework.data.domain.Page
 import org.springframework.data.domain.Pageable
 import org.springframework.data.domain.Sort
@@ -55,7 +51,8 @@ class DukanProductController(
         pageable: Pageable
     ): ResponseEntity<Page<DukanProductResponse>> {
         val products = dukanProductService.getProductsByShelf(userId, shelfId, pageable)
-        return ResponseEntity.ok(products)
+        val productsResponse = products.map { it.toProductResponse(it.tempQuantity) }
+        return ResponseEntity.ok(productsResponse)
     }
 
     @GetMapping("/{productId}")
@@ -63,7 +60,8 @@ class DukanProductController(
         @AuthenticationPrincipal userId: UUID,
         @PathVariable("productId") productId: UUID
     ): ResponseEntity<DukanProductResponse> {
-        val productResponse = dukanProductService.getProductById(userId, productId)
+        val product = dukanProductService.getProductById(userId, productId)
+        val productResponse = product.toProductResponse(product.tempQuantity)
         return ResponseEntity.ok(productResponse)
     }
 
