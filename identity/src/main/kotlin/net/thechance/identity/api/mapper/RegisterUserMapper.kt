@@ -2,6 +2,7 @@ package net.thechance.identity.api.mapper
 
 import net.thechance.identity.api.dto.register.RegisterUserRequest
 import net.thechance.identity.service.model.RegisterUserModel
+import java.util.UUID
 
 fun RegisterUserRequest.toRegisterUserModel(): RegisterUserModel {
     return RegisterUserModel(
@@ -11,6 +12,7 @@ fun RegisterUserRequest.toRegisterUserModel(): RegisterUserModel {
         lastName = lastName,
         birthDate = birthDate,
         gender = gender,
-        password = password
+        password = password,
+        sessionId = UUID.fromString(sessionId)
     )
 }

@@ -4,6 +4,7 @@ import jakarta.validation.constraints.Max
 import jakarta.validation.constraints.Min
 import jakarta.validation.constraints.NotBlank
 import org.hibernate.validator.constraints.Length
+import org.hibernate.validator.constraints.UUID
 
 data class RegisterUserRequest(
     @field:NotBlank(message = "phoneNumber must not be blank")
@@ -27,5 +28,9 @@ data class RegisterUserRequest(
 
     @field:NotBlank(message = "password must not be blank")
     @field:Length(min = 8, message = "password must be more than or equals 8 characters")
-    val password: String
+    val password: String,
+
+    @field:NotBlank(message = "sessionId must not be blank")
+    @field:UUID(message = "sessionId must be in a valid UUID format")
+    val sessionId: String,
 )

@@ -3,6 +3,7 @@ package net.thechance.identity.service
 import net.thechance.identity.api.dto.AuthResponse
 import net.thechance.identity.api.dto.RequestOtpResponse
 import net.thechance.identity.entity.User
+import net.thechance.identity.exception.UnauthorizedException
 import net.thechance.identity.exception.UserAlreadyExistsException
 import net.thechance.identity.security.JwtService
 import net.thechance.identity.service.model.RegisterUserModel
@@ -42,9 +43,17 @@ class RegisterService(
     }
 
     fun registerUser(registerUserModel: RegisterUserModel): AuthResponse {
+        throwIfOtpBySessionIdExpired(sessionId = registerUserModel.sessionId)
         throwIfUserExists(registerUserModel.username, registerUserModel.phoneNumber)
         val user = saveUser(registerUserModel)
-        return generateAuthResponse(user)
+        val authResponse = generateAuthResponse(user)
+        otpService.expireOtpBySessionId(registerUserModel.sessionId)
+        return authResponse
+    }
+
+    private fun throwIfOtpBySessionIdExpired(sessionId: UUID) {
+        val latestOtp = otpService.getLatestNotExpiredOtpBySessionId(sessionId)
+        if (!latestOtp.isVerified) throw UnauthorizedException()
     }
 
     private fun saveUser(registerUserModel: RegisterUserModel): User {

@@ -1,5 +1,7 @@
 package net.thechance.identity.service.model
 
+import java.util.UUID
+
 data class RegisterUserModel(
     val phoneNumber: String,
     val username: String,
@@ -7,5 +9,6 @@ data class RegisterUserModel(
     val lastName: String,
     val birthDate: String,
     val gender: Int,
-    val password: String
+    val password: String,
+    val sessionId: UUID
 )
