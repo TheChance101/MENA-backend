@@ -2,15 +2,17 @@ package net.thechance.identity.service
 
 import com.google.common.truth.Truth.assertThat
 import io.mockk.*
-import net.thechance.identity.entity.OtpLog
 import net.thechance.identity.entity.RefreshToken
 import net.thechance.identity.entity.User
+import net.thechance.identity.exception.OtpExpiredException
+import net.thechance.identity.exception.UnauthorizedException
 import net.thechance.identity.exception.UserAlreadyExistsException
 import net.thechance.identity.security.JwtService
 import net.thechance.identity.service.model.RegisterUserModel
 import net.thechance.identity.service.model.ValidatedPhoneNumber
 import net.thechance.identity.service.phoneNumberValidator.PhoneNumberValidatorService
 import net.thechance.identity.service.sms.SmsService
+import net.thechance.identity.utils.createOtpLog
 import org.junit.Assert.assertThrows
 import org.junit.Test
 import org.springframework.security.crypto.password.PasswordEncoder
@@ -42,7 +44,7 @@ class RegisterServiceTest {
     fun `requestOtp should send OTP when phone number is valid and does not exist`() {
         every { phoneNumberValidatorService.validateAndParse(any(), any()) } returns dummyValidatedPhone
         every { userService.userExistsByPhoneNumber(DUMMY_PHONE_NUMBER) } returns false
-        every { otpService.createOtp(DUMMY_PHONE_NUMBER) } returns otpLog
+        every { otpService.createOtp(DUMMY_PHONE_NUMBER) } returns verifiedOtpLog
 
         val response = registerService.requestOtp(DUMMY_PHONE_NUMBER, DEFAULT_REGION)
 
@@ -53,7 +55,7 @@ class RegisterServiceTest {
     fun `requestOtp should call send sms and createOtP when phone number is valid and does not exist`() {
         every { phoneNumberValidatorService.validateAndParse(any(), any()) } returns dummyValidatedPhone
         every { userService.userExistsByPhoneNumber(any()) } returns false
-        every { otpService.createOtp(any()) } returns otpLog
+        every { otpService.createOtp(any()) } returns verifiedOtpLog
         every { smsService.sendSms(any(), any(), any(), any()) } just runs
 
         registerService.requestOtp(DUMMY_PHONE_NUMBER, DEFAULT_REGION)
@@ -66,7 +68,7 @@ class RegisterServiceTest {
                 dummyValidatedPhone.countryCode,
                 dummyValidatedPhone.carrierPrefixHeuristic,
                 dummyValidatedPhone.phoneNumber,
-                otpLog.otp
+                verifiedOtpLog.otp
             )
         }
     }
@@ -95,7 +97,26 @@ class RegisterServiceTest {
     }
 
     @Test
+    fun `registerUser should throw UnauthorizedException when otp not verified`() {
+        every { otpService.getLatestNotExpiredOtpBySessionId(sessionId) } returns notVerifiedOtpLog
+
+        assertThrows(UnauthorizedException::class.java) {
+            registerService.registerUser(registerModel)
+        }
+    }
+
+    @Test
+    fun `registerUser should throw OtpExpiredException when otp is expired`() {
+        every { otpService.getLatestNotExpiredOtpBySessionId(sessionId) } throws OtpExpiredException()
+
+        assertThrows(OtpExpiredException::class.java) {
+            registerService.registerUser(registerModel)
+        }
+    }
+
+    @Test
     fun `registerUser should save user and return auth tokens when user does not exist`() {
+        every { otpService.getLatestNotExpiredOtpBySessionId(sessionId) } returns verifiedOtpLog
         every { userService.userExistsByUserName(any()) } returns false
         every { userService.userExistsByPhoneNumber(any()) } returns false
         every { passwordEncoder.encode(any()) } returns ENCODED_PASSWORD
@@ -111,6 +132,7 @@ class RegisterServiceTest {
 
     @Test
     fun `registerUser should throw UserAlreadyExistsException when username is taken`() {
+        every { otpService.getLatestNotExpiredOtpBySessionId(sessionId) } returns verifiedOtpLog
         every { userService.userExistsByUserName(any()) } returns true
 
         assertThrows(UserAlreadyExistsException::class.java) {
@@ -122,6 +144,7 @@ class RegisterServiceTest {
 
     @Test
     fun `registerUser should throw UserAlreadyExistsException when phone number is taken`() {
+        every { otpService.getLatestNotExpiredOtpBySessionId(sessionId) } returns verifiedOtpLog
         every { userService.userExistsByUserName(any()) } returns false
         every { userService.userExistsByPhoneNumber(any()) } returns true
 
@@ -143,16 +166,26 @@ class RegisterServiceTest {
         )
         private val sessionId = UUID.randomUUID()
         private const val OTP = "00000000"
-        private val otpLog = OtpLog(
+        private val verifiedOtpLog = createOtpLog(
             phoneNumber = DUMMY_PHONE_NUMBER,
             otp = OTP,
             sessionId = sessionId,
-            expireAt = Instant.now().plusSeconds(3 * 60L),
+            isVerified = true
         )
+        private val notVerifiedOtpLog = createOtpLog(isVerified = false)
         private const val ENCODED_PASSWORD = "encodedPassword123"
         private const val ACCESS_TOKEN = "dummyAccessToken"
         private val registerModel =
-            RegisterUserModel(DUMMY_PHONE_NUMBER, "thorayahamdy", "Thoraya", "Hamdy", "2000-01-01", 2, "12345678")
+            RegisterUserModel(
+                phoneNumber = DUMMY_PHONE_NUMBER,
+                username = "thorayahamdy",
+                firstName = "Thoraya",
+                lastName = "Hamdy",
+                birthDate = "2000-01-01",
+                gender = 2,
+                password = "12345678",
+                sessionId = sessionId
+            )
         private val savedUser = User(
             username = registerModel.username, phoneNumber = registerModel.phoneNumber,
             password = ENCODED_PASSWORD,
