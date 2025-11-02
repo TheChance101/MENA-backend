@@ -10,7 +10,10 @@ import net.thechance.identity.repository.UserRepository
 import net.thechance.identity.utils.createUser
 import org.junit.Assert.assertThrows
 import org.junit.Test
+import org.springframework.data.domain.PageImpl
+import org.springframework.data.domain.PageRequest
 import org.springframework.data.repository.findByIdOrNull
+import java.time.LocalDateTime
 
 class UserServiceTest {
     private val userRepository: UserRepository = mockk(relaxed = true)
@@ -122,11 +125,73 @@ class UserServiceTest {
         }
     }
 
+    @Test
+    fun `findUsersByQuery() should return page of users matching the query when they exist `() {
+        val usersPage = PageImpl(List(3) { createUser() })
+        every { userRepository.findByFullNameOrPhoneNumber(any(), any()) } returns usersPage
+
+        val result = userService.findUsersByQuery(query, pageable)
+
+        assertThat(result.content).containsExactlyElementsIn(usersPage.content)
+    }
+
+    @Test
+    fun `findUsersByQuery() should propagate user repository exceptions`() {
+        val testException = RuntimeException("Test exception")
+        every { userRepository.findByFullNameOrPhoneNumber(any(), any()) } throws testException
+
+        assertThrows(testException::class.java) {
+            userService.findUsersByQuery(query, pageable)
+        }
+    }
+
+    @Test
+    fun `updateUserLastLoginTime() should complete successfully when user exists`() {
+        val now = LocalDateTime.now()
+        every { userRepository.updateLastLoginTime(id, now) } returns 1
+
+        userService.updateUserLastLoginTime(id, now)
+
+        verify(exactly = 1) { userRepository.updateLastLoginTime(id, now) }
+    }
+
+    @Test
+    fun `updateUserLastLoginTime() should throw UserNotFoundException when user is not found`() {
+        val now = LocalDateTime.now()
+        every{ userRepository.updateLastLoginTime(id, LocalDateTime.now()) } returns 0
+
+        assertThrows(UserNotFoundException::class.java) {
+            userService.updateUserLastLoginTime(id, now)
+        }
+    }
+
+    @Test
+    fun `updateUserLastVisitTime() should complete successfully when user exists`() {
+        val now = LocalDateTime.now()
+        every{ userRepository.updateLastVisitTime(id, now) } returns 1
+
+        userService.updateUserLastVisitTime(id, now)
+
+        verify(exactly = 1) { userRepository.updateLastVisitTime(id, now) }
+    }
+
+    @Test
+    fun `updateUserLastVisitTime() should throw UserNotFoundException when user is not found`() {
+        val now = LocalDateTime.now()
+        every{ userRepository.updateLastVisitTime(id, LocalDateTime.now()) } returns 0
+
+        assertThrows(UserNotFoundException::class.java) {
+            userService.updateUserLastVisitTime(id, now)
+        }
+    }
+
     companion object {
         private val user = createUser()
         private val phoneNumber = user.phoneNumber
         private val id = user.id
         private const val PASSWORD = "00000000"
         private val updatedUser = user.copy(password = PASSWORD)
+        private val pageable = PageRequest.of(0, 10)
+        private val query = "john"
     }
 }
