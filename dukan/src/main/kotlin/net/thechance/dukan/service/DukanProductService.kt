@@ -12,6 +12,7 @@ import net.thechance.dukan.repository.DukanShelfRepository
 import net.thechance.dukan.repository.FavoriteProductRepository
 import net.thechance.dukan.service.model.DukanProductCreationParams
 import net.thechance.dukan.service.model.DukanProductUpdateParams
+import net.thechance.dukan.service.model.DukanProductWithFavorite
 import org.springframework.data.domain.Page
 import org.springframework.data.domain.Pageable
 import org.springframework.stereotype.Service
@@ -75,8 +76,29 @@ class DukanProductService(
         }
     }
 
-    fun getProductsByShelf(shelfId: UUID, pageable: Pageable): Page<DukanProduct> {
-        return dukanProductRepository.findAllByShelfId(shelfId, pageable)
+    fun getProductsByShelf(userId: UUID, shelfId: UUID, pageable: Pageable): Page<DukanProductWithFavorite> {
+        val products = dukanProductRepository.findAllByShelfId(shelfId, pageable)
+        val productIds = products.content.map { it.id }
+
+        val favoriteProducts = if (productIds.isNotEmpty()) {
+            favoriteProductRepository.findAllByUserIdAndProductIdIn(userId, productIds)
+        } else {
+            emptyList()
+        }
+
+        val favoriteProductIds = favoriteProducts.map { it.productId }.toSet()
+
+        return products.map {
+            DukanProductWithFavorite(
+                product = it,
+                isFavorite = it.id in favoriteProductIds
+            )
+        }
+    }
+
+    fun getFavoriteProductsForUser(userId: UUID, productIds: List<UUID>): List<FavoriteProduct> {
+        if (productIds.isEmpty()) return emptyList()
+        return favoriteProductRepository.findAllByUserIdAndProductIdIn(userId, productIds)
     }
 
     fun getProductById(productId: UUID): DukanProduct {
@@ -86,11 +108,11 @@ class DukanProductService(
     }
 
     fun isProductFavorite(userId: UUID, productId: UUID): Boolean {
-        return favoriteProductRepository.findByOwnerIdAndProductId(userId, productId) != null
+        return favoriteProductRepository.findByUserIdAndProductId(userId, productId) != null
     }
 
     fun toggleFavoriteStatus(userId: UUID, productId: UUID): Boolean {
-        val favorite = favoriteProductRepository.findByOwnerIdAndProductId(userId, productId)
+        val favorite = favoriteProductRepository.findByUserIdAndProductId(userId, productId)
         return if (favorite != null) {
             updateFavoriteStatus(favorite)
         } else {
@@ -100,7 +122,7 @@ class DukanProductService(
 
     private fun createFavoriteEntry(userId: UUID, productId: UUID): Boolean {
         val newFavorite = FavoriteProduct(
-            ownerId = userId,
+            userId = userId,
             productId = productId,
             isFavorite = true
         )

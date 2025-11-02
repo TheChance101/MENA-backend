@@ -8,5 +8,6 @@ import java.util.UUID
 @Repository
 interface FavoriteProductRepository : JpaRepository<FavoriteProduct, UUID> {
 
-    fun findByOwnerIdAndProductId(ownerId: UUID, productId: UUID): FavoriteProduct?
+    fun findByUserIdAndProductId(userId: UUID, productId: UUID): FavoriteProduct?
+    fun findAllByUserIdAndProductIdIn(userId: UUID, productIds: List<UUID>): List<FavoriteProduct>
 }

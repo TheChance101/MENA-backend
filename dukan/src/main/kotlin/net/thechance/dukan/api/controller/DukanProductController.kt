@@ -45,7 +45,7 @@ class DukanProductController(
     ): ResponseEntity<DukanProductCreationResponse> {
         val productId = dukanProductService.createProduct(
             request.toProductCreationParams(userId)
-            )
+        )
         return ResponseEntity.ok(DukanProductCreationResponse(productId))
     }
 
@@ -56,12 +56,12 @@ class DukanProductController(
         @PageableDefault(size = 10, page = 0, sort = ["createdAt"], direction = Sort.Direction.DESC)
         pageable: Pageable
     ): ResponseEntity<Page<DukanProductResponse>> {
-        val products = dukanProductService.getProductsByShelf(shelfId, pageable)
+        val products = dukanProductService.getProductsByShelf(userId, shelfId, pageable)
 
         val productsResponse = products.map {
-            val isProductFavorite = dukanProductService.isProductFavorite(userId, it.id)
-            it.toProductResponse(isProductFavorite)
+            it.product.toProductResponse(it.isFavorite)
         }
+
         return ResponseEntity.ok(productsResponse)
     }
 
@@ -103,7 +103,7 @@ class DukanProductController(
     fun toggleFavoriteStatus(
         @AuthenticationPrincipal userId: UUID,
         @PathVariable productId: UUID,
-    ): Boolean {
-        return dukanProductService.toggleFavoriteStatus(userId, productId)
+    ): ResponseEntity<Boolean> {
+        return ResponseEntity.ok(dukanProductService.toggleFavoriteStatus(userId, productId))
     }
 }
