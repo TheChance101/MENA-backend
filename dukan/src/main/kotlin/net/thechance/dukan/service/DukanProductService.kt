@@ -3,19 +3,18 @@ package net.thechance.dukan.service
 import jakarta.persistence.EntityNotFoundException
 import jakarta.transaction.Transactional
 import net.thechance.dukan.entity.DukanProduct
+import net.thechance.dukan.repository.DukanProductRepository
+import net.thechance.dukan.repository.DukanShelfRepository
 import net.thechance.dukan.service.exception.DukanProductCreationFailedException
 import net.thechance.dukan.service.exception.ProductNameAlreadyTakenException
 import net.thechance.dukan.service.exception.ProductNotFoundException
-import net.thechance.dukan.repository.DukanProductRepository
-import net.thechance.dukan.repository.DukanShelfRepository
 import net.thechance.dukan.service.model.DukanProductCreationParams
 import net.thechance.dukan.service.model.DukanProductUpdateParams
 import org.springframework.data.domain.Page
 import org.springframework.data.domain.Pageable
 import org.springframework.stereotype.Service
 import org.springframework.web.multipart.MultipartFile
-import java.lang.Exception
-import java.util.UUID
+import java.util.*
 
 
 @Service
@@ -72,14 +71,25 @@ class DukanProductService(
         }
     }
 
-    fun getProductsByShelf(shelfId: UUID, pageable: Pageable): Page<DukanProduct> {
-        return dukanProductRepository.findAllByShelfId(shelfId, pageable)
+    @Transactional
+    fun getProductsByShelf(userId: UUID, shelfId: UUID, pageable: Pageable): Page<DukanProduct> {
+        val productsPage = dukanProductRepository.findAllByShelfIdWithDukan(shelfId, pageable)
+        val quantities = dukanProductRepository.findProductQuantitiesByUserAndShelf(userId, shelfId)
+            .associate { UUID.fromString(it[0].toString()) to (it[1] as Number).toInt() }
+
+        return productsPage.map { product ->
+            product.apply { tempQuantity = quantities[product.id] ?: 0 }
+        }
     }
 
-    fun getProductById(productId: UUID): DukanProduct {
-        return dukanProductRepository.findById(productId).orElseThrow {
-            ProductNotFoundException()
-        }
+    @Transactional
+    fun getProductById(userId: UUID, productId: UUID): DukanProduct {
+        val product = dukanProductRepository.findByIdWithDukan(productId)
+        val quantity = dukanProductRepository.findProductQuantitiesByUserAndShelf(userId, product.shelf.id)
+            .firstOrNull { UUID.fromString(it[0].toString()) == product.id }
+            ?.let { (it[1] as Number).toInt() } ?: 0
+        product.tempQuantity = quantity
+        return product
     }
 
     @Transactional
