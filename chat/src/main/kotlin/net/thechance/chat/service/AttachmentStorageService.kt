@@ -1,7 +1,7 @@
 package net.thechance.chat.service
 
-import net.thechance.chat.exception.ImageUploadFailedException
-import net.thechance.chat.exception.InvalidImageFormatException
+import net.thechance.chat.service.exception.ImageUploadFailedException
+import net.thechance.chat.service.exception.InvalidImageFormatException
 import org.springframework.boot.context.properties.ConfigurationProperties
 import org.springframework.boot.context.properties.EnableConfigurationProperties
 import org.springframework.stereotype.Service
@@ -37,8 +37,8 @@ class AttachmentStorageService(
             val putReq = createObjectRequest(key, mimeType)
             menaS3Client.putObject(putReq, RequestBody.fromBytes(file.bytes))
             return makeUrl(key)
-        } catch (_: Exception) {
-            throw ImageUploadFailedException()
+        } catch (e: Exception) {
+            throw ImageUploadFailedException("failed uploading image: ${e.message}")
         }
     }
 

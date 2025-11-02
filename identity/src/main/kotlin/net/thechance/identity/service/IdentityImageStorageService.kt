@@ -3,6 +3,7 @@ package net.thechance.identity.service
 import net.thechance.identity.exception.InvalidImageException
 import net.thechance.identity.exception.UnknownErrorException
 import net.thechance.identity.security.config.IdentityStorageProperties
+import org.springframework.beans.factory.annotation.Value
 import org.springframework.boot.context.properties.EnableConfigurationProperties
 import org.springframework.stereotype.Service
 import org.springframework.web.multipart.MultipartFile
@@ -17,22 +18,23 @@ import java.time.LocalDateTime
 @EnableConfigurationProperties(IdentityStorageProperties::class)
 class IdentityImageStorageService(
     private val menaS3Client: S3Client,
-    private val identityStorageProperties: IdentityStorageProperties,
+    private val identityStorageProperties: IdentityStorageProperties
 ) {
     fun uploadImage(
         file: MultipartFile,
         fileName: String,
-        folderName: String = "profile"
+        folderName: String
     ): String {
         val mimeType = file.contentType ?: throw InvalidImageException("null")
         val extension = allowedMimeTypes[mimeType] ?: throw InvalidImageException(mimeType)
         try {
             val fileName = "${fileName}.$extension"
             val randomParameter = LocalDateTime.now().toString()
-            val key = "images/identity/$folderName/$fileName?time=$randomParameter"
+            val key = "$folderName$fileName"
             val putReq = createObjectRequest(key, mimeType)
             menaS3Client.putObject(putReq, RequestBody.fromBytes(file.bytes))
-            return "/$key"
+            val imageUri = "$fileName?time=$randomParameter"
+            return imageUri
         } catch (e: Exception) {
             throw UnknownErrorException(e.message ?: "Unknown error occurred")
         }

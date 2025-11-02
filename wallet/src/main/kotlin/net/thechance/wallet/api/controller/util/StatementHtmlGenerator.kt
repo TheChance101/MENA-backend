@@ -28,11 +28,8 @@ class StatementHtmlGenerator(
 
         val templateData = mapOf(
             "userName" to statementData.username,
-            "fromFormatted" to statementData.startDateTime.formatHeaderDate(),
-            "toFormatted" to statementData.endDateTime.formatHeaderDate(),
             "openingBalance" to String.format("%.2f", statementData.openingBalance),
             "closingBalance" to String.format("%.2f", statementData.closingBalance),
-            "logoSvgInline" to getAppIconSvg(),
             "transactions" to formattedTransactions,
             "isFirstPage" to (transactionsPage.pageable.pageNumber == 0),
             "isLastPage" to (transactionsPage.pageable.pageNumber == transactionsPage.totalPages - 1)
@@ -89,22 +86,6 @@ class StatementHtmlGenerator(
             transaction.amount
         }
     }
-
-    private fun getAppIconSvg(): String {
-        return try {
-            resourceLoader.getResource("classpath:static/mena_logo.svg").inputStream.use { inputStream ->
-                inputStream.reader(Charsets.UTF_8)
-                    .readText()
-                    .replace("""<\?xml.*?\?>""".toRegex(), "")
-                    .trim()
-            }
-        } catch (_: Exception) {
-            ""
-        }
-    }
-
-    private fun LocalDateTime.formatHeaderDate(): String =
-        this.format(DateTimeFormatter.ofPattern("dd MMM yyyy"))
 
     private fun LocalDateTime.formatRowItemDate(): String =
         this.format(DateTimeFormatter.ofPattern("yyyy/MM/dd"))
