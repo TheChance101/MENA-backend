@@ -1,6 +1,7 @@
 package net.thechance.dukan.service.exception
 
 import net.thechance.dukan.api.utils.ErrorCodes.CART_NOT_FOUND
+import net.thechance.dukan.api.utils.ErrorCodes.PRODUCT_ALREADY_IN_CART
 import net.thechance.dukan.api.utils.ErrorCodes.PRODUCT_NOT_IN_CART
 import org.springframework.http.HttpStatus
 
@@ -14,4 +15,9 @@ class ProductNotInCartException() : DukanException(
     code = PRODUCT_NOT_IN_CART,
     status = HttpStatus.NOT_FOUND,
     message = "Product not found in cart"
+)
+class ProductAlreadyInCartException : DukanException(
+    code = PRODUCT_ALREADY_IN_CART,
+    status = HttpStatus.CONFLICT,
+    message = "Product already exists in the cart"
 )

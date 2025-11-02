@@ -24,17 +24,23 @@ class CartController(
 ) {
 
     @PostMapping("/items")
-    fun addOrUpdateItem(
+    fun addItem(
         @AuthenticationPrincipal userId: UUID,
         @Valid @RequestBody request: AddToCartRequest
     ): ResponseEntity<Unit> {
-        cartService.addOrUpdateItem(
-            params = AddOrUpdateCartItemParams(
-                userId,
-                request.dukanId,
-                request.productId,
-                request.quantity
-            )
+        cartService.addItem(
+            AddOrUpdateCartItemParams(userId, request.dukanId, request.productId, request.quantity)
+        )
+        return ResponseEntity.ok().build()
+    }
+
+    @PutMapping("/items")
+    fun updateItem(
+        @AuthenticationPrincipal userId: UUID,
+        @Valid @RequestBody request: AddToCartRequest
+    ): ResponseEntity<Unit> {
+        cartService.updateItem(
+            AddOrUpdateCartItemParams(userId, request.dukanId, request.productId, request.quantity)
         )
         return ResponseEntity.ok().build()
     }
@@ -45,7 +51,7 @@ class CartController(
         @PathVariable dukanId: UUID
     ): ResponseEntity<CartResponse> {
         val cart = cartService.getCartOrThrow(userId, dukanId)
-       val cartResponse= cart.toResponse()
+        val cartResponse = cart.toResponse()
         return ResponseEntity.ok(cartResponse)
     }
 
@@ -57,7 +63,7 @@ class CartController(
         pageable: Pageable
     ): ResponseEntity<Page<CartItemResponse>> {
         val items = cartService.getCartItems(userId, dukanId, pageable)
-        val cartItemsResponse =items.map { it.toResponse() }
+        val cartItemsResponse = items.map { it.toResponse() }
         return ResponseEntity.ok(cartItemsResponse)
     }
 

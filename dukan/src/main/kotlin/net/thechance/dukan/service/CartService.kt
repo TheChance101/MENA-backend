@@ -7,6 +7,7 @@ import net.thechance.dukan.repository.CartItemRepository
 import net.thechance.dukan.repository.CartRepository
 import net.thechance.dukan.repository.DukanProductRepository
 import net.thechance.dukan.service.exception.CartNotFoundException
+import net.thechance.dukan.service.exception.ProductAlreadyInCartException
 import net.thechance.dukan.service.exception.ProductNotFoundException
 import net.thechance.dukan.service.exception.ProductNotInCartException
 import net.thechance.dukan.service.model.AddOrUpdateCartItemParams
@@ -24,17 +25,35 @@ class CartService(
 ) {
 
     @Transactional
-    fun addOrUpdateItem(params: AddOrUpdateCartItemParams): Cart {
+    fun addItem(params: AddOrUpdateCartItemParams): Cart {
         val cart = getCartByUserAndDukan(params.userId, params.dukanId)
             ?: createCart(params.userId, params.dukanId)
-        val product = getProduct(params.productId)
-        val item = cart.items.find { it.product.id == product.id }
 
-        if (item != null) {
-            item.quantity = params.quantity
-        } else {
-            cart.items.add(CartItem(product = product, quantity = params.quantity, cart = cart))
-        }
+        val product = getProduct(params.productId)
+
+        if (cart.items.any { it.product.id == product.id })
+            throw ProductAlreadyInCartException()
+
+        val newItem = CartItem(
+            product = product,
+            quantity = params.quantity,
+            cart = cart
+        )
+
+        cart.items.add(newItem)
+        cart.calculateTotalPrice()
+        return cartRepository.save(cart)
+    }
+
+    @Transactional
+    fun updateItem(params: AddOrUpdateCartItemParams): Cart {
+        val cart = getCartByUserAndDukan(params.userId, params.dukanId)
+            ?: throw CartNotFoundException()
+
+        val item = cart.items.find { it.product.id == params.productId }
+            ?: throw ProductNotInCartException()
+
+        item.quantity = params.quantity
         cart.calculateTotalPrice()
         return cartRepository.save(cart)
     }
