@@ -34,6 +34,7 @@ class UserController(
         @PathVariable userId: UUID,
         @RequestBody updateStatusRequest: UpdateUserStatusRequest
     ): ResponseEntity<Unit> {
+
         userService.updateUserStatus(
             userId = userId,
             status = updateStatusRequest.status
