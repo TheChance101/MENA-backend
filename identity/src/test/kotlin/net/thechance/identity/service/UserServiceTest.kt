@@ -4,6 +4,7 @@ import com.google.common.truth.Truth.assertThat
 import io.mockk.every
 import io.mockk.mockk
 import io.mockk.verify
+import net.thechance.identity.entity.User
 import net.thechance.identity.exception.PasswordNotUpdatedException
 import net.thechance.identity.exception.UserNotFoundException
 import net.thechance.identity.repository.UserRepository
@@ -182,6 +183,26 @@ class UserServiceTest {
 
         assertThrows(UserNotFoundException::class.java) {
             userService.updateUserLastVisitTime(id, now)
+        }
+    }
+
+    @Test
+    fun `updateUserStatus() should complete successfully when user exists`() {
+        val newStatus = User.Status.ACTIVE
+        every{ userRepository.updateStatus(id, newStatus) } returns 1
+
+        userService.updateUserStatus(id, newStatus)
+
+        verify(exactly = 1) { userRepository.updateStatus(id, newStatus) }
+    }
+
+    @Test
+    fun `updateUserStatus() should throw UserNotFoundException when user is not found`() {
+        val newStatus = User.Status.ACTIVE
+        every{ userRepository.updateStatus(id, newStatus) } returns 0
+
+        assertThrows(UserNotFoundException::class.java) {
+            userService.updateUserStatus(id, newStatus)
         }
     }
 

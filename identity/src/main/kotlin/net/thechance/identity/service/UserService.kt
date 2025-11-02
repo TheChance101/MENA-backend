@@ -1,5 +1,6 @@
 package net.thechance.identity.service
 
+import jakarta.transaction.Transactional
 import net.thechance.identity.entity.User
 import net.thechance.identity.exception.PasswordNotUpdatedException
 import net.thechance.identity.exception.UserNotFoundException
@@ -87,13 +88,25 @@ class UserService(
         return userRepository.findByFullNameOrPhoneNumber(query, pageable)
     }
 
+    @Transactional
     fun updateUserLastLoginTime(userId: UUID, time: LocalDateTime){
         val updatedUsersCount = userRepository.updateLastLoginTime(userId, time)
         if (updatedUsersCount == 0) throw UserNotFoundException("User with id: $userId not found")
     }
 
+    @Transactional
     fun updateUserLastVisitTime(userId: UUID, time: LocalDateTime){
         val updatedUsersCount = userRepository.updateLastVisitTime(userId, time)
         if (updatedUsersCount == 0) throw UserNotFoundException("User with id: $userId not found")
+    }
+
+    @Transactional
+    fun updateUserStatus(userId: UUID, status: User.Status) {
+        val updatedUserCount = userRepository.updateStatus(userId, status)
+        if (updatedUserCount == 0) throw UserNotFoundException("User with id: $userId not found")
+        /*
+        todo: should send event to notify other modules about user status change
+         and if the user is blocked call logout function to invalidate his access token
+         */
     }
 }

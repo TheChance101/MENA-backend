@@ -38,4 +38,11 @@ interface UserRepository: JpaRepository<User, UUID> {
         @Param("time") time: LocalDateTime
     ): Int
 
+    @Modifying
+    @Query("UPDATE User u SET u.status = :status WHERE u.id = :userId")
+    fun updateStatus(
+        @Param("userId") userId: UUID,
+        @Param("status") status: User.Status
+    ): Int
+
 }

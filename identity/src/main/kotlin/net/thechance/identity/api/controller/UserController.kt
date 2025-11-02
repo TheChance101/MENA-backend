@@ -2,14 +2,13 @@ package net.thechance.identity.api.controller
 
 import net.thechance.identity.api.dto.ManagedUserResponse
 import net.thechance.identity.api.dto.PageResponse
+import net.thechance.identity.api.dto.UpdateUserStatusRequest
 import net.thechance.identity.api.mapper.toUserResponsePage
 import net.thechance.identity.service.UserService
 import org.springframework.data.domain.Pageable
 import org.springframework.http.ResponseEntity
-import org.springframework.web.bind.annotation.GetMapping
-import org.springframework.web.bind.annotation.RequestMapping
-import org.springframework.web.bind.annotation.RequestParam
-import org.springframework.web.bind.annotation.RestController
+import org.springframework.web.bind.annotation.*
+import java.util.*
 
 @RestController("identityUserController")
 @RequestMapping("/identity/admin/users")
@@ -28,5 +27,18 @@ class UserController(
         ).toUserResponsePage()
 
         return ResponseEntity.ok(response)
+    }
+
+    @PatchMapping("/{userId}/status")
+    fun updateUserStatus(
+        @PathVariable userId: UUID,
+        @RequestBody updateStatusRequest: UpdateUserStatusRequest
+    ): ResponseEntity<Unit> {
+        userService.updateUserStatus(
+            userId = userId,
+            status = updateStatusRequest.status
+        )
+
+        return ResponseEntity.ok().build()
     }
 }
