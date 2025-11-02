@@ -9,12 +9,17 @@ import org.springframework.data.domain.Page
 import org.springframework.data.domain.PageRequest
 import org.springframework.data.domain.Pageable
 import org.springframework.stereotype.Service
+import org.springframework.transaction.annotation.Transactional
 
 @Service
 class DukanSearchService(
     private val searchRepository: DukanSearchRepository,
     private val dukanRepository: DukanRepository
 ) {
+
+    fun indexIsEmpty(): Boolean = searchRepository.count() == 0L
+
+    @Transactional(readOnly = true)
     fun seed() :Int{
         val pageSize = 100
         var page = 0

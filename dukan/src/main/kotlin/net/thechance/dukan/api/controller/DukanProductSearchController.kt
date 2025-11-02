@@ -16,11 +16,6 @@ class DukanProductSearchController(
     private val searchService: DukanProductSearchService
 ) {
 
-    @PostMapping("/seed")
-    fun seed():ResponseEntity<String>{
-        val totalDukanProductsIndexed = searchService.seed()
-        return ResponseEntity.status(HttpStatus.CREATED).body("Indexed $totalDukanProductsIndexed")
-    }
 
 
 
