@@ -35,10 +35,10 @@ private fun User.toManagedUserResponse() = ManagedUserResponse(
 
 fun Page<User>.toUserResponsePage(): PageResponse<ManagedUserResponse> {
     return PageResponse(
-        items = this.content.map(User::toManagedUserResponse),
-        page = this.number,
-        pageSize = this.size,
-        totalElements = this.totalElements,
-        totalPages = this.totalPages
+        items = content.map(User::toManagedUserResponse),
+        page = number,
+        pageSize = size,
+        totalElements = totalElements,
+        totalPages = totalPages
     )
 }
