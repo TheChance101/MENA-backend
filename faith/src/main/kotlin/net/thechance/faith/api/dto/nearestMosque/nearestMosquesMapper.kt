@@ -1,7 +1,7 @@
 package net.thechance.faith.api.dto.nearestMosque
 
 import net.thechance.faith.entity.Mosque
-import java.time.LocalDate
+import java.time.Instant
 
 fun MosqueRequest.toMosque(): Mosque {
     return Mosque(
@@ -9,7 +9,8 @@ fun MosqueRequest.toMosque(): Mosque {
         address = address,
         latitude = latitude,
         longitude = longitude,
-        createdAt = LocalDate.now(),
+        imageUrl = imageUrl,
+        createdAt = Instant.now(),
     )
 }
 
@@ -20,7 +21,7 @@ fun Mosque.toMosqueResponse(): MosqueResponse {
         address = address,
         latitude = latitude,
         longitude = longitude,
-        imageUrl = imageUrls,
+        imageUrl = imageUrl,
         createdAt = createdAt
     )
 }
