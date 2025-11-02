@@ -9,15 +9,15 @@ import jakarta.persistence.Table
 import java.time.Instant
 import java.util.UUID
 
-@Table(name = "favorite_product", schema = "dukan")
+@Table(name = "favorite_products", schema = "dukan")
 @Entity
 data class FavoriteProduct(
     @Id
     @GeneratedValue(strategy = GenerationType.UUID)
     val id: UUID = UUID.randomUUID(),
 
-    @Column(name = "owner_id", nullable = false)
-    val ownerId: UUID,
+    @Column(name = "user_id", nullable = false)
+    val userId: UUID,
 
     @Column(name = "product_id", nullable = false)
     val productId: UUID,
