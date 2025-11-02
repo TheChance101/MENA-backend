@@ -6,10 +6,17 @@ import jakarta.persistence.GeneratedValue
 import jakarta.persistence.GenerationType
 import jakarta.persistence.Id
 import jakarta.persistence.Table
+import jakarta.persistence.UniqueConstraint
 import java.time.Instant
 import java.util.UUID
 
-@Table(name = "favorite_products", schema = "dukan")
+@Table(
+    name = "favorite_products",
+    schema = "dukan",
+    uniqueConstraints = [UniqueConstraint(
+        columnNames = ["user_id", "product_id"]
+    )]
+)
 @Entity
 data class FavoriteProduct(
     @Id
