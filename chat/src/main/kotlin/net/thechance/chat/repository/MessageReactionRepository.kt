@@ -6,8 +6,6 @@ import org.springframework.transaction.annotation.Transactional
 import java.util.*
 
 interface MessageReactionRepository : JpaRepository<MessageReaction, UUID> {
-    fun findByMessageIdIn(messageIds: List<UUID>): List<MessageReaction>
-
     fun findByMessageIdAndUserId(messageId: UUID, userId: UUID): MessageReaction?
 
     @Transactional

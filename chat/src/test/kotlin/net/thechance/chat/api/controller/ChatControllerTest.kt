@@ -126,7 +126,7 @@ class ChatControllerTest {
 
         val page = PageImpl(messagesWithReactions, pageable, messagesWithReactions.size.toLong())
 
-        every { chatService.getAllChatMessagesWithReactions(chatId, pageable) } returns page
+        every { chatService.getAllChatMessagesByChatId(chatId, pageable) } returns page
 
         val response = controller.getChatHistory(chatId, UUID.randomUUID(), pageable)
 

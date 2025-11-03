@@ -50,7 +50,7 @@ class ChatController(
         pageable: Pageable
     ): ResponseEntity<PagedResponse<MessageResponse>> {
         return ResponseEntity.ok(
-            chatService.getAllChatMessagesWithReactions(chatId, pageable)
+            chatService.getAllChatMessagesByChatId(chatId, pageable)
                 .toPagedMessageResponse(userId)
         )
     }

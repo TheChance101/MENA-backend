@@ -2,7 +2,6 @@ package net.thechance.chat.api.dto
 
 import net.thechance.chat.entity.Message
 import net.thechance.chat.entity.MessageReaction
-import net.thechance.chat.service.model.MessageWithReactions
 import org.springframework.data.domain.Page
 import java.time.Instant
 import java.util.*
@@ -31,28 +30,14 @@ fun Message.toResponse(requesterId: UUID): MessageResponse {
         chatId = chatId,
         text = text,
         imageUrl = imageUrl,
+        reactions = reactions.map(MessageReaction::toResponse),
         sendAt = sentAt,
         isRead = isRead,
         isMine = requesterId == senderId
     )
 }
 
-fun MessageWithReactions.toResponse(requesterId: UUID): MessageResponse {
-
-    return MessageResponse(
-        id = message.id,
-        senderId = message.senderId,
-        chatId = message.chatId,
-        text = message.text,
-        imageUrl = message.imageUrl,
-        reactions = reactions.map (MessageReaction::toResponse),
-        sendAt = message.sentAt,
-        isRead = message.isRead,
-        isMine = requesterId == message.senderId
-    )
-}
-
-fun Page<MessageWithReactions>.toPagedMessageResponse(requesterId: UUID): PagedResponse<MessageResponse> {
+fun Page<Message>.toPagedMessageResponse(requesterId: UUID): PagedResponse<MessageResponse> {
     return PagedResponse(
         data = this.content.map { it.toResponse(requesterId) },
         pageNumber = this.number,

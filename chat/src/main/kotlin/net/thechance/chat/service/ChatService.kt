@@ -99,21 +99,9 @@ class ChatService(
             ?: throw NotFoundException("no message reactions was found")
     }
 
-    fun getAllChatMessages(chatId: UUID, pageable: Pageable) =
-        messageRepository.getAllByChatIdOrderBySentAtDesc(chatId, pageable)
 
-    fun getAllChatMessagesWithReactions(chatId: UUID, pageable: Pageable): Page<MessageWithReactions> {
-        val messagesPage = messageRepository.getAllByChatIdOrderBySentAtDesc(chatId, pageable)
-        if (messagesPage.isEmpty) return Page.empty(pageable)
-
-        val messageIds = messagesPage.content.map { it.id }
-        val reactions = messageReactionRepository.findByMessageIdIn(messageIds)
-        val reactionsByMessageId = reactions.groupBy { it.messageId }
-
-        return messagesPage.map { message ->
-            val reactionsForMessage = reactionsByMessageId[message.id] ?: emptyList()
-            MessageWithReactions(message, reactionsForMessage)
-        }
+    fun getAllChatMessagesByChatId(chatId: UUID, pageable: Pageable): Page<Message> {
+        return messageRepository.getAllByChatIdOrderBySentAtDesc(chatId, pageable)
     }
 
     fun markChatMessagesAsRead(chatId: UUID, userId: UUID) {
