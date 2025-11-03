@@ -2,6 +2,7 @@ package net.thechance.dukan.service
 
 import jakarta.persistence.EntityNotFoundException
 import jakarta.transaction.Transactional
+import net.thechance.dukan.entity.Dukan
 import net.thechance.dukan.entity.DukanProduct
 import net.thechance.dukan.repository.DukanProductRepository
 import net.thechance.dukan.repository.DukanShelfRepository
@@ -9,9 +10,13 @@ import net.thechance.dukan.service.exception.DukanProductCreationFailedException
 import net.thechance.dukan.service.exception.ProductNameAlreadyTakenException
 import net.thechance.dukan.service.exception.ProductNotFoundException
 import net.thechance.dukan.service.model.DukanProductCreationParams
+import net.thechance.events.publisher.MenaEventPublisher
 import net.thechance.dukan.service.model.DukanProductUpdateParams
+import net.thechance.events.dukan.DukanEvent
+import net.thechance.events.dukan.ProductEvent
 import org.springframework.data.domain.Page
 import org.springframework.data.domain.Pageable
+import org.springframework.data.elasticsearch.core.geo.GeoPoint
 import org.springframework.stereotype.Service
 import org.springframework.web.multipart.MultipartFile
 import java.util.*
@@ -23,10 +28,11 @@ class DukanProductService(
     private val dukanShelfRepository: DukanShelfRepository,
     private val dukanService: DukanService,
     private val imageStorageService: ImageStorageService,
+    private val eventPublisher: MenaEventPublisher
 ) {
     @Transactional
     fun uploadProductImages(productId: UUID, files: List<MultipartFile>): List<String> {
-        val product = dukanProductRepository.findById(productId)
+        val product: DukanProduct = dukanProductRepository.findById(productId)
             .orElseThrow {
                 ProductNotFoundException()
             }
@@ -43,12 +49,43 @@ class DukanProductService(
         } catch (e: Exception) {
             //Uploading the images is part of creating the product. If something went wrong while uploading the images,
             //We need to delete the product from the database.
-            dukanProductRepository.delete(product)
+            dukanProductRepository.delete(product).also {
+                eventPublisher.publish(
+                    ProductEvent.Delete(product.id.toString())
+                )
+            }
+
             throw e
         }
-        dukanProductRepository.save(product.copy(imageUrls = imageUrls))
+        dukanProductRepository.save(product.copy(imageUrls = imageUrls)).also {product->
+            eventPublisher.publish(
+                event = product.toProductSaveEvent()
+            )
+            if (product.dukan.shelves.isNotEmpty() && product.dukan.status == Dukan.Status.APPROVED){
+                eventPublisher.publish(
+                    product.dukan.toDukanSaveEvent()
+                )
+            }
+        }
         return imageUrls
     }
+
+    private fun Dukan.toDukanSaveEvent() = DukanEvent.Save(
+        id = this.id.toString(),
+        name = this.name,
+        imageUrl = this.imageUrl,
+        status = DukanEvent.Save.Status.APPROVED,
+        location = GeoPoint(this.latitude, this.longitude)
+    )
+
+    private fun DukanProduct.toProductSaveEvent() = ProductEvent.Save(
+        id = this.id.toString(),
+        name = this.name,
+        description = this.description,
+        mainImageUrl = this.imageUrls.firstOrNull().orEmpty(),
+        price = this.price,
+        shelfName = this.shelf.title
+    )
 
     fun createProduct(params: DukanProductCreationParams): UUID {
         try {

@@ -12,6 +12,8 @@ import net.thechance.dukan.repository.DukanCategoryRepository
 import net.thechance.dukan.repository.DukanColorRepository
 import net.thechance.dukan.repository.DukanRepository
 import net.thechance.dukan.service.model.DukanCreationParams
+import net.thechance.events.dukan.DukanSearchEvent
+import net.thechance.events.publisher.MenaEventPublisher
 import org.springframework.data.repository.findByIdOrNull
 import org.springframework.data.domain.Page
 import org.springframework.data.domain.Pageable
@@ -25,7 +27,8 @@ class DukanService(
     private val dukanRepository: DukanRepository,
     private val dukanColorRepository: DukanColorRepository,
     private val imageStorageService: ImageStorageService,
-    private val dukanCategoryRepository: DukanCategoryRepository
+    private val dukanCategoryRepository: DukanCategoryRepository,
+    private val eventPublisher: MenaEventPublisher
 ) {
     fun getAllStyles(): EnumEntries<Dukan.Style> = Dukan.Style.entries
 
