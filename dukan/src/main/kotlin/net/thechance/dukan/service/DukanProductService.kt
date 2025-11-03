@@ -75,7 +75,8 @@ class DukanProductService(
         name = this.name,
         imageUrl = this.imageUrl,
         status = DukanEvent.Save.Status.APPROVED,
-        location = GeoPoint(this.latitude, this.longitude)
+        lat = this.latitude,
+        lng = this.longitude
     )
 
     private fun DukanProduct.toProductSaveEvent() = ProductEvent.Save(
