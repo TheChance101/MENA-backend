@@ -60,11 +60,11 @@ class AttachmentStorageService(
         try {
             val finalFileName = "${fileName}_${LocalDateTime.now()}.$extension"
             val key = "audio/$folderName/$finalFileName"
-            val putReq = createObjectRequest(key, mimeType)
-            menaS3Client.putObject(putReq, RequestBody.fromBytes(file.bytes))
+            val putRequest = createObjectRequest(key, mimeType)
+            menaS3Client.putObject(putRequest, RequestBody.fromBytes(file.bytes))
             return "${props.cdnEndpoint}/$key"
-        } catch (_: Exception) {
-            throw AudioUploadFailedException()
+        } catch (e: Exception) {
+            throw AudioUploadFailedException("Failed to upload audio file: ${e.message}")
         }
     }
 
