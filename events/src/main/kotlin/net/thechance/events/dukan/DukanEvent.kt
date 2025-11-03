@@ -1,7 +1,6 @@
 package net.thechance.events.dukan
 
 import net.thechance.events.MenaEvent
-import org.springframework.data.elasticsearch.core.geo.GeoPoint
 
 sealed class DukanEvent : MenaEvent {
     data class Save(
@@ -9,7 +8,8 @@ sealed class DukanEvent : MenaEvent {
         val name: String,
         val status: Status,
         val imageUrl:String?,
-        val location: GeoPoint,
+        val lat:Double,
+        val lng:Double
     ):DukanEvent() {
         enum class Status {
             APPROVED,

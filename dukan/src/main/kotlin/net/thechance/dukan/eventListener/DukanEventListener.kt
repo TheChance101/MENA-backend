@@ -4,6 +4,7 @@ import net.thechance.dukan.repository.DukanSearchRepository
 import net.thechance.dukan.search.document.DukanDocument
 import net.thechance.events.dukan.DukanEvent
 import org.springframework.context.event.EventListener
+import org.springframework.data.elasticsearch.core.geo.GeoPoint
 import org.springframework.scheduling.annotation.Async
 import org.springframework.stereotype.Component
 
@@ -27,7 +28,7 @@ class DukanEventListener(
             name = event.name,
             status = event.status.toDukanStatus(),
             imageUrl = event.imageUrl,
-            location = event.location
+            location = GeoPoint(event.lat,event.lng)
         )
          dukanSearchRepository.save(dukanDocument)
     }
