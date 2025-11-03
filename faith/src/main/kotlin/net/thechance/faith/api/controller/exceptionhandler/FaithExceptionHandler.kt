@@ -49,16 +49,6 @@ class FaithExceptionHandler {
         )
     }
 
-    private fun createErrorResponse(
-        message: String,
-        exception: Exception,
-        status: HttpStatus
-    ): ResponseEntity<ApiErrorResponse> {
-        logger.error(message, exception)
-        val apiError = ApiErrorResponse(status = status.value(), message = message)
-        return ResponseEntity(apiError, status)
-    }
-
     @ExceptionHandler(InvalidImageFormatException::class)
     fun onInvalidImageFormatError(exception: InvalidImageFormatException): ResponseEntity<ApiErrorResponse> {
         return createErrorResponse(
@@ -84,5 +74,15 @@ class FaithExceptionHandler {
             exception = exception,
             status = HttpStatus.BAD_REQUEST
         )
+    }
+
+    private fun createErrorResponse(
+        message: String,
+        exception: Exception,
+        status: HttpStatus
+    ): ResponseEntity<ApiErrorResponse> {
+        logger.error(message, exception)
+        val apiError = ApiErrorResponse(status = status.value(), message = message)
+        return ResponseEntity(apiError, status)
     }
 }
