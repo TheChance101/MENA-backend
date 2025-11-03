@@ -85,9 +85,8 @@ class ChatController(
     @PostMapping("/audio")
     fun sendMessageAudio(
         @ModelAttribute request: MessageAudioRequest,
-        principal: Principal
+        @AuthenticationPrincipal senderId: UUID,
     ): ResponseEntity<MessageResponse> {
-        val senderId = UUID.fromString(principal.name)
         val messageAudioArgs = request.toRequestArgs(senderId)
         val message = chatService.saveMessageAudio(messageAudioArgs)
         chatService.getChatUsersIds(chatId = request.chatId).forEach { chatParticipantId ->
