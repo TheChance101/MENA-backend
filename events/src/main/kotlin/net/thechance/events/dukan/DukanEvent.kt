@@ -1,20 +1,34 @@
 package net.thechance.events.dukan
 
 import net.thechance.events.MenaEvent
-import java.util.UUID
+import org.springframework.data.elasticsearch.core.geo.GeoPoint
 
-data class DukanSearchEvent(
-    val id: UUID,
-    val index:SearchIndex,
-    val action: Action
-) : MenaEvent {
-    enum class Action {
-        SAVE,
-        DELETE
+sealed class DukanEvent : MenaEvent {
+    data class Save(
+        val id: String,
+        val name: String,
+        val status: Status,
+        val imageUrl:String?,
+        val location: GeoPoint
+    ):DukanEvent() {
+        enum class Status {
+            APPROVED,
+            REJECTED,
+            PENDING,
+        }
     }
-    enum class SearchIndex{
-        DUKAN_INDEX,
-        PRODUCT_INDEX
-    }
+    data class Delete(val id:String):DukanEvent()
 }
 
+sealed class ProductEvent:MenaEvent{
+    data class Save(
+        val id: String,
+        val name: String,
+        val price: Double,
+        val description: String,
+        val mainImageUrl: String,
+        val shelfName: String
+    ):ProductEvent()
+
+    data class Delete(val id:String):ProductEvent()
+}

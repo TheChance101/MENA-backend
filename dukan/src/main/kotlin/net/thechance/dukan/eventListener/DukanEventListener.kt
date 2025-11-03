@@ -1,13 +1,15 @@
 package net.thechance.dukan.eventListener
 
-import net.thechance.dukan.entity.Dukan
-import net.thechance.dukan.entity.DukanProduct
 import net.thechance.dukan.repository.DukanProductRepository
 import net.thechance.dukan.repository.DukanProductSearchRepository
 import net.thechance.dukan.repository.DukanRepository
 import net.thechance.dukan.repository.DukanSearchRepository
+import net.thechance.dukan.search.document.DukanDocument
+import net.thechance.dukan.search.document.ProductDocument
 import net.thechance.dukan.search.mpper.toDocument
+import net.thechance.events.dukan.DukanEvent
 import net.thechance.events.dukan.DukanSearchEvent
+import net.thechance.events.dukan.ProductEvent
 import org.springframework.context.event.EventListener
 import org.springframework.scheduling.annotation.Async
 import org.springframework.stereotype.Component
@@ -23,36 +25,44 @@ class DukanEventListener(
 
     @EventListener
     @Async
-    fun onDukanSearchEvent(event: DukanSearchEvent) {
-        when (event.index) {
-            DukanSearchEvent.SearchIndex.DUKAN_INDEX -> handleDukanSearchEvent(event.id, event.action)
-            DukanSearchEvent.SearchIndex.PRODUCT_INDEX -> handleProductSearchEvent(event.id, event.action)
+    fun onDukanSearchEvent(event: DukanEvent) {
+        when(event){
+            is DukanEvent.Delete -> dukanSearchRepository.deleteById(event.id)
+            is DukanEvent.Save -> saveDukanDocument(event)
         }
     }
 
-    private fun handleDukanSearchEvent(dukanId: UUID, action: DukanSearchEvent.Action) {
-        when (action) {
-            DukanSearchEvent.Action.SAVE -> saveDukanDocument(dukanId)
-            DukanSearchEvent.Action.DELETE -> dukanSearchRepository.deleteById(dukanId.toString())
+    @EventListener
+    @Async
+    fun onProductEventListener(event: ProductEvent){
+        when(event){
+            is ProductEvent.Delete -> productSearchRepository.deleteById(event.id)
+            is ProductEvent.Save -> saveProductDocument(event)
         }
     }
 
-    private fun saveDukanDocument(dukanId: UUID) {
-        val dukan = dukanRepository.findById(dukanId).orElse(null) ?: return
-        val hasShelfs = dukan.shelves.isNotEmpty()
-        val isApproved = dukan.status == Dukan.Status.APPROVED
-        if (hasShelfs && isApproved) dukanSearchRepository.save(dukan.toDocument())
+
+    private fun saveDukanDocument(event: DukanEvent.Save) {
+        val dukanDocument = DukanDocument(
+            id = event.id,
+            name = event.name,
+            status = event.status.toDukanStatus(),
+            imageUrl = event.imageUrl,
+            location = event.location
+        )
+         dukanSearchRepository.save(dukanDocument)
     }
 
-    private fun handleProductSearchEvent(productId: UUID, action: DukanSearchEvent.Action) {
-        when (action) {
-            DukanSearchEvent.Action.SAVE -> saveProductDocument(productId)
-            DukanSearchEvent.Action.DELETE -> productSearchRepository.deleteById(productId.toString())
-        }
-    }
 
-    private fun saveProductDocument(productId: UUID) {
-        val product = productRepository.findById(productId).orElse(null) ?: return
-        productSearchRepository.save(product.toDocument())
+    private fun saveProductDocument(event: ProductEvent.Save) {
+        val productDocument = ProductDocument(
+            id = event.id,
+            name = event.name,
+            price = event.price,
+            description = event.description,
+            mainImageUrl = event.mainImageUrl,
+            shelfName = event.shelfName
+        )
+        productSearchRepository.save(productDocument)
     }
 }
