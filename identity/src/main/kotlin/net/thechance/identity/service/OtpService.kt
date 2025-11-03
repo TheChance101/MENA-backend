@@ -5,7 +5,7 @@ import net.thechance.identity.exception.InvalidOtpException
 import net.thechance.identity.exception.OtpExpiredException
 import net.thechance.identity.exception.UnauthorizedException
 import net.thechance.identity.repository.OtpLogRepository
-import net.thechance.identity.service.otpGenerator.OtpGeneratorService
+import net.thechance.identity.service.otpGenerator.OtpGenerator
 import org.springframework.scheduling.annotation.Scheduled
 import org.springframework.stereotype.Service
 import java.time.Instant
@@ -13,7 +13,7 @@ import java.util.*
 
 @Service
 class OtpService(
-    private val otpGeneratorService: OtpGeneratorService,
+    private val otpGeneratorService: OtpGenerator,
     private val otpLogRepository: OtpLogRepository
 ) {
     fun createOtp(phoneNumber: String): OtpLog {
