@@ -79,4 +79,16 @@ class UserService(
             userRepository.save(user.copy(imageUrl = null))
         }
     }
+
+    fun userExistsByUserName(username: String): Boolean {
+        return userRepository.existsByUsername(username)
+    }
+
+    fun userExistsByPhoneNumber(phoneNumber: String): Boolean {
+        return userRepository.existsByPhoneNumber(phoneNumber)
+    }
+
+    fun saveUser(user: User): User{
+        return userRepository.save(user)
+    }
 }
