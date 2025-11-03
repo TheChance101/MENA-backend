@@ -12,7 +12,6 @@ import net.thechance.dukan.repository.DukanCategoryRepository
 import net.thechance.dukan.repository.DukanColorRepository
 import net.thechance.dukan.repository.DukanRepository
 import net.thechance.dukan.service.model.DukanCreationParams
-import net.thechance.events.dukan.DukanSearchEvent
 import net.thechance.events.publisher.MenaEventPublisher
 import org.springframework.data.repository.findByIdOrNull
 import org.springframework.data.domain.Page
