@@ -1,4 +1,4 @@
-package net.thechance.identity.api.controller
+package net.thechance.identity.api.controller.profile
 
 import jakarta.validation.Valid
 import net.thechance.identity.api.dto.UpdateProfileRequest

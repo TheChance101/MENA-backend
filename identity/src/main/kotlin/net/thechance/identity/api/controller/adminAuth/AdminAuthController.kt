@@ -1,4 +1,4 @@
-package net.thechance.identity.api.controller
+package net.thechance.identity.api.controller.adminAuth
 
 import jakarta.validation.Valid
 import net.thechance.identity.api.dto.AdminAuthRequest

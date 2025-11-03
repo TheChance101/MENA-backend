@@ -1,4 +1,4 @@
-package net.thechance.identity.api.controller
+package net.thechance.identity.api.controller.identity
 
 import jakarta.servlet.http.HttpServletRequest
 import jakarta.validation.Valid
