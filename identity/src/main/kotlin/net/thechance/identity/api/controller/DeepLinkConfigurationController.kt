@@ -1,4 +1,4 @@
-package net.thechance.identity.api.controller;
+package net.thechance.identity.api.controller
 
 import org.springframework.core.io.ClassPathResource
 import org.springframework.http.MediaType
