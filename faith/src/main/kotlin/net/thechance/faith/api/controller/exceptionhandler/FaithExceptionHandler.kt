@@ -1,11 +1,7 @@
 package net.thechance.faith.api.controller.exceptionhandler
 
 import net.thechance.faith.api.dto.error.ApiErrorResponse
-import net.thechance.faith.exception.AyahBookmarkNotFoundException
-import net.thechance.faith.exception.FailedToGetPrayerTimesException
-import net.thechance.faith.exception.ImageUploadFailedException
-import net.thechance.faith.exception.InvalidDateFormatException
-import net.thechance.faith.exception.InvalidImageFormatException
+import net.thechance.faith.exception.*
 import org.slf4j.LoggerFactory
 import org.springframework.http.HttpStatus
 import org.springframework.http.ResponseEntity
@@ -57,7 +53,7 @@ class FaithExceptionHandler {
     @ExceptionHandler(InvalidImageFormatException::class)
     fun onInvalidImageFormatError(exception: InvalidImageFormatException): ResponseEntity<ApiErrorResponse> {
         return createErrorResponse(
-            message ="Invalid picture format",
+            message = "Invalid picture format",
             exception = exception,
             status = HttpStatus.BAD_REQUEST,
         )
@@ -72,4 +68,12 @@ class FaithExceptionHandler {
         )
     }
 
+    @ExceptionHandler(InvalidRequestParameterException::class)
+    fun onInvalidRequestParam(exception: InvalidRequestParameterException): ResponseEntity<ApiErrorResponse> {
+        return createErrorResponse(
+            message = exception.message ?: "Invalid request parameter.",
+            exception = exception,
+            status = HttpStatus.BAD_REQUEST
+        )
+    }
 }
