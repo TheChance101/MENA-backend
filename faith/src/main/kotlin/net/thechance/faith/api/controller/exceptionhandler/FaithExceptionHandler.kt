@@ -40,6 +40,15 @@ class FaithExceptionHandler {
         )
     }
 
+    @ExceptionHandler(ReciterNotFoundException::class)
+    fun onReciterNotFoundError(exception: ReciterNotFoundException): ResponseEntity<ApiErrorResponse> {
+        return createErrorResponse(
+            message = "Reciter not found.",
+            exception = exception,
+            status = HttpStatus.NOT_FOUND,
+        )
+    }
+
     private fun createErrorResponse(
         message: String,
         exception: Exception,
