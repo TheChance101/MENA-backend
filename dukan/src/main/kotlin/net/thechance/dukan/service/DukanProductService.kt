@@ -18,7 +18,6 @@ import org.springframework.data.domain.Pageable
 import org.springframework.stereotype.Service
 import org.springframework.web.multipart.MultipartFile
 import java.lang.Exception
-import java.time.Instant
 import java.util.UUID
 
 @Service
@@ -96,11 +95,6 @@ class DukanProductService(
         }
     }
 
-    fun getFavoriteProductsForUser(userId: UUID, productIds: List<UUID>): List<FavoriteProduct> {
-        if (productIds.isEmpty()) return emptyList()
-        return favoriteProductRepository.findAllByUserIdAndProductIdIn(userId, productIds)
-    }
-
     fun getProductById(productId: UUID): DukanProduct {
         return dukanProductRepository.findById(productId).orElseThrow {
             ProductNotFoundException()
@@ -114,7 +108,8 @@ class DukanProductService(
     fun toggleFavoriteStatus(userId: UUID, productId: UUID): Boolean {
         val favorite = favoriteProductRepository.findByUserIdAndProductId(userId, productId)
         return if (favorite != null) {
-            updateFavoriteStatus(favorite)
+            favoriteProductRepository.deleteById(favorite.id)
+            false
         } else {
             createFavoriteEntry(userId, productId)
         }
@@ -123,20 +118,10 @@ class DukanProductService(
     private fun createFavoriteEntry(userId: UUID, productId: UUID): Boolean {
         val newFavorite = FavoriteProduct(
             userId = userId,
-            productId = productId,
-            isFavorite = true
+            productId = productId
         )
         favoriteProductRepository.save(newFavorite)
         return true
-    }
-
-    private fun updateFavoriteStatus(favorite: FavoriteProduct): Boolean {
-        val updatedFavorite = favorite.copy(
-            isFavorite = !favorite.isFavorite,
-            updatedAt = Instant.now()
-        )
-        favoriteProductRepository.save(updatedFavorite)
-        return updatedFavorite.isFavorite
     }
 
     @Transactional

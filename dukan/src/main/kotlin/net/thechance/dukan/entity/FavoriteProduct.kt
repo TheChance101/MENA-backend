@@ -29,9 +29,6 @@ data class FavoriteProduct(
     @Column(name = "product_id", nullable = false)
     val productId: UUID,
 
-    @Column(name = "is_favorite", nullable = false)
-    val isFavorite: Boolean,
-
     @Column(name = "created_at", nullable = false)
     val createdAt: Instant = Instant.now(),
 
