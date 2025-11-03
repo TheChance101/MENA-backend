@@ -134,16 +134,16 @@ class ChatController(
         @PathVariable chatId: UUID
     ): ResponseEntity<Unit> {
         chatService.deleteChatById(chatId)
-        sendEventToUsers(chatId, DeleteChatResponse(chatId))
+        sendMessageToUsers(chatId, DeleteChatResponse(chatId))
         return ResponseEntity.ok().body(Unit)
     }
 
-    private fun sendEventToUsers(chatId: UUID, eventPayload: Any) {
+    private fun sendMessageToUsers(chatId: UUID, payload: Any) {
         chatService.getChatUsersIds(chatId).forEach { chatParticipantId ->
             messagingTemplate.convertAndSendToUser(
                 chatParticipantId.toString(),
                 PRIVATE_MESSAGES,
-                eventPayload
+                payload
             )
         }
     }
