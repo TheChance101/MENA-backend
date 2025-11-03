@@ -19,20 +19,20 @@ fun Address.toResponse(): AddressResponse {
 
 fun CreateAddressRequest.toAddressModel(): AddressModel {
     return AddressModel(
-        latitude = this.latitude,
-        longitude = this.longitude,
-        addressLine = this.addressLine,
-        addressType = this.addressType,
+        latitude = latitude,
+        longitude = longitude,
+        addressLine = addressLine,
+        addressType = addressType,
         isActive = false
     )
 }
 
 fun UpdateAddressRequest.toAddressModel(): AddressModel {
     return AddressModel(
-        latitude = this.latitude,
-        longitude = this.longitude,
-        addressLine = this.addressLine,
-        addressType = this.addressType,
-        isActive = this.isActive
+        latitude = latitude,
+        longitude = longitude,
+        addressLine = addressLine,
+        addressType = addressType,
+        isActive = isActive
     )
 }
