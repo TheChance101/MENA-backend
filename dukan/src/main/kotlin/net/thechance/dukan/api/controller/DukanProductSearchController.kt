@@ -15,10 +15,6 @@ import org.springframework.web.bind.annotation.*
 class DukanProductSearchController(
     private val searchService: DukanProductSearchService
 ) {
-
-
-
-
     @GetMapping
     fun search(
         @RequestParam query:String,
