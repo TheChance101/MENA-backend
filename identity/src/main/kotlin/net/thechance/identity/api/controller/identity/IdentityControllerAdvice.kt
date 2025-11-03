@@ -137,4 +137,31 @@ class IdentityControllerAdvice {
             .status(HttpStatus.UNAUTHORIZED)
             .body(errorResponse)
     }
+
+    @ExceptionHandler(UserAlreadyExistsException::class)
+    fun handleUserAlreadyExistsException(exception: UserAlreadyExistsException): ResponseEntity<ErrorResponse> {
+        logger.error("User Already Exists: ${exception.message}", exception)
+        val errorResponse = ErrorResponse(exception.message ?: "User Already Exists")
+        return ResponseEntity
+            .status(HttpStatus.CONFLICT)
+            .body(errorResponse)
+    }
+
+    @ExceptionHandler(InvalidImageException::class)
+    fun handleInvalidImageException(exception: InvalidImageException): ResponseEntity<ErrorResponse> {
+        logger.error("Invalid image: ${exception.message}", exception)
+        val errorResponse = ErrorResponse("Image extension ${exception.extension} is not supported")
+        return ResponseEntity
+            .status(HttpStatus.BAD_REQUEST)
+            .body(errorResponse)
+    }
+
+    @ExceptionHandler(UnknownErrorException::class)
+    fun handleException(exception: Exception): ResponseEntity<ErrorResponse> {
+        logger.error(exception.message, exception)
+        val errorResponse = ErrorResponse("Internal server error")
+        return ResponseEntity
+            .status(HttpStatus.INTERNAL_SERVER_ERROR)
+            .body(errorResponse)
+    }
 }

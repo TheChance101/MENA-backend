@@ -9,14 +9,16 @@ import net.thechance.identity.api.dto.otp.RequestOtpRequest
 import net.thechance.identity.api.dto.otp.RequestOtpResponse
 import net.thechance.identity.api.dto.otp.VerifyOtpRequest
 import net.thechance.identity.api.dto.password.ResetPasswordRequest
+import net.thechance.identity.api.dto.register.CheckUserExistenceRequest
+import net.thechance.identity.api.dto.register.RegisterUserRequest
+import net.thechance.identity.api.mapper.toRegisterUserModel
 import net.thechance.identity.exception.InvalidIpException
 import net.thechance.identity.service.AuthenticationService
+import net.thechance.identity.service.RegisterService
 import net.thechance.identity.service.ResetPasswordService
+import net.thechance.identity.service.UserService
 import org.springframework.http.ResponseEntity
-import org.springframework.web.bind.annotation.PostMapping
-import org.springframework.web.bind.annotation.RequestBody
-import org.springframework.web.bind.annotation.RequestMapping
-import org.springframework.web.bind.annotation.RestController
+import org.springframework.web.bind.annotation.*
 import java.util.*
 
 @RestController
@@ -24,6 +26,8 @@ import java.util.*
 class IdentityController(
     private val authenticationService: AuthenticationService,
     private val resetPasswordService: ResetPasswordService,
+    private val registerService: RegisterService,
+    private val userService: UserService
 ) {
     @PostMapping("/login")
     fun login(
@@ -79,5 +83,43 @@ class IdentityController(
             sessionId = UUID.fromString(request.sessionId)
         )
         return ResponseEntity.ok(response)
+    }
+
+    @PostMapping("/register/request-otp")
+    fun requestRegisterOtp(
+        @Valid @RequestBody request: RequestOtpRequest,
+    ): ResponseEntity<RequestOtpResponse> {
+        val response = registerService.requestOtp(
+            phoneNumber = request.phoneNumber,
+            defaultRegion = request.defaultRegion
+        )
+        return ResponseEntity.ok(response)
+    }
+
+    @PostMapping("/register/verify-otp")
+    fun verifyRegisterOtp(
+        @Valid @RequestBody request: VerifyOtpRequest,
+    ): ResponseEntity<Unit> {
+        val response = registerService.verifyOtp(
+            otp = request.otp,
+            sessionId = UUID.fromString(request.sessionId)
+        )
+        return ResponseEntity.ok(response)
+    }
+
+    @GetMapping("/register/check-user-existence")
+    fun checkUserExistence(
+        @Valid @RequestBody checkUserExistenceRequest: CheckUserExistenceRequest
+    ): ResponseEntity<Boolean> {
+        val response = userService.userExistsByUserName(checkUserExistenceRequest.username)
+        return ResponseEntity.ok(response)
+    }
+
+    @PostMapping("/register")
+    fun registerUser(
+        @Valid @RequestBody registerUserRequest: RegisterUserRequest
+    ): ResponseEntity<AuthResponse> {
+        val authResponse = registerService.registerUser(registerUserRequest.toRegisterUserModel())
+        return ResponseEntity.ok(authResponse)
     }
 }
