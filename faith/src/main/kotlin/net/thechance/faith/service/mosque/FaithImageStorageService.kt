@@ -11,23 +11,19 @@ import software.amazon.awssdk.services.s3.S3Client
 import software.amazon.awssdk.services.s3.model.ObjectCannedACL
 import software.amazon.awssdk.services.s3.model.PutObjectRequest
 import java.time.LocalDateTime
-import java.time.format.DateTimeFormatter
-import java.util.*
 
-@ConfigurationProperties(prefix = "storage.faith")
+@ConfigurationProperties(prefix = "storage.mena")
 data class FaithStorageProperties(
     val bucket: String,
     val cdnEndpoint: String
 )
 
-
-@Service("mosqueImageStorageService")
+@Service
 @EnableConfigurationProperties(FaithStorageProperties::class)
 class FaithImageStorageService(
-    private val s3Client: S3Client,
+    private val menaS3Client: S3Client,
     private val props: FaithStorageProperties,
 ) {
-
     fun uploadImage(
         file: MultipartFile,
         fileName: String,
@@ -35,35 +31,24 @@ class FaithImageStorageService(
     ): String {
         val mimeType = file.contentType ?: throw InvalidImageFormatException()
         val extension = allowedMimeTypes[mimeType] ?: throw InvalidImageFormatException()
-
-        val safeFileName = generateSafeFileName(fileName, extension)
-        val key = "images/$folderName/$safeFileName"
-
-        return try {
-            val putRequest = PutObjectRequest.builder()
-                .bucket(props.bucket)
-                .key(key)
-                .contentType(mimeType)
-                .acl(ObjectCannedACL.PUBLIC_READ)
-                .build()
-
-            s3Client.putObject(putRequest, RequestBody.fromBytes(file.bytes))
-
-
-            "${props.cdnEndpoint}/$key"
-        } catch (e: Exception) {
-            throw ImageUploadFailedException("Failed to upload image: ${e.message}")
+        try {
+            val fileName = "${fileName}_${LocalDateTime.now()}.$extension"
+            val key = "images/$folderName/$fileName"
+            val putReq = createObjectRequest(key, mimeType)
+            menaS3Client.putObject(putReq, RequestBody.fromBytes(file.bytes))
+            return "${props.cdnEndpoint}/$key"
+        } catch (_: Exception) {
+            throw ImageUploadFailedException()
         }
     }
 
-
-    private fun generateSafeFileName(baseName: String, extension: String): String {
-        val timestamp = LocalDateTime.now().format(DateTimeFormatter.ofPattern("yyyyMMdd_HHmmss"))
-        val randomSuffix = UUID.randomUUID().toString().take(8)
-        val cleanedName = baseName
-            .replace("\\s+".toRegex(), "_")
-            .replace("[^A-Za-z0-9_\\-]".toRegex(), "")
-        return "${cleanedName}_${timestamp}_$randomSuffix.$extension"
+    private fun createObjectRequest(key: String, contentType: String): PutObjectRequest? {
+        return PutObjectRequest.builder()
+            .bucket(props.bucket)
+            .key(key)
+            .contentType(contentType)
+            .acl(ObjectCannedACL.PUBLIC_READ)
+            .build()
     }
 
     private companion object {
@@ -71,7 +56,7 @@ class FaithImageStorageService(
             "image/jpeg" to "jpg",
             "image/jpg" to "jpg",
             "image/png" to "png",
-            "image/webp" to "webp"
+            "image/webp" to "webp",
         )
     }
 }
