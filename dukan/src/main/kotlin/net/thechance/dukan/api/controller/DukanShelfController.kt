@@ -2,7 +2,7 @@ package net.thechance.dukan.api.controller
 
 import jakarta.validation.Valid
 import net.thechance.dukan.api.utils.EndPoints.DUKAN_PATH
-import net.thechance.dukan.api.dto.shelf.DukanShelfCreationRequest
+import net.thechance.dukan.api.dto.shelf.DukanShelfTitleRequest
 import net.thechance.dukan.api.dto.shelf.DukanShelfResponse
 import net.thechance.dukan.entity.DukanShelf
 import net.thechance.dukan.service.DukanShelfService
@@ -23,7 +23,7 @@ class DukanShelfController(
 
     @PostMapping("/create")
     fun createShelf(
-        @Valid @RequestBody requestBody: DukanShelfCreationRequest,
+        @Valid @RequestBody requestBody: DukanShelfTitleRequest,
         @AuthenticationPrincipal userId: UUID,
     ): ResponseEntity<Unit> {
         dukanShelfService.createShelf(
@@ -31,6 +31,16 @@ class DukanShelfController(
             title = requestBody.title,
         )
         return ResponseEntity.ok().build()
+    }
+
+    @PutMapping("/{shelfId}")
+    fun updateShelf(
+        @Valid @RequestBody requestBody: DukanShelfTitleRequest,
+        @PathVariable shelfId: UUID,
+        @AuthenticationPrincipal userId: UUID
+    ):ResponseEntity<Unit>{
+        dukanShelfService.updateShelf(ownerId = userId,shelfId = shelfId, newTitle = requestBody.title)
+        return ResponseEntity.noContent().build()
     }
 
     @GetMapping
