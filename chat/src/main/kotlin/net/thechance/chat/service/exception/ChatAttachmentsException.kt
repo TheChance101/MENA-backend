@@ -12,6 +12,6 @@ class InvalidAudioFormatException : ChatException(
     message = "Invalid audio format"
 )
 
-class AudioUploadFailedException :  ChatException(
-    message = "Audio uploading failed"
+class AudioUploadFailedException(message: String) :  ChatException(
+    message = message
 )
