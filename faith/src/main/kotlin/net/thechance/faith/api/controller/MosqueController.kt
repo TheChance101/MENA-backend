@@ -20,10 +20,10 @@ class MosqueController(
 
     @PostMapping(consumes = ["multipart/form-data"])
     fun createMosque(
-        @RequestPart("name") name: String,
-        @RequestPart("address") address: String,
-        @RequestPart("latitude") latitude: Double,
-        @RequestPart("longitude") longitude: Double,
+        @RequestParam("name") name: String,
+        @RequestParam("address") address: String,
+        @RequestParam("latitude") latitude: Double,
+        @RequestParam("longitude") longitude: Double,
         @RequestPart("image") image: MultipartFile
     ): ResponseEntity<Any> {
         return try {
@@ -71,6 +71,5 @@ class MosqueController(
 
         return ResponseEntity.ok(mapOf("success" to true, "mosque" to mosque.copy(imageUrl = newImageUrl)))
     }
-
-
 }
+
