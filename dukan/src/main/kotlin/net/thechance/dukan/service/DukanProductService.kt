@@ -9,8 +9,6 @@ import net.thechance.dukan.entity.FavoriteProduct
 import net.thechance.dukan.service.exception.DukanProductCreationFailedException
 import net.thechance.dukan.service.exception.ProductNameAlreadyTakenException
 import net.thechance.dukan.service.exception.ProductNotFoundException
-import net.thechance.dukan.repository.DukanProductRepository
-import net.thechance.dukan.repository.DukanShelfRepository
 import net.thechance.dukan.repository.FavoriteProductRepository
 import net.thechance.dukan.service.model.DukanProductCreationParams
 import net.thechance.dukan.service.model.DukanProductUpdateParams
@@ -77,33 +75,43 @@ class DukanProductService(
     }
 
     @Transactional
-    fun getProductsByShelf(userId: UUID, shelfId: UUID, pageable: Pageable): Page<DukanProduct> {
+    fun getProductsByShelf(userId: UUID, shelfId: UUID, pageable: Pageable): Page<DukanProductWithFavorite> {
+        val products = getProductsByShelfWithDukan(shelfId, pageable)
+        val quantities = getProductQuantities(userId, shelfId)
+        val favoriteProductIds = getFavoriteProductIds(userId, products.content)
 
-        val productsPage = dukanProductRepository.findAllByShelfIdWithDukan(shelfId, pageable)
-        val quantities = dukanProductRepository.findProductQuantitiesByUserAndShelf(userId, shelfId)
+        return mapProductsToResponse(products, quantities, favoriteProductIds)
+    }
+
+    private fun getProductsByShelfWithDukan(shelfId: UUID, pageable: Pageable): Page<DukanProduct> {
+        return dukanProductRepository.findAllByShelfIdWithDukan(shelfId, pageable)
+    }
+
+    private fun getProductQuantities(userId: UUID, shelfId: UUID): Map<UUID, Int> {
+        return dukanProductRepository.findProductQuantitiesByUserAndShelf(userId, shelfId)
             .associate { UUID.fromString(it[0].toString()) to (it[1] as Number).toInt() }
+    }
 
-        return productsPage.map { product ->
-            product.apply { tempQuantity = quantities[product.id] ?: 0 }
-        }
-        val products = dukanProductRepository.findAllByShelfId(shelfId, pageable)
-        val productIds = products.content.map { it.id }
+    private fun getFavoriteProductIds(userId: UUID, products: List<DukanProduct>): Set<UUID> {
+        val productIds = products.map { it.id }
+        if (productIds.isEmpty()) return emptySet()
 
-        val favoriteProducts = if (productIds.isNotEmpty()) {
-            favoriteProductRepository.findAllByUserIdAndProductIdIn(userId, productIds)
-        } else {
-            emptyList()
-        }
+        return favoriteProductRepository.findAllByUserIdAndProductIdIn(userId, productIds)
+            .map { it.productId }
+            .toSet()
+    }
 
-        val favoriteProductIds = favoriteProducts.map { it.productId }.toSet()
-
-        return products.map {
+    private fun mapProductsToResponse(
+        products: Page<DukanProduct>,
+        quantities: Map<UUID, Int>,
+        favoriteProductIds: Set<UUID>
+    ): Page<DukanProductWithFavorite> {
+        return products.map { product ->
             DukanProductWithFavorite(
-                product = it,
-                isFavorite = it.id in favoriteProductIds
+                product = product.apply { tempQuantity = quantities[product.id] ?: 0 },
+                isFavorite = product.id in favoriteProductIds
             )
         }
-        return dukanProductRepository.findAllByShelfId(shelfId, pageable)
     }
 
     @Transactional

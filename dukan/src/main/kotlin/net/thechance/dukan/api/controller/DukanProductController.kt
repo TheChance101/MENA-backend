@@ -53,11 +53,12 @@ class DukanProductController(
         pageable: Pageable
     ): ResponseEntity<Page<DukanProductResponse>> {
         val products = dukanProductService.getProductsByShelf(userId, shelfId, pageable)
-        val productsResponse = products.map { it.toProductResponse(it.tempQuantity) }
-        val products = dukanProductService.getProductsByShelf(userId, shelfId, pageable)
 
         val productsResponse = products.map {
-            it.product.toProductResponse(it.isFavorite)
+            it.product.toProductResponse(
+                isFavorite = it.isFavorite,
+                quantityInCart = it.product.tempQuantity
+            )
         }
 
         return ResponseEntity.ok(productsResponse)
@@ -69,11 +70,12 @@ class DukanProductController(
         @PathVariable("productId") productId: UUID
     ): ResponseEntity<DukanProductResponse> {
         val product = dukanProductService.getProductById(userId, productId)
-        val productResponse = product.toProductResponse(product.tempQuantity)
         val isProductFavorite = dukanProductService.isProductFavorite(userId, productId)
-        val productResponse = dukanProductService
-            .getProductById(productId)
-            .toProductResponse(isProductFavorite)
+
+        val productResponse = product.toProductResponse(
+            isFavorite = isProductFavorite,
+            quantityInCart = product.tempQuantity
+        )
 
         return ResponseEntity.ok(productResponse)
     }
