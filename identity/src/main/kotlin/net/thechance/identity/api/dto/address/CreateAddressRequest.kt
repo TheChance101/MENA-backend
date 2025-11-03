@@ -1,4 +1,4 @@
-package net.thechance.identity.api.dto
+package net.thechance.identity.api.dto.address
 
 import jakarta.validation.constraints.DecimalMax
 import jakarta.validation.constraints.DecimalMin

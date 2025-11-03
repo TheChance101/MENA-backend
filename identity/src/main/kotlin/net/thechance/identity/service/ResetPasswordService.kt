@@ -1,6 +1,6 @@
 package net.thechance.identity.service
 
-import net.thechance.identity.api.dto.RequestOtpResponse
+import net.thechance.identity.api.dto.otp.RequestOtpResponse
 import net.thechance.identity.entity.OtpLog
 import net.thechance.identity.exception.OtpExpiredException
 import net.thechance.identity.exception.PasswordMismatchException

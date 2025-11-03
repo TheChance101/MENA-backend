@@ -1,4 +1,4 @@
-package net.thechance.identity.api.dto
+package net.thechance.identity.api.dto.auth
 
 import jakarta.validation.constraints.NotBlank
 import jakarta.validation.constraints.Size

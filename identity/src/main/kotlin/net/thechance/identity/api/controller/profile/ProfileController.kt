@@ -1,11 +1,11 @@
 package net.thechance.identity.api.controller.profile
 
 import jakarta.validation.Valid
-import net.thechance.identity.api.dto.UpdateProfileRequest
-import net.thechance.identity.api.dto.ChangePasswordRequest
-import net.thechance.identity.api.dto.ChangePasswordResponse
-import net.thechance.identity.api.dto.ProfileResponse
-import net.thechance.identity.api.dto.UpdateImageResponse
+import net.thechance.identity.api.dto.profile.UpdateProfileRequest
+import net.thechance.identity.api.dto.password.ChangePasswordRequest
+import net.thechance.identity.api.dto.password.ChangePasswordResponse
+import net.thechance.identity.api.dto.profile.ProfileResponse
+import net.thechance.identity.api.dto.profile.UpdateImageResponse
 import net.thechance.identity.api.mapper.toResponse
 import net.thechance.identity.service.ChangePasswordService
 import net.thechance.identity.service.UserService

@@ -1,6 +1,6 @@
 package net.thechance.identity.api.mapper
 
-import net.thechance.identity.api.dto.ProfileResponse
+import net.thechance.identity.api.dto.profile.ProfileResponse
 import net.thechance.identity.entity.User
 
 fun User.toResponse(imageBaseUrl: String): ProfileResponse {

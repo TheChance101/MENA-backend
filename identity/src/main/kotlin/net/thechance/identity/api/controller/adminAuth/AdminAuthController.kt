@@ -1,9 +1,9 @@
 package net.thechance.identity.api.controller.adminAuth
 
 import jakarta.validation.Valid
-import net.thechance.identity.api.dto.AdminAuthRequest
-import net.thechance.identity.api.dto.AuthResponse
-import net.thechance.identity.api.dto.RefreshTokenRequest
+import net.thechance.identity.api.dto.auth.AdminAuthRequest
+import net.thechance.identity.api.dto.auth.AuthResponse
+import net.thechance.identity.api.dto.auth.RefreshTokenRequest
 import net.thechance.identity.service.AdminAuthenticationService
 import org.springframework.http.ResponseEntity
 import org.springframework.security.core.annotation.AuthenticationPrincipal

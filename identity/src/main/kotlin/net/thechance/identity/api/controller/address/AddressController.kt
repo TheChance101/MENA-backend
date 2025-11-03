@@ -1,9 +1,9 @@
 package net.thechance.identity.api.controller.address
 
 import jakarta.validation.Valid
-import net.thechance.identity.api.dto.AddressResponse
-import net.thechance.identity.api.dto.CreateAddressRequest
-import net.thechance.identity.api.dto.UpdateAddressRequest
+import net.thechance.identity.api.dto.address.AddressResponse
+import net.thechance.identity.api.dto.address.CreateAddressRequest
+import net.thechance.identity.api.dto.address.UpdateAddressRequest
 import net.thechance.identity.api.mapper.toAddressModel
 import net.thechance.identity.api.mapper.toResponse
 import net.thechance.identity.service.AddressService

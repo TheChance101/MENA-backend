@@ -2,7 +2,13 @@ package net.thechance.identity.api.controller.identity
 
 import jakarta.servlet.http.HttpServletRequest
 import jakarta.validation.Valid
-import net.thechance.identity.api.dto.*
+import net.thechance.identity.api.dto.auth.AuthRequest
+import net.thechance.identity.api.dto.auth.AuthResponse
+import net.thechance.identity.api.dto.auth.RefreshTokenRequest
+import net.thechance.identity.api.dto.otp.RequestOtpRequest
+import net.thechance.identity.api.dto.otp.RequestOtpResponse
+import net.thechance.identity.api.dto.otp.VerifyOtpRequest
+import net.thechance.identity.api.dto.password.ResetPasswordRequest
 import net.thechance.identity.exception.InvalidIpException
 import net.thechance.identity.service.AuthenticationService
 import net.thechance.identity.service.ResetPasswordService
