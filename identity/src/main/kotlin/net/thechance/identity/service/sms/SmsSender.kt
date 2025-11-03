@@ -1,6 +1,6 @@
 package net.thechance.identity.service.sms
 
-interface SmsService {
+interface SmsSender {
     /**
      * @param countryCode (e.g., "20" for Egypt of phone number "+20xxxxxxxxxx").
      * @param carrierPrefix (e.g., "11" of Etisalat for phone number "+2011xxxxxxxx")

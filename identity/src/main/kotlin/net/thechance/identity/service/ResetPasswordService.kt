@@ -6,27 +6,27 @@ import net.thechance.identity.exception.OtpExpiredException
 import net.thechance.identity.exception.PasswordMismatchException
 import net.thechance.identity.exception.UnauthorizedException
 import net.thechance.identity.exception.UserNotFoundException
-import net.thechance.identity.service.phoneNumberValidator.PhoneNumberValidatorService
-import net.thechance.identity.service.sms.SmsService
+import net.thechance.identity.service.phoneNumberValidator.PhoneNumberValidator
+import net.thechance.identity.service.sms.SmsSender
 import org.springframework.security.crypto.password.PasswordEncoder
 import org.springframework.stereotype.Service
 import java.util.UUID
 
 @Service
 class ResetPasswordService(
-    private val phoneNumberValidatorService: PhoneNumberValidatorService,
+    private val phoneNumberValidator: PhoneNumberValidator,
     private val phoneNumberRateLimitService: PhoneNumberRateLimitService,
     private val otpService: OtpService,
-    private val smsService: SmsService,
+    private val smsSender: SmsSender,
     private val userService: UserService,
     private val passwordEncoder: PasswordEncoder
 ) {
     fun requestOtp(phoneNumber: String, defaultRegion: String): RequestOtpResponse {
-        val validatedPhoneNumber = phoneNumberValidatorService.validateAndParse(phoneNumber, defaultRegion)
+        val validatedPhoneNumber = phoneNumberValidator.validateAndParse(phoneNumber, defaultRegion)
         checkPhoneNumberExistence(phoneNumber)
         phoneNumberRateLimitService.checkRequestLimit(phoneNumber)
         val otpLog = otpService.createOtp(validatedPhoneNumber.phoneNumber)
-        smsService.sendSms(
+        smsSender.sendSms(
             validatedPhoneNumber.countryCode,
             validatedPhoneNumber.carrierPrefixHeuristic,
             validatedPhoneNumber.phoneNumber,

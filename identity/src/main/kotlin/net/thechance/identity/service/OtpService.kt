@@ -13,12 +13,12 @@ import java.util.*
 
 @Service
 class OtpService(
-    private val otpGeneratorService: OtpGenerator,
+    private val otpGenerator: OtpGenerator,
     private val otpLogRepository: OtpLogRepository
 ) {
     fun createOtp(phoneNumber: String): OtpLog {
         expireOldActiveOtpByPhoneNumber(phoneNumber)
-        val otp = otpGeneratorService.generateOtp()
+        val otp = otpGenerator.generateOtp()
         val otpLog = OtpLog(
             phoneNumber = phoneNumber,
             otp = otp,
