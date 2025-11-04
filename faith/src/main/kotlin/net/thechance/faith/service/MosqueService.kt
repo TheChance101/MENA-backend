@@ -1,6 +1,7 @@
 package net.thechance.faith.service
 
 import net.thechance.faith.entity.Mosque
+import net.thechance.faith.exception.InvalidRequestParameterException
 import net.thechance.faith.repository.MosqueRepository
 import org.springframework.data.domain.Page
 import org.springframework.data.domain.Pageable
@@ -12,6 +13,8 @@ class MosqueService(
 ) {
 
     fun searchMosquesByName(keyword: String, pageable: Pageable): Page<Mosque> {
+        if (keyword.isBlank()) throw InvalidRequestParameterException("Parameter 'keyword' must not be blank.")
+
         return mosqueRepository.searchMosquesByName(keyword, pageable)
     }
 }

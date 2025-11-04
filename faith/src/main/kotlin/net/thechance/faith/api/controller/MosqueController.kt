@@ -2,7 +2,6 @@ package net.thechance.faith.api.controller
 
 import net.thechance.faith.api.dto.nearestMosque.MosqueResponse
 import net.thechance.faith.api.dto.nearestMosque.toMosqueResponse
-import net.thechance.faith.exception.InvalidRequestParameterException
 import net.thechance.faith.service.MosqueService
 import org.springframework.data.domain.Page
 import org.springframework.data.domain.Pageable
@@ -26,11 +25,7 @@ class NearbyMosqueController(
         @PageableDefault(size = 10, page = 0, sort = ["name"], direction = Direction.ASC)
         pageable: Pageable
     ): ResponseEntity<Page<MosqueResponse>> {
-        if (keyword.isBlank()) {
-            throw InvalidRequestParameterException("Parameter 'keyword' must not be blank.")
-        }
-
-        val mosquesPage = mosqueService.searchMosquesByName(keyword, pageable)
+        val mosquesPage = mosqueService.searchMosquesByName(keyword.trim(), pageable)
         val response = mosquesPage.map { it.toMosqueResponse() }
 
         return ResponseEntity.ok(response)
