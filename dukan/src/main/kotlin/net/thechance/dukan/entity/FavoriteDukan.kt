@@ -20,13 +20,9 @@ data class FavoriteDukan(
     @Column(name = "user_id", nullable = false)
     val userId: UUID,
 
-    @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "dukan_id", nullable = false)
-    val dukan: Dukan,
+    @Column(name = "dukan_id", nullable = false)
+    val dukanId: UUID,
 
     @Column(name = "created_at", nullable = false)
     val createdAt: Instant = Instant.now(),
-
-    @Column(name = "updated_at", nullable = false)
-    val updatedAt: Instant = Instant.now()
 )

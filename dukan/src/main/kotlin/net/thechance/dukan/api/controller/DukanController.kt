@@ -116,13 +116,16 @@ class DukanController(
 
     private fun mapDukansWithFavorites(userId: UUID?, dukans: Page<Dukan>): Page<DukanResponse> {
         val favoriteIds = if (userId != null) {
-            dukanService.getUserFavorites(userId).map { it.dukan.id }
-        } else emptyList()
+            dukanService.getUserFavorites(userId)
+                .map { it.dukanId }
+                .toList()
+        } else emptySet()
 
         return dukans.map { dukan ->
             dukan.toDukanResponse(isFavorite = favoriteIds.contains(dukan.id))
         }
     }
+
 
     @GetMapping("/{dukanId}")
     fun getDukanDetailsById(

@@ -103,34 +103,27 @@ class DukanService(
 
     @Transactional
     fun toggleFavoriteStatus(userId: UUID, dukanId: UUID): Boolean {
-        return if (favoriteDukanRepository.existsByUserIdAndDukanId(userId, dukanId)) {
-            favoriteDukanRepository.deleteByUserIdAndDukanId(userId, dukanId)
+        val existing = favoriteDukanRepository.findByUserIdAndDukanId(userId, dukanId)
+
+        return if (existing != null) {
+            favoriteDukanRepository.delete(existing)
             false
         } else {
-            createFavoriteEntry(userId, dukanId)
+            favoriteDukanRepository.save(
+                FavoriteDukan(userId = userId, dukanId = dukanId)
+            )
+            true
         }
     }
 
-    private fun createFavoriteEntry(userId: UUID, dukanId: UUID): Boolean {
-        val dukan = dukanRepository.findByIdOrNull(dukanId)
-            ?: throw DukanNotFoundException()
-
-        val newFavorite = FavoriteDukan(
-            userId = userId,
-            dukan = dukan,
-        )
-        favoriteDukanRepository.save(newFavorite)
-        return true
-    }
-
-
     fun getUserFavorites(userId: UUID): List<FavoriteDukan> {
-        return favoriteDukanRepository.findAllWithDukanByUserId(userId)
+        return favoriteDukanRepository.findAllByUserId(userId)
     }
 
     fun isFavorite(userId: UUID, dukanId: UUID): Boolean {
-        return favoriteDukanRepository.existsByUserIdAndDukanId(userId, dukanId)
+        return favoriteDukanRepository.findByUserIdAndDukanId(userId, dukanId) != null
     }
+
 
     fun getAllBestDukansAround(
         lat: Double,
