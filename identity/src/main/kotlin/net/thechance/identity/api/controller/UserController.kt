@@ -1,8 +1,8 @@
 package net.thechance.identity.api.controller
 
-import net.thechance.identity.api.dto.ManagedUserResponse
-import net.thechance.identity.api.dto.PageResponse
-import net.thechance.identity.api.dto.UpdateUserStatusRequest
+import net.thechance.identity.api.dto.profile.ManagedUserResponse
+import net.thechance.identity.api.dto.profile.PageResponse
+import net.thechance.identity.api.dto.profile.UpdateUserStatusRequest
 import net.thechance.identity.api.mapper.toUserResponsePage
 import net.thechance.identity.service.UserService
 import org.springframework.data.domain.Pageable

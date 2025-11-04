@@ -1,6 +1,6 @@
 package net.thechance.identity.service
 
-import net.thechance.identity.api.dto.AuthResponse
+import net.thechance.identity.api.dto.auth.AuthResponse
 import net.thechance.identity.entity.LoginLog
 import net.thechance.identity.entity.User
 import net.thechance.identity.exception.InvalidCredentialsException
@@ -48,7 +48,7 @@ class AuthenticationService(
     ) {
         val loginLog = LoginLog(user = user, isSuccess = isSuccess, ipAddress = ipAddress)
         loginLogService.addLoginLog(loginLog)
-        if(isSuccess) userService.updateUserLastLoginTime(userId = user.id, time = LocalDateTime.now())
+        if (isSuccess) userService.updateUserLastLoginTime(userId = user.id, time = LocalDateTime.now())
     }
 
     private fun isUserBlocked(ipAddress: String): Boolean {
