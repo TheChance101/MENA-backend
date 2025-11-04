@@ -1,4 +1,4 @@
-package net.thechance.identity.api.dto
+package net.thechance.identity.api.dto.profile
 
 import net.thechance.identity.entity.User
 import java.time.LocalDateTime
