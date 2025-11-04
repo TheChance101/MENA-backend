@@ -84,6 +84,18 @@ class UserService(
         }
     }
 
+    fun userExistsByUserName(username: String): Boolean {
+        return userRepository.existsByUsername(username)
+    }
+
+    fun userExistsByPhoneNumber(phoneNumber: String): Boolean {
+        return userRepository.existsByPhoneNumber(phoneNumber)
+    }
+
+    fun saveUser(user: User): User{
+        return userRepository.save(user)
+    }
+
     fun findUsersByQuery(query: String, pageable: Pageable): Page<User> {
         return userRepository.findByFullNameOrPhoneNumber(query, pageable)
     }

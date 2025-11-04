@@ -12,6 +12,8 @@ import java.util.*
 
 interface UserRepository: JpaRepository<User, UUID> {
     fun findByPhoneNumber(phoneNumber: String): User?
+    fun existsByUsername(username: String): Boolean
+    fun existsByPhoneNumber(phoneNumber: String): Boolean
 
     @Query("""
     SELECT u FROM User u

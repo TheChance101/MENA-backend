@@ -39,6 +39,9 @@ interface DukanRepository : JpaRepository<Dukan, UUID> {
         categoryId: UUID,
         pageable: Pageable
     ): Page<Dukan>
+
+
+
     @Query(
         """
     SELECT DISTINCT d
