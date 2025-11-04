@@ -193,7 +193,8 @@ class RegisterServiceTest {
             lastName = registerModel.lastName,
             imageUrl = null,
             birthDate = LocalDate.parse(registerModel.birthDate),
-            gender = registerModel.gender
+            gender = registerModel.gender,
+            status = User.Status.ACTIVE
         )
         private val refreshToken = RefreshToken(
             refreshToken = "dummyRefreshToken",

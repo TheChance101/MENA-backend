@@ -1,8 +1,8 @@
 package net.thechance.identity.service
 
 import net.thechance.identity.api.dto.AuthResponse
-import net.thechance.identity.entity.User
 import net.thechance.identity.entity.LoginLog
+import net.thechance.identity.entity.User
 import net.thechance.identity.exception.InvalidCredentialsException
 import net.thechance.identity.exception.InvalidRefreshTokenException
 import net.thechance.identity.exception.UserIsBlockedException
@@ -12,6 +12,7 @@ import org.springframework.security.crypto.password.PasswordEncoder
 import org.springframework.stereotype.Service
 import java.time.Duration
 import java.time.Instant
+import java.time.LocalDateTime
 
 @Service
 class AuthenticationService(
@@ -47,6 +48,7 @@ class AuthenticationService(
     ) {
         val loginLog = LoginLog(user = user, isSuccess = isSuccess, ipAddress = ipAddress)
         loginLogService.addLoginLog(loginLog)
+        if(isSuccess) userService.updateUserLastLoginTime(userId = user.id, time = LocalDateTime.now())
     }
 
     private fun isUserBlocked(ipAddress: String): Boolean {
@@ -78,6 +80,7 @@ class AuthenticationService(
     private fun generateAuthResponse(user: User): AuthResponse {
         val accessToken = jwtService.generateToken(user)
         val refreshToken = refreshTokenService.createRefreshToken(user).refreshToken
+        userService.updateUserLastVisitTime(userId = user.id, time = LocalDateTime.now())
         return AuthResponse(accessToken, refreshToken)
     }
 

@@ -1,14 +1,18 @@
 package net.thechance.identity.service
 
+import jakarta.transaction.Transactional
 import net.thechance.identity.entity.User
 import net.thechance.identity.exception.PasswordNotUpdatedException
 import net.thechance.identity.exception.UserNotFoundException
 import net.thechance.identity.repository.UserRepository
 import net.thechance.identity.service.model.UserServiceModel
 import org.springframework.beans.factory.annotation.Value
+import org.springframework.data.domain.Page
+import org.springframework.data.domain.Pageable
 import org.springframework.data.repository.findByIdOrNull
 import org.springframework.stereotype.Service
 import org.springframework.web.multipart.MultipartFile
+import java.time.LocalDateTime
 import java.util.*
 
 private typealias ImageUri = String
@@ -90,5 +94,31 @@ class UserService(
 
     fun saveUser(user: User): User{
         return userRepository.save(user)
+    }
+
+    fun findUsersByQuery(query: String, pageable: Pageable): Page<User> {
+        return userRepository.findByFullNameOrPhoneNumber(query, pageable)
+    }
+
+    @Transactional
+    fun updateUserLastLoginTime(userId: UUID, time: LocalDateTime){
+        val updatedUsersCount = userRepository.updateLastLoginTime(userId, time)
+        if (updatedUsersCount == 0) throw UserNotFoundException("User with id: $userId not found")
+    }
+
+    @Transactional
+    fun updateUserLastVisitTime(userId: UUID, time: LocalDateTime){
+        val updatedUsersCount = userRepository.updateLastVisitTime(userId, time)
+        if (updatedUsersCount == 0) throw UserNotFoundException("User with id: $userId not found")
+    }
+
+    @Transactional
+    fun updateUserStatus(userId: UUID, status: User.Status) {
+        val updatedUserCount = userRepository.updateStatus(userId, status)
+        if (updatedUserCount == 0) throw UserNotFoundException("User with id: $userId not found")
+        /*
+        todo: should send event to notify other modules about user status change
+         and if the user is blocked call logout function to invalidate his access token
+         */
     }
 }
