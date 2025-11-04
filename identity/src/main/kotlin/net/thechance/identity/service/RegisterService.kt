@@ -66,7 +66,8 @@ class RegisterService(
             username = registerUserModel.username,
             imageUrl = null,
             birthDate = LocalDate.parse(registerUserModel.birthDate),
-            gender = registerUserModel.gender
+            gender = registerUserModel.gender,
+            status = User.Status.ACTIVE
         )
         return userService.saveUser(user)
     }

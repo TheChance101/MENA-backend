@@ -31,17 +31,19 @@ class TrendsService(
 ) {
     fun getAllTrendsByUserId(
         pageable: Pageable,
-        currentUserId: UUID
+        currentUserId: UUID,
+        trendId: UUID?
     ): Page<TrendWithOwnerShipAndLikeStatus> {
 
         val body = trendsRepository.findByOwnerIdAndIsPublished(
             currentUserId,
             true,
+            trendId,
             PageRequest.of(
                 pageable.pageNumber,
                 10,
                 pageable.getSortOr(Sort.by(Sort.Direction.DESC, "createdAt"))
-            ),
+            )
         ).map { it.withOwnership(currentUserId = currentUserId) }
         return body
     }
@@ -69,7 +71,7 @@ class TrendsService(
 
         trendsRepository.deleteTrendById(id)
         fileStorageService.deleteFile(trendUrls.getTrendVideoUrl())
-        fileStorageService.deleteFile(trendUrls.getTrendThumbnailUrl())
+        trendUrls.getTrendThumbnailUrl()?.let { fileStorageService.deleteFile(it) }
     }
 
     @Transactional

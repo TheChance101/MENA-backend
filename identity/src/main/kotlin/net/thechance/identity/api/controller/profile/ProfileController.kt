@@ -1,12 +1,12 @@
 package net.thechance.identity.api.controller.profile
 
 import jakarta.validation.Valid
-import net.thechance.identity.api.dto.profile.UpdateProfileRequest
 import net.thechance.identity.api.dto.password.ChangePasswordRequest
 import net.thechance.identity.api.dto.password.ChangePasswordResponse
 import net.thechance.identity.api.dto.profile.ProfileResponse
 import net.thechance.identity.api.dto.profile.UpdateImageResponse
-import net.thechance.identity.api.mapper.toResponse
+import net.thechance.identity.api.dto.profile.UpdateProfileRequest
+import net.thechance.identity.api.mapper.toProfileResponse
 import net.thechance.identity.service.ChangePasswordService
 import net.thechance.identity.service.UserService
 import net.thechance.identity.service.model.UserServiceModel
@@ -16,7 +16,7 @@ import org.springframework.security.core.annotation.AuthenticationPrincipal
 import org.springframework.web.bind.annotation.*
 import org.springframework.web.multipart.MultipartFile
 import java.time.LocalDate
-import java.util.UUID
+import java.util.*
 
 @RestController
 @RequestMapping("/identity/profile")
@@ -35,12 +35,12 @@ class ProfileController(
     ): ResponseEntity<ProfileResponse> {
         val userServiceModel = updateProfileRequest.toServiceModel(userId)
         val updatedUser = userService.updateUserProfile(userServiceModel)
-        return ResponseEntity.ok(updatedUser.toResponse(imagesBaseUrl))
+        return ResponseEntity.ok(updatedUser.toProfileResponse(imagesBaseUrl))
     }
 
     @GetMapping
     fun getUserProfile(@AuthenticationPrincipal userId: UUID): ResponseEntity<ProfileResponse> {
-        val response = userService.findById(userId).toResponse(imagesBaseUrl)
+        val response = userService.findById(userId).toProfileResponse(imagesBaseUrl)
         return ResponseEntity.ok(response)
     }
 
