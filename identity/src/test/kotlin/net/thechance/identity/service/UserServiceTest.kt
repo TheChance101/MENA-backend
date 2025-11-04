@@ -2,6 +2,7 @@ package net.thechance.identity.service
 
 import com.google.common.truth.Truth.assertThat
 import io.mockk.*
+import net.thechance.identity.entity.User
 import net.thechance.identity.exception.PasswordNotUpdatedException
 import net.thechance.identity.exception.UserNotFoundException
 import net.thechance.identity.repository.UserRepository
@@ -13,8 +14,8 @@ import org.springframework.data.domain.PageImpl
 import org.springframework.data.domain.PageRequest
 import org.springframework.data.repository.findByIdOrNull
 import org.springframework.web.multipart.MultipartFile
-import java.util.*
 import java.time.LocalDateTime
+import java.util.*
 
 class UserServiceTest {
     private val userRepository: UserRepository = mockk(relaxed = true)
@@ -246,60 +247,60 @@ class UserServiceTest {
     @Test
     fun `updateUserLastLoginTime() should complete successfully when user exists`() {
         val now = LocalDateTime.now()
-        every { userRepository.updateLastLoginTime(id, now) } returns 1
+        every { userRepository.updateLastLoginTime(userId, now) } returns 1
 
-        userService.updateUserLastLoginTime(id, now)
+        userService.updateUserLastLoginTime(userId, now)
 
-        verify(exactly = 1) { userRepository.updateLastLoginTime(id, now) }
+        verify(exactly = 1) { userRepository.updateLastLoginTime(userId, now) }
     }
 
     @Test
     fun `updateUserLastLoginTime() should throw UserNotFoundException when user is not found`() {
         val now = LocalDateTime.now()
-        every{ userRepository.updateLastLoginTime(id, LocalDateTime.now()) } returns 0
+        every{ userRepository.updateLastLoginTime(userId, LocalDateTime.now()) } returns 0
 
         assertThrows(UserNotFoundException::class.java) {
-            userService.updateUserLastLoginTime(id, now)
+            userService.updateUserLastLoginTime(userId, now)
         }
     }
 
     @Test
     fun `updateUserLastVisitTime() should complete successfully when user exists`() {
         val now = LocalDateTime.now()
-        every{ userRepository.updateLastVisitTime(id, now) } returns 1
+        every{ userRepository.updateLastVisitTime(userId, now) } returns 1
 
-        userService.updateUserLastVisitTime(id, now)
+        userService.updateUserLastVisitTime(userId, now)
 
-        verify(exactly = 1) { userRepository.updateLastVisitTime(id, now) }
+        verify(exactly = 1) { userRepository.updateLastVisitTime(userId, now) }
     }
 
     @Test
     fun `updateUserLastVisitTime() should throw UserNotFoundException when user is not found`() {
         val now = LocalDateTime.now()
-        every{ userRepository.updateLastVisitTime(id, LocalDateTime.now()) } returns 0
+        every{ userRepository.updateLastVisitTime(userId, LocalDateTime.now()) } returns 0
 
         assertThrows(UserNotFoundException::class.java) {
-            userService.updateUserLastVisitTime(id, now)
+            userService.updateUserLastVisitTime(userId, now)
         }
     }
 
     @Test
     fun `updateUserStatus() should complete successfully when user exists`() {
         val newStatus = User.Status.ACTIVE
-        every{ userRepository.updateStatus(id, newStatus) } returns 1
+        every{ userRepository.updateStatus(userId, newStatus) } returns 1
 
-        userService.updateUserStatus(id, newStatus)
+        userService.updateUserStatus(userId, newStatus)
 
-        verify(exactly = 1) { userRepository.updateStatus(id, newStatus) }
+        verify(exactly = 1) { userRepository.updateStatus(userId, newStatus) }
     }
 
     @Test
     fun `updateUserStatus() should throw UserNotFoundException when user is not found`() {
         val newStatus = User.Status.ACTIVE
-        every{ userRepository.updateStatus(id, newStatus) } returns 0
+        every{ userRepository.updateStatus(userId, newStatus) } returns 0
 
         assertThrows(UserNotFoundException::class.java) {
-            userService.updateUserStatus(id, newStatus)
+            userService.updateUserStatus(userId, newStatus)
         }
     }
 
