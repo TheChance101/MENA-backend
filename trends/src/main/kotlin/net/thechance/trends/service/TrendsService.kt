@@ -5,6 +5,7 @@ import net.thechance.trends.entity.TrendLike
 import net.thechance.trends.entity.TrendView
 import net.thechance.trends.exception.TrendCategoryNotFoundException
 import net.thechance.trends.exception.TrendNotFoundException
+import net.thechance.trends.models.TrendSignedUrls
 import net.thechance.trends.models.TrendWithLikeStatus
 import net.thechance.trends.models.TrendWithOwnerShipAndLikeStatus
 import net.thechance.trends.models.withOwnership
@@ -12,6 +13,8 @@ import net.thechance.trends.repository.CategoryRepository
 import net.thechance.trends.repository.TrendLikeRepository
 import net.thechance.trends.repository.TrendViewRepository
 import net.thechance.trends.repository.TrendsRepository
+import net.thechance.trends.service.config.TrendsExpirationProperties
+import org.springframework.boot.context.properties.EnableConfigurationProperties
 import org.springframework.data.domain.Page
 import org.springframework.data.domain.PageRequest
 import org.springframework.data.domain.Pageable
@@ -21,13 +24,16 @@ import org.springframework.transaction.annotation.Transactional
 import org.springframework.web.multipart.MultipartFile
 import java.util.*
 
+
 @Service
+@EnableConfigurationProperties(TrendsExpirationProperties::class)
 class TrendsService(
     private val trendsRepository: TrendsRepository,
     private val categoryRepository: CategoryRepository,
     private val fileStorageService: FileStorageService,
     private val trendViewRepository: TrendViewRepository,
-    private val trendLikeRepository: TrendLikeRepository
+    private val trendLikeRepository: TrendLikeRepository,
+    private val trendsExpirationProperties: TrendsExpirationProperties
 ) {
     fun getAllTrendsByUserId(
         pageable: Pageable,
@@ -44,7 +50,9 @@ class TrendsService(
                 10,
                 pageable.getSortOr(Sort.by(Sort.Direction.DESC, "createdAt"))
             )
-        ).map { it.withOwnership(currentUserId = currentUserId) }
+        ).map {
+            generatePresignedUrlsForTrend(it).withOwnership(currentUserId)
+        }
         return body
     }
 
@@ -59,7 +67,9 @@ class TrendsService(
             pageable.getSortOr(Sort.by(Sort.Direction.DESC, "createdAt"))
         )
 
-        val trends = trendsRepository.getTrendFeedForUser(currentUserId, trendId, adjustedPageable).map { it.withOwnership(currentUserId = currentUserId) }
+        val trends = trendsRepository.getTrendFeedForUser(currentUserId, trendId, adjustedPageable).map {
+            generatePresignedUrlsForTrend(it).withOwnership(currentUserId)
+        }
 
         return trends
     }
@@ -140,5 +150,47 @@ class TrendsService(
 
     fun getTrendOrThrow(trendId: UUID, userId: UUID): TrendWithLikeStatus {
         return trendsRepository.findByIdAndIsPublishedWithLikeStatus(trendId = trendId, isPublished = true, userId = userId) ?: throw TrendNotFoundException()
+    }
+
+    private fun generatePresignedUrlsForTrend(
+        trendWithLikeStatus: TrendWithLikeStatus
+    ): TrendWithLikeStatus {
+        runCatching {
+            val trend = trendWithLikeStatus.getTrend()
+            val signedUrls = generatePresignedUrlsForTrend(
+                videoKey = trend.videoUrl, thumbnailKey = trend.thumbnailUrl
+            )
+
+            val updatedTrend = trend.copy(
+                videoUrl = signedUrls.videoUrl, thumbnailUrl = signedUrls.thumbnailUrl
+            )
+
+            return object : TrendWithLikeStatus {
+                override fun getTrend(): Trend = updatedTrend
+                override fun getIsLiked(): Boolean = trendWithLikeStatus.getIsLiked()
+            }
+        }.getOrElse {
+            return trendWithLikeStatus
+        }
+    }
+
+    private fun generatePresignedUrlsForTrend(videoKey: String, thumbnailKey: String?): TrendSignedUrls {
+        val signedVideoUrl =
+            fileStorageService.generatePresignedUrl(videoKey, trendsExpirationProperties.videoUrlMinutes)
+        val signedThumbnailUrl = thumbnailKey?.let {
+            fileStorageService.generatePresignedUrl(it, trendsExpirationProperties.thumbnailUrlMinutes)
+        }
+        return TrendSignedUrls(videoUrl = signedVideoUrl, thumbnailUrl = signedThumbnailUrl)
+    }
+
+    fun generatePresignedUrlsForTrend(trendId: UUID): TrendSignedUrls {
+        val trendUrls = trendsRepository.findTrendUrlsById(trendId) ?: throw TrendNotFoundException()
+        val signedVideoUrl = fileStorageService.generatePresignedUrl(
+            trendUrls.getTrendVideoUrl(), trendsExpirationProperties.videoUrlMinutes
+        )
+        val signedThumbnailUrl = trendUrls.getTrendThumbnailUrl()?.let {
+            fileStorageService.generatePresignedUrl(it, trendsExpirationProperties.thumbnailUrlMinutes)
+        }
+        return TrendSignedUrls(videoUrl = signedVideoUrl, thumbnailUrl = signedThumbnailUrl)
     }
 }
