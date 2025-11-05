@@ -21,5 +21,5 @@ data class DeletedChat(
 enum class CleanUpStatus{
     S3_DELETED_FAILED,
     CLEANUP_FAILED,
-    //DELETED
+    DELETED
 }
