@@ -1,13 +1,14 @@
 package net.thechance.faith.api.controller
 
-import net.thechance.faith.entity.Mosque
+import net.thechance.faith.api.dto.nearestMosque.MosqueRequest
+import net.thechance.faith.api.dto.nearestMosque.toMosque
+import net.thechance.faith.api.dto.nearestMosque.toMosqueResponse
 import net.thechance.faith.service.mosque.FaithImageStorageService
 import net.thechance.faith.service.mosque.MosqueService
 import org.springframework.http.HttpStatus
 import org.springframework.http.ResponseEntity
 import org.springframework.web.bind.annotation.*
 import org.springframework.web.multipart.MultipartFile
-import java.time.Instant
 import java.util.*
 
 @RestController
@@ -20,34 +21,25 @@ class MosqueController(
 
     @PostMapping(consumes = ["multipart/form-data"])
     fun createMosque(
-        @RequestParam("name") name: String,
-        @RequestParam("address") address: String,
-        @RequestParam("latitude") latitude: Double,
-        @RequestParam("longitude") longitude: Double,
+        @RequestPart("mosque") mosqueRequest: MosqueRequest,
         @RequestPart("image") image: MultipartFile
-    ): ResponseEntity<Any> {
-        return try {
-            val imageUrl = imageStorageService.uploadImage(
-                file = image,
-                fileName = name,
-                folderName = "mosques"
-            )
+    ): ResponseEntity<Map<String, Any>> {
+        val imageUrl = imageStorageService.uploadImage(
+            file = image,
+            fileName = mosqueRequest.name,
+            folderName = "mosques"
+        )
 
-            val mosque = Mosque(
-                name = name,
-                latitude = latitude,
-                longitude = longitude,
-                imageUrl = imageUrl,
-                address = address,
-                id = UUID.randomUUID(),
-                createdAt = Instant.now()
-            )
-            mosqueService.createNearestMosque(mosque)
+        val mosque = mosqueService.createNearestMosque(
+            mosqueRequest.toMosque(imageUrl)
+        )
 
-            ResponseEntity.ok(mapOf("success" to true, "mosque" to mosque))
-        } catch (e: Exception) {
-            ResponseEntity.badRequest().body(mapOf("success" to false, "error" to e.message))
-        }
+        val response = mapOf(
+            "success" to true,
+            "mosque" to mosque.toMosqueResponse()
+        )
+
+        return ResponseEntity.status(HttpStatus.CREATED).body(response)
     }
 
 
@@ -55,21 +47,21 @@ class MosqueController(
     fun updateMosqueImage(
         @PathVariable id: UUID,
         @RequestPart("image") image: MultipartFile
-    ): ResponseEntity<Any> {
-        val mosque = mosqueService.getMosqueById(id)
-            ?: return ResponseEntity.status(HttpStatus.NOT_FOUND)
-                .body(mapOf("success" to false, "error" to "Mosque not found"))
-
-
+    ): ResponseEntity<Map<String, Any>> {
         val newImageUrl = imageStorageService.uploadImage(
             file = image,
-            fileName = mosque.name,
+            fileName = "mosque-$id",
             folderName = "mosques"
         )
 
-        mosqueService.updateMosqueImage(id, newImageUrl)
+        val updatedMosque = mosqueService.updateMosqueImage(id, newImageUrl)
 
-        return ResponseEntity.ok(mapOf("success" to true, "mosque" to mosque.copy(imageUrl = newImageUrl)))
+        return ResponseEntity.ok(
+            mapOf(
+                "success" to true,
+                "mosque" to updatedMosque.toMosqueResponse()
+            )
+        )
     }
 }
 
