@@ -25,7 +25,8 @@ interface ChatRepository : JpaRepository<Chat, UUID> {
     )
     fun findByUsersIds(userIds: Set<UUID>): Chat?
 
-    @Query("SELECT c FROM Chat c JOIN c.users u WHERE u.id = :userId AND c.cleanUpStatus = 'NONE'")
+    @Query(""" SELECT c FROM Chat c JOIN c.users u WHERE u.id = :userId 
+        AND NOT EXISTS (SELECT 1 FROM DeletedChat dc WHERE dc.chatId = c.id) """)
     fun findAllByUserId(userId: UUID, pageable: Pageable): Page<Chat>
 
 
@@ -44,8 +45,5 @@ interface ChatRepository : JpaRepository<Chat, UUID> {
     fun findUnreadCountsForChats(
         @Param("chatIds") chatIds: List<UUID>
     ): List<ChatUnreadMessagesCount>
-
-
-    fun findAllByCleanUpStatusIn(cleanUpStatus: List<CleanUpStatus>): List<Chat>
 }
 

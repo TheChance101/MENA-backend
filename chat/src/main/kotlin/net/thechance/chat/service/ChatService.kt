@@ -2,6 +2,7 @@ package net.thechance.chat.service
 
 import net.thechance.chat.entity.*
 import net.thechance.chat.repository.ChatRepository
+import net.thechance.chat.repository.DeletedChatRepository
 import net.thechance.chat.repository.MessageRepository
 import net.thechance.chat.service.exception.DeleteChatException
 import net.thechance.chat.service.exception.NotFoundException
@@ -22,6 +23,7 @@ import java.util.UUID
 class ChatService(
     private val messageRepository: MessageRepository,
     private val chatRepository: ChatRepository,
+    private val deletedChatRepository: DeletedChatRepository,
     private val contactUserService: ContactUserService,
     private val attachmentStorageService: AttachmentStorageService,
     private val contactService: ContactService
@@ -146,6 +148,7 @@ class ChatService(
         val currentChat = chatRepository.findByIdOrNull(chatId) ?: throw NotFoundException("no chat found with this id $chatId")
         deleteImageFolderOfChat(currentChat)
         deleteAllChatData(currentChat)
+        //deletedChatRepository.save(DeletedChat(chatId = chatId, CleanUpStatus.DELETED))
     }
 
     private fun deleteImageFolderOfChat(chat: Chat){
@@ -153,7 +156,7 @@ class ChatService(
             attachmentStorageService.deleteFolder(chat.id.toString())
             println("successfully deleting images folder")
         }catch (e: Exception){
-            chatRepository.save(chat.setCleanUpStatus(CleanUpStatus.S3_DELETED_FAILED))
+            deletedChatRepository.save(DeletedChat(chatId = chat.id, CleanUpStatus.S3_DELETED_FAILED))
             throw e
         }
     }
@@ -162,7 +165,7 @@ class ChatService(
         try {
             messageRepository.deleteAllByChatId(chat.id)
         }catch (e: Exception){
-            chatRepository.save(chat.setCleanUpStatus(CleanUpStatus.CLEANUP_FAILED))
+            deletedChatRepository.save(DeletedChat(chatId = chat.id, CleanUpStatus.CLEANUP_FAILED))
             throw DeleteChatException("Error clean up chat data: ${e.message}")
         }
     }

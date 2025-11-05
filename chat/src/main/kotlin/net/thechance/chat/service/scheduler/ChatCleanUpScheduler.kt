@@ -2,7 +2,8 @@ package net.thechance.chat.service.scheduler
 
 import jakarta.transaction.Transactional
 import net.thechance.chat.entity.CleanUpStatus
-import net.thechance.chat.repository.ChatRepository
+import net.thechance.chat.entity.DeletedChat
+import net.thechance.chat.repository.DeletedChatRepository
 import net.thechance.chat.repository.MessageRepository
 import net.thechance.chat.service.AttachmentStorageService
 import org.springframework.scheduling.annotation.Scheduled
@@ -11,7 +12,7 @@ import java.util.*
 
 @Component
 class ChatCleanUpScheduler(
-    val chatRepository: ChatRepository,
+    val deletedChatRepository: DeletedChatRepository,
     val messageRepository: MessageRepository,
     val attachmentStorageService: AttachmentStorageService,
 ){
@@ -20,15 +21,16 @@ class ChatCleanUpScheduler(
     @Scheduled(initialDelay = ONE_HOUR, fixedDelay = ONE_HOUR)
     fun retryChatCleanUp(){
         try {
-            val failerDeletedChats = chatRepository.findAllByCleanUpStatusIn(
-                listOf(CleanUpStatus.CLEANUP_FAILED, CleanUpStatus.S3_DELETED_FAILED)
-            )
+            val failingDeletedChats = deletedChatRepository.findAll()
+            if(failingDeletedChats.isEmpty()) return
 
-            failerDeletedChats.forEach {
+            failingDeletedChats.forEach {
                 if(it.cleanUpStatus == CleanUpStatus.S3_DELETED_FAILED){
-                    cleanUpImages(it.id.toString())
+                    cleanUpImages(it.chatId.toString())
                 }
-                cleanUpChatData(it.id)
+                cleanUpChatData(it.chatId)
+                //deletedChatRepository.save(DeletedChat(chatId = it.chatId, CleanUpStatus.DELETED))
+
             }
         }catch (e: Exception){
             println("failing of chat clean up scheduler: ${e.message}")
@@ -55,6 +57,7 @@ class ChatCleanUpScheduler(
         while (attempts < MAX_ATTEMPTS){
             try {
                 messageRepository.deleteAllByChatId(chatId)
+                //deletedChatRepository.deleteById(chatId)
                 break
             }catch (e: Exception){
                 attempts++

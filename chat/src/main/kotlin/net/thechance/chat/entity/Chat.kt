@@ -17,19 +17,4 @@ data class Chat(
         inverseJoinColumns = [JoinColumn(name = "user_id", referencedColumnName = "id")]
     )
     val users: MutableSet<ContactUser> = mutableSetOf(),
-
-    @Column(name = "cleanup_status", nullable = false)
-    @Enumerated(EnumType.STRING)
-    var cleanUpStatus : CleanUpStatus = CleanUpStatus.NONE
-){
-    fun setCleanUpStatus(cleanUpStatus: CleanUpStatus): Chat{
-        this.cleanUpStatus = cleanUpStatus
-        return this
-    }
-}
-
-enum class CleanUpStatus{
-    NONE,
-    S3_DELETED_FAILED,
-    CLEANUP_FAILED,
-}
+    )

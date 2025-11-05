@@ -27,7 +27,7 @@ fun Message.toResponse(requesterId: UUID): MessageResponse {
         senderId = senderId,
         chatId = chatId,
         text = text,
-        imageUrl = imageUrl,
+        imageUrl = imageUrl?.replace("localhost","10.0.2.2"),
         sendAt = sentAt,
         isRead = isRead,
         isMine = requesterId == senderId
