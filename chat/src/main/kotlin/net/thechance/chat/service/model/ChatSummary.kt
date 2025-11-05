@@ -24,15 +24,20 @@ fun Chat.toSummary(userId: UUID, otherUser: ContactUser?, lastMessage: Message?,
         id = id,
         name = otherUser?.let { "${otherUser.firstName} ${otherUser.lastName}" } ?: "",
         imageUrl = otherUser?.imageUrl,
-        lastMessage = lastMessage?.let {
+        lastMessage = lastMessage?.let { msg ->
+            val displayText = when {
+                !msg.text.isNullOrEmpty() -> msg.text
+                !msg.imageUrl.isNullOrEmpty() -> "Photo"
+                !msg.audioUrl.isNullOrEmpty() -> "Audio"
+                else -> "Unsupported"
+            }
+
             ChatSummary.Message(
-                text = lastMessage.text ?: "photo",
-                sentAt = lastMessage.sentAt,
-                isMine = lastMessage.senderId == userId
+                text = displayText,
+                sentAt = msg.sentAt,
+                isMine = msg.senderId == userId
             )
         },
         unReadMessagesCount = unreadCount
     )
 }
-
-

@@ -10,6 +10,7 @@ import net.thechance.chat.service.model.MessageImageRequestArgs
 import net.thechance.chat.service.model.MessageRequestArgs
 import net.thechance.chat.service.model.toModel
 import net.thechance.chat.service.model.toSummary
+import net.thechance.chat.service.model.MessageAudioRequestArgs
 import org.springframework.data.domain.Page
 import org.springframework.data.domain.Pageable
 import org.springframework.data.repository.findByIdOrNull
@@ -75,6 +76,23 @@ class ChatService(
                 senderId = args.senderId,
                 chatId = args.chatId,
                 imageUrl = imageUrl
+            )
+        )
+    }
+
+    @Transactional
+    fun saveMessageAudio(args: MessageAudioRequestArgs): Message {
+        val audioUrl = attachmentStorageService.uploadAudio(
+            file = args.audio,
+            fileName = args.audio.originalFilename ?: "${Instant.now()}-Untitled",
+            folderName = FOLDER_NAME
+        )
+
+        return messageRepository.save(
+            Message(
+                senderId = args.senderId,
+                chatId = args.chatId,
+                audioUrl = audioUrl
             )
         )
     }
@@ -145,7 +163,6 @@ class ChatService(
         return contact?.let { "${it.firstName} ${it.lastName}" }
             ?: user?.let { "${it.firstName} ${it.lastName}" }.orEmpty()
     }
-
 
     companion object {
         private const val FOLDER_NAME = "chat_attachments"

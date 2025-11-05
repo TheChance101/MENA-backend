@@ -1,6 +1,6 @@
 package net.thechance.identity.service
 
-import net.thechance.identity.api.dto.AuthResponse
+import net.thechance.identity.api.dto.auth.AuthResponse
 import net.thechance.identity.entity.AdminUser
 import net.thechance.identity.exception.InvalidCredentialsException
 import net.thechance.identity.exception.InvalidRefreshTokenException

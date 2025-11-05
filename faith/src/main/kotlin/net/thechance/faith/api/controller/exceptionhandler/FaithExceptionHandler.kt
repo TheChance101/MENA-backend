@@ -52,7 +52,7 @@ class FaithExceptionHandler {
     @ExceptionHandler(InvalidImageFormatException::class)
     fun onInvalidImageFormatError(exception: InvalidImageFormatException): ResponseEntity<ApiErrorResponse> {
         return createErrorResponse(
-            message ="Invalid picture format",
+            message = "Invalid picture format",
             exception = exception,
             status = HttpStatus.BAD_REQUEST,
         )
@@ -75,7 +75,6 @@ class FaithExceptionHandler {
             status = HttpStatus.BAD_REQUEST
         )
     }
-
     private fun createErrorResponse(
         message: String,
         exception: Exception,

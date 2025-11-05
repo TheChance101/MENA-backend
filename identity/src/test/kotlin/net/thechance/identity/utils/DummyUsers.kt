@@ -2,7 +2,8 @@ package net.thechance.identity.utils
 
 import net.thechance.identity.entity.User
 import java.time.LocalDate
-import java.util.UUID
+import java.time.LocalDateTime
+import java.util.*
 
 object DummyUsers {
 	val validUser1 = User(
@@ -14,7 +15,10 @@ object DummyUsers {
         imageUrl = null,
         id = UUID.randomUUID(),
         birthDate = LocalDate.now(),
-        gender = User.Gender.MALE.toInt()
+        gender = User.Gender.MALE.toInt(),
+        lastVisitAt = LocalDateTime.now(),
+        lastLoginAt = LocalDateTime.now(),
+        status = User.Status.ACTIVE
     )
 	val validUser2 = User(
 		phoneNumber = "+201293393332",
@@ -25,7 +29,10 @@ object DummyUsers {
 		imageUrl = null,
         id = UUID.randomUUID(),
         birthDate = LocalDate.now(),
-        gender = User.Gender.MALE.toInt()
+        gender = User.Gender.MALE.toInt(),
+        lastVisitAt = LocalDateTime.now(),
+        lastLoginAt = LocalDateTime.now(),
+        status = User.Status.ACTIVE
 	)
 	val validUser3 = User(
 		phoneNumber = "+201293393333",
@@ -36,7 +43,10 @@ object DummyUsers {
 		imageUrl = null,
         id = UUID.randomUUID(),
         birthDate = LocalDate.now(),
-        gender = User.Gender.MALE.toInt()
+        gender = User.Gender.MALE.toInt(),
+        lastVisitAt = LocalDateTime.now(),
+        lastLoginAt = LocalDateTime.now(),
+        status = User.Status.ACTIVE
 	)
 	val validUser4 = User(
 		phoneNumber = "+201293393334",
@@ -47,7 +57,10 @@ object DummyUsers {
 		imageUrl = null,
         id = UUID.randomUUID(),
         birthDate = LocalDate.now(),
-        gender = User.Gender.MALE.toInt()
+        gender = User.Gender.MALE.toInt(),
+        lastVisitAt = LocalDateTime.now(),
+        lastLoginAt = LocalDateTime.now(),
+        status = User.Status.ACTIVE
 	)
 	val validUser5 = User(
 		phoneNumber = "+201293393335",
@@ -58,7 +71,10 @@ object DummyUsers {
 		imageUrl = null,
         id = UUID.randomUUID(),
         birthDate = LocalDate.now(),
-        gender = User.Gender.MALE.toInt()
+        gender = User.Gender.MALE.toInt(),
+        lastVisitAt = LocalDateTime.now(),
+        lastLoginAt = LocalDateTime.now(),
+        status = User.Status.ACTIVE
 	)
 	val validUser6 = User(
 		phoneNumber = "+201293393336",
@@ -69,7 +85,10 @@ object DummyUsers {
 		imageUrl = null,
         id = UUID.randomUUID(),
         birthDate = LocalDate.now(),
-        gender = User.Gender.MALE.toInt()
+        gender = User.Gender.MALE.toInt(),
+        lastVisitAt = LocalDateTime.now(),
+        lastLoginAt = LocalDateTime.now(),
+        status = User.Status.ACTIVE
 	)
 
 	val userWithInvalidPasswordLength = User(
@@ -79,7 +98,10 @@ object DummyUsers {
 		imageUrl = null,
         id = UUID.randomUUID(),
         birthDate = LocalDate.now(),
-        gender = User.Gender.MALE.toInt()
+        gender = User.Gender.MALE.toInt(),
+        lastVisitAt = LocalDateTime.now(),
+        lastLoginAt = LocalDateTime.now(),
+        status = User.Status.ACTIVE
 	)
 	val userWithInvalidPassword = User(
 		phoneNumber = "+201293393331", password = "test1234453", firstName = "",
@@ -88,7 +110,10 @@ object DummyUsers {
 		imageUrl = null,
         id = UUID.randomUUID(),
         birthDate = LocalDate.now(),
-        gender = User.Gender.MALE.toInt()
+        gender = User.Gender.MALE.toInt(),
+        lastVisitAt = LocalDateTime.now(),
+        lastLoginAt = LocalDateTime.now(),
+        status = User.Status.ACTIVE
 	)
 	val userWithInvalidPhoneNumber = User(
 		phoneNumber = "123456789", password = "test12300", firstName = "",
@@ -97,7 +122,10 @@ object DummyUsers {
 		imageUrl = null,
         id = UUID.randomUUID(),
         birthDate = LocalDate.now(),
-        gender = User.Gender.MALE.toInt()
+        gender = User.Gender.MALE.toInt(),
+        lastVisitAt = LocalDateTime.now(),
+        lastLoginAt = LocalDateTime.now(),
+        status = User.Status.ACTIVE
 	)
 	val userWithInvalidPasswordAndPhoneNumber = User(
 		phoneNumber = "123456789", password = "test123456", firstName = "",
@@ -106,6 +134,9 @@ object DummyUsers {
 		imageUrl = null,
         id = UUID.randomUUID(),
         birthDate = LocalDate.now(),
-        gender = User.Gender.MALE.toInt()
+        gender = User.Gender.MALE.toInt(),
+        lastVisitAt = LocalDateTime.now(),
+        lastLoginAt = LocalDateTime.now(),
+        status = User.Status.ACTIVE
 	)
 }
