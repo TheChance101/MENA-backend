@@ -35,7 +35,6 @@ class MosqueController(
         )
 
         val response = mapOf(
-            "success" to true,
             "mosque" to mosque.toMosqueResponse()
         )
 
@@ -58,7 +57,6 @@ class MosqueController(
 
         return ResponseEntity.ok(
             mapOf(
-                "success" to true,
                 "mosque" to updatedMosque.toMosqueResponse()
             )
         )
