@@ -24,7 +24,7 @@ class MosqueController(
     fun createMosque(
         @RequestPart("mosque") mosqueRequest: MosqueRequest,
         @RequestPart("image") image: MultipartFile
-    ): ResponseEntity<Map<String, MosqueResponse>> {
+    ): ResponseEntity<MosqueResponse> {
         val imageUrl = imageStorageService.uploadImage(
             file = image,
             fileName = mosqueRequest.name,
@@ -35,10 +35,7 @@ class MosqueController(
             mosqueRequest.toMosque(imageUrl)
         )
 
-        val response = mapOf(
-            "mosque" to mosque.toMosqueResponse()
-        )
-
+        val response = mosque.toMosqueResponse()
         return ResponseEntity.status(HttpStatus.CREATED).body(response)
     }
 
@@ -47,7 +44,7 @@ class MosqueController(
     fun updateMosqueImage(
         @PathVariable id: UUID,
         @RequestPart("image") image: MultipartFile
-    ): ResponseEntity<Map<String, MosqueResponse>> {
+    ): ResponseEntity<MosqueResponse> {
         val newImageUrl = imageStorageService.uploadImage(
             file = image,
             fileName = "mosque-$id",
@@ -56,11 +53,7 @@ class MosqueController(
 
         val updatedMosque = mosqueService.updateMosqueImage(id, newImageUrl)
 
-        return ResponseEntity.ok(
-            mapOf(
-                "mosque" to updatedMosque.toMosqueResponse()
-            )
-        )
+        return ResponseEntity.ok(updatedMosque.toMosqueResponse())
     }
 }
 
