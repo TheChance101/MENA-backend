@@ -86,11 +86,10 @@ class DukanController(
 
     @GetMapping("/categories/{categoryId}")
     fun getAllByCategoryId(
-        @AuthenticationPrincipal userId: UUID?,
+        @AuthenticationPrincipal userId: UUID,
         @PathVariable("categoryId") categoryId: UUID,
         @PageableDefault(size = 10, page = 0, sort = ["createdAt"], direction = Sort.Direction.DESC) pageable: Pageable
     ): ResponseEntity<Page<DukanResponse>> {
-
         val dukansPage = dukanService.getAllByCategoryId(categoryId, pageable)
         val response = mapDukansWithFavorites(userId, dukansPage)
         return ResponseEntity.ok(response)
@@ -98,7 +97,7 @@ class DukanController(
 
     @GetMapping("/editor_picks")
     fun getEditorPicksDukan(
-        @AuthenticationPrincipal userId: UUID?,
+        @AuthenticationPrincipal userId: UUID,
         @PageableDefault(size = 5, page = 0, sort = ["createdAt"], direction = Sort.Direction.DESC)
         pageable: Pageable
     ): ResponseEntity<Page<DukanResponse>> {
@@ -106,17 +105,15 @@ class DukanController(
         return ResponseEntity.ok(response)
     }
 
-    private fun getAllEditorPicksWithFavorites(userId: UUID?, pageable: Pageable): Page<DukanResponse> {
+    private fun getAllEditorPicksWithFavorites(userId: UUID, pageable: Pageable): Page<DukanResponse> {
         val dukansPage = dukanService.getAllEditorPicksDukan(userId, pageable)
         return mapDukansWithFavorites(userId, dukansPage)
     }
 
-    private fun mapDukansWithFavorites(userId: UUID?, dukans: Page<Dukan>): Page<DukanResponse> {
-        val favoriteIds = if (userId != null) {
-            favouriteDukanService.getUserFavorites(userId)
-                .map { it.dukanId }
-                .toList()
-        } else emptySet()
+    private fun mapDukansWithFavorites(userId: UUID, dukans: Page<Dukan>): Page<DukanResponse> {
+        val favoriteIds = favouriteDukanService.getUserFavorites(userId)
+            .map { it.dukanId }
+            .toList()
 
         return dukans.map { dukan ->
             dukan.toDukanResponse(isFavorite = favoriteIds.contains(dukan.id))
