@@ -66,6 +66,7 @@ class CartService(
         cart.items.remove(item)
         if (cart.items.isEmpty()) cartRepository.delete(cart)
         else {
+            cart.calculateTotalPrice()
             cartRepository.save(cart)
         }
     }
