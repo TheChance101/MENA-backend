@@ -167,7 +167,7 @@ class ChatService(
             chatRepository.deleteChatUsersByChatId(chat.id)
             chatRepository.deleteChatById(chat.id)
         }catch (e: Exception){
-            deletedChatRepository.save(DeletedChat(chatId = chat.id, CleanUpStatus.CLEANUP_FAILED))
+            deletedChatRepository.save(DeletedChat(chatId = chat.id, CleanUpStatus.DATA_CLEANUP_FAILED))
             throw DeleteChatException("Error clean up chat data: ${e.message}")
         }
     }

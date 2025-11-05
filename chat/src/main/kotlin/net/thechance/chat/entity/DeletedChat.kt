@@ -6,6 +6,7 @@ import jakarta.persistence.EnumType
 import jakarta.persistence.Enumerated
 import jakarta.persistence.Id
 import jakarta.persistence.Table
+import java.time.Instant
 import java.util.UUID
 
 @Entity
@@ -15,11 +16,14 @@ data class DeletedChat(
     val chatId : UUID,
     @Column(name = "cleanup_status", nullable = false)
     @Enumerated(EnumType.STRING)
-    var cleanUpStatus : CleanUpStatus
+    val cleanUpStatus : CleanUpStatus,
+    @Column(name="deleted_at")
+    val deletedAt: Instant = Instant.now()
 )
 
 enum class CleanUpStatus{
+    PENDING,
     S3_DELETED_FAILED,
-    CLEANUP_FAILED,
+    DATA_CLEANUP_FAILED,
     DELETED
 }
