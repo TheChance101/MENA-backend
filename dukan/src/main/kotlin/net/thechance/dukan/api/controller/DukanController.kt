@@ -2,19 +2,16 @@ package net.thechance.dukan.api.controller
 
 import jakarta.validation.Valid
 import jakarta.validation.constraints.NotBlank
-import net.thechance.dukan.api.utils.EndPoints.DUKAN_PATH
 import net.thechance.dukan.api.dto.category.DukanCategoryResponse
 import net.thechance.dukan.api.dto.color.DukanColorResponse
 import net.thechance.dukan.api.dto.dukan.*
-import net.thechance.dukan.entity.Dukan
-import net.thechance.dukan.service.DukanService
 import net.thechance.dukan.api.mapper.category.DukanLanguage
 import net.thechance.dukan.api.mapper.category.toDto
-import net.thechance.dukan.api.mapper.dukan.toDto
-import net.thechance.dukan.api.mapper.dukan.toDukanCreationParams
-import net.thechance.dukan.api.mapper.dukan.toDukanResponse
-import net.thechance.dukan.api.mapper.dukan.toDukanStyleResponse
-import net.thechance.dukan.api.mapper.dukan.toResponse
+import net.thechance.dukan.api.mapper.dukan.*
+import net.thechance.dukan.api.utils.EndPoints.DUKAN_PATH
+import net.thechance.dukan.entity.Dukan
+import net.thechance.dukan.service.DukanService
+import net.thechance.dukan.service.FavouriteDukanService
 import org.springframework.data.domain.Page
 import org.springframework.data.domain.Pageable
 import org.springframework.data.domain.Sort
@@ -24,13 +21,13 @@ import org.springframework.security.core.annotation.AuthenticationPrincipal
 import org.springframework.web.bind.annotation.*
 import org.springframework.web.multipart.MultipartFile
 import java.util.*
-import kotlin.collections.emptyList
 
 
 @RestController
 @RequestMapping(DUKAN_PATH)
 class DukanController(
     private val dukanService: DukanService,
+    private val favouriteDukanService: FavouriteDukanService
 ) {
     @GetMapping("/styles")
     fun getAllStyles(): ResponseEntity<DukanStyleResponse> {
@@ -116,7 +113,7 @@ class DukanController(
 
     private fun mapDukansWithFavorites(userId: UUID?, dukans: Page<Dukan>): Page<DukanResponse> {
         val favoriteIds = if (userId != null) {
-            dukanService.getUserFavorites(userId)
+            favouriteDukanService.getUserFavorites(userId)
                 .map { it.dukanId }
                 .toList()
         } else emptySet()
@@ -132,7 +129,7 @@ class DukanController(
         @AuthenticationPrincipal userId: UUID,
         @PathVariable("dukanId") dukanId: UUID): ResponseEntity<DukanDetailsResponse> {
         val dukan = dukanService.getDukanDetailsById(dukanId)
-        val isFavorite = dukanService.isFavorite(userId, dukanId)
+        val isFavorite = favouriteDukanService.isFavorite(userId, dukanId)
 
         val dukanDetailsResponse = dukan.toResponse(isFavorite)
         return ResponseEntity.ok(dukanDetailsResponse)
@@ -154,8 +151,8 @@ class DukanController(
     fun toggleFavoriteStatus(
         @AuthenticationPrincipal userId: UUID,
         @PathVariable dukanId: UUID,
-    ): ResponseEntity<Boolean> {
-        val response = dukanService.toggleFavoriteStatus(userId, dukanId)
+    ): ResponseEntity<Unit> {
+        val response = favouriteDukanService.toggleFavoriteStatus(userId, dukanId)
         return ResponseEntity.ok(response)
     }
 }

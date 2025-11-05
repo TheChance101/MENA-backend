@@ -2,25 +2,22 @@ package net.thechance.dukan.service
 
 import jakarta.persistence.EntityNotFoundException
 import jakarta.transaction.Transactional
+import net.thechance.dukan.api.mapper.dukan.toDukan
 import net.thechance.dukan.entity.Dukan
 import net.thechance.dukan.entity.DukanCategory
 import net.thechance.dukan.entity.DukanColor
-import net.thechance.dukan.service.exception.DukanCreationFailedException
-import net.thechance.dukan.service.exception.DukanNotFoundException
-import net.thechance.dukan.api.mapper.dukan.toDukan
-import net.thechance.dukan.entity.FavoriteDukan
 import net.thechance.dukan.repository.DukanCategoryRepository
 import net.thechance.dukan.repository.DukanColorRepository
 import net.thechance.dukan.repository.DukanRepository
-import net.thechance.dukan.repository.FavoriteDukanRepository
+import net.thechance.dukan.service.exception.DukanCreationFailedException
+import net.thechance.dukan.service.exception.DukanNotFoundException
 import net.thechance.dukan.service.model.DukanCreationParams
 import net.thechance.events.publisher.MenaEventPublisher
-import org.springframework.data.repository.findByIdOrNull
 import org.springframework.data.domain.Page
 import org.springframework.data.domain.Pageable
+import org.springframework.data.repository.findByIdOrNull
 import org.springframework.stereotype.Service
 import org.springframework.web.multipart.MultipartFile
-import java.time.Instant
 import java.util.*
 import kotlin.enums.EnumEntries
 
@@ -30,7 +27,6 @@ class DukanService(
     private val dukanColorRepository: DukanColorRepository,
     private val imageStorageService: ImageStorageService,
     private val dukanCategoryRepository: DukanCategoryRepository,
-    private val favoriteDukanRepository: FavoriteDukanRepository,
     private val eventPublisher: MenaEventPublisher
 ) {
     fun getAllStyles(): EnumEntries<Dukan.Style> = Dukan.Style.entries
@@ -100,30 +96,6 @@ class DukanService(
             throw DukanCreationFailedException()
         }
     }
-
-    @Transactional
-    fun toggleFavoriteStatus(userId: UUID, dukanId: UUID): Boolean {
-        val existing = favoriteDukanRepository.findByUserIdAndDukanId(userId, dukanId)
-
-        return if (existing != null) {
-            favoriteDukanRepository.delete(existing)
-            false
-        } else {
-            favoriteDukanRepository.save(
-                FavoriteDukan(userId = userId, dukanId = dukanId)
-            )
-            true
-        }
-    }
-
-    fun getUserFavorites(userId: UUID): List<FavoriteDukan> {
-        return favoriteDukanRepository.findAllByUserId(userId)
-    }
-
-    fun isFavorite(userId: UUID, dukanId: UUID): Boolean {
-        return favoriteDukanRepository.findByUserIdAndDukanId(userId, dukanId) != null
-    }
-
 
     fun getAllBestDukansAround(
         lat: Double,
