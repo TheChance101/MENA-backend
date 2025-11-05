@@ -1,6 +1,7 @@
 package net.thechance.faith.api.controller
 
 import net.thechance.faith.api.dto.nearestMosque.MosqueRequest
+import net.thechance.faith.api.dto.nearestMosque.MosqueResponse
 import net.thechance.faith.api.dto.nearestMosque.toMosque
 import net.thechance.faith.api.dto.nearestMosque.toMosqueResponse
 import net.thechance.faith.service.mosque.FaithImageStorageService
@@ -23,7 +24,7 @@ class MosqueController(
     fun createMosque(
         @RequestPart("mosque") mosqueRequest: MosqueRequest,
         @RequestPart("image") image: MultipartFile
-    ): ResponseEntity<Map<String, Any>> {
+    ): ResponseEntity<Map<String, MosqueResponse>> {
         val imageUrl = imageStorageService.uploadImage(
             file = image,
             fileName = mosqueRequest.name,
@@ -46,7 +47,7 @@ class MosqueController(
     fun updateMosqueImage(
         @PathVariable id: UUID,
         @RequestPart("image") image: MultipartFile
-    ): ResponseEntity<Map<String, Any>> {
+    ): ResponseEntity<Map<String, MosqueResponse>> {
         val newImageUrl = imageStorageService.uploadImage(
             file = image,
             fileName = "mosque-$id",
