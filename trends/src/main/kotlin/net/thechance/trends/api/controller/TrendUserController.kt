@@ -8,6 +8,7 @@ import org.springframework.data.domain.Pageable
 import org.springframework.http.ResponseEntity
 import org.springframework.security.core.annotation.AuthenticationPrincipal
 import org.springframework.web.bind.annotation.GetMapping
+import org.springframework.web.bind.annotation.PathVariable
 import org.springframework.web.bind.annotation.RequestMapping
 import org.springframework.web.bind.annotation.RestController
 import java.util.*
@@ -18,13 +19,14 @@ class TrendUserController(
     private val trendsService: TrendsService
 ) {
 
-    @GetMapping
+    @GetMapping("/{trendId}", "")
     fun getAllTrendsByUserId(
         pageable: Pageable,
+        @PathVariable(required = false) trendId: UUID? = null,
         @AuthenticationPrincipal currentUserId: UUID
     ): ResponseEntity<PagingResponse<TrendResponse>> {
 
-        val trends = trendsService.getAllTrendsByUserId(pageable, currentUserId).content.map { it.toResponse() }
+        val trends = trendsService.getAllTrendsByUserId(pageable, currentUserId, trendId).content.map { it.toResponse() }
 
         val result = PagingResponse(
             pageNumber = pageable.pageNumber,
