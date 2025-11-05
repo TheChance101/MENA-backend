@@ -3,8 +3,8 @@ package net.thechance.dukan.api.controller
 import jakarta.validation.Valid
 import net.thechance.dukan.api.dto.product.*
 import net.thechance.dukan.api.mapper.product.toProductCreationParams
-import net.thechance.dukan.api.mapper.product.toProductResponse
 import net.thechance.dukan.api.mapper.product.toProductUpdateParams
+import net.thechance.dukan.api.mapper.product.toResponse
 import net.thechance.dukan.api.utils.EndPoints.DUKAN_PATH
 import net.thechance.dukan.service.DukanProductService
 import org.springframework.data.domain.Page
@@ -54,12 +54,7 @@ class DukanProductController(
     ): ResponseEntity<Page<DukanProductResponse>> {
         val products = dukanProductService.getProductsByShelf(userId, shelfId, pageable)
 
-        val productsResponse = products.map {
-            it.product.toProductResponse(
-                isFavorite = it.isFavorite,
-                quantityInCart = it.product.tempQuantity
-            )
-        }
+        val productsResponse = products.map { it.toResponse() }
 
         return ResponseEntity.ok(productsResponse)
     }
@@ -70,14 +65,8 @@ class DukanProductController(
         @PathVariable("productId") productId: UUID
     ): ResponseEntity<DukanProductResponse> {
         val product = dukanProductService.getProductById(userId, productId)
-        val isProductFavorite = dukanProductService.isProductFavorite(userId, productId)
 
-        val productResponse = product.toProductResponse(
-            isFavorite = isProductFavorite,
-            quantityInCart = product.tempQuantity
-        )
-
-        return ResponseEntity.ok(productResponse)
+        return ResponseEntity.ok(product.toResponse())
     }
 
     @PutMapping("/{productId}")
