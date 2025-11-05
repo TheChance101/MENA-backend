@@ -16,6 +16,10 @@ class ReciterNotFoundException(
     message: String = "Reciter not found."
 ) : RuntimeException(message)
 
+class InvalidRequestParameterException(
+    message: String = "Invalid request parameter."
+) : RuntimeException(message)
+
 class InvalidImageFormatException(
     message: String = "Invalid picture format"
 ) : RuntimeException(message)
