@@ -1,6 +1,7 @@
 package net.thechance.dukan.repository
 
 import net.thechance.dukan.entity.DukanProduct
+import net.thechance.dukan.service.model.DukanProductWithFavoriteAndQuantity
 import org.springframework.data.domain.Page
 import org.springframework.data.jpa.repository.JpaRepository
 import org.springframework.stereotype.Repository
@@ -17,44 +18,53 @@ interface DukanProductRepository : JpaRepository<DukanProduct, UUID> {
 
     @Query(
         """
-        SELECT product 
-        FROM DukanProduct product
-        JOIN FETCH product.shelf shelf
-        JOIN FETCH shelf.dukan dukan
-        WHERE shelf.id = :shelfId
-        """
+    SELECT new net.thechance.dukan.service.model.DukanProductWithFavoriteAndQuantity(
+        product,
+        CASE WHEN favorite.productId IS NOT NULL THEN true ELSE false END,
+        COALESCE(cartItem.quantity, 0)
     )
-    fun findAllByShelfIdWithDukan(
-        @Param("shelfId") shelfId: UUID,
-        pageable: Pageable
-    ): Page<DukanProduct>
-
-    @Query(
-        """
-        SELECT product 
-        FROM DukanProduct product
-        JOIN FETCH product.shelf shelf
-        JOIN FETCH shelf.dukan dukan
-        WHERE product.id = :productId
-        """
+    FROM DukanProduct product
+    JOIN FETCH product.shelf shelf
+    JOIN FETCH shelf.dukan dukan
+    LEFT JOIN FavoriteProduct favorite
+        ON favorite.productId = product.id
+        AND favorite.userId = :userId
+    LEFT JOIN Cart cart
+        ON cart.userId = :userId
+        AND cart.dukanId = dukan.id
+    LEFT JOIN cart.items cartItem
+        ON cartItem.product.id = product.id
+    WHERE product.id = :productId
+    """
     )
-    fun findByIdWithDukan(
+    fun findProductWithFavoriteAndQuantityById(
+        @Param("userId") userId: UUID,
         @Param("productId") productId: UUID
-    ): DukanProduct
+    ): DukanProductWithFavoriteAndQuantity
+
 
     @Query(
         """
-    SELECT product.id, COALESCE(cartItem.quantity, 0)
+    SELECT new net.thechance.dukan.service.model.DukanProductWithFavoriteAndQuantity(
+        product,
+        CASE WHEN favorite.productId IS NOT NULL THEN true ELSE false END,
+        COALESCE(cartItem.quantity, 0)
+    )
     FROM DukanProduct product
     JOIN product.shelf shelf
     JOIN shelf.dukan dukan
-    LEFT JOIN Cart cart ON cart.userId = :userId AND cart.dukanId = dukan.id
-    LEFT JOIN cart.items cartItem ON cartItem.product.id = product.id
+    LEFT JOIN FavoriteProduct favorite
+        ON favorite.productId = product.id AND favorite.userId = :userId
+    LEFT JOIN Cart cart
+        ON cart.userId = :userId AND cart.dukanId = dukan.id
+    LEFT JOIN cart.items cartItem
+        ON cartItem.product.id = product.id
     WHERE shelf.id = :shelfId
     """
     )
-    fun findProductQuantitiesByUserAndShelf(
+    fun findProductsWithFavoriteAndQuantityByShelf(
         @Param("userId") userId: UUID,
-        @Param("shelfId") shelfId: UUID
-    ): List<Array<Any>>
+        @Param("shelfId") shelfId: UUID,
+        pageable: Pageable
+    ): Page<DukanProductWithFavoriteAndQuantity>
 }

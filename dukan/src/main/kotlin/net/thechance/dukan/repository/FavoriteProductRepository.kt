@@ -8,6 +8,5 @@ import java.util.UUID
 @Repository
 interface FavoriteProductRepository : JpaRepository<FavoriteProduct, UUID> {
 
-    fun findByUserIdAndProductId(userId: UUID, productId: UUID): FavoriteProduct?
-    fun findAllByUserIdAndProductIdIn(userId: UUID, productIds: List<UUID>): List<FavoriteProduct>
+    fun deleteFavoriteProductByProductIdAndUserId(productId: UUID, userId: UUID): Int
 }
