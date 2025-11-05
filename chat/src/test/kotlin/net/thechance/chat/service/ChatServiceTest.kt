@@ -263,6 +263,42 @@ class ChatServiceTest {
         )
         every { contactService.getContactByOwnerIdAndContactUserId(userId, otherUser.id) } returns contact
     }
+    @Test
+    fun `saveMessageAudio should upload audio and return message with audio url`() {
+        val chat = testChat()
+        val senderId = UUID.randomUUID()
+        val audio = mockk<MultipartFile>(relaxed = true)
+        val uploadedAudioUrl = "https://www.example.com/audio/test.m4a"
+
+        every { entityManager.getReference(Chat::class.java, chat.id) } returns chat
+        every { attachmentStorageService.uploadAudio(audio, any(), any()) } returns uploadedAudioUrl
+        every { messageRepository.save(any()) } answers { firstArg() }
+
+        val result = service.saveMessageAudio(
+            net.thechance.chat.service.model.MessageAudioRequestArgs(chat.id, senderId, audio)
+        )
+
+        assertThat(result.audioUrl).isEqualTo(uploadedAudioUrl)
+        assertThat(result.text).isNull()
+        assertThat(result.imageUrl).isNull()
+    }
+
+
+    @Test
+    fun `saveMessageAudio should throw exception when upload fails`() {
+        val chat = testChat()
+        val senderId = UUID.randomUUID()
+        val audio = mockk<MultipartFile>(relaxed = true)
+
+        every { entityManager.getReference(Chat::class.java, chat.id) } returns chat
+        every { attachmentStorageService.uploadAudio(audio, any(), any()) } throws RuntimeException("Upload failed")
+
+        assertThrows<RuntimeException> {
+            service.saveMessageAudio(
+                net.thechance.chat.service.model.MessageAudioRequestArgs(chat.id, senderId, audio)
+            )
+        }
+    }
 
     @Test
     fun `getUserChats marks chat as mine when last message is from current user`() {
