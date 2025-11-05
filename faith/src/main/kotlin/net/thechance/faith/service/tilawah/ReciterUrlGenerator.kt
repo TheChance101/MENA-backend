@@ -12,6 +12,6 @@ class ReciterUrlGenerator {
     }
 
     fun generateSurahSoundsUrl(surahNumber: Int, reciter: Reciter): String {
-        return "${reciter.serverUrl}/zips/${surahNumber.padWithThreeDigits()}.zip"
+        return "${reciter.serverUrl}zips/${surahNumber.padWithThreeDigits()}.zip"
     }
 }
