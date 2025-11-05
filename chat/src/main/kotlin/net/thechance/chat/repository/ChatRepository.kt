@@ -45,5 +45,19 @@ interface ChatRepository : JpaRepository<Chat, UUID> {
     fun findUnreadCountsForChats(
         @Param("chatIds") chatIds: List<UUID>
     ): List<ChatUnreadMessagesCount>
+
+    @Modifying
+    @Query(
+        nativeQuery = true,
+        value = "DELETE FROM chat.chats WHERE chat.chats.id = :chatId"
+    )
+    fun deleteChatById(chatId: UUID)
+
+    @Modifying
+    @Query(
+        nativeQuery = true,
+        value = "DELETE FROM chat.chat_users WHERE chat.chat_users.chat_id = :chatId"
+    )
+    fun deleteChatUsersByChatId(chatId: UUID)
 }
 

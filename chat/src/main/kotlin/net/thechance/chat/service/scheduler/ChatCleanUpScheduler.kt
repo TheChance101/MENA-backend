@@ -3,6 +3,7 @@ package net.thechance.chat.service.scheduler
 import jakarta.transaction.Transactional
 import net.thechance.chat.entity.CleanUpStatus
 import net.thechance.chat.entity.DeletedChat
+import net.thechance.chat.repository.ChatRepository
 import net.thechance.chat.repository.DeletedChatRepository
 import net.thechance.chat.repository.MessageRepository
 import net.thechance.chat.service.AttachmentStorageService
@@ -14,6 +15,7 @@ import java.util.*
 class ChatCleanUpScheduler(
     val deletedChatRepository: DeletedChatRepository,
     val messageRepository: MessageRepository,
+    val chatRepository: ChatRepository,
     val attachmentStorageService: AttachmentStorageService,
 ){
 
@@ -21,7 +23,7 @@ class ChatCleanUpScheduler(
     @Scheduled(initialDelay = ONE_HOUR, fixedDelay = ONE_HOUR)
     fun retryChatCleanUp(){
         try {
-            val failingDeletedChats = deletedChatRepository.findAll()
+            val failingDeletedChats = deletedChatRepository.findAll().filter { it.cleanUpStatus != CleanUpStatus.DELETED }
             if(failingDeletedChats.isEmpty()) return
 
             failingDeletedChats.forEach {
@@ -29,7 +31,7 @@ class ChatCleanUpScheduler(
                     cleanUpImages(it.chatId.toString())
                 }
                 cleanUpChatData(it.chatId)
-                //deletedChatRepository.save(DeletedChat(chatId = it.chatId, CleanUpStatus.DELETED))
+                deletedChatRepository.save(DeletedChat(chatId = it.chatId, CleanUpStatus.DELETED))
 
             }
         }catch (e: Exception){
@@ -57,7 +59,8 @@ class ChatCleanUpScheduler(
         while (attempts < MAX_ATTEMPTS){
             try {
                 messageRepository.deleteAllByChatId(chatId)
-                //deletedChatRepository.deleteById(chatId)
+                chatRepository.deleteChatUsersByChatId(chatId)
+                chatRepository.deleteChatById(chatId)
                 break
             }catch (e: Exception){
                 attempts++

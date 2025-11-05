@@ -148,7 +148,7 @@ class ChatService(
         val currentChat = chatRepository.findByIdOrNull(chatId) ?: throw NotFoundException("no chat found with this id $chatId")
         deleteImageFolderOfChat(currentChat)
         deleteAllChatData(currentChat)
-        //deletedChatRepository.save(DeletedChat(chatId = chatId, CleanUpStatus.DELETED))
+        deletedChatRepository.save(DeletedChat(chatId = chatId, CleanUpStatus.DELETED))
     }
 
     private fun deleteImageFolderOfChat(chat: Chat){
@@ -164,6 +164,8 @@ class ChatService(
     private fun deleteAllChatData(chat: Chat){
         try {
             messageRepository.deleteAllByChatId(chat.id)
+            chatRepository.deleteChatUsersByChatId(chat.id)
+            chatRepository.deleteChatById(chat.id)
         }catch (e: Exception){
             deletedChatRepository.save(DeletedChat(chatId = chat.id, CleanUpStatus.CLEANUP_FAILED))
             throw DeleteChatException("Error clean up chat data: ${e.message}")
