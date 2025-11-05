@@ -2,11 +2,14 @@ package net.thechance.dukan.entity
 
 import jakarta.persistence.Column
 import jakarta.persistence.Entity
-import jakarta.persistence.GeneratedValue
-import jakarta.persistence.GenerationType
+import jakarta.persistence.FetchType
 import jakarta.persistence.Id
+import jakarta.persistence.IdClass
+import jakarta.persistence.JoinColumn
+import jakarta.persistence.ManyToOne
 import jakarta.persistence.Table
 import jakarta.persistence.UniqueConstraint
+import java.io.Serializable
 import java.time.Instant
 import java.util.UUID
 
@@ -18,20 +21,25 @@ import java.util.UUID
     )]
 )
 @Entity
+@IdClass(FavoriteProductId::class)
 data class FavoriteProduct(
     @Id
-    @GeneratedValue(strategy = GenerationType.UUID)
-    val id: UUID = UUID.randomUUID(),
-
-    @Column(name = "user_id", nullable = false)
-    val userId: UUID,
-
     @Column(name = "product_id", nullable = false)
     val productId: UUID,
 
-    @Column(name = "created_at", nullable = false)
-    val createdAt: Instant = Instant.now(),
+    @Id
+    @Column(name = "user_id", nullable = false)
+    val userId: UUID,
 
-    @Column(name = "updated_at", nullable = false)
-    val updatedAt: Instant = Instant.now()
+    @Column(name = "favorite_at", nullable = false)
+    val favoriteAt: Instant = Instant.now(),
+
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "product_id", insertable = false, updatable = false, nullable = true)
+    val product: DukanProduct? = null
 )
+
+data class FavoriteProductId(
+    val productId: UUID = UUID.randomUUID(),
+    val userId: UUID = UUID.randomUUID()
+) : Serializable

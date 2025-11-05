@@ -3,6 +3,7 @@ package net.thechance.dukan.entity
 import jakarta.persistence.*
 import java.time.Instant
 import java.util.*
+import java.util.Collections.emptySet
 
 @Table(
     name = "dukan_products",
@@ -45,5 +46,8 @@ data class DukanProduct(
     var tempQuantity: Int = 0,
 
     @Column(name = "created_at", nullable = false)
-    val createdAt: Instant = Instant.now()
+    val createdAt: Instant = Instant.now(),
+
+    @OneToMany(mappedBy = "productId", fetch = FetchType.LAZY)
+    val favorites: MutableSet<FavoriteProduct> = emptySet()
 )
