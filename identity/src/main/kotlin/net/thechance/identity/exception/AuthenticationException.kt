@@ -7,3 +7,4 @@ class InvalidCredentialsException(message: String) : AuthenticationException(mes
 class UserNotFoundException(message: String) : AuthenticationException(message)
 class InvalidRefreshTokenException : AuthenticationException("Refresh token is invalid or expired")
 class UnauthorizedException : AuthenticationException("Unauthorized")
+class UserAlreadyExistsException(message: String = "User already exists"): AuthenticationException(message)
