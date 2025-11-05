@@ -4,8 +4,8 @@ import org.springframework.context.annotation.Profile
 import org.springframework.stereotype.Service
 
 @Service
-@Profile("dev", "stg", "default", "!prod")
-class FakeOtpGeneratorService : OtpGeneratorService {
+@Profile("!prod")
+class FakeOtpGeneratorService : OtpGenerator {
     override fun generateOtp(): String {
         return "000000"
     }
