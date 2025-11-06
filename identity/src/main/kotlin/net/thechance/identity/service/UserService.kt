@@ -1,10 +1,15 @@
 package net.thechance.identity.service
 
 import jakarta.transaction.Transactional
+import net.thechance.events.publisher.MenaEventPublisher
 import net.thechance.identity.entity.User
 import net.thechance.identity.exception.PasswordNotUpdatedException
 import net.thechance.identity.exception.UserNotFoundException
 import net.thechance.identity.repository.UserRepository
+import net.thechance.identity.service.mapper.createUserUpdatedEvent
+import net.thechance.identity.service.mapper.createUserUpdatedEventForUpdateImage
+import net.thechance.identity.service.mapper.createUserUpdatedEventForUpdatePassword
+import net.thechance.identity.service.mapper.toUserUpdatedEvent
 import net.thechance.identity.service.model.UserServiceModel
 import org.springframework.beans.factory.annotation.Value
 import org.springframework.data.domain.Page
@@ -21,7 +26,8 @@ private typealias ImageUri = String
 class UserService(
     private val userRepository: UserRepository,
     private val identityImageStorageService: IdentityImageStorageService,
-    @param:Value("\${identity.resources.profile-image-directory}") private val profileImageDirectory: String
+    @param:Value("\${identity.resources.profile-image-directory}") private val profileImageDirectory: String,
+    private val eventPublisher: MenaEventPublisher
 ) {
 
     fun findByPhoneNumber(phoneNumber: String): User {
@@ -41,6 +47,7 @@ class UserService(
         val userWithNewPassword = getUserWithNewPassword(phoneNumber, newPassword)
         val savedUser = userRepository.save(userWithNewPassword)
         if (savedUser.password != newPassword) throw PasswordNotUpdatedException()
+        eventPublisher.publish(createUserUpdatedEventForUpdatePassword(newPassword))
     }
 
     private fun getUserWithNewPassword(phoneNumber: String, newPassword: String): User {
@@ -57,8 +64,9 @@ class UserService(
             birthDate = user.birthDate,
             gender = user.gender
         )
-
-        return userRepository.save(updatedUser)
+        val savedUser = userRepository.save(updatedUser)
+        eventPublisher.publish(savedUser.toUserUpdatedEvent(oldUser = userEntity))
+        return savedUser
     }
 
     fun updateUserImage(
@@ -73,6 +81,7 @@ class UserService(
         )
         val updatedUser = user.copy(imageUrl = newImageUrl)
         userRepository.save(updatedUser)
+        eventPublisher.publish(createUserUpdatedEventForUpdateImage(newImageUrl))
         return newImageUrl
     }
 
@@ -81,6 +90,7 @@ class UserService(
         user.imageUrl?.let { imageUrl ->
             identityImageStorageService.deleteImage(imageUrl)
             userRepository.save(user.copy(imageUrl = null))
+            eventPublisher.publish(createUserUpdatedEventForUpdateImage(null))
         }
     }
 
@@ -116,9 +126,9 @@ class UserService(
     fun updateUserStatus(userId: UUID, status: User.Status) {
         val updatedUserCount = userRepository.updateStatus(userId, status)
         if (updatedUserCount == 0) throw UserNotFoundException("User with id: $userId not found")
+        eventPublisher.publish(createUserUpdatedEvent(status))
         /*
-        todo: should send event to notify other modules about user status change
-         and if the user is blocked call logout function to invalidate his access token
+        todo: if the user is blocked call logout function to invalidate his access token
          */
     }
 }
