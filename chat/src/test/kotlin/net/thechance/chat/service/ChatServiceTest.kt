@@ -6,14 +6,14 @@ import io.mockk.mockk
 import io.mockk.verify
 import jakarta.persistence.EntityManager
 import net.thechance.chat.api.dto.MessageRequestDto
-import net.thechance.chat.service.exception.NotFoundException
 import net.thechance.chat.entity.Chat
 import net.thechance.chat.entity.Contact
 import net.thechance.chat.entity.ContactUser
 import net.thechance.chat.entity.Message
 import net.thechance.chat.repository.ChatRepository
+import net.thechance.chat.repository.MessageReactionRepository
 import net.thechance.chat.repository.MessageRepository
-import net.thechance.chat.service.ChatServiceTest.Companion.testUser1
+import net.thechance.chat.service.exception.NotFoundException
 import net.thechance.chat.service.model.ChatModel
 import net.thechance.chat.service.model.MessageImageRequestArgs
 import net.thechance.chat.service.model.MessageRequestArgs
@@ -32,6 +32,7 @@ class ChatServiceTest {
 
     private lateinit var messageRepository: MessageRepository
     private lateinit var chatRepository: ChatRepository
+    private lateinit var messageReactionRepository: MessageReactionRepository
     private lateinit var attachmentStorageService: AttachmentStorageService
     private lateinit var contactUserService: ContactUserService
     private lateinit var contactService: ContactService
@@ -64,6 +65,7 @@ class ChatServiceTest {
     fun setUp() {
         messageRepository = mockk(relaxed = true)
         chatRepository = mockk(relaxed = true)
+        messageReactionRepository = mockk(relaxed = true)
         contactUserService = mockk(relaxed = true)
         attachmentStorageService = mockk(relaxed = true)
         entityManager = mockk(relaxed = true)
@@ -72,6 +74,7 @@ class ChatServiceTest {
 
         service = ChatService(
             messageRepository,
+            messageReactionRepository,
             chatRepository,
             contactUserService,
             attachmentStorageService,
@@ -83,7 +86,7 @@ class ChatServiceTest {
     fun `getChatByUserIds returns existing chat if found`() {
         val requester = testUser2
         val theOtherUser = testUser1
-        val chat = Chat(chatId, mutableSetOf(requester, theOtherUser) )
+        val chat = Chat(chatId, mutableSetOf(requester, theOtherUser))
 
 
         every { contactUserService.getUserById(requester.id) } returns requester
@@ -92,32 +95,36 @@ class ChatServiceTest {
         every { chatRepository.findByUsersIds(setOf(requester.id, theOtherUser.id)) } returns chat
         val result = service.getChatByUserIds(requester.id, theOtherUser.id)
 
-        assertThat(chat.toModel(
-            chatName = "${testContact.firstName} ${testContact.lastName}",
-            imageUrl = theOtherUser.imageUrl.orEmpty(),
-            requesterId = requester.id
-        )).isEqualTo(result)
+        assertThat(
+            chat.toModel(
+                chatName = "${testContact.firstName} ${testContact.lastName}",
+                imageUrl = theOtherUser.imageUrl.orEmpty(),
+                requesterId = requester.id
+            )
+        ).isEqualTo(result)
     }
 
     @Test
     fun `getChatByUserIds creates and returns new chat if not found`() {
         val requester = testUser2
         val theOtherUser = testUser1
-        val newChat = Chat(chatId, mutableSetOf(testUser1,testUser2))
+        val newChat = Chat(chatId, mutableSetOf(testUser1, testUser2))
 
         every { chatRepository.findByUsersIds(setOf(requester.id, theOtherUser.id)) } returns null
         every { contactUserService.getUserById(requester.id) } returns requester
         every { contactUserService.getUserById(theOtherUser.id) } returns theOtherUser
         every { chatRepository.save(any()) } returns newChat
-        every { contactService.getContactByOwnerIdAndContactUserId(requester.id, theOtherUser.id)} returns testContact
+        every { contactService.getContactByOwnerIdAndContactUserId(requester.id, theOtherUser.id) } returns testContact
 
         val result = service.getChatByUserIds(requester.id, theOtherUser.id)
 
-        assertThat(newChat.toModel(
-            chatName = "${testContact.firstName} ${testContact.lastName}",
-            imageUrl = theOtherUser.imageUrl.orEmpty(),
-            requesterId = requester.id
-        )).isEqualTo(result)
+        assertThat(
+            newChat.toModel(
+                chatName = "${testContact.firstName} ${testContact.lastName}",
+                imageUrl = theOtherUser.imageUrl.orEmpty(),
+                requesterId = requester.id
+            )
+        ).isEqualTo(result)
         verify { chatRepository.save(any()) }
     }
 
@@ -262,6 +269,42 @@ class ChatServiceTest {
             }
         )
         every { contactService.getContactByOwnerIdAndContactUserId(userId, otherUser.id) } returns contact
+    }
+    @Test
+    fun `saveMessageAudio should upload audio and return message with audio url`() {
+        val chat = testChat()
+        val senderId = UUID.randomUUID()
+        val audio = mockk<MultipartFile>(relaxed = true)
+        val uploadedAudioUrl = "https://www.example.com/audio/test.m4a"
+
+        every { entityManager.getReference(Chat::class.java, chat.id) } returns chat
+        every { attachmentStorageService.uploadAudio(audio, any(), any()) } returns uploadedAudioUrl
+        every { messageRepository.save(any()) } answers { firstArg() }
+
+        val result = service.saveMessageAudio(
+            net.thechance.chat.service.model.MessageAudioRequestArgs(chat.id, senderId, audio)
+        )
+
+        assertThat(result.audioUrl).isEqualTo(uploadedAudioUrl)
+        assertThat(result.text).isNull()
+        assertThat(result.imageUrl).isNull()
+    }
+
+
+    @Test
+    fun `saveMessageAudio should throw exception when upload fails`() {
+        val chat = testChat()
+        val senderId = UUID.randomUUID()
+        val audio = mockk<MultipartFile>(relaxed = true)
+
+        every { entityManager.getReference(Chat::class.java, chat.id) } returns chat
+        every { attachmentStorageService.uploadAudio(audio, any(), any()) } throws RuntimeException("Upload failed")
+
+        assertThrows<RuntimeException> {
+            service.saveMessageAudio(
+                net.thechance.chat.service.model.MessageAudioRequestArgs(chat.id, senderId, audio)
+            )
+        }
     }
 
     @Test

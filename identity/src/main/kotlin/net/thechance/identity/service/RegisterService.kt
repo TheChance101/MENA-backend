@@ -1,14 +1,15 @@
 package net.thechance.identity.service
 
-import net.thechance.identity.api.dto.AuthResponse
-import net.thechance.identity.api.dto.RequestOtpResponse
+
+import net.thechance.identity.api.dto.auth.AuthResponse
+import net.thechance.identity.api.dto.otp.RequestOtpResponse
 import net.thechance.identity.entity.User
 import net.thechance.identity.exception.UnauthorizedException
 import net.thechance.identity.exception.UserAlreadyExistsException
 import net.thechance.identity.security.JwtService
 import net.thechance.identity.service.model.RegisterUserModel
-import net.thechance.identity.service.phoneNumberValidator.PhoneNumberValidatorService
-import net.thechance.identity.service.sms.SmsService
+import net.thechance.identity.service.phoneNumberValidator.PhoneNumberValidator
+import net.thechance.identity.service.sms.SmsSender
 import org.springframework.security.crypto.password.PasswordEncoder
 import org.springframework.stereotype.Service
 import java.time.LocalDate
@@ -16,9 +17,9 @@ import java.util.*
 
 @Service
 class RegisterService(
-    private val phoneNumberValidatorService: PhoneNumberValidatorService,
+    private val phoneNumberValidator: PhoneNumberValidator,
     private val otpService: OtpService,
-    private val smsService: SmsService,
+    private val smsSender: SmsSender,
     private val userService: UserService,
     private val passwordEncoder: PasswordEncoder,
     private val jwtService: JwtService,
@@ -26,10 +27,10 @@ class RegisterService(
 ) {
 
     fun requestOtp(phoneNumber: String, defaultRegion: String): RequestOtpResponse {
-        val validatedPhoneNumber = phoneNumberValidatorService.validateAndParse(phoneNumber, defaultRegion)
+        val validatedPhoneNumber = phoneNumberValidator.validateAndParse(phoneNumber, defaultRegion)
         if (userService.userExistsByPhoneNumber(phoneNumber)) throw UserAlreadyExistsException()
         val otpLog = otpService.createOtp(validatedPhoneNumber.phoneNumber)
-        smsService.sendSms(
+        smsSender.sendSms(
             validatedPhoneNumber.countryCode,
             validatedPhoneNumber.carrierPrefixHeuristic,
             validatedPhoneNumber.phoneNumber,
@@ -65,7 +66,8 @@ class RegisterService(
             username = registerUserModel.username,
             imageUrl = null,
             birthDate = LocalDate.parse(registerUserModel.birthDate),
-            gender = registerUserModel.gender
+            gender = registerUserModel.gender,
+            status = User.Status.ACTIVE
         )
         return userService.saveUser(user)
     }

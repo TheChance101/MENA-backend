@@ -16,7 +16,7 @@ data class ProductDocument(
     val price:Double,
 
     @Field(type = FieldType.Text)
-    val description:String,
+    val dukanName:String,
 
     @Field(type = FieldType.Text)
     val mainImageUrl:String,

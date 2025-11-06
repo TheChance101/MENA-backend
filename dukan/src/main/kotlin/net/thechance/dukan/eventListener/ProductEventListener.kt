@@ -25,7 +25,7 @@ class ProductEventListener(
             id = event.id,
             name = event.name,
             price = event.price,
-            description = event.description,
+            dukanName = event.description,
             mainImageUrl = event.mainImageUrl,
             shelfName = event.shelfName
         )

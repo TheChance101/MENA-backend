@@ -19,6 +19,12 @@ data class Message(
     val isRead: Boolean = false,
     @Column(name = "image_url", nullable = true)
     val imageUrl: String? = null,
+    @Column(name = "audio_url", nullable = true)
+    val audioUrl: String? = null,
+
+    @OneToMany(fetch = FetchType.EAGER)
+    @JoinColumn(name = "message_id", referencedColumnName = "id")
+    val reactions: List<MessageReaction> = emptyList(),
 
     @Column(name = "chat_id", columnDefinition = "uuid", nullable = false, updatable = false)
     val chatId: UUID
