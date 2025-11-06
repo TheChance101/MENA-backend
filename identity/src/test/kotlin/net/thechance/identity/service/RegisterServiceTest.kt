@@ -11,8 +11,8 @@ import net.thechance.identity.exception.UserAlreadyExistsException
 import net.thechance.identity.security.JwtService
 import net.thechance.identity.service.model.RegisterUserModel
 import net.thechance.identity.service.model.ValidatedPhoneNumber
-import net.thechance.identity.service.phoneNumberValidator.PhoneNumberValidatorService
-import net.thechance.identity.service.sms.SmsService
+import net.thechance.identity.service.phoneNumberValidator.PhoneNumberValidator
+import net.thechance.identity.service.sms.SmsSender
 import net.thechance.identity.utils.createOtpLog
 import org.junit.Assert.assertThrows
 import org.junit.Test
@@ -23,9 +23,9 @@ import java.time.LocalDate
 import java.util.*
 
 class RegisterServiceTest {
-    private val phoneNumberValidatorService: PhoneNumberValidatorService = mockk(relaxed = true)
+    private val phoneNumberValidator: PhoneNumberValidator = mockk(relaxed = true)
     private val otpService: OtpService = mockk(relaxed = true)
-    private val smsService: SmsService = mockk(relaxed = true)
+    private val smsSender: SmsSender = mockk(relaxed = true)
     private val userService: UserService = mockk(relaxed = true)
     private val passwordEncoder: PasswordEncoder = mockk(relaxed = true)
     private val jwtService: JwtService = mockk(relaxed = true)
@@ -33,9 +33,9 @@ class RegisterServiceTest {
     private val eventPublisher: MenaEventPublisher = mockk(relaxed = true)
 
     private val registerService: RegisterService = RegisterService(
-        phoneNumberValidatorService = phoneNumberValidatorService,
+        phoneNumberValidator = phoneNumberValidator,
         otpService = otpService,
-        smsService = smsService,
+        smsSender = smsSender,
         userService = userService,
         passwordEncoder = passwordEncoder,
         jwtService = jwtService,
@@ -45,7 +45,7 @@ class RegisterServiceTest {
 
     @Test
     fun `requestOtp should send OTP when phone number is valid and does not exist`() {
-        every { phoneNumberValidatorService.validateAndParse(any(), any()) } returns dummyValidatedPhone
+        every { phoneNumberValidator.validateAndParse(any(), any()) } returns dummyValidatedPhone
         every { userService.userExistsByPhoneNumber(DUMMY_PHONE_NUMBER) } returns false
         every { otpService.createOtp(DUMMY_PHONE_NUMBER) } returns verifiedOtpLog
 
@@ -56,18 +56,18 @@ class RegisterServiceTest {
 
     @Test
     fun `requestOtp should call send sms and createOtP when phone number is valid and does not exist`() {
-        every { phoneNumberValidatorService.validateAndParse(any(), any()) } returns dummyValidatedPhone
+        every { phoneNumberValidator.validateAndParse(any(), any()) } returns dummyValidatedPhone
         every { userService.userExistsByPhoneNumber(any()) } returns false
         every { otpService.createOtp(any()) } returns verifiedOtpLog
-        every { smsService.sendSms(any(), any(), any(), any()) } just runs
+        every { smsSender.sendSms(any(), any(), any(), any()) } just runs
 
         registerService.requestOtp(DUMMY_PHONE_NUMBER, DEFAULT_REGION)
 
-        verify(exactly = 1) { phoneNumberValidatorService.validateAndParse(DUMMY_PHONE_NUMBER, DEFAULT_REGION) }
+        verify(exactly = 1) { phoneNumberValidator.validateAndParse(DUMMY_PHONE_NUMBER, DEFAULT_REGION) }
         verify(exactly = 1) { userService.userExistsByPhoneNumber(DUMMY_PHONE_NUMBER) }
         verify(exactly = 1) { otpService.createOtp(DUMMY_PHONE_NUMBER) }
         verify(exactly = 1) {
-            smsService.sendSms(
+            smsSender.sendSms(
                 dummyValidatedPhone.countryCode,
                 dummyValidatedPhone.carrierPrefixHeuristic,
                 dummyValidatedPhone.phoneNumber,
@@ -78,16 +78,16 @@ class RegisterServiceTest {
 
     @Test
     fun `requestOtp should throw UserAlreadyExistsException when phone number exists`() {
-        every { phoneNumberValidatorService.validateAndParse(any(), any()) } returns dummyValidatedPhone
+        every { phoneNumberValidator.validateAndParse(any(), any()) } returns dummyValidatedPhone
         every { userService.userExistsByPhoneNumber(any()) } returns true
 
         assertThrows(UserAlreadyExistsException::class.java) {
             registerService.requestOtp(DUMMY_PHONE_NUMBER, DEFAULT_REGION)
         }
-        verify(exactly = 1) { phoneNumberValidatorService.validateAndParse(DUMMY_PHONE_NUMBER, DEFAULT_REGION) }
+        verify(exactly = 1) { phoneNumberValidator.validateAndParse(DUMMY_PHONE_NUMBER, DEFAULT_REGION) }
         verify(exactly = 1) { userService.userExistsByPhoneNumber(DUMMY_PHONE_NUMBER) }
         verify(exactly = 0) { otpService.createOtp(any()) }
-        verify(exactly = 0) { smsService.sendSms(any(), any(), any(), any()) }
+        verify(exactly = 0) { smsSender.sendSms(any(), any(), any(), any()) }
     }
 
     @Test

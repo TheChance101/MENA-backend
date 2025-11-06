@@ -1,8 +1,8 @@
 package net.thechance.identity.api.mapper
 
-import net.thechance.identity.api.dto.ManagedUserResponse
-import net.thechance.identity.api.dto.PageResponse
-import net.thechance.identity.api.dto.ProfileResponse
+import net.thechance.identity.api.dto.profile.ManagedUserResponse
+import net.thechance.identity.api.dto.profile.PageResponse
+import net.thechance.identity.api.dto.profile.ProfileResponse
 import net.thechance.identity.entity.User
 import org.springframework.data.domain.Page
 

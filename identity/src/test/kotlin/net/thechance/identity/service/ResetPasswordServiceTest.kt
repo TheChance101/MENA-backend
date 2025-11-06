@@ -2,8 +2,8 @@ package net.thechance.identity.service
 
 import io.mockk.*
 import net.thechance.identity.exception.*
-import net.thechance.identity.service.phoneNumberValidator.PhoneNumberValidatorService
-import net.thechance.identity.service.sms.SmsService
+import net.thechance.identity.service.phoneNumberValidator.PhoneNumberValidator
+import net.thechance.identity.service.sms.SmsSender
 import net.thechance.identity.utils.createOtpLog
 import net.thechance.identity.utils.createUser
 import net.thechance.identity.utils.createValidatedPhoneNumber
@@ -14,17 +14,17 @@ import java.time.Instant
 import java.util.UUID
 
 class ResetPasswordServiceTest {
-    private val phoneNumberValidatorService: PhoneNumberValidatorService = mockk(relaxed = true)
+    private val phoneNumberValidatorService: PhoneNumberValidator = mockk(relaxed = true)
     private val phoneNumberRateLimitService: PhoneNumberRateLimitService = mockk(relaxed = true)
     private val otpService: OtpService = mockk(relaxed = true)
-    private val smsService: SmsService = mockk(relaxed = true)
+    private val smsService: SmsSender = mockk(relaxed = true)
     private val userService: UserService = mockk(relaxed = true)
     private val passwordEncoder: PasswordEncoder = mockk(relaxed = true)
     private val resetPasswordService = ResetPasswordService(
-        phoneNumberValidatorService = phoneNumberValidatorService,
+        phoneNumberValidator = phoneNumberValidatorService,
         phoneNumberRateLimitService = phoneNumberRateLimitService,
         otpService = otpService,
-        smsService = smsService,
+        smsSender = smsService,
         userService = userService,
         passwordEncoder = passwordEncoder
     )
