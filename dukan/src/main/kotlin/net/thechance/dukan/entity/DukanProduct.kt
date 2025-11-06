@@ -48,6 +48,6 @@ data class DukanProduct(
     @Column(name = "created_at", nullable = false)
     val createdAt: Instant = Instant.now(),
 
-    @OneToMany(mappedBy = "productId", fetch = FetchType.LAZY)
+    @OneToMany(mappedBy = "product", fetch = FetchType.LAZY)
     val favorites: MutableSet<FavoriteProduct> = emptySet()
 )

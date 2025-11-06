@@ -1,10 +1,10 @@
 package net.thechance.dukan.entity
 
 import jakarta.persistence.Column
+import jakarta.persistence.Embeddable
+import jakarta.persistence.EmbeddedId
 import jakarta.persistence.Entity
 import jakarta.persistence.FetchType
-import jakarta.persistence.Id
-import jakarta.persistence.IdClass
 import jakarta.persistence.JoinColumn
 import jakarta.persistence.ManyToOne
 import jakarta.persistence.Table
@@ -21,15 +21,9 @@ import java.util.UUID
     )]
 )
 @Entity
-@IdClass(FavoriteProductId::class)
 data class FavoriteProduct(
-    @Id
-    @Column(name = "product_id", nullable = false)
-    val productId: UUID,
-
-    @Id
-    @Column(name = "user_id", nullable = false)
-    val userId: UUID,
+    @EmbeddedId
+    val id: FavoriteProductId,
 
     @Column(name = "favorite_at", nullable = false)
     val favoriteAt: Instant = Instant.now(),
@@ -39,7 +33,11 @@ data class FavoriteProduct(
     val product: DukanProduct? = null
 )
 
+@Embeddable
 data class FavoriteProductId(
+    @Column(name = "product_id", nullable = false)
     val productId: UUID = UUID.randomUUID(),
+
+    @Column(name = "user_id", nullable = false)
     val userId: UUID = UUID.randomUUID()
 ) : Serializable

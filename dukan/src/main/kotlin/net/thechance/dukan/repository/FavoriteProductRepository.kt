@@ -1,12 +1,13 @@
 package net.thechance.dukan.repository
 
 import net.thechance.dukan.entity.FavoriteProduct
+import net.thechance.dukan.entity.FavoriteProductId
 import org.springframework.data.jpa.repository.JpaRepository
 import org.springframework.stereotype.Repository
 import java.util.UUID
 
 @Repository
-interface FavoriteProductRepository : JpaRepository<FavoriteProduct, UUID> {
-    fun findAllByUserIdAndProductIdIn(userId: UUID, productIds: List<UUID>): List<FavoriteProduct>
-    fun deleteFavoriteProductByProductIdAndUserId(productId: UUID, userId: UUID): Int
+interface FavoriteProductRepository : JpaRepository<FavoriteProduct, FavoriteProductId> {
+    fun findAllByIdUserIdAndIdProductIdIn(userId: UUID, productIds: List<UUID>): List<FavoriteProduct>
+    fun deleteByIdProductIdAndIdUserId(productId: UUID, userId: UUID): Int
 }

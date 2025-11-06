@@ -20,18 +20,16 @@ interface DukanProductRepository : JpaRepository<DukanProduct, UUID> {
         """
     SELECT new net.thechance.dukan.service.model.DukanProductWithFavoriteAndQuantity(
         product,
-        CASE WHEN favorite.productId IS NOT NULL THEN true ELSE false END,
+        CASE WHEN favorite.id.productId IS NOT NULL THEN true ELSE false END,
         COALESCE(cartItem.quantity, 0)
     )
     FROM DukanProduct product
     JOIN FETCH product.shelf shelf
     JOIN FETCH shelf.dukan dukan
     LEFT JOIN FavoriteProduct favorite
-        ON favorite.productId = product.id
-        AND favorite.userId = :userId
+        ON favorite.id.productId = product.id AND favorite.id.userId = :userId
     LEFT JOIN Cart cart
-        ON cart.userId = :userId
-        AND cart.dukanId = dukan.id
+        ON cart.userId = :userId AND cart.dukanId = dukan.id
     LEFT JOIN cart.items cartItem
         ON cartItem.product.id = product.id
     WHERE product.id = :productId
@@ -47,14 +45,14 @@ interface DukanProductRepository : JpaRepository<DukanProduct, UUID> {
         """
     SELECT new net.thechance.dukan.service.model.DukanProductWithFavoriteAndQuantity(
         product,
-        CASE WHEN favorite.productId IS NOT NULL THEN true ELSE false END,
+        CASE WHEN favorite.id.productId IS NOT NULL THEN true ELSE false END,
         COALESCE(cartItem.quantity, 0)
     )
     FROM DukanProduct product
     JOIN product.shelf shelf
     JOIN shelf.dukan dukan
     LEFT JOIN FavoriteProduct favorite
-        ON favorite.productId = product.id AND favorite.userId = :userId
+        ON favorite.id.productId = product.id AND favorite.id.userId = :userId
     LEFT JOIN Cart cart
         ON cart.userId = :userId AND cart.dukanId = dukan.id
     LEFT JOIN cart.items cartItem

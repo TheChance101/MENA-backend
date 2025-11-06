@@ -7,6 +7,7 @@ import net.thechance.dukan.entity.DukanProduct
 import net.thechance.dukan.repository.DukanProductRepository
 import net.thechance.dukan.repository.DukanShelfRepository
 import net.thechance.dukan.entity.FavoriteProduct
+import net.thechance.dukan.entity.FavoriteProductId
 import net.thechance.dukan.service.exception.DukanProductCreationFailedException
 import net.thechance.dukan.service.exception.ProductNameAlreadyTakenException
 import net.thechance.dukan.service.exception.ProductNotFoundException
@@ -125,7 +126,7 @@ class DukanProductService(
 
     @Transactional
     fun toggleFavoriteStatus(userId: UUID, productId: UUID): Boolean {
-        return if (favoriteProductRepository.deleteFavoriteProductByProductIdAndUserId(productId, userId) > 0) {
+        return if (favoriteProductRepository.deleteByIdProductIdAndIdUserId(productId, userId) > 0) {
             false
         } else {
             createFavoriteEntry(userId, productId)
@@ -134,8 +135,10 @@ class DukanProductService(
 
     private fun createFavoriteEntry(userId: UUID, productId: UUID): Boolean {
         val newFavorite = FavoriteProduct(
-            productId = productId,
-            userId = userId,
+            id = FavoriteProductId(
+                productId = productId,
+                userId = userId
+            )
         )
         favoriteProductRepository.save(newFavorite)
         return true

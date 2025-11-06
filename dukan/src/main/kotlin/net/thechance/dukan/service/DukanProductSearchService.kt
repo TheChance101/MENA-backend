@@ -16,25 +16,25 @@ import java.util.*
 
 @Service
 class DukanProductSearchService(
-    private val searchRepository:DukanProductSearchRepository,
+    private val searchRepository: DukanProductSearchRepository,
     private val dukanProductRepository: DukanProductRepository,
     private val favoriteProductRepository: FavoriteProductRepository
 ) {
     fun indexIsEmpty(): Boolean = searchRepository.count() == 0L
 
     @Transactional(readOnly = true)
-    fun seed():Int{
+    fun seed(): Int {
         val pageSize = 100
         var page = 0
         var totalIndexed = 0
 
-        while (true){
+        while (true) {
             val productsPage: Page<DukanProduct> = dukanProductRepository.findAll(PageRequest.of(page, pageSize))
             if (productsPage.isEmpty) break
 
             val documents = productsPage.content.map { it.toDocument() }
             searchRepository.saveAll(documents)
-            totalIndexed+=documents.size
+            totalIndexed += documents.size
             page++
         }
         return totalIndexed
@@ -46,8 +46,8 @@ class DukanProductSearchService(
         val productIds = productDocs.content.map { UUID.fromString(it.id) }
 
         val favoriteIds = favoriteProductRepository
-            .findAllByUserIdAndProductIdIn(userId, productIds)
-            .map { it.productId }
+            .findAllByIdUserIdAndIdProductIdIn(userId, productIds)
+            .map { it.id.productId }
             .toSet()
 
         return productDocs.map { doc ->
