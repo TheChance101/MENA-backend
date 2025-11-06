@@ -20,4 +20,23 @@ interface MosqueRepository : JpaRepository<Mosque, UUID> {
         @Param("keyword") keyword: String,
         pageable: Pageable
     ): Page<Mosque>
+
+
+    @Query(
+        """
+        SELECT m FROM Mosque m
+        WHERE (
+            6371 * acos(
+                cos(radians(:lat)) * cos(radians(m.latitude)) *
+                cos(radians(m.longitude) - radians(:lng)) +
+                sin(radians(:lat)) * sin(radians(m.latitude))
+            )
+        ) <= :radius
+        """
+    )
+    fun findNearbyMosques(
+        @Param("lat") lat: Double,
+        @Param("lng") lng: Double,
+        @Param("radius") radius: Double
+    ): List<Mosque>
 }

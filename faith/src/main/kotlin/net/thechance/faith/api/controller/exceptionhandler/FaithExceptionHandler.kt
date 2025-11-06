@@ -40,6 +40,15 @@ class FaithExceptionHandler {
         )
     }
 
+    @ExceptionHandler(ReciterNotFoundException::class)
+    fun onReciterNotFoundError(exception: ReciterNotFoundException): ResponseEntity<ApiErrorResponse> {
+        return createErrorResponse(
+            message = "Reciter not found.",
+            exception = exception,
+            status = HttpStatus.NOT_FOUND,
+        )
+    }
+
     @ExceptionHandler(InvalidImageFormatException::class)
     fun onInvalidImageFormatError(exception: InvalidImageFormatException): ResponseEntity<ApiErrorResponse> {
         return createErrorResponse(

@@ -30,4 +30,16 @@ class NearbyMosqueController(
 
         return ResponseEntity.ok(response)
     }
+
+    @GetMapping("/nearby")
+    fun getNearbyMosques(
+        @RequestParam latitude: Double,
+        @RequestParam longitude: Double,
+        @RequestParam(defaultValue = "10.0") radiusKm: Double
+    ): ResponseEntity<List<MosqueResponse>> {
+        val mosques = mosqueService.findNearby(latitude, longitude, radiusKm)
+        val response = mosques.map { it.toMosqueResponse() }
+
+        return ResponseEntity.ok(response)
+    }
 }

@@ -17,4 +17,10 @@ class MosqueService(
 
         return mosqueRepository.searchMosquesByName(keyword, pageable)
     }
+
+    fun findNearby(lat: Double, lng: Double, radiusKm: Double): List<Mosque> {
+        if (radiusKm <= 0) throw InvalidRequestParameterException("Parameter 'radiusKm' must be greater than 0.")
+
+        return mosqueRepository.findNearbyMosques(lat, lng, radiusKm)
+    }
 }
