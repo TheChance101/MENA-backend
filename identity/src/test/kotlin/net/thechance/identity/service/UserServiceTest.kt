@@ -160,12 +160,12 @@ class UserServiceTest {
     @Test
     fun `deleteUserImage should delete from storage and set url to null when image exists`() {
         every { userRepository.findById(any()) } returns Optional.of(userWithImage)
-        every { identityImageStorageService.deleteImage(any()) } just runs
+        every { identityImageStorageService.deleteImage(any(), any()) } just runs
         every { userRepository.save(any()) } returns userWithImageAsNull
 
         userService.deleteUserImage(userId)
 
-        verify(exactly = 1) { identityImageStorageService.deleteImage(NEW_IMAGE_URL) }
+        verify(exactly = 1) { identityImageStorageService.deleteImage(any(), any()) }
         verify(exactly = 1) { userRepository.save(userWithImageAsNull) }
     }
 
@@ -175,7 +175,7 @@ class UserServiceTest {
 
         userService.deleteUserImage(userId)
 
-        verify(exactly = 0) { identityImageStorageService.deleteImage(any()) }
+        verify(exactly = 0) { identityImageStorageService.deleteImage(any(), any()) }
         verify(exactly = 0) { userRepository.save(any()) }
     }
 

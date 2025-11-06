@@ -1,23 +1,16 @@
 package net.thechance.chat.api.controller
 
 import com.google.common.truth.Truth.assertThat
-import io.mockk.every
-import io.mockk.just
-import io.mockk.justRun
-import io.mockk.mockk
-import io.mockk.runs
-import io.mockk.verify
-import net.thechance.chat.api.controller.ChatController.Companion.PRIVATE_MESSAGES
+import io.mockk.*
+import net.thechance.chat.api.controller.ChatController.Companion.MARK_AS_READ
 import net.thechance.chat.api.dto.*
 import net.thechance.chat.entity.Chat
-import net.thechance.chat.entity.Contact
-import net.thechance.chat.entity.ContactUser
 import net.thechance.chat.entity.Message
 import net.thechance.chat.service.ChatService
-import net.thechance.chat.service.ContactService
 import net.thechance.chat.service.exception.NotFoundException
 import net.thechance.chat.service.model.ChatModel
 import net.thechance.chat.service.model.MessageImageRequestArgs
+import net.thechance.chat.service.model.MessageWithReactions
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.assertThrows
 import org.springframework.data.domain.PageImpl
@@ -34,7 +27,6 @@ class ChatControllerTest {
 
     private val messagingTemplate: SimpMessagingTemplate = mockk(relaxed = true)
     private val chatService: ChatService = mockk()
-    private val contactService: ContactService = mockk()
 
     private val controller by lazy {
         ChatController(
@@ -156,23 +148,26 @@ class ChatControllerTest {
     @Test
     fun `getChatHistory should return paged messages`() {
         val chatId = UUID.randomUUID()
-        val chat = Chat(id = chatId, users = mutableSetOf())
         val pageable: Pageable = PageRequest.of(0, 10)
 
-        val messages = listOf(
-            Message(
-                id = UUID.randomUUID(),
-                chatId = chatId,
-                senderId = UUID.randomUUID(),
-                text = "Hi",
-                sentAt = Instant.now(),
-                isRead = false
+        val messagesWithReactions = listOf(
+            MessageWithReactions(
+                message = Message(
+                    id = UUID.randomUUID(),
+                    chatId = chatId,
+                    senderId = UUID.randomUUID(),
+                    text = "Hi",
+                    sentAt = Instant.now(),
+                    isRead = false
+                ),
+                reactions = emptyList()
             )
+
         )
 
-        val page = PageImpl(messages, pageable, messages.size.toLong())
+        val page = PageImpl(messagesWithReactions, pageable, messagesWithReactions.size.toLong())
 
-        every { chatService.getAllChatMessages(chatId, pageable) } returns page
+        every { chatService.getAllChatMessagesByChatId(chatId, pageable) } returns page
 
         val response = controller.getChatHistory(chatId, UUID.randomUUID(), pageable)
 
@@ -199,7 +194,7 @@ class ChatControllerTest {
         verify {
             messagingTemplate.convertAndSendToUser(
                 userId.toString(),
-                PRIVATE_MESSAGES,
+                MARK_AS_READ,
                 MarkAsReadResponse(userId, chatId, true)
             )
         }
