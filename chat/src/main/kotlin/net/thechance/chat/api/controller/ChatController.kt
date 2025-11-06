@@ -129,7 +129,7 @@ class ChatController(
         return ResponseEntity.ok(chat.toResponse())
     }
 
-    @DeleteMapping("/delete/{chatId}")
+    @DeleteMapping("/{chatId}")
     fun deleteChatById(
         @PathVariable chatId: UUID
     ): ResponseEntity<Unit> {
