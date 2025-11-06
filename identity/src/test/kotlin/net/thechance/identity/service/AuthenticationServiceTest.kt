@@ -6,6 +6,7 @@ import io.mockk.mockk
 import io.mockk.verify
 import net.thechance.identity.entity.RefreshToken
 import net.thechance.identity.exception.InvalidCredentialsException
+import net.thechance.identity.exception.UserIpIsBlockedException
 import net.thechance.identity.exception.UserIsBlockedException
 import net.thechance.identity.repository.RefreshTokenRepository
 import net.thechance.identity.security.JwtService
@@ -33,11 +34,22 @@ class AuthenticationServiceTest {
     )
 
     @Test
-    fun `should throw UserIsBlockedException when user is trying to login 5 times with exist phone number and wrong password`() {
+    fun `should throw UserIpIsBlockedException when user is trying to login 5 times with exist phone number and wrong password`() {
         val blockedUserLogs = DummyUserLogs.loginLogsForBlockedUser
         val user = blockedUserLogs.first().user
         val ipAddress = blockedUserLogs.first().ipAddress
         every { loginLogService.getLoginLogsByIpAddress(ipAddress, 5) } returns blockedUserLogs
+        every { userService.findByPhoneNumber(user.phoneNumber) } returns user
+
+        assertThrows(UserIpIsBlockedException::class.java) {
+            authenticationService.login(user.phoneNumber, user.password, ipAddress)
+        }
+    }
+
+    @Test
+    fun `should throw UserIsBlockedException when user status is blocked`() {
+        val user = DummyUsers.blockedUser
+        val ipAddress = DummyIpAddresses.validIpAddress1
         every { userService.findByPhoneNumber(user.phoneNumber) } returns user
 
         assertThrows(UserIsBlockedException::class.java) {
