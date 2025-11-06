@@ -2,7 +2,6 @@ package net.thechance.dukan.entity
 
 import jakarta.persistence.*
 import java.time.Instant
-import java.time.LocalDateTime
 import java.util.*
 
 @Table(
@@ -42,6 +41,9 @@ data class DukanProduct(
     @Column(name = "image_url", nullable = false)
     val imageUrls: List<String>,
 
+    @Transient
+    var tempQuantity: Int = 0,
+
     @Column(name = "created_at", nullable = false)
-    val createdAt:Instant = Instant.now()
+    val createdAt: Instant = Instant.now()
 )

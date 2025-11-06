@@ -16,6 +16,7 @@ data class MessageResponse(
     val chatId: UUID,
     val text: String?,
     val imageUrl: String?,
+    val audioUrl: String?,
     val sendAt: Instant,
     val isRead: Boolean,
     val isMine: Boolean
@@ -27,7 +28,8 @@ fun Message.toResponse(requesterId: UUID): MessageResponse {
         senderId = senderId,
         chatId = chatId,
         text = text,
-        imageUrl = imageUrl?.replace("localhost","10.0.2.2"),
+        imageUrl = imageUrl,
+        audioUrl = audioUrl,
         sendAt = sentAt,
         isRead = isRead,
         isMine = requesterId == senderId

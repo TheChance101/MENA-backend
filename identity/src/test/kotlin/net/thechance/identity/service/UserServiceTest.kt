@@ -1,22 +1,27 @@
 package net.thechance.identity.service
 
 import com.google.common.truth.Truth.assertThat
-import io.mockk.every
-import io.mockk.mockk
-import io.mockk.verify
-import net.thechance.identity.exception.InvalidCredentialsException
+import io.mockk.*
+import net.thechance.identity.entity.User
 import net.thechance.identity.exception.PasswordNotUpdatedException
 import net.thechance.identity.exception.UserNotFoundException
 import net.thechance.identity.repository.UserRepository
+import net.thechance.identity.service.model.UserServiceModel
 import net.thechance.identity.utils.createUser
 import org.junit.Assert.assertThrows
 import org.junit.Test
+import org.springframework.data.domain.PageImpl
+import org.springframework.data.domain.PageRequest
 import org.springframework.data.repository.findByIdOrNull
+import org.springframework.web.multipart.MultipartFile
+import java.time.LocalDateTime
+import java.util.*
 
 class UserServiceTest {
     private val userRepository: UserRepository = mockk(relaxed = true)
     private val identityImageStorageService: IdentityImageStorageService = mockk(relaxed = true)
-    private val userService = UserService(userRepository, identityImageStorageService)
+    private val userService = UserService(userRepository, identityImageStorageService, "profile-images")
+    private val mockImageFile: MultipartFile = mockk(relaxed = true)
 
     @Test
     fun `findByPhoneNumber() should return User when user exists`() {
@@ -72,7 +77,7 @@ class UserServiceTest {
     fun `userExists() should return true when the user exists`() {
         every { userRepository.existsById(any()) } returns true
 
-        val isUserExists = userService.userExists(id)
+        val isUserExists = userService.userExists(userId)
 
         assertThat(isUserExists).isTrue()
     }
@@ -81,7 +86,7 @@ class UserServiceTest {
     fun `userExists() should return false when the user not exists`() {
         every { userRepository.existsById(any()) } returns false
 
-        val isUserExists = userService.userExists(id)
+        val isUserExists = userService.userExists(userId)
 
         assertThat(isUserExists).isFalse()
     }
@@ -90,7 +95,7 @@ class UserServiceTest {
     fun `userExists() should call userExists in userService one time when called`() {
         every { userRepository.existsById(any()) } returns true
 
-        userService.userExists(id)
+        userService.userExists(userId)
 
         verify(exactly = 1) { userRepository.existsById(any()) }
     }
@@ -123,11 +128,200 @@ class UserServiceTest {
         }
     }
 
+    @Test
+    fun `updateUserProfile should update fields and save user when called`() {
+        every { userRepository.findById(userId) } returns Optional.of(user)
+        every { userRepository.save(any()) } returns user
+
+        val updatedUser = userService.updateUserProfile(userModel)
+
+        assertThat(updatedUser.id).isEqualTo(userId)
+        assertThat(updatedUser.username).isEqualTo(userModel.username)
+        assertThat(updatedUser.firstName).isEqualTo(userModel.firstName)
+    }
+
+    @Test
+    fun `updateUserImage should upload image, update user url, and save when called`() {
+        every { userRepository.findById(any()) } returns Optional.of(user)
+        every {
+            identityImageStorageService.uploadImage(
+                file = mockImageFile,
+                fileName = any(),
+                folderName = any()
+            )
+        } returns NEW_IMAGE_URL
+        every { userRepository.save(any()) } returns user.copy(imageUrl = NEW_IMAGE_URL)
+
+        val resultUrl = userService.updateUserImage(userId, mockImageFile)
+
+        assertThat(resultUrl).isEqualTo(NEW_IMAGE_URL)
+    }
+
+    @Test
+    fun `deleteUserImage should delete from storage and set url to null when image exists`() {
+        every { userRepository.findById(any()) } returns Optional.of(userWithImage)
+        every { identityImageStorageService.deleteImage(any()) } just runs
+        every { userRepository.save(any()) } returns userWithImageAsNull
+
+        userService.deleteUserImage(userId)
+
+        verify(exactly = 1) { identityImageStorageService.deleteImage(NEW_IMAGE_URL) }
+        verify(exactly = 1) { userRepository.save(userWithImageAsNull) }
+    }
+
+    @Test
+    fun `deleteUserImage should do nothing when user has no image url`() {
+        every { userRepository.findById(any()) } returns Optional.of(userWithImageAsNull)
+
+        userService.deleteUserImage(userId)
+
+        verify(exactly = 0) { identityImageStorageService.deleteImage(any()) }
+        verify(exactly = 0) { userRepository.save(any()) }
+    }
+
+    @Test
+    fun `userExistsByUserName should return true when user exists`() {
+        every { userRepository.existsByUsername(any()) } returns true
+
+        val result = userService.userExistsByUserName(user.username)
+
+        assertThat(result).isTrue()
+    }
+
+    @Test
+    fun `userExistsByUserName should return false when user does not exist`() {
+        every { userRepository.existsByUsername(any()) } returns false
+
+        val result = userService.userExistsByUserName(user.username)
+
+        assertThat(result).isFalse()
+    }
+
+    @Test
+    fun `userExistsByPhoneNumber should return true when user exists`() {
+        every { userRepository.existsByPhoneNumber(any()) } returns true
+
+        val result = userService.userExistsByPhoneNumber(user.phoneNumber)
+
+        assertThat(result).isTrue()
+    }
+
+    @Test
+    fun `userExistsByPhoneNumber should return false when user does not exist`() {
+        every { userRepository.existsByPhoneNumber(any()) } returns false
+
+        val result = userService.userExistsByPhoneNumber(user.phoneNumber)
+
+        assertThat(result).isFalse()
+    }
+
+    @Test
+    fun `saveUser should call repository save and return the result`() {
+        every { userRepository.save(any()) } returns user
+
+        val result = userService.saveUser(user)
+
+        assertThat(result).isEqualTo(user)
+    }
+
+    @Test
+    fun `findUsersByQuery() should return page of users matching the query when they exist `() {
+        val usersPage = PageImpl(List(3) { createUser() })
+        every { userRepository.findByFullNameOrPhoneNumber(any(), any()) } returns usersPage
+
+        val result = userService.findUsersByQuery(query, pageable)
+
+        assertThat(result.content).containsExactlyElementsIn(usersPage.content)
+    }
+
+    @Test
+    fun `findUsersByQuery() should propagate user repository exceptions`() {
+        val testException = RuntimeException("Test exception")
+        every { userRepository.findByFullNameOrPhoneNumber(any(), any()) } throws testException
+
+        assertThrows(testException::class.java) {
+            userService.findUsersByQuery(query, pageable)
+        }
+    }
+
+    @Test
+    fun `updateUserLastLoginTime() should complete successfully when user exists`() {
+        val now = LocalDateTime.now()
+        every { userRepository.updateLastLoginTime(userId, now) } returns 1
+
+        userService.updateUserLastLoginTime(userId, now)
+
+        verify(exactly = 1) { userRepository.updateLastLoginTime(userId, now) }
+    }
+
+    @Test
+    fun `updateUserLastLoginTime() should throw UserNotFoundException when user is not found`() {
+        val now = LocalDateTime.now()
+        every{ userRepository.updateLastLoginTime(userId, LocalDateTime.now()) } returns 0
+
+        assertThrows(UserNotFoundException::class.java) {
+            userService.updateUserLastLoginTime(userId, now)
+        }
+    }
+
+    @Test
+    fun `updateUserLastVisitTime() should complete successfully when user exists`() {
+        val now = LocalDateTime.now()
+        every{ userRepository.updateLastVisitTime(userId, now) } returns 1
+
+        userService.updateUserLastVisitTime(userId, now)
+
+        verify(exactly = 1) { userRepository.updateLastVisitTime(userId, now) }
+    }
+
+    @Test
+    fun `updateUserLastVisitTime() should throw UserNotFoundException when user is not found`() {
+        val now = LocalDateTime.now()
+        every{ userRepository.updateLastVisitTime(userId, LocalDateTime.now()) } returns 0
+
+        assertThrows(UserNotFoundException::class.java) {
+            userService.updateUserLastVisitTime(userId, now)
+        }
+    }
+
+    @Test
+    fun `updateUserStatus() should complete successfully when user exists`() {
+        val newStatus = User.Status.ACTIVE
+        every{ userRepository.updateStatus(userId, newStatus) } returns 1
+
+        userService.updateUserStatus(userId, newStatus)
+
+        verify(exactly = 1) { userRepository.updateStatus(userId, newStatus) }
+    }
+
+    @Test
+    fun `updateUserStatus() should throw UserNotFoundException when user is not found`() {
+        val newStatus = User.Status.ACTIVE
+        every{ userRepository.updateStatus(userId, newStatus) } returns 0
+
+        assertThrows(UserNotFoundException::class.java) {
+            userService.updateUserStatus(userId, newStatus)
+        }
+    }
+
     companion object {
         private val user = createUser()
         private val phoneNumber = user.phoneNumber
-        private val id = user.id
+        private val userId = user.id
         private const val PASSWORD = "00000000"
         private val updatedUser = user.copy(password = PASSWORD)
+        private val userModel = UserServiceModel(
+            id = userId,
+            username = user.username,
+            firstName = user.firstName,
+            lastName = user.lastName,
+            birthDate = user.birthDate,
+            gender = user.gender
+        )
+        private const val NEW_IMAGE_URL = "http://example.com/new-image.jpg"
+        private val userWithImage = user.copy(imageUrl = NEW_IMAGE_URL)
+        private val userWithImageAsNull = user.copy(imageUrl = null)
+        private val pageable = PageRequest.of(0, 10)
+        private val query = "john"
     }
 }

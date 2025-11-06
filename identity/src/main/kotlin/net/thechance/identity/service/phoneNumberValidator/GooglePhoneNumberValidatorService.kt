@@ -8,7 +8,7 @@ import net.thechance.identity.service.model.ValidatedPhoneNumber
 import org.springframework.stereotype.Service
 
 @Service
-class GooglePhoneNumberValidatorService : PhoneNumberValidatorService {
+class GooglePhoneNumberValidatorService : PhoneNumberValidator {
     private val phoneNumberUtil: PhoneNumberUtil = PhoneNumberUtil.getInstance()
 
     override fun validateAndParse(phoneNumberString: String, defaultRegion: String): ValidatedPhoneNumber {

@@ -2,7 +2,8 @@ package net.thechance.identity.utils
 
 import net.thechance.identity.entity.User
 import java.time.LocalDate
-import java.util.UUID
+import java.time.LocalDateTime
+import java.util.*
 
 fun createUser(
     id: UUID = UUID.randomUUID(),
@@ -24,6 +25,9 @@ fun createUser(
         username = username,
         imageUrl = imageUrl,
         birthDate = birthDate,
-        gender = gender
+        gender = gender,
+        lastVisitAt = LocalDateTime.now(),
+        lastLoginAt = LocalDateTime.now(),
+        status = User.Status.ACTIVE
     )
 }
