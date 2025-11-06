@@ -138,7 +138,7 @@ class DukanController(
         return ResponseEntity.ok(response)
     }
 
-    @PostMapping("{dukanId}/favorite")
+    @PostMapping("{dukanId}/toggle_favorite")
     fun toggleFavoriteStatus(
         @AuthenticationPrincipal userId: UUID,
         @PathVariable dukanId: UUID,
