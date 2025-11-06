@@ -7,6 +7,7 @@ import net.thechance.identity.entity.User
 import net.thechance.identity.exception.PasswordNotUpdatedException
 import net.thechance.identity.exception.UserNotFoundException
 import net.thechance.identity.repository.UserRepository
+import net.thechance.identity.service.mapper.toEventStatus
 import net.thechance.identity.service.model.UserServiceModel
 import org.springframework.beans.factory.annotation.Value
 import org.springframework.data.domain.Page
@@ -23,6 +24,7 @@ private typealias ImageUri = String
 class UserService(
     private val userRepository: UserRepository,
     private val identityImageStorageService: IdentityImageStorageService,
+    private val authenticationService: AuthenticationService,
     private val eventPublisher: MenaEventPublisher,
     @param:Value("\${identity.resources.profile-image-directory}") private val profileImageDirectory: String
 ) {
@@ -123,15 +125,6 @@ class UserService(
         val updatedUserCount = userRepository.updateStatus(userId, status)
         if (updatedUserCount == 0) throw UserNotFoundException("User with id: $userId not found")
         eventPublisher.publish(UserStatusUpdatedEvent(userId, status.toEventStatus()))
-        /*
-        todo: if the user is blocked call logout function to invalidate his refresh token
-         */
-    }
-
-    private fun User.Status.toEventStatus(): UserStatusUpdatedEvent.UserStatus {
-        return when (this) {
-            User.Status.ACTIVE -> UserStatusUpdatedEvent.UserStatus.ACTIVE
-            User.Status.BLOCKED -> UserStatusUpdatedEvent.UserStatus.BLOCKED
-        }
+        if (status == User.Status.BLOCKED) authenticationService.logout(userId)
     }
 }

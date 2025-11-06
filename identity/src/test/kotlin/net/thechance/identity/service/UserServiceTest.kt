@@ -22,8 +22,9 @@ import java.util.*
 class UserServiceTest {
     private val userRepository: UserRepository = mockk(relaxed = true)
     private val identityImageStorageService: IdentityImageStorageService = mockk(relaxed = true)
+    private val authenticationService: AuthenticationService = mockk(relaxed = true)
     private val eventPublisher: MenaEventPublisher = mockk(relaxed = true)
-    private val userService = UserService(userRepository, identityImageStorageService, eventPublisher, "profile-images")
+    private val userService = UserService(userRepository, identityImageStorageService, authenticationService, eventPublisher, "profile-images")
     private val mockImageFile: MultipartFile = mockk(relaxed = true)
 
     @Test
@@ -306,6 +307,16 @@ class UserServiceTest {
         userService.updateUserStatus(userId, newStatus)
 
         verify(exactly = 1) { eventPublisher.publish(event) }
+    }
+
+    @Test
+    fun `updateUserStatus() should logout user if user is blocked`() {
+        val newStatus = User.Status.BLOCKED
+        every{ userRepository.updateStatus(userId, newStatus) } returns 1
+
+        userService.updateUserStatus(userId, newStatus)
+
+        verify(exactly = 1) { authenticationService.logout(userId) }
     }
 
     @Test

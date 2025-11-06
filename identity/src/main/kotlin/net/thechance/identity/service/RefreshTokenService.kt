@@ -1,12 +1,12 @@
 package net.thechance.identity.service
 
 import net.thechance.identity.entity.RefreshToken
-import net.thechance.identity.repository.RefreshTokenRepository
 import net.thechance.identity.entity.User
+import net.thechance.identity.repository.RefreshTokenRepository
 import org.springframework.stereotype.Service
 import java.time.Duration
 import java.time.Instant
-import java.util.UUID
+import java.util.*
 
 @Service
 class RefreshTokenService(
@@ -23,5 +23,9 @@ class RefreshTokenService(
         val stored = refreshTokenRepository.findByRefreshToken(token) ?: return null
         val expiryDate = Instant.ofEpochSecond(stored.expiresIn)
         return if (expiryDate.isAfter(Instant.now())) stored else null
+    }
+
+    fun deleteUserRefreshTokens(userId: UUID) {
+        refreshTokenRepository.removeByUserId(userId)
     }
 }

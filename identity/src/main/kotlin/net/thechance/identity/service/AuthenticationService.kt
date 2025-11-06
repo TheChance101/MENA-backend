@@ -14,6 +14,7 @@ import org.springframework.stereotype.Service
 import java.time.Duration
 import java.time.Instant
 import java.time.LocalDateTime
+import java.util.*
 
 @Service
 class AuthenticationService(
@@ -37,6 +38,10 @@ class AuthenticationService(
         addUserToLogs(user = user, isSuccess = isPasswordCorrect, ipAddress = ipAddress)
         if (!isPasswordCorrect) throw InvalidCredentialsException("Invalid Credentials")
         return generateAuthResponse(user)
+    }
+
+    fun logout(userId: UUID) {
+        refreshTokenService.deleteUserRefreshTokens(userId)
     }
 
     fun refreshToken(refreshToken: String): AuthResponse {

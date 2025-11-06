@@ -16,6 +16,7 @@ import net.thechance.identity.utils.DummyUsers
 import org.junit.Assert.assertThrows
 import org.junit.Test
 import org.springframework.security.crypto.password.PasswordEncoder
+import java.util.*
 
 class AuthenticationServiceTest {
     private val userService: UserService = mockk(relaxed = true)
@@ -137,6 +138,26 @@ class AuthenticationServiceTest {
 
         assertThrows(InvalidCredentialsException::class.java) {
             authenticationService.login(user.phoneNumber, user.password, ipAddress)
+        }
+    }
+
+    @Test
+    fun `should delete user refresh tokens successfully when user logs out`() {
+        val userId = UUID.randomUUID()
+
+        authenticationService.logout(userId)
+
+        verify(exactly = 1) { refreshTokenService.deleteUserRefreshTokens(userId) }
+    }
+
+    @Test
+    fun `should throw exception when deleting user refresh tokens fails during logout`() {
+        val userId = UUID.randomUUID()
+
+        every { refreshTokenService.deleteUserRefreshTokens(userId) } throws RuntimeException("Database error")
+
+        assertThrows(RuntimeException::class.java) {
+            authenticationService.logout(userId)
         }
     }
 }
