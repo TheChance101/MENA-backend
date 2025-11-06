@@ -1,6 +1,8 @@
 package net.thechance.identity.service
 
 import jakarta.transaction.Transactional
+import net.thechance.events.identity.UserStatusUpdatedEvent
+import net.thechance.events.publisher.MenaEventPublisher
 import net.thechance.identity.entity.User
 import net.thechance.identity.exception.PasswordNotUpdatedException
 import net.thechance.identity.exception.UserNotFoundException
@@ -21,6 +23,7 @@ private typealias ImageUri = String
 class UserService(
     private val userRepository: UserRepository,
     private val identityImageStorageService: IdentityImageStorageService,
+    private val eventPublisher: MenaEventPublisher,
     @param:Value("\${identity.resources.profile-image-directory}") private val profileImageDirectory: String
 ) {
 
@@ -119,9 +122,16 @@ class UserService(
     fun updateUserStatus(userId: UUID, status: User.Status) {
         val updatedUserCount = userRepository.updateStatus(userId, status)
         if (updatedUserCount == 0) throw UserNotFoundException("User with id: $userId not found")
+        eventPublisher.publish(UserStatusUpdatedEvent(userId, status.toEventStatus()))
         /*
-        todo: should send event to notify other modules about user status change
-         and if the user is blocked call logout function to invalidate his access token
+        todo: if the user is blocked call logout function to invalidate his refresh token
          */
+    }
+
+    private fun User.Status.toEventStatus(): UserStatusUpdatedEvent.UserStatus {
+        return when (this) {
+            User.Status.ACTIVE -> UserStatusUpdatedEvent.UserStatus.ACTIVE
+            User.Status.BLOCKED -> UserStatusUpdatedEvent.UserStatus.BLOCKED
+        }
     }
 }
