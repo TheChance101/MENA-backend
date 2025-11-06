@@ -17,6 +17,7 @@ import org.springframework.data.domain.Pageable
 import org.springframework.data.repository.findByIdOrNull
 import org.springframework.stereotype.Service
 import org.springframework.transaction.annotation.Transactional
+import java.time.Instant
 import java.util.UUID
 
 @Service
@@ -86,7 +87,7 @@ class ChatService(
         val audioUrl = attachmentStorageService.uploadAudio(
             file = args.audio,
             fileName = args.audio.originalFilename ?: "${Instant.now()}-Untitled",
-            folderName = FOLDER_NAME
+            folderName = args.chatId.toString()
         )
 
         return messageRepository.save(
