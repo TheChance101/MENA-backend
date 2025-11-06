@@ -16,7 +16,7 @@ data class DeletedChat(
     val chatId : UUID,
     @Column(name = "cleanup_status", nullable = false)
     @Enumerated(EnumType.STRING)
-    val cleanUpStatus : CleanUpStatus,
+    var cleanUpStatus : CleanUpStatus,
     @Column(name="deleted_at")
     val deletedAt: Instant = Instant.now()
 )
