@@ -12,6 +12,19 @@ import java.util.*
 
 interface MessageRepository : JpaRepository<Message, UUID> {
 
+    @Query(
+        value = """
+         SELECT m 
+         FROM Message m 
+         WHERE m.chatId = :chatId 
+            AND NOT EXISTS (
+            SELECT 1 
+            FROM DeletedChat dc 
+            WHERE dc.chatId = m.chatId
+            )
+         ORDER BY m.sentAt ASC
+    """
+    )
     fun getAllByChatIdOrderBySentAtDesc(chatId: UUID, pageable: Pageable): Page<Message>
 
     @Modifying

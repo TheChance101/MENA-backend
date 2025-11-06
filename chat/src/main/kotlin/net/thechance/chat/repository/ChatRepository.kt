@@ -18,7 +18,10 @@ interface ChatRepository : JpaRepository<Chat, UUID> {
         SELECT c
         FROM Chat c
         JOIN c.users u
-        WHERE u.id in :userIds
+        WHERE u.id in :userIds 
+            AND NOT EXISTS (
+                SELECT 1 FROM DeletedChat dc WHERE dc.chatId = c.id
+                )
         GROUP by c
         HAVING count(u) = :#{#userIds.size}
         """
