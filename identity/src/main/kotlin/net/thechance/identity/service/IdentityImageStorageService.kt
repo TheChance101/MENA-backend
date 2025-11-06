@@ -3,7 +3,6 @@ package net.thechance.identity.service
 import net.thechance.identity.exception.InvalidImageException
 import net.thechance.identity.exception.UnknownErrorException
 import net.thechance.identity.security.config.IdentityStorageProperties
-import org.springframework.beans.factory.annotation.Value
 import org.springframework.boot.context.properties.EnableConfigurationProperties
 import org.springframework.stereotype.Service
 import org.springframework.web.multipart.MultipartFile
@@ -30,7 +29,7 @@ class IdentityImageStorageService(
         try {
             val fileName = "${fileName}.$extension"
             val randomParameter = LocalDateTime.now().toString()
-            val key = "$folderName$fileName"
+            val key = "$folderName/$fileName"
             val putReq = createObjectRequest(key, mimeType)
             menaS3Client.putObject(putReq, RequestBody.fromBytes(file.bytes))
             val imageUri = "$fileName?time=$randomParameter"
@@ -40,9 +39,9 @@ class IdentityImageStorageService(
         }
     }
 
-    fun deleteImage(imageUrl: String) {
+    fun deleteImage(folderName: String, fileName: String) {
         try {
-            val deleteRequest = deleteObjectRequest(imageUrl)
+            val deleteRequest = deleteObjectRequest("$folderName/$fileName")
             menaS3Client.deleteObject(deleteRequest)
         } catch (e: Exception) {
             throw UnknownErrorException(e.message ?: "Unknown error occurred")
