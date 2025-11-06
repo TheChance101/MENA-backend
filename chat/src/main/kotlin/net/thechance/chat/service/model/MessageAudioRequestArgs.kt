@@ -6,5 +6,6 @@ import java.util.*
 data class MessageAudioRequestArgs(
     val senderId: UUID,
     val chatId: UUID,
-    val audio: MultipartFile
+    val audio: MultipartFile,
+    val audioDurationMs: Long,
 )

@@ -21,6 +21,8 @@ data class Message(
     val imageUrl: String? = null,
     @Column(name = "audio_url", nullable = true)
     val audioUrl: String? = null,
+    @Column(name = "audio_duration_ms", nullable = false)
+    val audioDurationMs: Long = 0L,
 
     @OneToMany(fetch = FetchType.EAGER)
     @JoinColumn(name = "message_id", referencedColumnName = "id")
