@@ -30,6 +30,15 @@ class IdentityControllerAdvice {
             .body(errorResponse)
     }
 
+    @ExceptionHandler(UserIpIsBlockedException::class)
+    fun handleUserIpIsBlockedException(exception: UserIpIsBlockedException): ResponseEntity<ErrorResponse> {
+        logger.error("User ip is blocked: ${exception.message}", exception)
+        val errorResponse = ErrorResponse("User ip is blocked")
+        return ResponseEntity
+            .status(HttpStatus.TOO_MANY_REQUESTS)
+            .body(errorResponse)
+    }
+
     @ExceptionHandler(UserIsBlockedException::class)
     fun handleUserIsBlockedException(exception: UserIsBlockedException): ResponseEntity<ErrorResponse> {
         logger.error("User is blocked: ${exception.message}", exception)
