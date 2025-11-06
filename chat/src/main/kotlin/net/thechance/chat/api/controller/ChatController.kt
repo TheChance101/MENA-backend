@@ -174,23 +174,17 @@ class ChatController(
         @PathVariable chatId: UUID
     ): ResponseEntity<Unit> {
         chatService.deleteChatById(chatId)
-        sendMessageToUsers(chatId, DeleteChatResponse(chatId))
+        sendToChatUser(chatId, DELETE_CHAT){
+            DeleteChatResponse(chatId)
+        }
         return ResponseEntity.ok().body(Unit)
     }
 
-    private fun sendMessageToUsers(chatId: UUID, payload: Any) {
-        chatService.getChatUsersIds(chatId).forEach { chatParticipantId ->
-            messagingTemplate.convertAndSendToUser(
-                chatParticipantId.toString(),
-                PRIVATE_MESSAGES,
-                payload
-            )
-        }
-    }
     companion object {
         const val PRIVATE_MESSAGES = "/private/messages"
         const val MARK_AS_READ = "/private/markAsRead"
         const val ADD_REACTION = "/private/addReaction"
         const val DELETE_REACTION = "/private/deleteReaction"
+        const val DELETE_CHAT = "/private/deleteChat"
     }
 }
