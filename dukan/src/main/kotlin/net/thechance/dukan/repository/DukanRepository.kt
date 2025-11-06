@@ -1,20 +1,21 @@
 package net.thechance.dukan.repository
 
 import net.thechance.dukan.entity.Dukan
+import net.thechance.dukan.entity.DukanWithFavorite
 import org.springframework.data.domain.Page
 import org.springframework.data.domain.Pageable
 import org.springframework.data.jpa.repository.JpaRepository
 import org.springframework.data.jpa.repository.Query
 import org.springframework.data.repository.query.Param
 import org.springframework.stereotype.Repository
-import software.amazon.awssdk.services.s3.endpoints.internal.Value.Str
-import java.util.UUID
+import java.util.*
 
 @Repository
 interface DukanRepository : JpaRepository<Dukan, UUID> {
     fun existsByName(name: String): Boolean
     fun existsByOwnerId(ownerId: UUID): Boolean
     fun findByOwnerId(ownerId: UUID): Dukan?
+
     @Query(
         """
     SELECT DISTINCT d
@@ -41,7 +42,6 @@ interface DukanRepository : JpaRepository<Dukan, UUID> {
     ): Page<Dukan>
 
 
-
     @Query(
         """
     SELECT DISTINCT d
@@ -62,6 +62,33 @@ interface DukanRepository : JpaRepository<Dukan, UUID> {
     )
     fun findAllApprovedWithShelvesAndProducts(pageable: Pageable): Page<Dukan>
 
+    @Query(
+        """
+    SELECT new net.thechance.dukan.entity.DukanWithFavorite(
+        dukan,
+        CASE WHEN favoriteDukan.id IS NOT NULL THEN true ELSE false END
+    )
+    FROM Dukan dukan
+    LEFT JOIN FavoriteDukan favoriteDukan
+        ON favoriteDukan.dukanId = dukan.id AND favoriteDukan.userId = :userId
+    WHERE dukan.status = net.thechance.dukan.entity.Dukan.Status.APPROVED
+      AND EXISTS (
+          SELECT 1 
+          FROM DukanShelf dukanShelf
+          WHERE dukanShelf.dukan = dukan
+      )
+      AND EXISTS (
+          SELECT 1
+          FROM DukanProduct dukanProduct
+          WHERE dukanProduct.dukan = dukan
+      )
+    ORDER BY dukan.createdAt DESC
+    """
+    )
+    fun findAllApprovedWithShelvesAndProducts(
+        userId: UUID,
+        pageable: Pageable
+    ): Page<DukanWithFavorite>
 
     @Query(
         value = """
@@ -105,4 +132,22 @@ interface DukanRepository : JpaRepository<Dukan, UUID> {
         pageable: Pageable
     ): Page<Dukan>
 
+    @Query(
+        """
+SELECT new net.thechance.dukan.entity.DukanWithFavorite(
+    dukan,
+    CASE WHEN favoriteDukan.id IS NOT NULL THEN true ELSE false END
+)
+FROM Dukan dukan
+JOIN dukan.categories category
+LEFT JOIN FavoriteDukan favoriteDukan
+    ON favoriteDukan.dukanId = dukan.id AND favoriteDukan.userId = :userId
+WHERE category.id = :categoryId
+"""
+    )
+    fun findAllByCategoryWithFavorite(
+        categoryId: UUID,
+        userId: UUID,
+        pageable: Pageable
+    ): Page<DukanWithFavorite>
 }

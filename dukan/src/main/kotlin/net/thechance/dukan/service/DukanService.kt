@@ -6,6 +6,7 @@ import net.thechance.dukan.api.mapper.dukan.toDukan
 import net.thechance.dukan.entity.Dukan
 import net.thechance.dukan.entity.DukanCategory
 import net.thechance.dukan.entity.DukanColor
+import net.thechance.dukan.entity.DukanWithFavorite
 import net.thechance.dukan.repository.DukanCategoryRepository
 import net.thechance.dukan.repository.DukanColorRepository
 import net.thechance.dukan.repository.DukanRepository
@@ -82,9 +83,9 @@ class DukanService(
         return dukanRepository.findApprovedDukansWithProductsByCategory(categoryId, pageable)
     }
 
-    fun getAllEditorPicksDukan(userId: UUID?, pageable: Pageable): Page<Dukan> {
+    fun getAllEditorPicksDukan(userId: UUID, pageable: Pageable): Page<DukanWithFavorite> {
         // TODO: Filter by user preferences once data model is ready
-        return dukanRepository.findAllApprovedWithShelvesAndProducts(pageable)
+        return dukanRepository.findAllApprovedWithShelvesAndProducts(userId, pageable)
     }
 
     private fun validateDukanCreation(params: DukanCreationParams) {

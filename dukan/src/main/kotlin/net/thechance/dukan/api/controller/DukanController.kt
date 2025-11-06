@@ -29,6 +29,14 @@ class DukanController(
     private val dukanService: DukanService,
     private val favouriteDukanService: FavouriteDukanService
 ) {
+    private val logger = org.slf4j.LoggerFactory.getLogger(DukanController::class.java)
+
+    fun doSomething() {
+        logger.info("This is an info log")
+        logger.debug("This is a debug log")
+        logger.error("This is an error log")
+    }
+
     @GetMapping("/styles")
     fun getAllStyles(): ResponseEntity<DukanStyleResponse> {
         val styles = dukanService.getAllStyles().toDukanStyleResponse()
@@ -90,8 +98,8 @@ class DukanController(
         @PathVariable("categoryId") categoryId: UUID,
         @PageableDefault(size = 10, page = 0, sort = ["createdAt"], direction = Sort.Direction.DESC) pageable: Pageable
     ): ResponseEntity<Page<DukanResponse>> {
-        val dukansPage = dukanService.getAllByCategoryId(categoryId, pageable)
-        val response = mapDukansWithFavorites(userId, dukansPage)
+        val response = favouriteDukanService.getAllByCategory(categoryId, userId, pageable)
+            .map { it.dukan.toDukanResponse(it.isFavorite) }
         return ResponseEntity.ok(response)
     }
 
@@ -101,30 +109,16 @@ class DukanController(
         @PageableDefault(size = 5, page = 0, sort = ["createdAt"], direction = Sort.Direction.DESC)
         pageable: Pageable
     ): ResponseEntity<Page<DukanResponse>> {
-        val response = getAllEditorPicksWithFavorites(userId, pageable)
+        val dukansPage = dukanService.getAllEditorPicksDukan(userId, pageable)
+        val response = dukansPage.map { it.dukan.toDukanResponse(it.isFavorite) }
         return ResponseEntity.ok(response)
     }
-
-    private fun getAllEditorPicksWithFavorites(userId: UUID, pageable: Pageable): Page<DukanResponse> {
-        val dukansPage = dukanService.getAllEditorPicksDukan(userId, pageable)
-        return mapDukansWithFavorites(userId, dukansPage)
-    }
-
-    private fun mapDukansWithFavorites(userId: UUID, dukans: Page<Dukan>): Page<DukanResponse> {
-        val favoriteIds = favouriteDukanService.getUserFavorites(userId)
-            .map { it.dukanId }
-            .toList()
-
-        return dukans.map { dukan ->
-            dukan.toDukanResponse(isFavorite = favoriteIds.contains(dukan.id))
-        }
-    }
-
 
     @GetMapping("/{dukanId}")
     fun getDukanDetailsById(
         @AuthenticationPrincipal userId: UUID,
-        @PathVariable("dukanId") dukanId: UUID): ResponseEntity<DukanDetailsResponse> {
+        @PathVariable("dukanId") dukanId: UUID
+    ): ResponseEntity<DukanDetailsResponse> {
         val dukan = dukanService.getDukanDetailsById(dukanId)
         val isFavorite = favouriteDukanService.isFavorite(userId, dukanId)
 
@@ -148,7 +142,7 @@ class DukanController(
     fun toggleFavoriteStatus(
         @AuthenticationPrincipal userId: UUID,
         @PathVariable dukanId: UUID,
-    ): ResponseEntity<Unit> {
+    ): ResponseEntity<Boolean> {
         val response = favouriteDukanService.toggleFavoriteStatus(userId, dukanId)
         return ResponseEntity.ok(response)
     }
