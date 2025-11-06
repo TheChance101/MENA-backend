@@ -33,4 +33,6 @@ data class WalletUser(
         ACTIVE,
         BLOCKED
     }
+
+    fun isBlocked(): Boolean = status == Status.BLOCKED
 }

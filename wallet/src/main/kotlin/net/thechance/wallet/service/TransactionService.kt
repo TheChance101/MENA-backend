@@ -75,8 +75,8 @@ class TransactionService(
 
     private fun validateUsersStatus(sender: WalletUser, receiver: WalletUser) {
         when {
-            sender.status == WalletUser.Status.BLOCKED -> throw IllegalArgumentException("Sender is blocked.")
-            receiver.status == WalletUser.Status.BLOCKED -> throw IllegalArgumentException("Receiver is blocked.")
+            sender.isBlocked() -> throw IllegalArgumentException("Sender is blocked.")
+            receiver.isBlocked() -> throw IllegalArgumentException("Receiver is blocked.")
         }
     }
 }

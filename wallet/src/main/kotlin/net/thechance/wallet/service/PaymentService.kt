@@ -40,6 +40,10 @@ class PaymentService(
         if (userId == pendingTransaction.receiver.userId)
             throw IllegalArgumentException("Sender and receiver cannot be the same")
 
+        if (pendingTransaction.sender.isBlocked()) throw IllegalArgumentException("Sender is blocked")
+
+        if (pendingTransaction.receiver.isBlocked()) throw IllegalArgumentException("Receiver is blocked")
+
         if (balanceService.getUserBalance(userId) < pendingTransaction.amount.toDouble())
             throw IllegalArgumentException("Insufficient balance")
 
