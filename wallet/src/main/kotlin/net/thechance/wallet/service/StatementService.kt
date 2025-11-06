@@ -2,7 +2,6 @@ package net.thechance.wallet.service
 
 import net.thechance.wallet.entity.Transaction
 import net.thechance.wallet.exception.NoTransactionsFoundException
-import net.thechance.wallet.repository.WalletUserRepository
 import net.thechance.wallet.service.model.input.TransactionFilterParams
 import net.thechance.wallet.service.model.input.UserTransactionType
 import net.thechance.wallet.service.model.output.StatementData
@@ -21,7 +20,7 @@ import java.util.*
 class StatementService(
     private val balanceService: BalanceService,
     private val transactionService: TransactionService,
-    private val walletUserRepository: WalletUserRepository,
+    private val walletUserService: WalletUserService,
 ) {
     fun getStatementData(
         userId: UUID,
@@ -54,9 +53,7 @@ class StatementService(
     }
 
     private fun getUserName(userId: UUID): String {
-        return walletUserRepository.findById(userId)
-            .orElseThrow { IllegalArgumentException("User not found") }
-            .userName
+        return walletUserService.getUserById(userId).userName
     }
 
     private fun getOpeningBalance(userId: UUID, startDate: LocalDateTime): Double {

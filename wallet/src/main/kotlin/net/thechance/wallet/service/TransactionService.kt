@@ -3,9 +3,9 @@ package net.thechance.wallet.service
 import jakarta.persistence.EntityNotFoundException
 import net.thechance.wallet.entity.PendingTransaction
 import net.thechance.wallet.entity.Transaction
+import net.thechance.wallet.entity.WalletUser
 import net.thechance.wallet.repository.PendingTransactionRepository
 import net.thechance.wallet.repository.TransactionRepository
-import net.thechance.wallet.repository.WalletUserRepository
 import net.thechance.wallet.service.model.input.InitiateTransactionParams
 import net.thechance.wallet.service.model.input.TransactionFilterParams
 import net.thechance.wallet.service.model.input.toPendingTransaction
@@ -25,7 +25,7 @@ import java.util.*
 class TransactionService(
     private val transactionRepository: TransactionRepository,
     private val pendingTransactionRepository: PendingTransactionRepository,
-    private val walletUserRepository: WalletUserRepository,
+    private val walletUserService: WalletUserService,
 ) {
     fun getFilteredTransactions(
         transactionFilterParams: TransactionFilterParams,
@@ -65,8 +65,18 @@ class TransactionService(
         if (initiateTransactionParams.receiverId == initiateTransactionParams.senderId)
             throw IllegalArgumentException("Sender and receiver cannot be the same.")
 
-        val sender = walletUserRepository.getReferenceById(initiateTransactionParams.senderId)
-        val receiver = walletUserRepository.getReferenceById(initiateTransactionParams.receiverId)
+        val sender = walletUserService.getUserById(initiateTransactionParams.senderId)
+        val receiver = walletUserService.getUserById(initiateTransactionParams.receiverId)
+
+        validateUsersStatus(sender, receiver)
+        
         return pendingTransactionRepository.save(initiateTransactionParams.toPendingTransaction(sender, receiver))
+    }
+
+    private fun validateUsersStatus(sender: WalletUser, receiver: WalletUser) {
+        when {
+            sender.status == WalletUser.Status.BLOCKED -> throw IllegalArgumentException("Sender is blocked.")
+            receiver.status == WalletUser.Status.BLOCKED -> throw IllegalArgumentException("Receiver is blocked.")
+        }
     }
 }
