@@ -13,12 +13,9 @@ class FavouriteDukanService(
 
     @Transactional
     fun toggleFavoriteStatus(userId: UUID, dukanId: UUID): Boolean {
-        val fav = favoriteDukanRepository.findByUserIdAndDukanId(userId, dukanId)
-        return if (fav != null) {
-            favoriteDukanRepository.delete(fav)
+        return if (favoriteDukanRepository.delete(fav)>0) {
             false
         } else {
-
             favoriteDukanRepository.save(
                 FavoriteDukan(
                     userId = userId,
