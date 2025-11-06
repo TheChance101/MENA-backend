@@ -145,32 +145,10 @@ class ChatService(
 
     @Transactional
     fun deleteChatById(chatId: UUID){
-        val currentChat = chatRepository.findByIdOrNull(chatId) ?: throw NotFoundException("no chat found with this id $chatId")
-        deleteImageFolderOfChat(currentChat)
-        deleteAllChatData(currentChat)
-        deletedChatRepository.save(DeletedChat(chatId = chatId, CleanUpStatus.DELETED))
+        chatRepository.findByIdOrNull(chatId) ?: throw NotFoundException("no chat found with this id $chatId")
+        deletedChatRepository.save(DeletedChat(chatId = chatId, CleanUpStatus.PENDING))
     }
 
-    private fun deleteImageFolderOfChat(chat: Chat){
-        try {
-            attachmentStorageService.deleteFolder(chat.id.toString())
-            println("successfully deleting images folder")
-        }catch (e: Exception){
-            deletedChatRepository.save(DeletedChat(chatId = chat.id, CleanUpStatus.S3_DELETED_FAILED))
-            throw e
-        }
-    }
-    @Transactional
-    private fun deleteAllChatData(chat: Chat){
-        try {
-            messageRepository.deleteAllByChatId(chat.id)
-            chatRepository.deleteChatUsersByChatId(chat.id)
-            chatRepository.deleteChatById(chat.id)
-        }catch (e: Exception){
-            deletedChatRepository.save(DeletedChat(chatId = chat.id, CleanUpStatus.DATA_CLEANUP_FAILED))
-            throw DeleteChatException("Error clean up chat data: ${e.message}")
-        }
-    }
     private fun getChatName(contact: Contact?, user: ContactUser?): String {
         return contact?.let { "${it.firstName} ${it.lastName}" }
             ?: user?.let { "${it.firstName} ${it.lastName}" }.orEmpty()
