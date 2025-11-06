@@ -12,6 +12,7 @@ fun DukanProduct.toProductResponse(quantityInCart: Int): DukanProductResponse {
         description = this.description,
         imageUrls = this.imageUrls,
         quantityInCart = quantityInCart,
-        createdAt = this.createdAt
+        createdAt = this.createdAt,
+        dukanId = this.dukan.id,
     )
 }
