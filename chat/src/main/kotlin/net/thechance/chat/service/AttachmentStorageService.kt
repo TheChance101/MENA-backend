@@ -1,6 +1,5 @@
 package net.thechance.chat.service
 
-import net.thechance.chat.service.exception.DeleteImagesFolderException
 import net.thechance.chat.service.exception.ImageUploadFailedException
 import net.thechance.chat.service.exception.InvalidImageFormatException
 import org.springframework.boot.context.properties.ConfigurationProperties
@@ -78,7 +77,7 @@ class AttachmentStorageService(
                 continuationToken = listResponse.nextContinuationToken()
             } while (continuationToken != null)
         } catch (e: Exception) {
-            throw DeleteImagesFolderException("error clean up image: ${e.message}")
+            println("error clean up image: ${e.message}")
         }
 
 

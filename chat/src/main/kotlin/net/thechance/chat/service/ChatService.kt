@@ -4,7 +4,6 @@ import net.thechance.chat.entity.*
 import net.thechance.chat.repository.ChatRepository
 import net.thechance.chat.repository.DeletedChatRepository
 import net.thechance.chat.repository.MessageRepository
-import net.thechance.chat.service.exception.DeleteChatException
 import net.thechance.chat.service.exception.NotFoundException
 import net.thechance.chat.service.model.ChatModel
 import net.thechance.chat.service.model.ChatSummary

@@ -6,5 +6,3 @@ open class ChatException(
 ) : Exception(message)
 
 class NotFoundException(message: String) : ChatException(message = message)
-class DeleteImagesFolderException(message: String) : ChatException(message = message)
-class DeleteChatException(message: String) : ChatException(message = message)
