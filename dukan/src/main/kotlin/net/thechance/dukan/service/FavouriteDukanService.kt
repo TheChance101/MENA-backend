@@ -31,6 +31,4 @@ class FavouriteDukanService(
 
     fun isFavorite(userId: UUID, dukanId: UUID): Boolean =
         favoriteDukanRepository.findByUserIdAndDukanId(userId, dukanId) != null
-
-
 }
