@@ -66,11 +66,11 @@ interface DukanRepository : JpaRepository<Dukan, UUID> {
         """
     SELECT new net.thechance.dukan.service.model.DukanWithFavorite(
         dukan,
-        CASE WHEN favoriteDukan.id IS NOT NULL THEN true ELSE false END
+        CASE WHEN favoriteDukan.id.dukanId IS NOT NULL THEN true ELSE false END
     )
     FROM Dukan dukan
     LEFT JOIN FavoriteDukan favoriteDukan
-        ON favoriteDukan.dukanId = dukan.id AND favoriteDukan.userId = :userId
+        ON favoriteDukan.id.dukanId = dukan.id AND favoriteDukan.id.userId = :userId
     WHERE dukan.status = net.thechance.dukan.entity.Dukan.Status.APPROVED
       AND EXISTS (
           SELECT 1 
@@ -134,16 +134,16 @@ interface DukanRepository : JpaRepository<Dukan, UUID> {
 
     @Query(
         """
-        SELECT new net.thechance.dukan.service.model.DukanWithFavorite(
-            dukan,
-            CASE WHEN favoriteDukan.id IS NOT NULL THEN true ELSE false END
-        )
-        FROM Dukan dukan
-        JOIN dukan.categories category
-        LEFT JOIN FavoriteDukan favoriteDukan
-            ON favoriteDukan.dukanId = dukan.id AND favoriteDukan.userId = :userId
-        WHERE category.id = :categoryId
-        """
+    SELECT new net.thechance.dukan.service.model.DukanWithFavorite(
+        dukan,
+        CASE WHEN favoriteDukan.id.dukanId IS NOT NULL THEN true ELSE false END
+    )
+    FROM Dukan dukan
+    JOIN dukan.categories category
+    LEFT JOIN FavoriteDukan favoriteDukan
+        ON favoriteDukan.id.dukanId = dukan.id AND favoriteDukan.id.userId = :userId
+    WHERE category.id = :categoryId
+    """
     )
     fun findAllByCategoryWithFavorite(
         categoryId: UUID,

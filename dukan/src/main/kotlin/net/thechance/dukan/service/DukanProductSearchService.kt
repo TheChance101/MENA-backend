@@ -4,11 +4,9 @@ import net.thechance.dukan.entity.DukanProduct
 import net.thechance.dukan.repository.DukanProductRepository
 import net.thechance.dukan.repository.DukanProductSearchRepository
 import net.thechance.dukan.repository.FavoriteProductRepository
-import net.thechance.dukan.repository.FavoriteDukanRepository
 import net.thechance.dukan.search.mpper.toDocument
 import net.thechance.dukan.search.mpper.toSearchResultPreviewItem
 import net.thechance.dukan.service.model.ProductSearchResultPreview
-import net.thechance.dukan.service.model.ProductPreview
 import org.springframework.data.domain.Page
 import org.springframework.data.domain.PageRequest
 import org.springframework.data.domain.Pageable
@@ -21,8 +19,6 @@ class DukanProductSearchService(
     private val searchRepository: DukanProductSearchRepository,
     private val dukanProductRepository: DukanProductRepository,
     private val favoriteProductRepository: FavoriteProductRepository
-    private val searchRepository: DukanProductSearchRepository,
-    private val dukanProductRepository: DukanProductRepository,
 ) {
     fun indexIsEmpty(): Boolean = searchRepository.count() == 0L
 
@@ -58,5 +54,4 @@ class DukanProductSearchService(
             doc.toSearchResultPreviewItem(isFavorite = favoriteIds.contains(UUID.fromString(doc.id)))
         }
     }
-
 }

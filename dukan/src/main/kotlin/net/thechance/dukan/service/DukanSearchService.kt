@@ -7,7 +7,6 @@ import net.thechance.dukan.search.document.DukanDocument
 import net.thechance.dukan.search.mpper.toDocument
 import net.thechance.dukan.search.mpper.toSearchResultPreviewItem
 import net.thechance.dukan.service.model.DukanPreview
-import net.thechance.dukan.service.model.ProductPreview
 import org.springframework.data.domain.Page
 import org.springframework.data.domain.PageRequest
 import org.springframework.data.domain.Pageable
@@ -47,10 +46,9 @@ class DukanSearchService(
         val dukanDocs: Page<DukanDocument> = searchRepository.searchByNameLike(query, pageable)
         val dukansIds = dukanDocs.content.map { UUID.fromString(it.id) }
 
-        val favoriteIds: Set<UUID> = favoriteDukanRepository.findByUserIdAndDukanIdIn(userId, dukansIds)
-            .map { it.dukanId }
+        val favoriteIds: Set<UUID> = favoriteDukanRepository.findByIdUserIdAndIdDukanIdIn(userId, dukansIds)
+            .map { it.id.dukanId }
             .toSet()
-
 
         return dukanDocs.map { doc->
             doc.toSearchResultPreviewItem(isFavorite = favoriteIds.contains(UUID.fromString(doc.id)))

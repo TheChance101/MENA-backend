@@ -29,14 +29,6 @@ class DukanController(
     private val dukanService: DukanService,
     private val favouriteDukanService: FavouriteDukanService
 ) {
-    private val logger = org.slf4j.LoggerFactory.getLogger(DukanController::class.java)
-
-    fun doSomething() {
-        logger.info("This is an info log")
-        logger.debug("This is a debug log")
-        logger.error("This is an error log")
-    }
-
     @GetMapping("/styles")
     fun getAllStyles(): ResponseEntity<DukanStyleResponse> {
         val styles = dukanService.getAllStyles().toDukanStyleResponse()
