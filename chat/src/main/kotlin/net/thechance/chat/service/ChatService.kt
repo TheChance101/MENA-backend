@@ -2,16 +2,11 @@ package net.thechance.chat.service
 
 import net.thechance.chat.entity.*
 import net.thechance.chat.repository.ChatRepository
+import net.thechance.chat.repository.MessageReactionRepository
 import net.thechance.chat.repository.DeletedChatRepository
 import net.thechance.chat.repository.MessageRepository
 import net.thechance.chat.service.exception.NotFoundException
-import net.thechance.chat.service.model.ChatModel
-import net.thechance.chat.service.model.ChatSummary
-import net.thechance.chat.service.model.MessageImageRequestArgs
-import net.thechance.chat.service.model.MessageRequestArgs
-import net.thechance.chat.service.model.toModel
-import net.thechance.chat.service.model.toSummary
-import net.thechance.chat.service.model.MessageAudioRequestArgs
+import net.thechance.chat.service.model.*
 import org.springframework.data.domain.Page
 import org.springframework.data.domain.Pageable
 import org.springframework.data.repository.findByIdOrNull
@@ -23,6 +18,7 @@ import java.util.UUID
 @Service
 class ChatService(
     private val messageRepository: MessageRepository,
+    private val messageReactionRepository: MessageReactionRepository,
     private val chatRepository: ChatRepository,
     private val deletedChatRepository: DeletedChatRepository,
     private val contactUserService: ContactUserService,
@@ -55,6 +51,7 @@ class ChatService(
         return chatRepository.findByUsersIds(usersId)
             ?: chatRepository.save(Chat(users = mutableSetOf(requester, otherUser)))
     }
+
     @Transactional
     fun saveMessage(args: MessageRequestArgs): Message {
         return messageRepository.save(
@@ -87,7 +84,7 @@ class ChatService(
         val audioUrl = attachmentStorageService.uploadAudio(
             file = args.audio,
             fileName = args.audio.originalFilename ?: "${Instant.now()}-Untitled",
-            folderName = args.chatId.toString()
+            folderName = FOLDER_NAME
         )
 
         return messageRepository.save(
@@ -99,9 +96,37 @@ class ChatService(
         )
     }
 
-    fun getAllChatMessages(chatId: UUID, pageable: Pageable) =
-        messageRepository.getAllByChatIdOrderBySentAtDesc(chatId, pageable)
+    fun getMessageById(messageId: UUID): Message {
+        return messageRepository.findByIdOrNull(messageId)
+            ?: throw NotFoundException("no message was found with id: $messageId")
+    }
 
+    fun addReaction(args: MessageReactionRequestArgs): MessageReaction {
+        val existing = messageReactionRepository.findByMessageIdAndUserId(args.messageId, args.userId)
+
+        return existing?.copy(emoji = args.emoji)?.let { messageReactionRepository.save(it) }
+            ?: messageReactionRepository.save(
+                MessageReaction(
+                    messageId = args.messageId,
+                    userId = args.userId,
+                    emoji = args.emoji
+                )
+            )
+    }
+
+    fun deleteReaction(args: MessageReactionRequestArgs): MessageReaction {
+
+        val reaction = messageReactionRepository.findByMessageIdAndUserId(args.messageId, args.userId)
+            ?: throw NotFoundException("no message reactions was found")
+
+        messageReactionRepository.deleteByMessageIdAndUserId(args.messageId, args.userId)
+        return reaction
+
+    }
+
+    fun getAllChatMessagesByChatId(chatId: UUID, pageable: Pageable): Page<Message> {
+        return messageRepository.getAllByChatIdOrderBySentAtDesc(chatId, pageable)
+    }
 
     fun markChatMessagesAsRead(chatId: UUID, userId: UUID) {
         messageRepository.updateIsReadByChatIdAndSenderIdNot(chatId = chatId, userId = userId)
@@ -172,5 +197,7 @@ class ChatService(
             ?: user?.let { "${it.firstName} ${it.lastName}" }.orEmpty()
     }
 
-
+    companion object {
+        private const val FOLDER_NAME = "chat_attachments"
+    }
 }

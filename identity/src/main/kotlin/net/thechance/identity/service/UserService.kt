@@ -79,7 +79,10 @@ class UserService(
     fun deleteUserImage(userId: UUID) {
         val user = findById(userId)
         user.imageUrl?.let { imageUrl ->
-            identityImageStorageService.deleteImage(imageUrl)
+            identityImageStorageService.deleteImage(
+                fileName = imageUrl,
+                folderName = profileImageDirectory
+            )
             userRepository.save(user.copy(imageUrl = null))
         }
     }
@@ -92,7 +95,7 @@ class UserService(
         return userRepository.existsByPhoneNumber(phoneNumber)
     }
 
-    fun saveUser(user: User): User{
+    fun saveUser(user: User): User {
         return userRepository.save(user)
     }
 
@@ -101,13 +104,13 @@ class UserService(
     }
 
     @Transactional
-    fun updateUserLastLoginTime(userId: UUID, time: LocalDateTime){
+    fun updateUserLastLoginTime(userId: UUID, time: LocalDateTime) {
         val updatedUsersCount = userRepository.updateLastLoginTime(userId, time)
         if (updatedUsersCount == 0) throw UserNotFoundException("User with id: $userId not found")
     }
 
     @Transactional
-    fun updateUserLastVisitTime(userId: UUID, time: LocalDateTime){
+    fun updateUserLastVisitTime(userId: UUID, time: LocalDateTime) {
         val updatedUsersCount = userRepository.updateLastVisitTime(userId, time)
         if (updatedUsersCount == 0) throw UserNotFoundException("User with id: $userId not found")
     }

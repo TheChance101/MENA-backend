@@ -22,6 +22,10 @@ data class Message(
     @Column(name = "audio_url", nullable = true)
     val audioUrl: String? = null,
 
+    @OneToMany(fetch = FetchType.EAGER)
+    @JoinColumn(name = "message_id", referencedColumnName = "id")
+    val reactions: List<MessageReaction> = emptyList(),
+
     @Column(name = "chat_id", columnDefinition = "uuid", nullable = false, updatable = false)
     val chatId: UUID
 )

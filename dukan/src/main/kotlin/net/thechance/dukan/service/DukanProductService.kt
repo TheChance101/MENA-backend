@@ -6,25 +6,28 @@ import net.thechance.dukan.entity.Dukan
 import net.thechance.dukan.entity.DukanProduct
 import net.thechance.dukan.repository.DukanProductRepository
 import net.thechance.dukan.repository.DukanShelfRepository
+import net.thechance.dukan.entity.FavoriteProduct
+import net.thechance.dukan.entity.FavoriteProductId
 import net.thechance.dukan.service.exception.DukanProductCreationFailedException
 import net.thechance.dukan.service.exception.ProductNameAlreadyTakenException
 import net.thechance.dukan.service.exception.ProductNotFoundException
+import net.thechance.dukan.repository.FavoriteProductRepository
 import net.thechance.dukan.service.model.DukanProductCreationParams
 import net.thechance.events.publisher.MenaEventPublisher
 import net.thechance.dukan.service.model.DukanProductUpdateParams
 import net.thechance.events.dukan.DukanEvent
 import net.thechance.events.dukan.ProductEvent
+import net.thechance.dukan.service.model.DukanProductWithFavoriteAndQuantity
 import org.springframework.data.domain.Page
 import org.springframework.data.domain.Pageable
-import org.springframework.data.elasticsearch.core.geo.GeoPoint
 import org.springframework.stereotype.Service
 import org.springframework.web.multipart.MultipartFile
 import java.util.*
 
-
 @Service
 class DukanProductService(
     private val dukanProductRepository: DukanProductRepository,
+    private val favoriteProductRepository: FavoriteProductRepository,
     private val dukanShelfRepository: DukanShelfRepository,
     private val dukanService: DukanService,
     private val imageStorageService: ImageStorageService,
@@ -57,11 +60,11 @@ class DukanProductService(
 
             throw e
         }
-        dukanProductRepository.save(product.copy(imageUrls = imageUrls)).also {product->
+        dukanProductRepository.save(product.copy(imageUrls = imageUrls)).also { product ->
             eventPublisher.publish(
                 event = product.toProductSaveEvent()
             )
-            if (product.dukan.shelves.isNotEmpty() && product.dukan.status == Dukan.Status.APPROVED){
+            if (product.dukan.shelves.isNotEmpty() && product.dukan.status == Dukan.Status.APPROVED) {
                 eventPublisher.publish(
                     product.dukan.toDukanSaveEvent()
                 )
@@ -110,24 +113,35 @@ class DukanProductService(
     }
 
     @Transactional
-    fun getProductsByShelf(userId: UUID, shelfId: UUID, pageable: Pageable): Page<DukanProduct> {
-        val productsPage = dukanProductRepository.findAllByShelfIdWithDukan(shelfId, pageable)
-        val quantities = dukanProductRepository.findProductQuantitiesByUserAndShelf(userId, shelfId)
-            .associate { UUID.fromString(it[0].toString()) to (it[1] as Number).toInt() }
-
-        return productsPage.map { product ->
-            product.apply { tempQuantity = quantities[product.id] ?: 0 }
-        }
+    fun getProductsByShelf(userId: UUID, shelfId: UUID, pageable: Pageable): Page<DukanProductWithFavoriteAndQuantity> {
+        val products = dukanProductRepository.findProductsWithFavoriteAndQuantityByShelf(userId, shelfId, pageable)
+        return products
     }
 
     @Transactional
-    fun getProductById(userId: UUID, productId: UUID): DukanProduct {
-        val product = dukanProductRepository.findByIdWithDukan(productId)
-        val quantity = dukanProductRepository.findProductQuantitiesByUserAndShelf(userId, product.shelf.id)
-            .firstOrNull { UUID.fromString(it[0].toString()) == product.id }
-            ?.let { (it[1] as Number).toInt() } ?: 0
-        product.tempQuantity = quantity
+    fun getProductById(userId: UUID, productId: UUID): DukanProductWithFavoriteAndQuantity {
+        val product = dukanProductRepository.findProductWithFavoriteAndQuantityById(userId, productId)
         return product
+    }
+
+    @Transactional
+    fun toggleFavoriteStatus(userId: UUID, productId: UUID): Boolean {
+        return if (favoriteProductRepository.deleteByIdProductIdAndIdUserId(productId, userId) > 0) {
+            false
+        } else {
+            createFavoriteEntry(userId, productId)
+        }
+    }
+
+    private fun createFavoriteEntry(userId: UUID, productId: UUID): Boolean {
+        val newFavorite = FavoriteProduct(
+            id = FavoriteProductId(
+                productId = productId,
+                userId = userId
+            )
+        )
+        favoriteProductRepository.save(newFavorite)
+        return true
     }
 
     @Transactional
