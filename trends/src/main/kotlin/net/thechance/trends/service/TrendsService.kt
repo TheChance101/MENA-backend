@@ -165,12 +165,16 @@ class TrendsService(
                 videoUrl = signedUrls.videoUrl, thumbnailUrl = signedUrls.thumbnailUrl
             )
 
-            return object : TrendWithLikeStatus {
-                override fun getTrend(): Trend = updatedTrend
-                override fun getIsLiked(): Boolean = trendWithLikeStatus.getIsLiked()
-            }
+            return createTrendWithLikeStatus(updatedTrend, trendWithLikeStatus.getIsLiked())
         }.getOrElse {
             return trendWithLikeStatus
+        }
+    }
+
+    private fun createTrendWithLikeStatus(trend: Trend, isLiked: Boolean): TrendWithLikeStatus{
+        return object : TrendWithLikeStatus {
+            override fun getTrend(): Trend = trend
+            override fun getIsLiked(): Boolean = isLiked
         }
     }
 
