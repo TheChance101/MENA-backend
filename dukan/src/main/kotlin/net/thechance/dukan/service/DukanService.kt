@@ -6,7 +6,7 @@ import net.thechance.dukan.api.mapper.dukan.toDukan
 import net.thechance.dukan.entity.Dukan
 import net.thechance.dukan.entity.DukanCategory
 import net.thechance.dukan.entity.DukanColor
-import net.thechance.dukan.entity.DukanWithFavorite
+import net.thechance.dukan.service.model.DukanWithFavorite
 import net.thechance.dukan.repository.DukanCategoryRepository
 import net.thechance.dukan.repository.DukanColorRepository
 import net.thechance.dukan.repository.DukanRepository
@@ -106,6 +106,9 @@ class DukanService(
     ): Page<Dukan> {
         return dukanRepository.findBestAroundApprovedDukans(lat, lng, range, pageable)
     }
+
+    fun getAllByCategory(categoryId: UUID, userId: UUID, pageable: Pageable): Page<DukanWithFavorite> =
+        dukanRepository.findAllByCategoryWithFavorite(categoryId, userId, pageable)
 
     companion object {
         private val DUKAN_FOLDER_NAME = "dukan"

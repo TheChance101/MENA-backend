@@ -1,7 +1,7 @@
 package net.thechance.dukan.repository
 
 import net.thechance.dukan.entity.Dukan
-import net.thechance.dukan.entity.DukanWithFavorite
+import net.thechance.dukan.service.model.DukanWithFavorite
 import org.springframework.data.domain.Page
 import org.springframework.data.domain.Pageable
 import org.springframework.data.jpa.repository.JpaRepository
@@ -64,7 +64,7 @@ interface DukanRepository : JpaRepository<Dukan, UUID> {
 
     @Query(
         """
-    SELECT new net.thechance.dukan.entity.DukanWithFavorite(
+    SELECT new net.thechance.dukan.service.model.DukanWithFavorite(
         dukan,
         CASE WHEN favoriteDukan.id IS NOT NULL THEN true ELSE false END
     )
@@ -134,16 +134,16 @@ interface DukanRepository : JpaRepository<Dukan, UUID> {
 
     @Query(
         """
-SELECT new net.thechance.dukan.entity.DukanWithFavorite(
-    dukan,
-    CASE WHEN favoriteDukan.id IS NOT NULL THEN true ELSE false END
-)
-FROM Dukan dukan
-JOIN dukan.categories category
-LEFT JOIN FavoriteDukan favoriteDukan
-    ON favoriteDukan.dukanId = dukan.id AND favoriteDukan.userId = :userId
-WHERE category.id = :categoryId
-"""
+        SELECT new net.thechance.dukan.service.model.DukanWithFavorite(
+            dukan,
+            CASE WHEN favoriteDukan.id IS NOT NULL THEN true ELSE false END
+        )
+        FROM Dukan dukan
+        JOIN dukan.categories category
+        LEFT JOIN FavoriteDukan favoriteDukan
+            ON favoriteDukan.dukanId = dukan.id AND favoriteDukan.userId = :userId
+        WHERE category.id = :categoryId
+        """
     )
     fun findAllByCategoryWithFavorite(
         categoryId: UUID,

@@ -7,8 +7,8 @@ import java.util.*
 
 @Repository
 interface FavoriteDukanRepository : JpaRepository<FavoriteDukan, UUID> {
-
     fun existsByUserIdAndDukanId(userId: UUID, dukanId: UUID): Boolean
     fun deleteByUserIdAndDukanId(userId: UUID, dukanId: UUID)
     fun findByUserIdAndDukanId(userId: UUID, dukanId: UUID): FavoriteDukan?
+    fun findByUserIdAndDukanIdIn(userId: UUID,dukanIds:List<UUID>):List<FavoriteDukan>
 }
