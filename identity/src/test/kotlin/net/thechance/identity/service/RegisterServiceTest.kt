@@ -2,6 +2,7 @@ package net.thechance.identity.service
 
 import com.google.common.truth.Truth.assertThat
 import io.mockk.*
+import net.thechance.events.publisher.MenaEventPublisher
 import net.thechance.identity.entity.RefreshToken
 import net.thechance.identity.entity.User
 import net.thechance.identity.exception.OtpExpiredException
@@ -29,6 +30,7 @@ class RegisterServiceTest {
     private val passwordEncoder: PasswordEncoder = mockk(relaxed = true)
     private val jwtService: JwtService = mockk(relaxed = true)
     private val refreshTokenService: RefreshTokenService = mockk(relaxed = true)
+    private val eventPublisher: MenaEventPublisher = mockk(relaxed = true)
 
     private val registerService: RegisterService = RegisterService(
         phoneNumberValidatorService = phoneNumberValidatorService,
@@ -37,7 +39,8 @@ class RegisterServiceTest {
         userService = userService,
         passwordEncoder = passwordEncoder,
         jwtService = jwtService,
-        refreshTokenService = refreshTokenService
+        refreshTokenService = refreshTokenService,
+        eventPublisher = eventPublisher
     )
 
     @Test
@@ -154,6 +157,24 @@ class RegisterServiceTest {
 
         verify(exactly = 0) { userService.saveUser(any()) }
     }
+
+    @Test
+    fun `registerUser should publish event when user added`() {
+        every { otpService.getLatestNotExpiredOtpBySessionId(sessionId) } returns verifiedOtpLog
+        every { userService.userExistsByUserName(any()) } returns false
+        every { userService.userExistsByPhoneNumber(any()) } returns false
+        every { passwordEncoder.encode(any()) } returns ENCODED_PASSWORD
+        every { userService.saveUser(any()) } returns savedUser
+        every { jwtService.generateToken(savedUser) } returns ACCESS_TOKEN
+        every { refreshTokenService.createRefreshToken(savedUser) } returns refreshToken
+        every { eventPublisher.publish(any()) } just runs
+
+        registerService.registerUser(registerModel)
+
+        verify(exactly = 1) { eventPublisher.publish(any()) }
+    }
+
+
 
     private companion object {
         private const val DUMMY_PHONE_NUMBER = "+201176897654"
