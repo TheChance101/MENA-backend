@@ -81,6 +81,23 @@ class ChatController(
         return ResponseEntity.ok(message.toResponse(senderId))
     }
 
+    @PostMapping("/audio")
+    fun sendMessageAudio(
+        @ModelAttribute request: MessageAudioRequest,
+        @AuthenticationPrincipal senderId: UUID,
+    ): ResponseEntity<MessageResponse> {
+        val messageAudioArgs = request.toRequestArgs(senderId)
+        val message = chatService.saveMessageAudio(messageAudioArgs)
+        chatService.getChatUsersIds(chatId = request.chatId).forEach { chatParticipantId ->
+            messagingTemplate.convertAndSendToUser(
+                chatParticipantId.toString(),
+                PRIVATE_MESSAGES,
+                message.toResponse(chatParticipantId)
+            )
+        }
+        return ResponseEntity.ok(message.toResponse(senderId))
+    }
+
     @MessageMapping("/chat.addMessageReaction")
     fun addReaction(
         @Payload body: MessageReactionRequest,

@@ -6,6 +6,7 @@ import net.thechance.dukan.service.exception.ShelfNameAlreadyTakenException
 import net.thechance.dukan.service.exception.ShelfNotFoundException
 import net.thechance.dukan.repository.DukanProductRepository
 import net.thechance.dukan.repository.DukanShelfRepository
+import net.thechance.dukan.service.exception.ShelfNameNotChangedException
 import org.springframework.data.domain.Page
 import org.springframework.data.domain.Pageable
 import org.springframework.stereotype.Service
@@ -20,10 +21,6 @@ class DukanShelfService(
     fun createShelf(title: String, ownerId: UUID): DukanShelf {
         val dukan = dukanService.getDukanByOwnerId(ownerId)
 
-        if (dukanShelfRepository.existsByTitleAndDukanId(title, dukan.id)) {
-            throw ShelfNameAlreadyTakenException()
-        }
-
         return dukanShelfRepository.save(
             DukanShelf(
                 title = title,
@@ -31,6 +28,18 @@ class DukanShelfService(
             )
         )
     }
+
+    fun updateShelf(ownerId: UUID, shelfId: UUID, newTitle: String) {
+        val dukan = dukanService.getDukanByOwnerId(ownerId)
+
+        val shelf = dukanShelfRepository.findByIdAndDukanId(shelfId, dukan.id)
+            ?: throw ShelfNotFoundException()
+
+        if (shelf.title == newTitle) throw ShelfNameNotChangedException()
+        val newShelf = shelf.copy(title = newTitle)
+        dukanShelfRepository.save(newShelf)
+    }
+
 
     fun deleteShelf(shelfId: UUID, ownerId: UUID) {
         val shelf = getShelfById(shelfId, ownerId)

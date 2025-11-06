@@ -77,6 +77,23 @@ class ChatService(
         )
     }
 
+    @Transactional
+    fun saveMessageAudio(args: MessageAudioRequestArgs): Message {
+        val audioUrl = attachmentStorageService.uploadAudio(
+            file = args.audio,
+            fileName = args.audio.originalFilename ?: "${Instant.now()}-Untitled",
+            folderName = FOLDER_NAME
+        )
+
+        return messageRepository.save(
+            Message(
+                senderId = args.senderId,
+                chatId = args.chatId,
+                audioUrl = audioUrl
+            )
+        )
+    }
+
     fun getMessageById(messageId: UUID): Message {
         return messageRepository.findByIdOrNull(messageId)
             ?: throw NotFoundException("no message was found with id: $messageId")
@@ -99,7 +116,6 @@ class ChatService(
         return messageReactionRepository.deleteByMessageIdAndUserId(args.messageId, args.userId)
             ?: throw NotFoundException("no message reactions was found")
     }
-
 
     fun getAllChatMessagesByChatId(chatId: UUID, pageable: Pageable): Page<Message> {
         return messageRepository.getAllByChatIdOrderBySentAtDesc(chatId, pageable)
@@ -173,7 +189,6 @@ class ChatService(
         return contact?.let { "${it.firstName} ${it.lastName}" }
             ?: user?.let { "${it.firstName} ${it.lastName}" }.orEmpty()
     }
-
 
     companion object {
         private const val FOLDER_NAME = "chat_attachments"

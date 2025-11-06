@@ -92,6 +92,47 @@ class ChatControllerTest {
     }
 
     @Test
+    fun `sendMessageAudio should upload audio and send to user`() {
+        val chatId = UUID.randomUUID()
+        val senderId = UUID.randomUUID()
+        val principal = mockk<Principal>()
+        every { principal.name } returns senderId.toString()
+
+        val audio = mockk<MultipartFile>(relaxed = true)
+
+        val savedMessage = Message(
+            id = UUID.randomUUID(),
+            chatId = chatId,
+            senderId = senderId,
+            text = null,
+            imageUrl = null,
+            audioUrl = "https://cdn.example.com/audio/test.m4a",
+            sentAt = Instant.now(),
+            isRead = false
+        )
+
+        every { chatService.saveMessageAudio(any()) } returns savedMessage
+        every { chatService.getChatUsersIds(chatId) } returns listOf(senderId, userId)
+        justRun { messagingTemplate.convertAndSendToUser(any(), any(), any()) }
+
+        val request = MessageAudioRequest(chatId = chatId, audio = audio)
+
+        val response = controller.sendMessageAudio(request, principal)
+
+        assertThat(response.statusCode).isEqualTo(HttpStatus.OK)
+        assertThat(response.body?.audioUrl).isEqualTo("https://cdn.example.com/audio/test.m4a")
+
+        verify {
+            chatService.saveMessageAudio(
+                match { it.chatId == chatId && it.senderId == senderId && it.audio == audio }
+            )
+        }
+        verify(exactly = 2) {
+            messagingTemplate.convertAndSendToUser(any(), PRIVATE_MESSAGES, any())
+        }
+    }
+
+    @Test
     fun `getChatByUserIds should return conversation`() {
         val requester = userId
         val receiverId = userId2
