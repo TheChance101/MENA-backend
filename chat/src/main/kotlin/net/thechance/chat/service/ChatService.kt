@@ -11,6 +11,7 @@ import org.springframework.data.domain.Pageable
 import org.springframework.data.repository.findByIdOrNull
 import org.springframework.stereotype.Service
 import org.springframework.transaction.annotation.Transactional
+import java.time.Instant
 import java.util.*
 
 @Service
@@ -102,6 +103,12 @@ class ChatService(
 
     fun getAllChatMessagesByChatId(chatId: UUID, pageable: Pageable): Page<Message> {
         return messageRepository.getAllByChatIdOrderBySentAtDesc(chatId, pageable)
+    }
+
+
+    fun getMessagesUpdatedAfter(chatId: UUID, updatedAfter: Instant?): List<Message> {
+        if (updatedAfter == null) throw IllegalStateException("Not valid Instant!")
+        return messageRepository.findAllByChatIdAndUpdatedAtAfterOrderByUpdatedAtAsc(chatId, updatedAfter)
     }
 
     fun markChatMessagesAsRead(chatId: UUID, userId: UUID) {

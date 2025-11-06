@@ -12,6 +12,7 @@ import org.springframework.security.core.annotation.AuthenticationPrincipal
 import org.springframework.stereotype.Controller
 import org.springframework.web.bind.annotation.*
 import java.security.Principal
+import java.time.Instant
 import java.util.UUID
 
 @RequestMapping("/chat")
@@ -55,6 +56,16 @@ class ChatController(
         )
     }
 
+    @GetMapping("/{chatId}/messages/updates")
+    fun getUpdatedMessages(
+        @PathVariable chatId: UUID,
+        @RequestParam updatedAfter: String,
+        @AuthenticationPrincipal userId: UUID
+    ): ResponseEntity<List<MessageResponse>> {
+        val since = Instant.parse(updatedAfter)
+        val updatedMessages = chatService.getMessagesUpdatedAfter(chatId, since).toResponse(userId)
+        return ResponseEntity.ok(updatedMessages)
+    }
 
     @PostMapping("/image")
     fun sendMessageImage(

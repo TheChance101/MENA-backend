@@ -19,7 +19,8 @@ data class Message(
     val isRead: Boolean = false,
     @Column(name = "image_url", nullable = true)
     val imageUrl: String? = null,
-
+    @Column(name = "updated_at", nullable = false)
+    val updatedAt: Instant = Instant.now(),
     @OneToMany(fetch = FetchType.EAGER)
     @JoinColumn(name = "message_id", referencedColumnName = "id")
     val reactions: List<MessageReaction> = emptyList(),

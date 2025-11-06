@@ -19,6 +19,7 @@ data class MessageResponse(
     val imageUrl: String?,
     val reactions: List<MessageReactionResponse> = emptyList(),
     val sendAt: Instant,
+    val updatedAt: Instant,
     val isRead: Boolean,
     val isMine: Boolean
 )
@@ -32,9 +33,14 @@ fun Message.toResponse(requesterId: UUID): MessageResponse {
         imageUrl = imageUrl,
         reactions = reactions.map(MessageReaction::toResponse),
         sendAt = sentAt,
+        updatedAt = updatedAt,
         isRead = isRead,
         isMine = requesterId == senderId
     )
+}
+
+fun List<Message>.toResponse(requesterId: UUID): List<MessageResponse> {
+    return map{ it.toResponse(requesterId) }
 }
 
 fun Page<Message>.toPagedMessageResponse(requesterId: UUID): PagedResponse<MessageResponse> {

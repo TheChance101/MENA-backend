@@ -8,6 +8,7 @@ import org.springframework.data.jpa.repository.Modifying
 import org.springframework.data.jpa.repository.Query
 import org.springframework.data.repository.query.Param
 import org.springframework.transaction.annotation.Transactional
+import java.time.Instant
 import java.util.*
 
 interface MessageRepository : JpaRepository<Message, UUID> {
@@ -33,4 +34,8 @@ interface MessageRepository : JpaRepository<Message, UUID> {
     )
     fun findLastMessagesForChats(@Param("chatIds") chatIds: List<UUID>): List<Message>
 
+    fun findAllByChatIdAndUpdatedAtAfterOrderByUpdatedAtAsc(
+        chatId: UUID,
+        updatedAt: Instant
+    ): List<Message>
 }
