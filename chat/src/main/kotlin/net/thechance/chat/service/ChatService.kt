@@ -99,8 +99,11 @@ class ChatService(
             ?: throw NotFoundException("no message was found with id: $messageId")
     }
 
+    @Transactional
     fun addReaction(args: MessageReactionRequestArgs): MessageReaction {
         val existing = messageReactionRepository.findByMessageIdAndUserId(args.messageId, args.userId)
+
+        messageRepository.updateUpdatedAt(args.messageId)
 
         return existing?.copy(emoji = args.emoji)?.let { messageReactionRepository.save(it) }
             ?: messageReactionRepository.save(
@@ -113,8 +116,13 @@ class ChatService(
     }
 
     fun deleteReaction(args: MessageReactionRequestArgs): MessageReaction {
-        return messageReactionRepository.deleteByMessageIdAndUserId(args.messageId, args.userId)
+        messageRepository.updateUpdatedAt(args.messageId)
+
+        val reaction = messageReactionRepository.findByMessageIdAndUserId(args.messageId, args.userId)
             ?: throw NotFoundException("no message reactions was found")
+
+        messageReactionRepository.deleteByMessageIdAndUserId(args.messageId, args.userId)
+        return reaction
     }
 
     fun getAllChatMessagesByChatId(chatId: UUID, pageable: Pageable): Page<Message> {
@@ -124,7 +132,7 @@ class ChatService(
 
     fun getMessagesUpdatedAfter(chatId: UUID, updatedAfter: Instant?): List<Message> {
         if (updatedAfter == null) throw IllegalStateException("Not valid Instant!")
-        return messageRepository.findAllByChatIdAndUpdatedAtAfterOrderByUpdatedAtAsc(chatId, updatedAfter)
+        return messageRepository.findAllByChatIdAndLastModifiedAtAfterOrderByLastModifiedAtAsc(chatId, updatedAfter)
     }
 
     fun markChatMessagesAsRead(chatId: UUID, userId: UUID) {

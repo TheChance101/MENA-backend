@@ -9,11 +9,5 @@ interface MessageReactionRepository : JpaRepository<MessageReaction, UUID> {
     fun findByMessageIdAndUserId(messageId: UUID, userId: UUID): MessageReaction?
 
     @Transactional
-    fun deleteByMessageIdAndUserId(messageId: UUID, userId: UUID): MessageReaction? {
-        val reaction = findByMessageIdAndUserId(messageId, userId)
-        if (reaction != null) {
-            delete(reaction)
-        }
-        return reaction
-    }
+    fun deleteByMessageIdAndUserId(messageId: UUID, userId: UUID)
 }

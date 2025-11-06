@@ -35,7 +35,7 @@ fun Message.toResponse(requesterId: UUID): MessageResponse {
         reactions = reactions.map(MessageReaction::toResponse),
         audioUrl = audioUrl,
         sendAt = sentAt,
-        updatedAt = updatedAt,
+        updatedAt = lastModifiedAt,
         isRead = isRead,
         isMine = requesterId == senderId
     )
