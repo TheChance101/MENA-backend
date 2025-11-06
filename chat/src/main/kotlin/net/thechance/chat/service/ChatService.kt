@@ -113,8 +113,13 @@ class ChatService(
     }
 
     fun deleteReaction(args: MessageReactionRequestArgs): MessageReaction {
-        return messageReactionRepository.deleteByMessageIdAndUserId(args.messageId, args.userId)
+
+        val reaction = messageReactionRepository.findByMessageIdAndUserId(args.messageId, args.userId)
             ?: throw NotFoundException("no message reactions was found")
+
+        messageReactionRepository.deleteByMessageIdAndUserId(args.messageId, args.userId)
+        return reaction
+
     }
 
     fun getAllChatMessagesByChatId(chatId: UUID, pageable: Pageable): Page<Message> {
