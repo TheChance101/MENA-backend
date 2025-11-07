@@ -12,6 +12,7 @@ import org.springframework.security.core.annotation.AuthenticationPrincipal
 import org.springframework.stereotype.Controller
 import org.springframework.web.bind.annotation.*
 import java.security.Principal
+import java.time.Instant
 import java.util.UUID
 
 @RequestMapping("/chat")
@@ -178,6 +179,16 @@ class ChatController(
             DeleteChatResponse(chatId)
         }
         return ResponseEntity.ok().body(Unit)
+    }
+
+    @GetMapping("/deletedChats")
+    fun getDeletedChatsAfter(
+        @RequestParam deletedAfter: String,
+        @AuthenticationPrincipal userId: UUID
+    ): ResponseEntity<List<String>> {
+        val time = Instant.parse(deletedAfter)
+        val deletedChats = chatService.getDeletedChatsByAfterSpecificTime(userId, time)
+        return ResponseEntity.ok(deletedChats)
     }
 
     companion object {

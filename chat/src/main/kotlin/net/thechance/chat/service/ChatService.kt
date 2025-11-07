@@ -188,8 +188,22 @@ class ChatService(
 
     @Transactional
     fun deleteChatById(chatId: UUID){
-        chatRepository.findByIdOrNull(chatId) ?: throw NotFoundException("no chat found with this id $chatId")
-        deletedChatRepository.save(DeletedChat(chatId = chatId, CleanUpStatus.PENDING))
+        val currentChat = chatRepository.findByIdOrNull(chatId) ?: throw NotFoundException("no chat found with this id $chatId")
+        currentChat.users.forEach { user ->
+            deletedChatRepository.save(DeletedChat(
+                chatId = chatId, CleanUpStatus.PENDING,
+                userId = user.id,
+                deletedAt = Instant.now()
+            ))
+
+        }
+    }
+
+    fun getDeletedChatsByAfterSpecificTime(userId: UUID, time: Instant): List<String>{
+        return chatRepository.getDeletedChatByUserIdAfterSpecificTime(
+            userId = userId,
+            time = time
+        ).map { it.id.toString() }
     }
 
     private fun getChatName(contact: Contact?, user: ContactUser?): String {

@@ -10,6 +10,7 @@ import org.springframework.data.jpa.repository.JpaRepository
 import org.springframework.data.jpa.repository.Modifying
 import org.springframework.data.jpa.repository.Query
 import org.springframework.data.repository.query.Param
+import java.time.Instant
 import java.util.*
 
 interface ChatRepository : JpaRepository<Chat, UUID> {
@@ -62,5 +63,14 @@ interface ChatRepository : JpaRepository<Chat, UUID> {
         value = "DELETE FROM chat.chat_users WHERE chat.chat_users.chat_id = :chatId"
     )
     fun deleteChatUsersByChatId(chatId: UUID)
-}
 
+    @Query(
+        value = """
+            SELECT c.* FROM chat.chats c 
+            JOIN chat.deleted_chats dc ON c.id = dc.chat_id
+            WHERE dc.user_id = :userId AND dc.deleted_at > :time
+        """,
+        nativeQuery = true
+    )
+    fun getDeletedChatByUserIdAfterSpecificTime(userId: UUID, time: Instant) : List<Chat>
+}
