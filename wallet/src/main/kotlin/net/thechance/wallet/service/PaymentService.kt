@@ -28,7 +28,9 @@ class PaymentService(
         transactionRepository.save(transaction)
         pendingTransactionRepository.deleteById(transactionId)
 
-        if(transactionStatus == Transaction.Status.FAILED) throw WalletUserIsBlockedException()
+        if(transactionStatus == Transaction.Status.FAILED) {
+            throw WalletUserIsBlockedException("Either sender or receiver is blocked")
+        }
     }
 
     private fun getTransactionStatus(pendingTransaction: PendingTransaction): Transaction.Status {
