@@ -30,15 +30,6 @@ class IdentityControllerAdvice {
             .body(errorResponse)
     }
 
-    @ExceptionHandler(UserIsBlockedException::class)
-    fun handleUserIsBlockedException(exception: UserIsBlockedException): ResponseEntity<ErrorResponse> {
-        logger.error("User is blocked: ${exception.message}", exception)
-        val errorResponse = ErrorResponse("User is blocked")
-        return ResponseEntity
-            .status(HttpStatus.FORBIDDEN)
-            .body(errorResponse)
-    }
-
     @ExceptionHandler(InvalidCredentialsException::class)
     fun handleInvalidCredentialsException(exception: InvalidCredentialsException): ResponseEntity<ErrorResponse> {
         logger.error("Invalid credentials: ${exception.message}", exception)
