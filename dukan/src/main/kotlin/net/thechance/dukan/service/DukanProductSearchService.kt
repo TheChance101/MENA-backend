@@ -40,7 +40,7 @@ class DukanProductSearchService(
         return totalIndexed
     }
 
-    fun search(userId: UUID, query: String, pageable: Pageable): Page<ProductSearchResultPreview> {
+        fun search(userId: UUID, query: String, pageable: Pageable): Page<ProductSearchResultPreview> {
         val productDocs = searchRepository.searchByNameLike(query, pageable)
 
         val productIds = productDocs.content.map { UUID.fromString(it.id) }
