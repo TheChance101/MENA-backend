@@ -54,8 +54,6 @@ class JwtFilter(
             authErrorResponder.handleJwtExpired(response)
         } catch (_: MalformedJwtException) {
             authErrorResponder.handleInvalidToken(response)
-        } catch (_: UserIsBlockedException) {
-            authErrorResponder.handleInvalidToken(response)
         } catch (_: Exception) {
             authErrorResponder.handleGeneralAuthError(response)
         }
