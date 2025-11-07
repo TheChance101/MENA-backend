@@ -41,10 +41,6 @@ fun Message.toResponse(requesterId: UUID): MessageResponse {
     )
 }
 
-fun List<Message>.toResponse(requesterId: UUID): List<MessageResponse> {
-    return map{ it.toResponse(requesterId) }
-}
-
 fun Page<Message>.toPagedMessageResponse(requesterId: UUID): PagedResponse<MessageResponse> {
     return PagedResponse(
         data = this.content.map { it.toResponse(requesterId) },
