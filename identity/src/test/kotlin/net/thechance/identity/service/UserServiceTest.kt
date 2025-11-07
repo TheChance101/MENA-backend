@@ -2,6 +2,8 @@ package net.thechance.identity.service
 
 import com.google.common.truth.Truth.assertThat
 import io.mockk.*
+import net.thechance.events.identity.UserStatusUpdatedEvent
+import net.thechance.events.publisher.MenaEventPublisher
 import net.thechance.identity.entity.User
 import net.thechance.identity.exception.PasswordNotUpdatedException
 import net.thechance.identity.exception.UserNotFoundException
@@ -20,7 +22,15 @@ import java.util.*
 class UserServiceTest {
     private val userRepository: UserRepository = mockk(relaxed = true)
     private val identityImageStorageService: IdentityImageStorageService = mockk(relaxed = true)
-    private val userService = UserService(userRepository, identityImageStorageService, "profile-images")
+    private val authenticationService: AuthenticationService = mockk(relaxed = true)
+    private val eventPublisher: MenaEventPublisher = mockk(relaxed = true)
+    private val userService = UserService(
+        userRepository = userRepository,
+        identityImageStorageService = identityImageStorageService,
+        eventPublisher = eventPublisher,
+        authenticationService = authenticationService,
+        profileImageDirectory = "profile-images"
+    )
     private val mockImageFile: MultipartFile = mockk(relaxed = true)
 
     @Test
@@ -292,6 +302,27 @@ class UserServiceTest {
         userService.updateUserStatus(userId, newStatus)
 
         verify(exactly = 1) { userRepository.updateStatus(userId, newStatus) }
+    }
+
+    @Test
+    fun `updateUserStatus() should publish UserStatusUpdatedEvent when it updates successfully`() {
+        val newStatus = User.Status.ACTIVE
+        val event = UserStatusUpdatedEvent(userId, UserStatusUpdatedEvent.UserStatus.ACTIVE)
+        every{ userRepository.updateStatus(userId, newStatus) } returns 1
+
+        userService.updateUserStatus(userId, newStatus)
+
+        verify(exactly = 1) { eventPublisher.publish(event) }
+    }
+
+    @Test
+    fun `updateUserStatus() should logout user if user is blocked`() {
+        val newStatus = User.Status.BLOCKED
+        every{ userRepository.updateStatus(userId, newStatus) } returns 1
+
+        userService.updateUserStatus(userId, newStatus)
+
+        verify(exactly = 1) { authenticationService.logout(userId) }
     }
 
     @Test
