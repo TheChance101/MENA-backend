@@ -3,7 +3,7 @@ package net.thechance.wallet.service
 import net.thechance.wallet.entity.PendingTransaction
 import net.thechance.wallet.entity.Transaction
 import net.thechance.wallet.entity.toTransaction
-import net.thechance.wallet.exception.WalletUserIsBlockedException
+import net.thechance.wallet.exception.BlockedWalletUserException
 import net.thechance.wallet.repository.PendingTransactionRepository
 import net.thechance.wallet.repository.TransactionRepository
 import org.springframework.stereotype.Service
@@ -29,7 +29,7 @@ class PaymentService(
         pendingTransactionRepository.deleteById(transactionId)
 
         if(transactionStatus == Transaction.Status.FAILED) {
-            throw WalletUserIsBlockedException("Either sender or receiver is blocked")
+            throw BlockedWalletUserException("Either sender or receiver is blocked")
         }
     }
 
