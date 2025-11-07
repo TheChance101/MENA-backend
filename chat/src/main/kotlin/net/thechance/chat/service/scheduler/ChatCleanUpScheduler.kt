@@ -79,7 +79,6 @@ class ChatCleanUpScheduler(
                 return true
             } catch (e: Exception) {
                 attempts++
-                Thread.sleep(1000L * attempts)
             }
         }
         return false
@@ -97,8 +96,6 @@ class ChatCleanUpScheduler(
                 return true
             } catch (e: Exception) {
                 attempts++
-                Thread.sleep(1000L * attempts)
-
             }
 
         }
