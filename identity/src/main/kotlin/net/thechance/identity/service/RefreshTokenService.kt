@@ -4,6 +4,7 @@ import net.thechance.identity.entity.RefreshToken
 import net.thechance.identity.entity.User
 import net.thechance.identity.repository.RefreshTokenRepository
 import org.springframework.stereotype.Service
+import org.springframework.transaction.annotation.Transactional
 import java.time.Duration
 import java.time.Instant
 import java.util.*
@@ -25,6 +26,7 @@ class RefreshTokenService(
         return if (expiryDate.isAfter(Instant.now())) stored else null
     }
 
+    @Transactional
     fun deleteUserRefreshTokens(userId: UUID) {
         refreshTokenRepository.removeByUserId(userId)
     }
