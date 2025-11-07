@@ -1,21 +1,39 @@
 package net.thechance.faith.service.mosque
 
 import jakarta.transaction.Transactional
+import net.thechance.faith.api.dto.nearestMosque.MosqueRequest
+import net.thechance.faith.api.dto.nearestMosque.MosqueResponse
+import net.thechance.faith.api.dto.nearestMosque.toMosque
+import net.thechance.faith.api.dto.nearestMosque.toMosqueResponse
 import net.thechance.faith.entity.Mosque
 import net.thechance.faith.exception.InvalidRequestParameterException
 import net.thechance.faith.repository.MosqueRepository
 import org.springframework.data.domain.Page
 import org.springframework.data.domain.Pageable
 import org.springframework.stereotype.Service
+import org.springframework.web.multipart.MultipartFile
 import java.util.*
 
 @Service
 class MosqueService(
     private val mosqueRepository: MosqueRepository,
+    private val imageStorageService: FaithImageStorageService
+
 ) {
 
-    fun createNearestMosque(mosque: Mosque): Mosque {
-        return mosqueRepository.save(mosque)
+    @Transactional
+    fun createNearestMosque(mosqueRequest: MosqueRequest, image: MultipartFile): MosqueResponse {
+        val imageUrl =
+            imageStorageService.uploadImage(
+                file = image,
+                fileName = mosqueRequest.name,
+                folderName = "mosques"
+            )
+
+
+        val mosque = mosqueRequest.toMosque(imageUrl)
+        val savedMosque = mosqueRepository.save(mosque)
+        return savedMosque.toMosqueResponse()
     }
 
     @Transactional
