@@ -4,6 +4,7 @@ import net.thechance.chat.entity.*
 import net.thechance.chat.repository.ChatRepository
 import net.thechance.chat.repository.MessageReactionRepository
 import net.thechance.chat.repository.MessageRepository
+import net.thechance.chat.service.exception.InvalidTimeFormatException
 import net.thechance.chat.service.exception.NotFoundException
 import net.thechance.chat.service.model.*
 import org.springframework.data.domain.Page
@@ -131,7 +132,7 @@ class ChatService(
 
 
     fun getMessagesUpdatedAfter(chatId: UUID, updatedAfter: Instant?): List<Message> {
-        if (updatedAfter == null) throw IllegalStateException("Not valid Instant!")
+        if (updatedAfter == null) throw InvalidTimeFormatException("Invalid Time Format : $updatedAfter")
         return messageRepository.findAllByChatIdAndLastModifiedAtAfterOrderByLastModifiedAtAsc(chatId, updatedAfter)
     }
 
