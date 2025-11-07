@@ -5,9 +5,11 @@ import io.jsonwebtoken.MalformedJwtException
 import jakarta.servlet.FilterChain
 import jakarta.servlet.http.HttpServletRequest
 import jakarta.servlet.http.HttpServletResponse
+import net.thechance.identity.entity.User
+import net.thechance.identity.exception.UserIsBlockedException
+import net.thechance.identity.repository.AdminUserRepository
 import net.thechance.identity.security.handler.AuthErrorResponder
 import net.thechance.identity.service.UserService
-import net.thechance.identity.repository.AdminUserRepository
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken
 import org.springframework.security.core.context.SecurityContextHolder
 import org.springframework.security.web.authentication.WebAuthenticationDetailsSource
@@ -52,6 +54,8 @@ class JwtFilter(
             authErrorResponder.handleJwtExpired(response)
         } catch (_: MalformedJwtException) {
             authErrorResponder.handleInvalidToken(response)
+        } catch (_: UserIsBlockedException) {
+            authErrorResponder.handleInvalidToken(response)
         } catch (_: Exception) {
             authErrorResponder.handleGeneralAuthError(response)
         }
@@ -63,7 +67,8 @@ class JwtFilter(
             if (!adminUserRepository.existsById(userId)) throw IllegalStateException("Admin user not found")
         } else {
             if (request.requestURI.contains("/admin")) throw IllegalStateException("Not authorized for admin access")
-            if (!userService.userExists(userId)) throw IllegalStateException("User not found")
+            val user = userService.findById(userId)
+            if (user.status == User.Status.BLOCKED) throw UserIsBlockedException("User is blocked")
         }
     }
 
