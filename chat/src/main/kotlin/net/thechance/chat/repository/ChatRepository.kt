@@ -1,8 +1,6 @@
 package net.thechance.chat.repository
 
-import jakarta.transaction.Transactional
 import net.thechance.chat.entity.Chat
-import net.thechance.chat.entity.CleanUpStatus
 import net.thechance.chat.service.model.ChatUnreadMessagesCount
 import org.springframework.data.domain.Page
 import org.springframework.data.domain.Pageable
@@ -10,7 +8,6 @@ import org.springframework.data.jpa.repository.JpaRepository
 import org.springframework.data.jpa.repository.Modifying
 import org.springframework.data.jpa.repository.Query
 import org.springframework.data.repository.query.Param
-import java.time.Instant
 import java.util.*
 
 interface ChatRepository : JpaRepository<Chat, UUID> {
@@ -29,8 +26,10 @@ interface ChatRepository : JpaRepository<Chat, UUID> {
     )
     fun findByUsersIds(userIds: Set<UUID>): Chat?
 
-    @Query(""" SELECT c FROM Chat c JOIN c.users u WHERE u.id = :userId 
-        AND NOT EXISTS (SELECT 1 FROM DeletedChat dc WHERE dc.chatId = c.id) """)
+    @Query(
+        """ SELECT c FROM Chat c JOIN c.users u WHERE u.id = :userId 
+        AND NOT EXISTS (SELECT 1 FROM DeletedChat dc WHERE dc.chatId = c.id) """
+    )
     fun findAllByUserId(userId: UUID, pageable: Pageable): Page<Chat>
 
 
@@ -50,12 +49,6 @@ interface ChatRepository : JpaRepository<Chat, UUID> {
         @Param("chatIds") chatIds: List<UUID>
     ): List<ChatUnreadMessagesCount>
 
-    @Modifying
-    @Query(
-        nativeQuery = true,
-        value = "DELETE FROM chat.chats WHERE chat.chats.id = :chatId"
-    )
-    fun deleteChatById(chatId: UUID)
 
     @Modifying
     @Query(
@@ -64,13 +57,4 @@ interface ChatRepository : JpaRepository<Chat, UUID> {
     )
     fun deleteChatUsersByChatId(chatId: UUID)
 
-    @Query(
-        value = """
-            SELECT c.* FROM chat.chats c 
-            JOIN chat.deleted_chats dc ON c.id = dc.chat_id
-            WHERE dc.user_id = :userId AND dc.deleted_at > :time
-        """,
-        nativeQuery = true
-    )
-    fun getDeletedChatByUserIdAfterSpecificTime(userId: UUID, time: Instant) : List<Chat>
 }

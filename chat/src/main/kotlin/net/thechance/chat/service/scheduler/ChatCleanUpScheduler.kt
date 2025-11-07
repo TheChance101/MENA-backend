@@ -33,17 +33,11 @@ class ChatCleanUpScheduler(
                 when (deletedChat.cleanUpStatus) {
                     CleanUpStatus.PENDING,
                     CleanUpStatus.MEDIA_DELETED_FAILED -> {
-                        deleteAllData(deletedChat)
+                        handleDeleteDataAndMedia(deletedChat)
                     }
-
                     CleanUpStatus.DATA_CLEANUP_FAILED -> {
-                        val dbSuccess = cleanUpChatData(deletedChat.chatId, deletedChat)
-                        if (dbSuccess) {
-                            deletedChat.cleanUpStatus = CleanUpStatus.DELETED
-                            deletedChatRepository.save(deletedChat)
-                        }
+                        handleDeleteMediaOnly(deletedChat)
                     }
-
                     CleanUpStatus.DELETED -> Unit
                 }
             }
@@ -53,7 +47,14 @@ class ChatCleanUpScheduler(
 
     }
 
-    private fun deleteAllData(deletedChat: DeletedChat){
+    private fun handleDeleteMediaOnly(deletedChat: DeletedChat){
+        val dbSuccess = cleanUpChatData(deletedChat.chatId, deletedChat)
+        if (dbSuccess) {
+            deletedChat.cleanUpStatus = CleanUpStatus.DELETED
+            deletedChatRepository.save(deletedChat)
+        }
+    }
+    private fun handleDeleteDataAndMedia(deletedChat: DeletedChat){
         val s3Success = cleanUpImages(deletedChat.chatId.toString(), deletedChat)
         if (s3Success) {
             val dbSuccess = cleanUpChatData(deletedChat.chatId, deletedChat)
@@ -92,12 +93,11 @@ class ChatCleanUpScheduler(
                 messageReactionRepository.deleteAllByChatId(chatId)
                 messageRepository.deleteAllByChatId(chatId)
                 chatRepository.deleteChatUsersByChatId(chatId)
-                chatRepository.deleteChatById(chatId)
+                chatRepository.deleteById(chatId)
                 return true
             } catch (e: Exception) {
                 attempts++
                 Thread.sleep(1000L * attempts)
-                println("=====> clean up data exception: $e")
 
             }
 
@@ -107,6 +107,6 @@ class ChatCleanUpScheduler(
 
     private companion object {
         const val MAX_ATTEMPTS = 3
-        const val ONE_HOUR: Long = 20000
+        const val ONE_HOUR: Long = 3600000
     }
 }

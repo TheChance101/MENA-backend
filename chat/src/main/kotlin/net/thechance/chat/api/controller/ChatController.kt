@@ -187,7 +187,7 @@ class ChatController(
         @AuthenticationPrincipal userId: UUID
     ): ResponseEntity<List<String>> {
         val time = Instant.parse(deletedAfter)
-        val deletedChats = chatService.getDeletedChatsByAfterSpecificTime(userId, time)
+        val deletedChats = chatService.getDeletedChatsIdByUserIdAfterSpecificTime(userId, time)
         return ResponseEntity.ok(deletedChats)
     }
 

@@ -12,7 +12,9 @@ import java.util.UUID
 @Entity
 @Table(name = "deleted_chats", schema = "chat")
 data class DeletedChat(
-    @Id @Column(columnDefinition = "uuid",name = "chat_id", nullable = false, updatable = false)
+    @Id @Column(columnDefinition = "uuid", updatable = false, nullable = false)
+    val id: UUID = UUID.randomUUID(),
+    @Column(columnDefinition = "uuid", name = "chat_id", nullable = false, updatable = false)
     val chatId : UUID,
     @Column(name = "cleanup_status", nullable = false)
     @Enumerated(EnumType.STRING)

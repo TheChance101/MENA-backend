@@ -200,11 +200,11 @@ class ChatService(
         }
     }
 
-    fun getDeletedChatsByAfterSpecificTime(userId: UUID, time: Instant): List<String>{
-        return chatRepository.getDeletedChatByUserIdAfterSpecificTime(
+    fun getDeletedChatsIdByUserIdAfterSpecificTime(userId: UUID, time: Instant): List<String>{
+        return deletedChatRepository.getDeletedChatsIdByUserIdAfterSpecificTime(
             userId = userId,
             time = time
-        ).map { it.id.toString() }
+        ).map { it.toString() }
     }
 
     private fun getChatName(contact: Contact?, user: ContactUser?): String {
