@@ -13,9 +13,8 @@ class LoginLog(
     @Column(name = "id", nullable = false)
     val id: UUID = UUID.randomUUID(),
 
-    @ManyToOne(fetch = FetchType.EAGER)
     @JoinColumn(name = "user_id", nullable = false, updatable = false)
-    val user: User,
+    val userId: UUID,
 
     @Column(name = "is_success", nullable = false, updatable = false)
     val isSuccess: Boolean,

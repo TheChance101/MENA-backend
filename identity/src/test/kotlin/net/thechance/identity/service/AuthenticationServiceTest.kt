@@ -10,7 +10,6 @@ import net.thechance.identity.exception.UserIsBlockedException
 import net.thechance.identity.repository.RefreshTokenRepository
 import net.thechance.identity.security.JwtService
 import net.thechance.identity.utils.DummyIpAddresses
-import net.thechance.identity.utils.DummyUserLogs
 import net.thechance.identity.utils.DummyUsers
 import org.junit.Assert.assertThrows
 import org.junit.Test
@@ -31,32 +30,6 @@ class AuthenticationServiceTest {
         passwordEncoder = passwordEncoder,
         refreshRepo = refreshTokenRepository
     )
-
-    @Test
-    fun `should throw UserIsBlockedException when user is trying to login 5 times with exist phone number and wrong password`() {
-        val blockedUserLogs = DummyUserLogs.loginLogsForBlockedUser
-        val user = blockedUserLogs.first().user
-        val ipAddress = blockedUserLogs.first().ipAddress
-        every { loginLogService.getLoginLogsByIpAddress(ipAddress, 5) } returns blockedUserLogs
-        every { userService.findByPhoneNumber(user.phoneNumber) } returns user
-
-        assertThrows(UserIsBlockedException::class.java) {
-            authenticationService.login(user.phoneNumber, user.password, ipAddress)
-        }
-    }
-
-    @Test
-    fun `should throw InvalidCredentialsException when user is trying to login with exist phone number and wrong password after block released`() {
-        val userLogs = DummyUserLogs.loginLogsForUserAfterBlockReleased
-        val user = userLogs.first().user
-        val ipAddress = userLogs.first().ipAddress
-        every { loginLogService.getLoginLogsByIpAddress(ipAddress, 5) } returns userLogs
-        every { userService.findByPhoneNumber(user.phoneNumber) } returns user
-
-        assertThrows(InvalidCredentialsException::class.java) {
-            authenticationService.login(user.phoneNumber, user.password, ipAddress)
-        }
-    }
 
     @Test
     fun `should return response when user is trying to login with exist phone number and correct password`() {

@@ -46,7 +46,7 @@ class AuthenticationService(
         isSuccess: Boolean,
         ipAddress: String
     ) {
-        val loginLog = LoginLog(user = user, isSuccess = isSuccess, ipAddress = ipAddress)
+        val loginLog = LoginLog(userId = user.id, isSuccess = isSuccess, ipAddress = ipAddress)
         loginLogService.addLoginLog(loginLog)
         if (isSuccess) userService.updateUserLastLoginTime(userId = user.id, time = LocalDateTime.now())
     }

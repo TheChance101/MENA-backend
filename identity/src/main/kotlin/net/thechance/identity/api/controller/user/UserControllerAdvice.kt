@@ -1,4 +1,4 @@
-package net.thechance.identity.api.controller
+package net.thechance.identity.api.controller.user
 
 import net.thechance.identity.api.dto.ErrorResponse
 import net.thechance.identity.exception.UserNotFoundException
