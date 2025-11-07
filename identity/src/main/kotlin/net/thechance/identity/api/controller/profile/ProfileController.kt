@@ -22,11 +22,10 @@ import java.util.*
 @RequestMapping("/identity/profile")
 class ProfileController(
     @Value("\${storage.mena.cdn-endpoint}") cdnEndpoint: String,
-    @Value("\${identity.resources.profile-image-directory}") profileImageDirectory: String,
     private val userService: UserService,
     private val changePasswordService: ChangePasswordService
 ) {
-    private val imagesBaseUrl: String = "$cdnEndpoint/$profileImageDirectory"
+    private val imagesBaseUrl: String = "$cdnEndpoint/"
 
     @PostMapping
     fun updateUserProfile(

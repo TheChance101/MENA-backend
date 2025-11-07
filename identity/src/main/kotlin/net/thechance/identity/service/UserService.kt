@@ -21,7 +21,6 @@ private typealias ImageUri = String
 class UserService(
     private val userRepository: UserRepository,
     private val identityImageStorageService: IdentityImageStorageService,
-    @param:Value("\${identity.resources.profile-image-directory}") private val profileImageDirectory: String
 ) {
 
     fun findByPhoneNumber(phoneNumber: String): User {
@@ -69,7 +68,7 @@ class UserService(
         val newImageUrl = identityImageStorageService.uploadImage(
             file = imageFile,
             fileName = "${user.id}",
-            folderName = profileImageDirectory
+            folderName = "/"
         )
         val updatedUser = user.copy(imageUrl = newImageUrl)
         userRepository.save(updatedUser)

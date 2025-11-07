@@ -24,7 +24,7 @@ class ResetPasswordService(
     fun requestOtp(phoneNumber: String, defaultRegion: String): RequestOtpResponse {
         val validatedPhoneNumber = phoneNumberValidator.validateAndParse(phoneNumber, defaultRegion)
         checkPhoneNumberExistence(phoneNumber)
-        phoneNumberRateLimitService.checkRequestLimit(phoneNumber)
+//        phoneNumberRateLimitService.checkRequestLimit(phoneNumber)
         val otpLog = otpService.createOtp(validatedPhoneNumber.phoneNumber)
         smsSender.sendSms(
             validatedPhoneNumber.countryCode,
