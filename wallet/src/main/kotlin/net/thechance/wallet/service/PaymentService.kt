@@ -3,6 +3,7 @@ package net.thechance.wallet.service
 import net.thechance.wallet.entity.PendingTransaction
 import net.thechance.wallet.entity.Transaction
 import net.thechance.wallet.entity.toTransaction
+import net.thechance.wallet.exception.WalletUserIsBlockedException
 import net.thechance.wallet.repository.PendingTransactionRepository
 import net.thechance.wallet.repository.TransactionRepository
 import org.springframework.stereotype.Service
@@ -20,11 +21,22 @@ class PaymentService(
     @Transactional
     fun pay(userId: UUID, transactionId: UUID) {
         val pendingTransaction = validateAndGetTransaction(userId, transactionId)
-
+        val transactionStatus = getTransactionStatus(pendingTransaction)
         val block = blockService.getCurrentBlock()
-        val transaction = pendingTransaction.toTransaction(block, Transaction.Status.SUCCESS)
+
+        val transaction = pendingTransaction.toTransaction(block, transactionStatus)
         transactionRepository.save(transaction)
         pendingTransactionRepository.deleteById(transactionId)
+
+        if(transactionStatus == Transaction.Status.FAILED) throw WalletUserIsBlockedException()
+    }
+
+    private fun getTransactionStatus(pendingTransaction: PendingTransaction): Transaction.Status {
+        return when {
+            pendingTransaction.sender.isBlocked() -> Transaction.Status.FAILED
+            pendingTransaction.receiver.isBlocked() -> Transaction.Status.FAILED
+            else -> Transaction.Status.SUCCESS
+        }
     }
 
     private fun validateAndGetTransaction(userId: UUID, transactionId: UUID): PendingTransaction {
@@ -39,10 +51,6 @@ class PaymentService(
 
         if (userId == pendingTransaction.receiver.userId)
             throw IllegalArgumentException("Sender and receiver cannot be the same")
-
-        if (pendingTransaction.sender.isBlocked()) throw IllegalArgumentException("Sender is blocked")
-
-        if (pendingTransaction.receiver.isBlocked()) throw IllegalArgumentException("Receiver is blocked")
 
         if (balanceService.getUserBalance(userId) < pendingTransaction.amount.toDouble())
             throw IllegalArgumentException("Insufficient balance")
