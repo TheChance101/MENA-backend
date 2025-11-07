@@ -5,16 +5,18 @@ import net.thechance.chat.entity.CleanUpStatus
 import net.thechance.chat.entity.DeletedChat
 import net.thechance.chat.repository.ChatRepository
 import net.thechance.chat.repository.DeletedChatRepository
+import net.thechance.chat.repository.MessageReactionRepository
 import net.thechance.chat.repository.MessageRepository
 import net.thechance.chat.service.AttachmentStorageService
 import org.springframework.scheduling.annotation.Scheduled
 import org.springframework.stereotype.Component
-import java.util.*
+import java.util.UUID
 
 @Component
 class ChatCleanUpScheduler(
     val deletedChatRepository: DeletedChatRepository,
     val messageRepository: MessageRepository,
+    val messageReactionRepository: MessageReactionRepository,
     val chatRepository: ChatRepository,
     val attachmentStorageService: AttachmentStorageService,
 ) {
@@ -87,6 +89,7 @@ class ChatCleanUpScheduler(
         var attempts = 0
         while (attempts < MAX_ATTEMPTS) {
             try {
+                messageReactionRepository.deleteAllByChatId(chatId)
                 messageRepository.deleteAllByChatId(chatId)
                 chatRepository.deleteChatUsersByChatId(chatId)
                 chatRepository.deleteChatById(chatId)
@@ -94,6 +97,8 @@ class ChatCleanUpScheduler(
             } catch (e: Exception) {
                 attempts++
                 Thread.sleep(1000L * attempts)
+                println("=====> clean up data exception: $e")
+
             }
 
         }
@@ -102,6 +107,6 @@ class ChatCleanUpScheduler(
 
     private companion object {
         const val MAX_ATTEMPTS = 3
-        const val ONE_HOUR: Long = 3600000
+        const val ONE_HOUR: Long = 20000
     }
 }
