@@ -24,7 +24,13 @@ class UserServiceTest {
     private val identityImageStorageService: IdentityImageStorageService = mockk(relaxed = true)
     private val authenticationService: AuthenticationService = mockk(relaxed = true)
     private val eventPublisher: MenaEventPublisher = mockk(relaxed = true)
-    private val userService = UserService(userRepository, identityImageStorageService, eventPublisher, "profile-images", authenticationService)
+    private val userService = UserService(
+        userRepository = userRepository,
+        identityImageStorageService = identityImageStorageService,
+        eventPublisher = eventPublisher,
+        authenticationService = authenticationService,
+        profileImageDirectory = "profile-images"
+    )
     private val mockImageFile: MultipartFile = mockk(relaxed = true)
 
     @Test
