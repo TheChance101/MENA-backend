@@ -88,10 +88,11 @@ class DukanController(
 
     @GetMapping("/categories/{categoryId}")
     fun getAllByCategoryId(
+        @AuthenticationPrincipal userId: UUID,
         @PathVariable("categoryId") categoryId: UUID,
         @PageableDefault(size = 10, page = 0, sort = ["createdAt"], direction = Sort.Direction.DESC) pageable: Pageable
     ): ResponseEntity<Page<DukanResponse>> {
-        return ResponseEntity.ok(dukanService.getAllByCategoryId(categoryId, pageable).map(Dukan::toDukanResponse))
+        return ResponseEntity.ok(dukanService.getAllByCategoryId(userId, categoryId, pageable).map(Dukan::toDukanResponse))
     }
 
 

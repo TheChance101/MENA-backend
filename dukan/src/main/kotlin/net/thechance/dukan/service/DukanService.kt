@@ -78,8 +78,8 @@ class DukanService(
         return dukanRepository.findByIdOrNull(dukanId) ?: throw DukanNotFoundException()
     }
 
-    fun getAllByCategoryId(categoryId: UUID, pageable: Pageable): Page<Dukan> {
-        return dukanRepository.findApprovedDukansWithProductsByCategory(categoryId, pageable)
+    fun getAllByCategoryId(userId: UUID, categoryId: UUID, pageable: Pageable): Page<Dukan> {
+        return dukanRepository.findApprovedDukansWithProductsByCategory(userId, categoryId, pageable)
     }
 
     fun getAllEditorPicksDukan(userId: UUID?, pageable: Pageable): Page<Dukan> {

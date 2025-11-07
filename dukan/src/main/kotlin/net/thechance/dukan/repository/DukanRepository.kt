@@ -20,8 +20,9 @@ interface DukanRepository : JpaRepository<Dukan, UUID> {
     SELECT DISTINCT d
     FROM Dukan d
     JOIN d.categories c
-    WHERE d.status = net.thechance.dukan.entity.Dukan.Status.APPROVED
-      AND c.id = :categoryId
+    WHERE c.id = :categoryId
+      AND d.ownerId != :userId 
+      AND d.status = net.thechance.dukan.entity.Dukan.Status.APPROVED
       AND EXISTS (
           SELECT 1 
           FROM DukanShelf s
@@ -36,6 +37,7 @@ interface DukanRepository : JpaRepository<Dukan, UUID> {
     """
     )
     fun findApprovedDukansWithProductsByCategory(
+        userId:UUID,
         categoryId: UUID,
         pageable: Pageable
     ): Page<Dukan>
