@@ -13,7 +13,7 @@ import org.springframework.stereotype.Controller
 import org.springframework.web.bind.annotation.*
 import java.security.Principal
 import java.time.Instant
-import java.util.UUID
+import java.util.*
 
 @RequestMapping("/chat")
 @Controller
@@ -56,14 +56,15 @@ class ChatController(
         )
     }
 
-    @GetMapping("/{chatId}/messages/updates")
-    fun getUpdatedMessages(
+    @GetMapping("/{chatId}/messages/latest")
+    fun getLatestMessages(
         @PathVariable chatId: UUID,
-        @RequestParam updatedAfter: String,
-        @AuthenticationPrincipal userId: UUID
-    ): ResponseEntity<List<MessageResponse>> {
-        val since = Instant.parse(updatedAfter)
-        val updatedMessages = chatService.getMessagesUpdatedAfter(chatId, since).toResponse(userId)
+        @RequestParam lastUpdateTime: String,
+        @AuthenticationPrincipal userId: UUID,
+        pageable: Pageable
+    ): ResponseEntity<PagedResponse<MessageResponse>> {
+        val since = Instant.parse(lastUpdateTime)
+        val updatedMessages = chatService.getLatestMessagesAfter(chatId, since, pageable).toPagedMessageResponse(userId)
         return ResponseEntity.ok(updatedMessages)
     }
 
@@ -114,7 +115,7 @@ class ChatController(
     fun deleteReaction(
         @Payload body: MessageReactionRequest,
         principal: Principal
-    ){
+    ) {
         val userId = UUID.fromString(principal.name)
         val message = chatService.getMessageById(body.messageId)
         val deletedReaction = chatService.deleteReaction(body.toRequestArgs(userId))

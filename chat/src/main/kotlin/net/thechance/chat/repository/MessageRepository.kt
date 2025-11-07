@@ -17,14 +17,16 @@ interface MessageRepository : JpaRepository<Message, UUID> {
 
     @Modifying
     @Transactional
-    @Query("""
+    @Query(
+        """
     UPDATE Message m 
     SET m.isRead = true, 
         m.lastModifiedAt = CURRENT_TIMESTAMP 
     WHERE m.chatId = :chatId 
       AND m.senderId <> :userId 
       AND m.isRead = false
-""")
+"""
+    )
     fun updateIsReadByChatIdAndSenderIdNot(
         chatId: UUID,
         userId: UUID
@@ -47,8 +49,9 @@ interface MessageRepository : JpaRepository<Message, UUID> {
 
     fun findAllByChatIdAndLastModifiedAtAfterOrderByLastModifiedAtAsc(
         chatId: UUID,
-        lastModifiedAt: Instant
-    ): List<Message>
+        lastModifiedAt: Instant,
+        pageable: Pageable
+    ): Page<Message>
 
     @Modifying
     @Transactional

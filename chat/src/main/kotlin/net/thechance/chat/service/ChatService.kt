@@ -130,10 +130,13 @@ class ChatService(
         return messageRepository.getAllByChatIdOrderBySentAtDesc(chatId, pageable)
     }
 
-
-    fun getMessagesUpdatedAfter(chatId: UUID, updatedAfter: Instant?): List<Message> {
+    fun getLatestMessagesAfter(chatId: UUID, updatedAfter: Instant?, pageable: Pageable): Page<Message> {
         if (updatedAfter == null) throw InvalidTimeFormatException("Invalid Time Format : $updatedAfter")
-        return messageRepository.findAllByChatIdAndLastModifiedAtAfterOrderByLastModifiedAtAsc(chatId, updatedAfter)
+        return messageRepository.findAllByChatIdAndLastModifiedAtAfterOrderByLastModifiedAtAsc(
+            chatId,
+            updatedAfter,
+            pageable
+        )
     }
 
     fun markChatMessagesAsRead(chatId: UUID, userId: UUID) {
