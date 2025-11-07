@@ -3,7 +3,6 @@ package net.thechance.faith.api.controller.exceptionhandler
 import net.thechance.faith.api.dto.error.ApiErrorResponse
 import net.thechance.faith.exception.*
 import org.slf4j.LoggerFactory
-import net.thechance.faith.exception.*
 import org.springframework.http.HttpStatus
 import org.springframework.http.ResponseEntity
 import org.springframework.web.bind.annotation.ExceptionHandler
@@ -39,16 +38,6 @@ class FaithExceptionHandler {
             exception = exception,
             status = HttpStatus.BAD_REQUEST,
         )
-    }
-
-    private fun createErrorResponse(
-        message: String,
-        exception: Exception,
-        status: HttpStatus
-    ): ResponseEntity<ApiErrorResponse> {
-        logger.error(message, exception)
-        val apiError = ApiErrorResponse(status = status.value(), message = message)
-        return ResponseEntity(apiError, status)
     }
 
     @ExceptionHandler(ReciterNotFoundException::class)
@@ -94,6 +83,16 @@ class FaithExceptionHandler {
             exception = exception,
             status = HttpStatus.BAD_REQUEST,
         )
+    }
+
+    private fun createErrorResponse(
+        message: String,
+        exception: Exception,
+        status: HttpStatus
+    ): ResponseEntity<ApiErrorResponse> {
+        logger.error(message, exception)
+        val apiError = ApiErrorResponse(status = status.value(), message = message)
+        return ResponseEntity(apiError, status)
     }
 
 }

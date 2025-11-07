@@ -6,12 +6,12 @@ import java.util.*
 
 fun MosqueRequest.toMosque(imageUrl: String): Mosque {
     return Mosque(
+        id = UUID.randomUUID(),
         name = name,
         address = address,
         latitude = latitude,
         longitude = longitude,
         createdAt = Instant.now(),
-        id = UUID.randomUUID(),
         imageUrl = imageUrl,
     )
 }
