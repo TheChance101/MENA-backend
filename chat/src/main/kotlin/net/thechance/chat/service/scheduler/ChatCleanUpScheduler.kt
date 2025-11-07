@@ -32,7 +32,7 @@ class ChatCleanUpScheduler(
             failingDeletedChats.forEach { deletedChat ->
                 when (deletedChat.cleanUpStatus) {
                     CleanUpStatus.PENDING,
-                    CleanUpStatus.S3_DELETED_FAILED -> {
+                    CleanUpStatus.MEDIA_DELETED_FAILED -> {
                         deleteAllData(deletedChat)
                     }
 
@@ -65,7 +65,7 @@ class ChatCleanUpScheduler(
                 deletedChatRepository.save(deletedChat)
             }
         } else {
-            deletedChat.cleanUpStatus = CleanUpStatus.S3_DELETED_FAILED
+            deletedChat.cleanUpStatus = CleanUpStatus.MEDIA_DELETED_FAILED
             deletedChatRepository.save(deletedChat)
         }
     }

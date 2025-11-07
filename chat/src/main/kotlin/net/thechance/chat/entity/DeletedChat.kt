@@ -25,7 +25,7 @@ data class DeletedChat(
 
 enum class CleanUpStatus{
     PENDING,
-    S3_DELETED_FAILED,
+    MEDIA_DELETED_FAILED,
     DATA_CLEANUP_FAILED,
     DELETED
 }

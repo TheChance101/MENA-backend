@@ -191,7 +191,8 @@ class ChatService(
         val currentChat = chatRepository.findByIdOrNull(chatId) ?: throw NotFoundException("no chat found with this id $chatId")
         currentChat.users.forEach { user ->
             deletedChatRepository.save(DeletedChat(
-                chatId = chatId, CleanUpStatus.PENDING,
+                chatId = chatId,
+                cleanUpStatus = CleanUpStatus.PENDING,
                 userId = user.id,
                 deletedAt = Instant.now()
             ))
