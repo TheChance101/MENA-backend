@@ -58,11 +58,11 @@ class AttachmentStorageService(
         val mimeType = file.contentType ?: throw InvalidAudioFormatException()
         val extension = allowedAudioMimeTypes[mimeType] ?: throw InvalidAudioFormatException()
         try {
-            val finalFileName = "${fileName}_${LocalDateTime.now()}.$extension"
+            val finalFileName = "${LocalDateTime.now()}.$extension"
             val key = "audio/$folderName/$finalFileName"
             val putRequest = createObjectRequest(key, mimeType)
             menaS3Client.putObject(putRequest, RequestBody.fromBytes(file.bytes))
-            return "${props.cdnEndpoint}/$key"
+            return makeUrl(key)
         } catch (e: Exception) {
             throw AudioUploadFailedException("Failed to upload audio file: ${e.message}")
         }
