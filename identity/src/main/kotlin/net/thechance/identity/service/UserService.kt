@@ -10,6 +10,7 @@ import net.thechance.identity.repository.UserRepository
 import net.thechance.identity.service.mapper.toEventStatus
 import net.thechance.identity.service.model.UserServiceModel
 import org.springframework.beans.factory.annotation.Value
+import org.springframework.context.annotation.Lazy
 import org.springframework.data.domain.Page
 import org.springframework.data.domain.Pageable
 import org.springframework.data.repository.findByIdOrNull
@@ -24,9 +25,9 @@ private typealias ImageUri = String
 class UserService(
     private val userRepository: UserRepository,
     private val identityImageStorageService: IdentityImageStorageService,
-    private val authenticationService: AuthenticationService,
     private val eventPublisher: MenaEventPublisher,
-    @param:Value("\${identity.resources.profile-image-directory}") private val profileImageDirectory: String
+    @param:Value("\${identity.resources.profile-image-directory}") private val profileImageDirectory: String,
+    @param:Lazy private val authenticationService: AuthenticationService
 ) {
 
     fun findByPhoneNumber(phoneNumber: String): User {
