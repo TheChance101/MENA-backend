@@ -10,7 +10,6 @@ import java.util.*
 class RequestLog(
     @Id
     @GeneratedValue(strategy = GenerationType.UUID)
-    @Column(name = "id", nullable = false)
     val id: UUID = UUID.randomUUID(),
 
     @ColumnDefault("now()")
