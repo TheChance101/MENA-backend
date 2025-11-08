@@ -7,7 +7,9 @@ import org.springframework.data.domain.Page
 import org.springframework.data.domain.Pageable
 import org.springframework.http.HttpStatus
 import org.springframework.http.ResponseEntity
+import org.springframework.security.core.annotation.AuthenticationPrincipal
 import org.springframework.web.bind.annotation.*
+import java.util.UUID
 
 
 @RestController
@@ -17,9 +19,10 @@ class DukanSearchController (
 ){
     @GetMapping
     fun search(
+        @AuthenticationPrincipal userId:UUID,
         @RequestParam query:String,
         pageable: Pageable
     ):ResponseEntity<Page<DukanPreview>>{
-        return ResponseEntity.ok(searchService.search(query,pageable))
+        return ResponseEntity.ok(searchService.search(userId,query,pageable))
     }
 }

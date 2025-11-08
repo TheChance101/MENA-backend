@@ -21,6 +21,14 @@ data class Message(
     val imageUrl: String? = null,
     @Column(name = "audio_url", nullable = true)
     val audioUrl: String? = null,
+    @Column(name = "audio_duration_ms", nullable = false)
+    val audioDurationMs: Long = 0L,
+
+    @Column(name = "last_modified_at", nullable = false)
+    var lastModifiedAt: Instant = Instant.now(),
+    @OneToMany(fetch = FetchType.EAGER)
+    @JoinColumn(name = "message_id", referencedColumnName = "id")
+    val reactions: List<MessageReaction> = emptyList(),
 
     @Column(name = "chat_id", columnDefinition = "uuid", nullable = false, updatable = false)
     val chatId: UUID

@@ -3,8 +3,8 @@ package net.thechance.dukan.api.controller
 import jakarta.validation.Valid
 import net.thechance.dukan.api.dto.product.*
 import net.thechance.dukan.api.mapper.product.toProductCreationParams
-import net.thechance.dukan.api.mapper.product.toProductResponse
 import net.thechance.dukan.api.mapper.product.toProductUpdateParams
+import net.thechance.dukan.api.mapper.product.toResponse
 import net.thechance.dukan.api.utils.EndPoints.DUKAN_PATH
 import net.thechance.dukan.service.DukanProductService
 import org.springframework.data.domain.Page
@@ -39,7 +39,9 @@ class DukanProductController(
         @AuthenticationPrincipal userId: UUID,
         @Valid @RequestBody request: DukanProductCreationRequest,
     ): ResponseEntity<DukanProductCreationResponse> {
-        val productId = dukanProductService.createProduct(request.toProductCreationParams(userId))
+        val productId = dukanProductService.createProduct(
+            request.toProductCreationParams(userId)
+        )
         return ResponseEntity.ok(DukanProductCreationResponse(productId))
     }
 
@@ -51,7 +53,9 @@ class DukanProductController(
         pageable: Pageable
     ): ResponseEntity<Page<DukanProductResponse>> {
         val products = dukanProductService.getProductsByShelf(userId, shelfId, pageable)
-        val productsResponse = products.map { it.toProductResponse(it.tempQuantity) }
+
+        val productsResponse = products.map { it.toResponse() }
+
         return ResponseEntity.ok(productsResponse)
     }
 
@@ -61,8 +65,8 @@ class DukanProductController(
         @PathVariable("productId") productId: UUID
     ): ResponseEntity<DukanProductResponse> {
         val product = dukanProductService.getProductById(userId, productId)
-        val productResponse = product.toProductResponse(product.tempQuantity)
-        return ResponseEntity.ok(productResponse)
+
+        return ResponseEntity.ok(product.toResponse())
     }
 
     @PutMapping("/{productId}")
@@ -85,5 +89,13 @@ class DukanProductController(
     ): String {
         val imageUrl = dukanProductService.uploadProductImage(userId, productId, file)
         return imageUrl
+    }
+
+    @PostMapping("{productId}/favorite")
+    fun toggleFavoriteStatus(
+        @AuthenticationPrincipal userId: UUID,
+        @PathVariable productId: UUID,
+    ): ResponseEntity<Boolean> {
+        return ResponseEntity.ok(dukanProductService.toggleFavoriteStatus(userId, productId))
     }
 }
