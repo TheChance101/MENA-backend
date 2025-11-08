@@ -19,13 +19,10 @@ class IpRateLimitFilter(
         response: HttpServletResponse,
         filterChain: FilterChain
     ) {
-        val authHeader = request.getHeader("Authorization")
         val requestUri = request.requestURI
         val clientIp = request.remoteAddr
-
         val canRateLimited = rateLimitProperties.endpoints.containsKey(requestUri)
-
-        if (authHeader == null && canRateLimited) {
+        if (canRateLimited) {
             if (!ipRateLimitManagerService.isRequestAllowed(clientIp, requestUri)) {
                 response.status = HttpStatus.TOO_MANY_REQUESTS.value()
                 response.contentType = "text/plain"
@@ -33,7 +30,6 @@ class IpRateLimitFilter(
                 return
             }
         }
-
         filterChain.doFilter(request, response)
     }
 }

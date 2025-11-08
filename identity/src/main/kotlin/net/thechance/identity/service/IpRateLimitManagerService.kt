@@ -9,8 +9,7 @@ import java.time.Instant
 @Service
 class IpRateLimitManagerService(
     private val rateLimitProperties: RateLimitProperties,
-    private val logService: LoginLogService,
-    private val loginLogService: LoginLogService
+    private val requestLogService: RequestLogService
 ) {
     fun isRequestAllowed(ipAddress: String, requestPath: String): Boolean {
         val config = rateLimitProperties.endpoints[requestPath] ?: return true
@@ -28,17 +27,22 @@ class IpRateLimitManagerService(
         url: String,
         config: RateLimitProperties.EndpointRateLimitConfig
     ): Boolean {
-        return isShortTermBlock(ipAddress, url, config).not() || isLongTermBlock(ipAddress, url, config).not()
+        val longTermRequestLogs = requestLogService.getRequestLogsByIpAddress(
+            ipAddress = ipAddress,
+            url = url,
+            numberOfLogs = config.longTermAttemptsLimit
+        )
+        val shortTermRequestLogs = longTermRequestLogs.take(config.shortTermAttemptsLimit)
+        return isShortTermBlock(shortTermRequestLogs, config).not()
+                || isLongTermBlock(longTermRequestLogs, config).not()
     }
 
     private fun isShortTermBlock(
-        ipAddress: String,
-        url: String,
+        requestLog: List<RequestLog>,
         config: RateLimitProperties.EndpointRateLimitConfig
     ): Boolean {
         return isUserBlocked(
-            ipAddress = ipAddress,
-            url = url,
+            requestLog = requestLog,
             maxValidUserAttempts = config.shortTermAttemptsLimit,
             maxWindowTimeInSeconds = config.shortTermWindowSeconds,
             blockTimeInSeconds = config.blockDurationSeconds
@@ -46,13 +50,11 @@ class IpRateLimitManagerService(
     }
 
     private fun isLongTermBlock(
-        ipAddress: String,
-        url: String,
+        requestLog: List<RequestLog>,
         config: RateLimitProperties.EndpointRateLimitConfig
     ): Boolean {
         return isUserBlocked(
-            ipAddress = ipAddress,
-            url = url,
+            requestLog = requestLog,
             maxValidUserAttempts = config.longTermAttemptsLimit,
             maxWindowTimeInSeconds = config.longTermWindowSeconds,
             blockTimeInSeconds = config.blockDurationSeconds
@@ -64,26 +66,19 @@ class IpRateLimitManagerService(
         url: String
     ) {
         val requestLog = RequestLog(ipAddress = ipAddress, url = url)
-        loginLogService.addLoginLog(requestLog)
+        requestLogService.addRequestLog(requestLog)
     }
 
     private fun isUserBlocked(
-        ipAddress: String,
-        url: String,
+        requestLog: List<RequestLog>,
         maxValidUserAttempts: Int,
         maxWindowTimeInSeconds: Long,
         blockTimeInSeconds: Long
     ): Boolean {
-        val loginLogs = logService.getLoginLogsByIpAddress(
-            ipAddress = ipAddress,
-            url = url,
-            maxValidUserAttempts
-        )
-
-        return loginLogs.isNotEmpty()
-                && !isUserAttemptsWithInLimit(loginLogs, maxValidUserAttempts)
-                && !isCurrentTimeWithInBlockRange(loginLogs, blockTimeInSeconds)
-                && isDurationBetweenFirstAndLastLogWithInWindowRange(loginLogs, maxWindowTimeInSeconds)
+        return requestLog.isNotEmpty()
+                && !isUserAttemptsWithInLimit(requestLog, maxValidUserAttempts)
+                && !isCurrentTimeWithInBlockRange(requestLog, blockTimeInSeconds)
+                && isDurationBetweenFirstAndLastLogWithInWindowRange(requestLog, maxWindowTimeInSeconds)
     }
 
     private fun isUserAttemptsWithInLimit(
@@ -95,19 +90,19 @@ class IpRateLimitManagerService(
         requestLogs: List<RequestLog>,
         blockTimeInSeconds: Long
     ): Boolean {
-        val lastTimeToLogin = requestLogs.first().loginTime
+        val lastTimeToRequest = requestLogs.first().requestTime
         val now = Instant.now()
-        val durationSinceLastLogin = Duration.between(lastTimeToLogin, now)
-        return durationSinceLastLogin.toSeconds() >= blockTimeInSeconds
+        val durationSinceLastRequest = Duration.between(lastTimeToRequest, now)
+        return durationSinceLastRequest.toSeconds() >= blockTimeInSeconds
     }
 
     private fun isDurationBetweenFirstAndLastLogWithInWindowRange(
         requestLogs: List<RequestLog>,
         maxWindowTimeInSeconds: Long
     ): Boolean {
-        val lastTimeToLogin = requestLogs.first().loginTime
-        val firstTimeToLogin = requestLogs.last().loginTime
-        val durationBetweenFirstAndLastLogin = Duration.between(firstTimeToLogin, lastTimeToLogin)
-        return durationBetweenFirstAndLastLogin.toSeconds() <= maxWindowTimeInSeconds
+        val lastTimeToRequest = requestLogs.first().requestTime
+        val firstTimeToRequest = requestLogs.last().requestTime
+        val durationBetweenFirstAndLastRequest = Duration.between(firstTimeToRequest, lastTimeToRequest)
+        return durationBetweenFirstAndLastRequest.toSeconds() <= maxWindowTimeInSeconds
     }
 }

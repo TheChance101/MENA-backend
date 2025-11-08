@@ -14,8 +14,8 @@ class RequestLog(
     val id: UUID = UUID.randomUUID(),
 
     @ColumnDefault("now()")
-    @Column(name = "login_time", nullable = false, updatable = false)
-    val loginTime: Instant = Instant.now(),
+    @Column(name = "request_time", nullable = false, updatable = false)
+    val requestTime: Instant = Instant.now(),
 
     @Column(name = "ip_address", nullable = false, length = Integer.MAX_VALUE)
     val ipAddress: String,

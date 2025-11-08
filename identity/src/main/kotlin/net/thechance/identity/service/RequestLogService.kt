@@ -7,18 +7,18 @@ import org.springframework.data.domain.Sort
 import org.springframework.stereotype.Service
 
 @Service
-class LoginLogService(
+class RequestLogService(
     private val loginLogRepository: LoginLogRepository
 ) {
-    fun addLoginLog(requestLog: RequestLog) {
+    fun addRequestLog(requestLog: RequestLog) {
         loginLogRepository.save(requestLog)
     }
 
-    fun getLoginLogsByIpAddress(
+    fun getRequestLogsByIpAddress(
         ipAddress: String,
         url: String,
         numberOfLogs: Int,
-        sortedBy: String = RequestLog::loginTime.name,
+        sortedBy: String = RequestLog::requestTime.name,
         sortedDirection: Sort.Direction = Sort.Direction.DESC
     ): List<RequestLog> {
         return loginLogRepository.findLoginLogsByIpAddressAndUrl(
