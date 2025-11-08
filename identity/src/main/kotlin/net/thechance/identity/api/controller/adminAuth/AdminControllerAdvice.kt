@@ -1,6 +1,6 @@
 package net.thechance.identity.api.controller.adminAuth
 
-import net.thechance.identity.api.dto.ErrorResponse
+import net.thechance.identity.api.dto.error.ErrorResponse
 import net.thechance.identity.exception.InvalidCredentialsException
 import net.thechance.identity.exception.InvalidRefreshTokenException
 import org.slf4j.Logger

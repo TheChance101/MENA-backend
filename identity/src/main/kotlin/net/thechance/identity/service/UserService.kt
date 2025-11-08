@@ -1,12 +1,16 @@
 package net.thechance.identity.service
 
 import jakarta.transaction.Transactional
+import net.thechance.events.identity.UserStatusUpdatedEvent
+import net.thechance.events.publisher.MenaEventPublisher
 import net.thechance.identity.entity.User
 import net.thechance.identity.exception.PasswordNotUpdatedException
 import net.thechance.identity.exception.UserNotFoundException
 import net.thechance.identity.repository.UserRepository
+import net.thechance.identity.service.mapper.toEventStatus
 import net.thechance.identity.service.model.UserServiceModel
 import org.springframework.beans.factory.annotation.Value
+import org.springframework.context.annotation.Lazy
 import org.springframework.data.domain.Page
 import org.springframework.data.domain.Pageable
 import org.springframework.data.repository.findByIdOrNull
@@ -21,7 +25,9 @@ private typealias ImageUri = String
 class UserService(
     private val userRepository: UserRepository,
     private val identityImageStorageService: IdentityImageStorageService,
-    @param:Value("\${identity.resources.profile-image-directory}") private val profileImageDirectory: String
+    private val eventPublisher: MenaEventPublisher,
+    @param:Value("\${identity.resources.profile-image-directory}") private val profileImageDirectory: String,
+    @param:Lazy private val authenticationService: AuthenticationService
 ) {
 
     fun findByPhoneNumber(phoneNumber: String): User {
@@ -119,9 +125,7 @@ class UserService(
     fun updateUserStatus(userId: UUID, status: User.Status) {
         val updatedUserCount = userRepository.updateStatus(userId, status)
         if (updatedUserCount == 0) throw UserNotFoundException("User with id: $userId not found")
-        /*
-        todo: should send event to notify other modules about user status change
-         and if the user is blocked call logout function to invalidate his access token
-         */
+        eventPublisher.publish(UserStatusUpdatedEvent(userId, status.toEventStatus()))
+        if (status == User.Status.BLOCKED) authenticationService.logout(userId)
     }
 }

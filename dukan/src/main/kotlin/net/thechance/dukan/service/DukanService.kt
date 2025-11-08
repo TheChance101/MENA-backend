@@ -2,20 +2,21 @@ package net.thechance.dukan.service
 
 import jakarta.persistence.EntityNotFoundException
 import jakarta.transaction.Transactional
+import net.thechance.dukan.api.mapper.dukan.toDukan
 import net.thechance.dukan.entity.Dukan
 import net.thechance.dukan.entity.DukanCategory
 import net.thechance.dukan.entity.DukanColor
-import net.thechance.dukan.service.exception.DukanCreationFailedException
-import net.thechance.dukan.service.exception.DukanNotFoundException
-import net.thechance.dukan.api.mapper.dukan.toDukan
+import net.thechance.dukan.service.model.DukanWithFavorite
 import net.thechance.dukan.repository.DukanCategoryRepository
 import net.thechance.dukan.repository.DukanColorRepository
 import net.thechance.dukan.repository.DukanRepository
+import net.thechance.dukan.service.exception.DukanCreationFailedException
+import net.thechance.dukan.service.exception.DukanNotFoundException
 import net.thechance.dukan.service.model.DukanCreationParams
 import net.thechance.events.publisher.MenaEventPublisher
-import org.springframework.data.repository.findByIdOrNull
 import org.springframework.data.domain.Page
 import org.springframework.data.domain.Pageable
+import org.springframework.data.repository.findByIdOrNull
 import org.springframework.stereotype.Service
 import org.springframework.web.multipart.MultipartFile
 import java.util.*
@@ -82,9 +83,9 @@ class DukanService(
         return dukanRepository.findApprovedDukansWithProductsByCategory(userId, categoryId, pageable)
     }
 
-    fun getAllEditorPicksDukan(userId: UUID?, pageable: Pageable): Page<Dukan> {
+    fun getAllEditorPicksDukan(userId: UUID, pageable: Pageable): Page<DukanWithFavorite> {
         // TODO: Filter by user preferences once data model is ready
-        return dukanRepository.findAllApprovedWithShelvesAndProducts(pageable)
+        return dukanRepository.findAllApprovedWithShelvesAndProducts(userId, pageable)
     }
 
     private fun validateDukanCreation(params: DukanCreationParams) {
@@ -105,6 +106,9 @@ class DukanService(
     ): Page<Dukan> {
         return dukanRepository.findBestAroundApprovedDukans(lat, lng, range, pageable)
     }
+
+    fun getAllByCategory(categoryId: UUID, userId: UUID, pageable: Pageable): Page<DukanWithFavorite> =
+        dukanRepository.findAllByCategoryWithFavorite(categoryId, userId, pageable)
 
     companion object {
         private val DUKAN_FOLDER_NAME = "dukan"

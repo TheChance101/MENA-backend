@@ -1,6 +1,7 @@
 package net.thechance.identity.exception
 
 abstract class AuthenticationException(message: String) : Exception(message)
+class UserIpIsBlockedException(message: String) : AuthenticationException(message)
 class UserIsBlockedException(message: String) : AuthenticationException(message)
 class InvalidIpException(message: String) : AuthenticationException(message)
 class InvalidCredentialsException(message: String) : AuthenticationException(message)

@@ -14,4 +14,5 @@ data class DukanDetailsResponse(
     val longitude: Double,
     val color: DukanColor,
     val style: Style,
+    val isFavorite : Boolean
 )
