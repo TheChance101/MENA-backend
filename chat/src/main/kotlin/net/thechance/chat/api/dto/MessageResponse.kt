@@ -20,6 +20,7 @@ data class MessageResponse(
     val reactions: List<MessageReactionResponse> = emptyList(),
     val audioUrl: String?,
     val sendAt: Instant,
+    val updatedAt: Instant,
     val isRead: Boolean,
     val isMine: Boolean
 )
@@ -34,6 +35,7 @@ fun Message.toResponse(requesterId: UUID): MessageResponse {
         reactions = reactions.map(MessageReaction::toResponse),
         audioUrl = audioUrl,
         sendAt = sentAt,
+        updatedAt = lastModifiedAt,
         isRead = isRead,
         isMine = requesterId == senderId
     )
