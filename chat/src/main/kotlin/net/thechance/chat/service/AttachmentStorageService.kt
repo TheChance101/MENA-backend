@@ -10,7 +10,11 @@ import org.springframework.stereotype.Service
 import org.springframework.web.multipart.MultipartFile
 import software.amazon.awssdk.core.sync.RequestBody
 import software.amazon.awssdk.services.s3.S3Client
+import software.amazon.awssdk.services.s3.model.Delete
+import software.amazon.awssdk.services.s3.model.DeleteObjectsRequest
+import software.amazon.awssdk.services.s3.model.DeleteObjectsResponse
 import software.amazon.awssdk.services.s3.model.ObjectCannedACL
+import software.amazon.awssdk.services.s3.model.ObjectIdentifier
 import software.amazon.awssdk.services.s3.model.PutObjectRequest
 import java.time.LocalDateTime
 
@@ -35,7 +39,7 @@ class AttachmentStorageService(
         val extension = allowedImageMimeTypes[mimeType] ?: throw InvalidImageFormatException()
         try {
             val finalFileName = "${LocalDateTime.now()}.$extension"
-            val key = "images/$folderName/$finalFileName"
+            val key = "$CHAT_ATTACHMENTS_PATH/$folderName/$finalFileName"
             val putReq = createObjectRequest(key, mimeType)
             menaS3Client.putObject(putReq, RequestBody.fromBytes(file.bytes))
             return makeUrl(key)
@@ -50,6 +54,60 @@ class AttachmentStorageService(
         return "$base/$path"
     }
 
+    fun deleteFolder(folderName: String) {
+        try {
+            val folderPath = "$CHAT_ATTACHMENTS_PATH/$folderName"
+            var continuationToken: String? = null
+
+            do {
+                val listResponse = menaS3Client.listObjectsV2 { builder ->
+                    builder.bucket(props.bucket)
+                        .prefix(folderPath)
+                        .continuationToken(continuationToken)
+                }
+
+                val keys = listResponse.contents().map {
+                    ObjectIdentifier.builder().key(it.key()).build()
+                }
+
+                if (keys.isNotEmpty()) {
+                    val deleteRequest = createDeleteRequest(keys)
+                    val result = menaS3Client.deleteObjects(deleteRequest)
+                    handlePartialDeleteFailure(result)
+                }
+
+                continuationToken = listResponse.nextContinuationToken()
+            } while (continuationToken != null)
+        } catch (e: Exception) {
+            println("error clean up image: ${e.message}")
+        }
+
+
+    }
+
+    private fun createDeleteRequest(keys: List<ObjectIdentifier>): DeleteObjectsRequest{
+        return DeleteObjectsRequest.builder()
+            .bucket(props.bucket)
+            .delete(Delete.builder().objects(keys).build())
+            .build()
+    }
+    private fun handlePartialDeleteFailure(result: DeleteObjectsResponse) {
+        var attempts = 0
+        while (result.errors().isNotEmpty() && attempts < MAX_RETRIES ){
+            val failedKeys = result.errors().map {
+                ObjectIdentifier.builder().key(it.key()).build()
+            }
+
+            println("Retrying failed deletions: ${failedKeys.size} keys")
+            val retryRequest = DeleteObjectsRequest.builder()
+                .bucket(props.bucket)
+                .delete(Delete.builder().objects(failedKeys).build())
+                .build()
+            menaS3Client.deleteObjects(retryRequest)
+            attempts++
+        }
+
+    }
     fun uploadAudio(
         file: MultipartFile,
         fileName: String,
@@ -58,11 +116,11 @@ class AttachmentStorageService(
         val mimeType = file.contentType ?: throw InvalidAudioFormatException()
         val extension = allowedAudioMimeTypes[mimeType] ?: throw InvalidAudioFormatException()
         try {
-            val finalFileName = "${fileName}_${LocalDateTime.now()}.$extension"
+            val finalFileName = "${LocalDateTime.now()}.$extension"
             val key = "audio/$folderName/$finalFileName"
             val putRequest = createObjectRequest(key, mimeType)
             menaS3Client.putObject(putRequest, RequestBody.fromBytes(file.bytes))
-            return "${props.cdnEndpoint}/$key"
+            return makeUrl(key)
         } catch (e: Exception) {
             throw AudioUploadFailedException("Failed to upload audio file: ${e.message}")
         }
@@ -91,5 +149,7 @@ class AttachmentStorageService(
             "audio/ogg" to "ogg",
             "audio/mp4" to "mp4",
         )
+        const val MAX_RETRIES = 3
+        const val CHAT_ATTACHMENTS_PATH = "images/chat_attachments"
     }
 }

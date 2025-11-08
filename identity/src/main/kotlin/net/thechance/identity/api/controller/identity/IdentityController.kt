@@ -1,6 +1,5 @@
 package net.thechance.identity.api.controller.identity
 
-import jakarta.servlet.http.HttpServletRequest
 import jakarta.validation.Valid
 import net.thechance.identity.api.dto.auth.AuthRequest
 import net.thechance.identity.api.dto.auth.AuthResponse
@@ -12,7 +11,6 @@ import net.thechance.identity.api.dto.password.ResetPasswordRequest
 import net.thechance.identity.api.dto.register.CheckUserExistenceRequest
 import net.thechance.identity.api.dto.register.RegisterUserRequest
 import net.thechance.identity.api.mapper.toRegisterUserModel
-import net.thechance.identity.exception.InvalidIpException
 import net.thechance.identity.service.AuthenticationService
 import net.thechance.identity.service.RegisterService
 import net.thechance.identity.service.ResetPasswordService
@@ -31,14 +29,11 @@ class IdentityController(
 ) {
     @PostMapping("/login")
     fun login(
-        @RequestBody @Valid request: AuthRequest,
-        httpRequest: HttpServletRequest
+        @RequestBody @Valid request: AuthRequest
     ): ResponseEntity<AuthResponse> {
-        val ipAddress = httpRequest.remoteAddr ?: throw InvalidIpException("Invalid IP")
         val authResponse = authenticationService.login(
             phoneNumber = request.phoneNumber,
-            password = request.password,
-            ipAddress = ipAddress
+            password = request.password
         )
         return ResponseEntity.ok(authResponse)
     }

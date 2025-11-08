@@ -1,60 +1,108 @@
 package net.thechance.identity.service
 
-import com.github.benmanes.caffeine.cache.Cache
-import com.github.benmanes.caffeine.cache.Caffeine
+import net.thechance.identity.entity.RequestLog
 import net.thechance.identity.security.config.RateLimitProperties
 import org.springframework.stereotype.Service
+import java.time.Duration
 import java.time.Instant
-import java.util.concurrent.ConcurrentHashMap
-import java.util.concurrent.TimeUnit
-import java.util.concurrent.atomic.AtomicLong
 
 @Service
 class IpRateLimitManagerService(
-    private val rateLimitProperties: RateLimitProperties
+    private val rateLimitProperties: RateLimitProperties,
+    private val requestLogService: RequestLogService
 ) {
-    private val blockedIps: ConcurrentHashMap<String, Instant> = ConcurrentHashMap()
-    private val shortTermCaches: ConcurrentHashMap<String, Cache<String, AtomicLong>> = ConcurrentHashMap()
-    private val longTermCaches: ConcurrentHashMap<String, Cache<String, AtomicLong>> = ConcurrentHashMap()
-
-    fun isRequestAllowed(ip: String, requestPath: String): Boolean {
-        val blockUntil = blockedIps[ip]
-        if (blockUntil != null && blockUntil.isAfter(Instant.now())) {
-            return false
-        } else if (blockUntil != null) {
-            blockedIps.remove(ip)
-        }
-
+    fun isRequestAllowed(ipAddress: String, requestPath: String): Boolean {
         val config = rateLimitProperties.endpoints[requestPath] ?: return true
-
-        val shortTermEndpointCache = shortTermCaches.getOrCreateCache(requestPath, config.shortTermWindowSeconds)
-        val longTermEndpointCache = longTermCaches.getOrCreateCache(requestPath, config.longTermWindowSeconds)
-
-        val currentShortTermAttempts = shortTermEndpointCache.get(ip) { AtomicLong(0) }!!.incrementAndGet()
-        val currentLongTermAttempts = longTermEndpointCache.get(ip) { AtomicLong(0) }!!.incrementAndGet()
-
-        if (currentLongTermAttempts > config.longTermLimit) {
-            if (currentLongTermAttempts >= config.longTermLimit + 1) {
-                blockedIps[ip] = Instant.now().plusSeconds(config.blockDurationSeconds)
-                return false
-            }
-            return false
+        return isRequestAllowed(
+            ipAddress = ipAddress,
+            url = requestPath,
+            config = config
+        ).also { isRequestAllowed ->
+            if (isRequestAllowed) addUserAttemptToLogs(ipAddress, requestPath)
         }
-
-        if (currentShortTermAttempts > config.shortTermLimit) {
-            return false
-        }
-
-        return true
     }
 
-    private fun ConcurrentHashMap<String, Cache<String, AtomicLong>>.getOrCreateCache(
-        endpointPath: String,
-        windowDurationInSeconds: Long
-    ): Cache<String, AtomicLong> {
-        return computeIfAbsent(endpointPath) {
-            Caffeine.newBuilder().expireAfterWrite(windowDurationInSeconds, TimeUnit.SECONDS)
-                .maximumSize(rateLimitProperties.globalMaxIpsToTrack).build()
-        }
+    private fun isRequestAllowed(
+        ipAddress: String,
+        url: String,
+        config: RateLimitProperties.EndpointRateLimitConfig
+    ): Boolean {
+        val longTermRequestLogs = requestLogService.getRequestLogsByIpAddress(
+            ipAddress = ipAddress,
+            url = url,
+            numberOfLogs = config.longTermAttemptsLimit
+        )
+        val shortTermRequestLogs = longTermRequestLogs.take(config.shortTermAttemptsLimit)
+        return isShortTermBlock(shortTermRequestLogs, config).not()
+                || isLongTermBlock(longTermRequestLogs, config).not()
+    }
+
+    private fun isShortTermBlock(
+        requestLog: List<RequestLog>,
+        config: RateLimitProperties.EndpointRateLimitConfig
+    ): Boolean {
+        return isUserBlocked(
+            requestLog = requestLog,
+            maxValidUserAttempts = config.shortTermAttemptsLimit,
+            maxWindowTimeInSeconds = config.shortTermWindowSeconds,
+            blockTimeInSeconds = config.blockDurationSeconds
+        )
+    }
+
+    private fun isLongTermBlock(
+        requestLog: List<RequestLog>,
+        config: RateLimitProperties.EndpointRateLimitConfig
+    ): Boolean {
+        return isUserBlocked(
+            requestLog = requestLog,
+            maxValidUserAttempts = config.longTermAttemptsLimit,
+            maxWindowTimeInSeconds = config.longTermWindowSeconds,
+            blockTimeInSeconds = config.blockDurationSeconds
+        )
+    }
+
+    private fun addUserAttemptToLogs(
+        ipAddress: String,
+        url: String
+    ) {
+        val requestLog = RequestLog(ipAddress = ipAddress, url = url)
+        requestLogService.addRequestLog(requestLog)
+    }
+
+    private fun isUserBlocked(
+        requestLog: List<RequestLog>,
+        maxValidUserAttempts: Int,
+        maxWindowTimeInSeconds: Long,
+        blockTimeInSeconds: Long
+    ): Boolean {
+        return requestLog.isNotEmpty()
+                && !isUserAttemptsWithInLimit(requestLog, maxValidUserAttempts)
+                && !isCurrentTimeWithInBlockRange(requestLog, blockTimeInSeconds)
+                && isDurationBetweenFirstAndLastLogWithInWindowRange(requestLog, maxWindowTimeInSeconds)
+    }
+
+    private fun isUserAttemptsWithInLimit(
+        requestLogs: List<RequestLog>,
+        maxValidUserAttempts: Int
+    ) = requestLogs.size < maxValidUserAttempts
+
+    private fun isCurrentTimeWithInBlockRange(
+        requestLogs: List<RequestLog>,
+        blockTimeInSeconds: Long
+    ): Boolean {
+        val lastTimeToRequest = requestLogs.first().requestTime
+        val now = Instant.now()
+        val durationSinceLastRequest = Duration.between(lastTimeToRequest, now)
+        return durationSinceLastRequest.toSeconds() >= blockTimeInSeconds
+    }
+
+    private fun isDurationBetweenFirstAndLastLogWithInWindowRange(
+        requestLogs: List<RequestLog>,
+        maxWindowTimeInSeconds: Long
+    ): Boolean {
+        val lastTimeToRequest = requestLogs.first().requestTime
+        val firstTimeToRequest = requestLogs.last().requestTime
+        val durationBetweenFirstAndLastRequest = Duration.between(firstTimeToRequest, lastTimeToRequest)
+        return durationBetweenFirstAndLastRequest.toSeconds() <= maxWindowTimeInSeconds
     }
 }

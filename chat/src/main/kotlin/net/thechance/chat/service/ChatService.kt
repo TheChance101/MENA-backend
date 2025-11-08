@@ -3,7 +3,9 @@ package net.thechance.chat.service
 import net.thechance.chat.entity.*
 import net.thechance.chat.repository.ChatRepository
 import net.thechance.chat.repository.MessageReactionRepository
+import net.thechance.chat.repository.DeletedChatRepository
 import net.thechance.chat.repository.MessageRepository
+import net.thechance.chat.service.exception.InvalidTimeFormatException
 import net.thechance.chat.service.exception.NotFoundException
 import net.thechance.chat.service.model.*
 import org.springframework.data.domain.Page
@@ -12,13 +14,14 @@ import org.springframework.data.repository.findByIdOrNull
 import org.springframework.stereotype.Service
 import org.springframework.transaction.annotation.Transactional
 import java.time.Instant
-import java.util.*
+import java.util.UUID
 
 @Service
 class ChatService(
     private val messageRepository: MessageRepository,
     private val messageReactionRepository: MessageReactionRepository,
     private val chatRepository: ChatRepository,
+    private val deletedChatRepository: DeletedChatRepository,
     private val contactUserService: ContactUserService,
     private val attachmentStorageService: AttachmentStorageService,
     private val contactService: ContactService
@@ -65,7 +68,7 @@ class ChatService(
     fun saveMessageImage(args: MessageImageRequestArgs): Message {
         val imageUrl = attachmentStorageService.uploadImage(
             file = args.image,
-            folderName = FOLDER_NAME
+            folderName = args.chatId.toString()
         )
 
         return messageRepository.save(
@@ -82,14 +85,15 @@ class ChatService(
         val audioUrl = attachmentStorageService.uploadAudio(
             file = args.audio,
             fileName = args.audio.originalFilename ?: "${Instant.now()}-Untitled",
-            folderName = FOLDER_NAME
+            folderName = FOLDER_NAME,
         )
 
         return messageRepository.save(
             Message(
                 senderId = args.senderId,
                 chatId = args.chatId,
-                audioUrl = audioUrl
+                audioUrl = audioUrl,
+                audioDurationMs = args.audioDurationMs
             )
         )
     }
@@ -99,8 +103,11 @@ class ChatService(
             ?: throw NotFoundException("no message was found with id: $messageId")
     }
 
+    @Transactional
     fun addReaction(args: MessageReactionRequestArgs): MessageReaction {
         val existing = messageReactionRepository.findByMessageIdAndUserId(args.messageId, args.userId)
+
+        messageRepository.updateUpdatedAt(args.messageId)
 
         return existing?.copy(emoji = args.emoji)?.let { messageReactionRepository.save(it) }
             ?: messageReactionRepository.save(
@@ -113,17 +120,26 @@ class ChatService(
     }
 
     fun deleteReaction(args: MessageReactionRequestArgs): MessageReaction {
+        messageRepository.updateUpdatedAt(args.messageId)
 
         val reaction = messageReactionRepository.findByMessageIdAndUserId(args.messageId, args.userId)
             ?: throw NotFoundException("no message reactions was found")
 
         messageReactionRepository.deleteByMessageIdAndUserId(args.messageId, args.userId)
         return reaction
-
     }
 
     fun getAllChatMessagesByChatId(chatId: UUID, pageable: Pageable): Page<Message> {
         return messageRepository.getAllByChatIdOrderBySentAtDesc(chatId, pageable)
+    }
+
+    fun getLatestMessagesAfter(chatId: UUID, updatedAfter: Instant?, pageable: Pageable): Page<Message> {
+        if (updatedAfter == null) throw InvalidTimeFormatException("Invalid Time Format : $updatedAfter")
+        return messageRepository.findAllByChatIdAndLastModifiedAtAfterOrderByLastModifiedAtAsc(
+            chatId,
+            updatedAfter,
+            pageable
+        )
     }
 
     fun markChatMessagesAsRead(chatId: UUID, userId: UUID) {
@@ -182,6 +198,26 @@ class ChatService(
         val chat =
             chatRepository.findByIdOrNull(chatId) ?: throw NotFoundException("no chat was found with id: $chatId")
         return chat.users.map { it.id }
+    }
+
+    @Transactional
+    fun deleteChatById(chatId: UUID){
+        val currentChat = chatRepository.findByIdOrNull(chatId) ?: throw NotFoundException("no chat found with this id $chatId")
+        val deletedChats = currentChat.users.map {
+            DeletedChat(
+                chatId = chatId,
+                cleanUpStatus = CleanUpStatus.PENDING,
+                userId = it.id,
+            )
+        }
+        deletedChatRepository.saveAll(deletedChats)
+    }
+
+    fun getDeletedChatsIdByUserIdAfterSpecificTime(userId: UUID, time: Instant): List<String>{
+        return deletedChatRepository.getDeletedChatsIdByUserIdAfterSpecificTime(
+            userId = userId,
+            time = time
+        ).map { it.toString() }
     }
 
     private fun getChatName(contact: Contact?, user: ContactUser?): String {
