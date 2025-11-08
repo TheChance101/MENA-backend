@@ -5,6 +5,7 @@ import net.thechance.chat.repository.ChatRepository
 import net.thechance.chat.repository.MessageReactionRepository
 import net.thechance.chat.repository.DeletedChatRepository
 import net.thechance.chat.repository.MessageRepository
+import net.thechance.chat.service.exception.InvalidTimeFormatException
 import net.thechance.chat.service.exception.NotFoundException
 import net.thechance.chat.service.model.*
 import org.springframework.data.domain.Page
@@ -84,14 +85,15 @@ class ChatService(
         val audioUrl = attachmentStorageService.uploadAudio(
             file = args.audio,
             fileName = args.audio.originalFilename ?: "${Instant.now()}-Untitled",
-            folderName = FOLDER_NAME
+            folderName = FOLDER_NAME,
         )
 
         return messageRepository.save(
             Message(
                 senderId = args.senderId,
                 chatId = args.chatId,
-                audioUrl = audioUrl
+                audioUrl = audioUrl,
+                audioDurationMs = args.audioDurationMs
             )
         )
     }
@@ -101,8 +103,11 @@ class ChatService(
             ?: throw NotFoundException("no message was found with id: $messageId")
     }
 
+    @Transactional
     fun addReaction(args: MessageReactionRequestArgs): MessageReaction {
         val existing = messageReactionRepository.findByMessageIdAndUserId(args.messageId, args.userId)
+
+        messageRepository.updateUpdatedAt(args.messageId)
 
         return existing?.copy(emoji = args.emoji)?.let { messageReactionRepository.save(it) }
             ?: messageReactionRepository.save(
@@ -115,17 +120,26 @@ class ChatService(
     }
 
     fun deleteReaction(args: MessageReactionRequestArgs): MessageReaction {
+        messageRepository.updateUpdatedAt(args.messageId)
 
         val reaction = messageReactionRepository.findByMessageIdAndUserId(args.messageId, args.userId)
             ?: throw NotFoundException("no message reactions was found")
 
         messageReactionRepository.deleteByMessageIdAndUserId(args.messageId, args.userId)
         return reaction
-
     }
 
     fun getAllChatMessagesByChatId(chatId: UUID, pageable: Pageable): Page<Message> {
         return messageRepository.getAllByChatIdOrderBySentAtDesc(chatId, pageable)
+    }
+
+    fun getLatestMessagesAfter(chatId: UUID, updatedAfter: Instant?, pageable: Pageable): Page<Message> {
+        if (updatedAfter == null) throw InvalidTimeFormatException("Invalid Time Format : $updatedAfter")
+        return messageRepository.findAllByChatIdAndLastModifiedAtAfterOrderByLastModifiedAtAsc(
+            chatId,
+            updatedAfter,
+            pageable
+        )
     }
 
     fun markChatMessagesAsRead(chatId: UUID, userId: UUID) {

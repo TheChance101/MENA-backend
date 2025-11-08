@@ -1,0 +1,14 @@
+[
+  {
+    "relation": [
+      "delegate_permission/common.handle_all_urls"
+    ],
+    "target": {
+      "namespace": "android_app",
+      "package_name": "net.thechance.mena.dev",
+      "sha256_cert_fingerprints": [
+        "C6:53:A2:9B:A1:38:AB:09:4C:E2:0C:07:0E:CC:F7:B3:0F:40:70:BA:74:63:46:04:37:EF:44:CE:B0:B8:B0:17"
+      ]
+    }
+  }
+]

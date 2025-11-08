@@ -1,6 +1,6 @@
-package net.thechance.identity.api.controller
+package net.thechance.identity.api.controller.user
 
-import net.thechance.identity.api.dto.ErrorResponse
+import net.thechance.identity.api.dto.error.ErrorResponse
 import net.thechance.identity.exception.UserNotFoundException
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory

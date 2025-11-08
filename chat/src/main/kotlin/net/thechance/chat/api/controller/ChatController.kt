@@ -56,6 +56,18 @@ class ChatController(
         )
     }
 
+    @GetMapping("/{chatId}/messages/latest")
+    fun getLatestMessages(
+        @PathVariable chatId: UUID,
+        @RequestParam lastUpdateTime: String,
+        @AuthenticationPrincipal userId: UUID,
+        pageable: Pageable
+    ): ResponseEntity<PagedResponse<MessageResponse>> {
+        val since = Instant.parse(lastUpdateTime)
+        val updatedMessages = chatService.getLatestMessagesAfter(chatId, since, pageable).toPagedMessageResponse(userId)
+        return ResponseEntity.ok(updatedMessages)
+    }
+
     @PostMapping("/image")
     fun sendMessageImage(
         @ModelAttribute request: MessageImageRequest,
@@ -103,7 +115,7 @@ class ChatController(
     fun deleteReaction(
         @Payload body: MessageReactionRequest,
         principal: Principal
-    ){
+    ) {
         val userId = UUID.fromString(principal.name)
         val message = chatService.getMessageById(body.messageId)
         val deletedReaction = chatService.deleteReaction(body.toRequestArgs(userId))
