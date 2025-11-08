@@ -79,9 +79,6 @@ class DukanService(
         return dukanRepository.findByIdOrNull(dukanId) ?: throw DukanNotFoundException()
     }
 
-    fun getAllByCategoryId(userId: UUID, categoryId: UUID, pageable: Pageable): Page<Dukan> {
-        return dukanRepository.findApprovedDukansWithProductsByCategory(userId, categoryId, pageable)
-    }
 
     fun getAllEditorPicksDukan(userId: UUID, pageable: Pageable): Page<DukanWithFavorite> {
         // TODO: Filter by user preferences once data model is ready
