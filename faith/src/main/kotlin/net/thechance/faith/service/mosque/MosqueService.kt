@@ -22,7 +22,7 @@ class MosqueService(
 ) {
 
     @Transactional
-    fun createNearestMosque(mosqueRequest: MosqueRequest, image: MultipartFile): MosqueResponse {
+    fun createNearestMosque(userId: UUID, mosqueRequest: MosqueRequest, image: MultipartFile): MosqueResponse {
         val imageUrl =
             imageStorageService.uploadImage(
                 file = image,
@@ -31,7 +31,7 @@ class MosqueService(
             )
 
 
-        val mosque = mosqueRequest.toMosque(imageUrl)
+        val mosque = mosqueRequest.toMosque(userId = userId, imageUrl = imageUrl)
         val savedMosque = mosqueRepository.save(mosque)
         return savedMosque.toMosqueResponse()
     }

@@ -4,7 +4,7 @@ import net.thechance.faith.entity.Mosque
 import java.time.Instant
 import java.util.*
 
-fun MosqueRequest.toMosque(imageUrl: String): Mosque {
+fun MosqueRequest.toMosque(userId: UUID,imageUrl: String): Mosque {
     return Mosque(
         id = UUID.randomUUID(),
         name = name,
@@ -13,6 +13,7 @@ fun MosqueRequest.toMosque(imageUrl: String): Mosque {
         longitude = longitude,
         createdAt = Instant.now(),
         imageUrl = imageUrl,
+        userId = userId
     )
 }
 

@@ -11,6 +11,7 @@ import org.springframework.data.domain.Sort.Direction
 import org.springframework.data.web.PageableDefault
 import org.springframework.http.HttpStatus
 import org.springframework.http.ResponseEntity
+import org.springframework.security.core.annotation.AuthenticationPrincipal
 import org.springframework.web.bind.annotation.*
 import org.springframework.web.multipart.MultipartFile
 import java.util.*
@@ -49,16 +50,18 @@ class NearbyMosqueController(
     @PostMapping(consumes = ["multipart/form-data"])
     fun createMosque(
         @RequestPart("mosque") mosqueRequest: MosqueRequest,
-        @RequestPart("image") image: MultipartFile
+        @RequestPart("image") image: MultipartFile,
+        @AuthenticationPrincipal userId: UUID
     ): ResponseEntity<MosqueResponse> {
-        val mosque = mosqueService.createNearestMosque(mosqueRequest, image)
+        val mosque = mosqueService.createNearestMosque(userId = userId, mosqueRequest = mosqueRequest, image = image)
         return ResponseEntity.status(HttpStatus.CREATED).body(mosque)
     }
 
     @PutMapping("/{id}/image", consumes = ["multipart/form-data"])
     fun updateMosqueImage(
         @PathVariable id: UUID,
-        @RequestPart("image") image: MultipartFile
+        @RequestPart("image") image: MultipartFile,
+        @AuthenticationPrincipal userId: UUID
     ): ResponseEntity<MosqueResponse> {
         val newImageUrl = imageStorageService.uploadImage(
             file = image,
