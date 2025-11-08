@@ -21,15 +21,19 @@ class IpRateLimitFilter(
     ) {
         val requestUri = request.requestURI
         val clientIp = request.remoteAddr
-        val requestLimitExceeded = rateLimitProperties.endpoints.containsKey(requestUri)
-        if (requestLimitExceeded) {
-            if (!ipRateLimitManagerService.isRequestAllowed(clientIp, requestUri)) {
-                response.status = HttpStatus.TOO_MANY_REQUESTS.value()
-                response.contentType = "text/plain"
-                response.writer.write("Too many requests from this IP. Please try again later.")
-                return
-            }
+
+        if (shouldBlockRequest(requestUri, clientIp)) {
+            response.status = HttpStatus.TOO_MANY_REQUESTS.value()
+            response.contentType = "text/plain"
+            response.writer.write("Too many requests from this IP. Please try again later.")
+            return
         }
         filterChain.doFilter(request, response)
+    }
+
+    fun shouldBlockRequest(requestUri: String, clientIp: String): Boolean {
+        val requestLimitExceeded = rateLimitProperties.endpoints.containsKey(requestUri)
+        return requestLimitExceeded
+                && !ipRateLimitManagerService.isRequestAllowed(clientIp, requestUri)
     }
 }
