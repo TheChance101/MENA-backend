@@ -13,7 +13,7 @@ import org.springframework.stereotype.Controller
 import org.springframework.web.bind.annotation.*
 import java.security.Principal
 import java.time.Instant
-import java.util.*
+import java.util.UUID
 
 @RequestMapping("/chat")
 @Controller
@@ -182,10 +182,32 @@ class ChatController(
             }
     }
 
+    @DeleteMapping("/{chatId}")
+    fun deleteChatById(
+        @PathVariable chatId: UUID
+    ): ResponseEntity<Unit> {
+        chatService.deleteChatById(chatId)
+        sendToChatUser(chatId, DELETE_CHAT){
+            DeleteChatResponse(chatId)
+        }
+        return ResponseEntity.ok().body(Unit)
+    }
+
+    @GetMapping("/deletedChats")
+    fun getDeletedChatsAfter(
+        @RequestParam deletedAfter: String,
+        @AuthenticationPrincipal userId: UUID
+    ): ResponseEntity<List<String>> {
+        val time = Instant.parse(deletedAfter)
+        val deletedChats = chatService.getDeletedChatsIdByUserIdAfterSpecificTime(userId, time)
+        return ResponseEntity.ok(deletedChats)
+    }
+
     companion object {
         const val PRIVATE_MESSAGES = "/private/messages"
         const val MARK_AS_READ = "/private/markAsRead"
         const val ADD_REACTION = "/private/addReaction"
         const val DELETE_REACTION = "/private/deleteReaction"
+        const val DELETE_CHAT = "/private/deleteChat"
     }
 }

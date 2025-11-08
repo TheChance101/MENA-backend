@@ -3,6 +3,7 @@ package net.thechance.chat.service
 import net.thechance.chat.entity.*
 import net.thechance.chat.repository.ChatRepository
 import net.thechance.chat.repository.MessageReactionRepository
+import net.thechance.chat.repository.DeletedChatRepository
 import net.thechance.chat.repository.MessageRepository
 import net.thechance.chat.service.exception.InvalidTimeFormatException
 import net.thechance.chat.service.exception.NotFoundException
@@ -13,13 +14,14 @@ import org.springframework.data.repository.findByIdOrNull
 import org.springframework.stereotype.Service
 import org.springframework.transaction.annotation.Transactional
 import java.time.Instant
-import java.util.*
+import java.util.UUID
 
 @Service
 class ChatService(
     private val messageRepository: MessageRepository,
     private val messageReactionRepository: MessageReactionRepository,
     private val chatRepository: ChatRepository,
+    private val deletedChatRepository: DeletedChatRepository,
     private val contactUserService: ContactUserService,
     private val attachmentStorageService: AttachmentStorageService,
     private val contactService: ContactService
@@ -66,7 +68,7 @@ class ChatService(
     fun saveMessageImage(args: MessageImageRequestArgs): Message {
         val imageUrl = attachmentStorageService.uploadImage(
             file = args.image,
-            folderName = FOLDER_NAME
+            folderName = args.chatId.toString()
         )
 
         return messageRepository.save(
@@ -196,6 +198,26 @@ class ChatService(
         val chat =
             chatRepository.findByIdOrNull(chatId) ?: throw NotFoundException("no chat was found with id: $chatId")
         return chat.users.map { it.id }
+    }
+
+    @Transactional
+    fun deleteChatById(chatId: UUID){
+        val currentChat = chatRepository.findByIdOrNull(chatId) ?: throw NotFoundException("no chat found with this id $chatId")
+        val deletedChats = currentChat.users.map {
+            DeletedChat(
+                chatId = chatId,
+                cleanUpStatus = CleanUpStatus.PENDING,
+                userId = it.id,
+            )
+        }
+        deletedChatRepository.saveAll(deletedChats)
+    }
+
+    fun getDeletedChatsIdByUserIdAfterSpecificTime(userId: UUID, time: Instant): List<String>{
+        return deletedChatRepository.getDeletedChatsIdByUserIdAfterSpecificTime(
+            userId = userId,
+            time = time
+        ).map { it.toString() }
     }
 
     private fun getChatName(contact: Contact?, user: ContactUser?): String {

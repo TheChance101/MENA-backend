@@ -13,6 +13,19 @@ import java.util.*
 
 interface MessageRepository : JpaRepository<Message, UUID> {
 
+    @Query(
+        value = """
+         SELECT m 
+         FROM Message m 
+         WHERE m.chatId = :chatId 
+            AND NOT EXISTS (
+            SELECT 1 
+            FROM DeletedChat dc 
+            WHERE dc.chatId = m.chatId
+            )
+         ORDER BY m.sentAt ASC
+    """
+    )
     fun getAllByChatIdOrderBySentAtDesc(chatId: UUID, pageable: Pageable): Page<Message>
 
     @Modifying
@@ -58,4 +71,10 @@ interface MessageRepository : JpaRepository<Message, UUID> {
     @Query("UPDATE Message m SET m.lastModifiedAt = CURRENT_TIMESTAMP WHERE m.id = :messageId")
     fun updateUpdatedAt(@Param("messageId") messageId: UUID): Int
 
+    @Modifying
+    @Query(
+        nativeQuery = true,
+        value = "DELETE FROM chat.messages WHERE chat.messages.chat_id = :chatId"
+    )
+    fun deleteAllByChatId(chatId: UUID)
 }
