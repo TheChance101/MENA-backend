@@ -39,7 +39,7 @@ interface MessageRepository : JpaRepository<Message, UUID> {
         nativeQuery = true,
         value = """
         SELECT DISTINCT ON (m.chat_id) 
-        m.chat_id, m.id, m.text, m.image_url,m.audio_url, m.last_modified_at, m.sender_id, m.sent_at, m.is_read
+        m.chat_id, m.id, m.text, m.image_url,m.audio_url,m.audio_duration_ms, m.last_modified_at, m.sender_id, m.sent_at, m.is_read
         FROM chat.messages m
         WHERE m.chat_id IN :chatIds
         ORDER BY m.chat_id, m.sent_at DESC

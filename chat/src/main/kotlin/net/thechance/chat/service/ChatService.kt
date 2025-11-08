@@ -83,14 +83,15 @@ class ChatService(
         val audioUrl = attachmentStorageService.uploadAudio(
             file = args.audio,
             fileName = args.audio.originalFilename ?: "${Instant.now()}-Untitled",
-            folderName = FOLDER_NAME
+            folderName = FOLDER_NAME,
         )
 
         return messageRepository.save(
             Message(
                 senderId = args.senderId,
                 chatId = args.chatId,
-                audioUrl = audioUrl
+                audioUrl = audioUrl,
+                audioDurationMs = args.audioDurationMs
             )
         )
     }

@@ -21,6 +21,8 @@ data class Message(
     val imageUrl: String? = null,
     @Column(name = "audio_url", nullable = true)
     val audioUrl: String? = null,
+    @Column(name = "audio_duration_ms", nullable = false)
+    val audioDurationMs: Long = 0L,
 
     @Column(name = "last_modified_at", nullable = false)
     var lastModifiedAt: Instant = Instant.now(),
