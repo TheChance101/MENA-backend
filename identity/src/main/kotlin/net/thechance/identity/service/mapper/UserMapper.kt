@@ -1,6 +1,7 @@
 package net.thechance.identity.service.mapper
 
 import net.thechance.events.identity.UserCreatedEvent
+import net.thechance.events.identity.UserStatusUpdatedEvent
 import net.thechance.events.identity.UserUpdatedEvent
 import net.thechance.events.identity.utils.Gender
 import net.thechance.events.identity.utils.Status
@@ -60,6 +61,13 @@ fun createUserUpdatedEventForUpdateImage(
         imageUrl = imageUrl,
         changedFields = listOf(UserUpdatedEvent.ChangedField.IMAGE_URL)
     )
+}
+
+fun User.Status.toEventStatus(): UserStatusUpdatedEvent.UserStatus {
+    return when (this) {
+        User.Status.ACTIVE -> UserStatusUpdatedEvent.UserStatus.ACTIVE
+        User.Status.BLOCKED -> UserStatusUpdatedEvent.UserStatus.BLOCKED
+    }
 }
 
 private fun User.Status.toUserEventStatus(): Status {

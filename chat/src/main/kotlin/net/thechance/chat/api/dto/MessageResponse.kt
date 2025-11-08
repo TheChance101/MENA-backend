@@ -19,7 +19,9 @@ data class MessageResponse(
     val imageUrl: String?,
     val reactions: List<MessageReactionResponse> = emptyList(),
     val audioUrl: String?,
+    val audioDurationMs: Long,
     val sendAt: Instant,
+    val updatedAt: Instant,
     val isRead: Boolean,
     val isMine: Boolean
 )
@@ -33,7 +35,9 @@ fun Message.toResponse(requesterId: UUID): MessageResponse {
         imageUrl = imageUrl,
         reactions = reactions.map(MessageReaction::toResponse),
         audioUrl = audioUrl,
+        audioDurationMs = audioDurationMs,
         sendAt = sentAt,
+        updatedAt = lastModifiedAt,
         isRead = isRead,
         isMine = requesterId == senderId
     )

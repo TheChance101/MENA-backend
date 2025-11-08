@@ -72,4 +72,9 @@ class TrendsGlobalExceptionHandler {
 
         return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(message)
     }
+
+    @ExceptionHandler(TrendUrlSigningException::class)
+    fun handleTrendUrlSigningException(exception: TrendUrlSigningException): ResponseEntity<String> {
+        return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("Something went wrong")
+    }
 }

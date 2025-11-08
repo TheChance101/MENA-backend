@@ -1,17 +1,16 @@
 package net.thechance.identity.service
 
 import jakarta.transaction.Transactional
+import net.thechance.events.identity.UserStatusUpdatedEvent
 import net.thechance.events.publisher.MenaEventPublisher
 import net.thechance.identity.entity.User
 import net.thechance.identity.exception.PasswordNotUpdatedException
 import net.thechance.identity.exception.UserNotFoundException
 import net.thechance.identity.repository.UserRepository
-import net.thechance.identity.service.mapper.createUserUpdatedEvent
-import net.thechance.identity.service.mapper.createUserUpdatedEventForUpdateImage
-import net.thechance.identity.service.mapper.createUserUpdatedEventForUpdatePassword
-import net.thechance.identity.service.mapper.toUserUpdatedEvent
+import net.thechance.identity.service.mapper.*
 import net.thechance.identity.service.model.UserServiceModel
 import org.springframework.beans.factory.annotation.Value
+import org.springframework.context.annotation.Lazy
 import org.springframework.data.domain.Page
 import org.springframework.data.domain.Pageable
 import org.springframework.data.repository.findByIdOrNull
@@ -27,7 +26,8 @@ class UserService(
     private val userRepository: UserRepository,
     private val identityImageStorageService: IdentityImageStorageService,
     @param:Value("\${identity.resources.profile-image-directory}") private val profileImageDirectory: String,
-    private val eventPublisher: MenaEventPublisher
+    private val eventPublisher: MenaEventPublisher,
+    @param:Lazy private val authenticationService: AuthenticationService,
 ) {
 
     fun findByPhoneNumber(phoneNumber: String): User {
@@ -71,7 +71,7 @@ class UserService(
 
     fun updateUserImage(
         userId: UUID,
-        imageFile: MultipartFile
+        imageFile: MultipartFile,
     ): ImageUri {
         val user = findById(userId)
         val newImageUrl = identityImageStorageService.uploadImage(
@@ -130,8 +130,7 @@ class UserService(
         val updatedUserCount = userRepository.updateStatus(userId, status)
         if (updatedUserCount == 0) throw UserNotFoundException("User with id: $userId not found")
         eventPublisher.publish(createUserUpdatedEvent(status))
-        /*
-        todo: if the user is blocked call logout function to invalidate his access token
-         */
+        eventPublisher.publish(UserStatusUpdatedEvent(userId, status.toEventStatus()))
+        if (status == User.Status.BLOCKED) authenticationService.logout(userId)
     }
 }

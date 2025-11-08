@@ -3,6 +3,7 @@ package net.thechance.faith.api.controller
 import jakarta.validation.Valid
 import net.thechance.faith.api.dto.tilawah.AyahSoundRequest
 import net.thechance.faith.api.dto.tilawah.ReciterResponse
+import net.thechance.faith.api.dto.tilawah.SurahSoundRequest
 import net.thechance.faith.api.dto.tilawah.toResponse
 import net.thechance.faith.service.tilawah.TilawahService
 import org.springframework.http.ResponseEntity
@@ -32,6 +33,18 @@ class TilawahController(
             reciterId = ayahSoundRequest.reciterId,
             surahNumber = ayahSoundRequest.surahNumber,
             ayahNumber = ayahSoundRequest.ayahNumber
+        )
+        return ResponseEntity.ok(soundUrl)
+    }
+
+    @GetMapping("/surah/sound")
+    fun getSurahSoundUrl(
+        @Valid @RequestBody
+        surahSoundRequest: SurahSoundRequest
+    ): ResponseEntity<String> {
+        val soundUrl = recitersService.getSurahSoundsUrl(
+            reciterId = surahSoundRequest.reciterId,
+            surahNumber = surahSoundRequest.surahNumber,
         )
         return ResponseEntity.ok(soundUrl)
     }

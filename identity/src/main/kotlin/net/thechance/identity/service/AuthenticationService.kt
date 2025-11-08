@@ -5,6 +5,7 @@ import net.thechance.identity.entity.LoginLog
 import net.thechance.identity.entity.User
 import net.thechance.identity.exception.InvalidCredentialsException
 import net.thechance.identity.exception.InvalidRefreshTokenException
+import net.thechance.identity.exception.UserIpIsBlockedException
 import net.thechance.identity.exception.UserIsBlockedException
 import net.thechance.identity.repository.RefreshTokenRepository
 import net.thechance.identity.security.JwtService
@@ -13,6 +14,7 @@ import org.springframework.stereotype.Service
 import java.time.Duration
 import java.time.Instant
 import java.time.LocalDateTime
+import java.util.*
 
 @Service
 class AuthenticationService(
@@ -25,14 +27,21 @@ class AuthenticationService(
 ) {
 
     fun login(phoneNumber: String, password: String, ipAddress: String): AuthResponse {
-        if (isUserBlocked(ipAddress)) {
-            throw UserIsBlockedException("User with phone Number: $phoneNumber is blocked")
+        if (isUserIpBlocked(ipAddress)) {
+            throw UserIpIsBlockedException("User with phone Number: $phoneNumber is blocked")
         }
         val user = userService.findByPhoneNumber(phoneNumber)
+        if (user.status == User.Status.BLOCKED) {
+            throw UserIsBlockedException("User with phone Number: $phoneNumber is blocked")
+        }
         val isPasswordCorrect = passwordEncoder.matches(password, user.password)
         addUserToLogs(user = user, isSuccess = isPasswordCorrect, ipAddress = ipAddress)
         if (!isPasswordCorrect) throw InvalidCredentialsException("Invalid Credentials")
         return generateAuthResponse(user)
+    }
+
+    fun logout(userId: UUID) {
+        refreshTokenService.deleteUserRefreshTokens(userId)
     }
 
     fun refreshToken(refreshToken: String): AuthResponse {
@@ -51,7 +60,7 @@ class AuthenticationService(
         if (isSuccess) userService.updateUserLastLoginTime(userId = user.id, time = LocalDateTime.now())
     }
 
-    private fun isUserBlocked(ipAddress: String): Boolean {
+    private fun isUserIpBlocked(ipAddress: String): Boolean {
         val loginLogs = loginLogService.getLoginLogsByIpAddress(ipAddress, 5)
             .filter { !it.isSuccess }
             .ifEmpty { return false }

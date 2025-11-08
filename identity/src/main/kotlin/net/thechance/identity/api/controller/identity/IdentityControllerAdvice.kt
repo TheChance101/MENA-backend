@@ -1,6 +1,6 @@
 package net.thechance.identity.api.controller.identity
 
-import net.thechance.identity.api.dto.ErrorResponse
+import net.thechance.identity.api.dto.error.ErrorResponse
 import net.thechance.identity.exception.*
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
@@ -27,6 +27,15 @@ class IdentityControllerAdvice {
         val errorResponse = ErrorResponse("Data not valid")
         return ResponseEntity
             .status(HttpStatus.BAD_REQUEST)
+            .body(errorResponse)
+    }
+
+    @ExceptionHandler(UserIpIsBlockedException::class)
+    fun handleUserIpIsBlockedException(exception: UserIpIsBlockedException): ResponseEntity<ErrorResponse> {
+        logger.error("User ip is blocked: ${exception.message}", exception)
+        val errorResponse = ErrorResponse("User ip is blocked")
+        return ResponseEntity
+            .status(HttpStatus.TOO_MANY_REQUESTS)
             .body(errorResponse)
     }
 
