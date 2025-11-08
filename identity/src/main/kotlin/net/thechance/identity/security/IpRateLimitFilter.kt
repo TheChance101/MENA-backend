@@ -21,8 +21,8 @@ class IpRateLimitFilter(
     ) {
         val requestUri = request.requestURI
         val clientIp = request.remoteAddr
-        val canRateLimited = rateLimitProperties.endpoints.containsKey(requestUri)
-        if (canRateLimited) {
+        val requestLimitExceeded = rateLimitProperties.endpoints.containsKey(requestUri)
+        if (requestLimitExceeded) {
             if (!ipRateLimitManagerService.isRequestAllowed(clientIp, requestUri)) {
                 response.status = HttpStatus.TOO_MANY_REQUESTS.value()
                 response.contentType = "text/plain"
