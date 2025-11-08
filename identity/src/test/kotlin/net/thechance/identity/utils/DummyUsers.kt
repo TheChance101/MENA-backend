@@ -91,7 +91,20 @@ object DummyUsers {
         status = User.Status.ACTIVE
 	)
 
-	val userWithInvalidPasswordLength = User(
+    val blockedUser = User(
+        phoneNumber = "+201293393331", password = "Test1234", firstName = "",
+        lastName = "",
+        username = "",
+        imageUrl = null,
+        id = UUID.randomUUID(),
+        birthDate = LocalDate.now(),
+        gender = User.Gender.MALE.toInt(),
+        lastVisitAt = LocalDateTime.now(),
+        lastLoginAt = LocalDateTime.now(),
+        status = User.Status.BLOCKED
+    )
+
+    val userWithInvalidPasswordLength = User(
 		phoneNumber = "+201293393331", password = "test", firstName = "",
 		lastName = "",
 		username = "",

@@ -6,3 +6,5 @@ open class ChatException(
 ) : Exception(message)
 
 class NotFoundException(message: String) : ChatException(message = message)
+
+class InvalidTimeFormatException(message: String) : ChatException(message = message)

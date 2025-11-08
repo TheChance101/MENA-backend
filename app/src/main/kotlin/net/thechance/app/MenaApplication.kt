@@ -14,6 +14,7 @@ import org.springframework.scheduling.annotation.EnableAsync
 @EnableJpaRepositories(basePackages = ["net.thechance"])
 @EntityScan(basePackages = ["net.thechance"])
 @PropertySource("classpath:identity-rate-limit.properties")
+@PropertySource("classpath:trends-expiration.properties")
 @EnableScheduling
 @EnableAsync
 class MenaApplication

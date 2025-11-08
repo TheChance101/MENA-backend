@@ -12,7 +12,8 @@ import org.springframework.security.core.annotation.AuthenticationPrincipal
 import org.springframework.stereotype.Controller
 import org.springframework.web.bind.annotation.*
 import java.security.Principal
-import java.util.UUID
+import java.time.Instant
+import java.util.*
 
 @RequestMapping("/chat")
 @Controller
@@ -53,6 +54,18 @@ class ChatController(
             chatService.getAllChatMessagesByChatId(chatId, pageable)
                 .toPagedMessageResponse(userId)
         )
+    }
+
+    @GetMapping("/{chatId}/messages/latest")
+    fun getLatestMessages(
+        @PathVariable chatId: UUID,
+        @RequestParam lastUpdateTime: String,
+        @AuthenticationPrincipal userId: UUID,
+        pageable: Pageable
+    ): ResponseEntity<PagedResponse<MessageResponse>> {
+        val since = Instant.parse(lastUpdateTime)
+        val updatedMessages = chatService.getLatestMessagesAfter(chatId, since, pageable).toPagedMessageResponse(userId)
+        return ResponseEntity.ok(updatedMessages)
     }
 
     @PostMapping("/image")
@@ -102,7 +115,7 @@ class ChatController(
     fun deleteReaction(
         @Payload body: MessageReactionRequest,
         principal: Principal
-    ){
+    ) {
         val userId = UUID.fromString(principal.name)
         val message = chatService.getMessageById(body.messageId)
         val deletedReaction = chatService.deleteReaction(body.toRequestArgs(userId))

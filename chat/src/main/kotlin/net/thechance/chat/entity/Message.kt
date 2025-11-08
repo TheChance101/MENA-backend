@@ -24,6 +24,8 @@ data class Message(
     @Column(name = "audio_duration_ms", nullable = false)
     val audioDurationMs: Long = 0L,
 
+    @Column(name = "last_modified_at", nullable = false)
+    var lastModifiedAt: Instant = Instant.now(),
     @OneToMany(fetch = FetchType.EAGER)
     @JoinColumn(name = "message_id", referencedColumnName = "id")
     val reactions: List<MessageReaction> = emptyList(),

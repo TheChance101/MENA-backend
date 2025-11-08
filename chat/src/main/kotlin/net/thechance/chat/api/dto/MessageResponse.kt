@@ -21,6 +21,7 @@ data class MessageResponse(
     val audioUrl: String?,
     val audioDurationMs: Long,
     val sendAt: Instant,
+    val updatedAt: Instant,
     val isRead: Boolean,
     val isMine: Boolean
 )
@@ -36,6 +37,7 @@ fun Message.toResponse(requesterId: UUID): MessageResponse {
         audioUrl = audioUrl,
         audioDurationMs = audioDurationMs,
         sendAt = sentAt,
+        updatedAt = lastModifiedAt,
         isRead = isRead,
         isMine = requesterId == senderId
     )

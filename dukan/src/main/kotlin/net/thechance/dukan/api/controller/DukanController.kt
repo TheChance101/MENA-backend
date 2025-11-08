@@ -2,19 +2,16 @@ package net.thechance.dukan.api.controller
 
 import jakarta.validation.Valid
 import jakarta.validation.constraints.NotBlank
-import net.thechance.dukan.api.utils.EndPoints.DUKAN_PATH
 import net.thechance.dukan.api.dto.category.DukanCategoryResponse
 import net.thechance.dukan.api.dto.color.DukanColorResponse
 import net.thechance.dukan.api.dto.dukan.*
-import net.thechance.dukan.entity.Dukan
-import net.thechance.dukan.service.DukanService
 import net.thechance.dukan.api.mapper.category.DukanLanguage
 import net.thechance.dukan.api.mapper.category.toDto
-import net.thechance.dukan.api.mapper.dukan.toDto
-import net.thechance.dukan.api.mapper.dukan.toDukanCreationParams
-import net.thechance.dukan.api.mapper.dukan.toDukanResponse
-import net.thechance.dukan.api.mapper.dukan.toDukanStyleResponse
-import net.thechance.dukan.api.mapper.dukan.toResponse
+import net.thechance.dukan.api.mapper.dukan.*
+import net.thechance.dukan.api.utils.EndPoints.DUKAN_PATH
+import net.thechance.dukan.entity.Dukan
+import net.thechance.dukan.service.DukanService
+import net.thechance.dukan.service.FavouriteDukanService
 import org.springframework.data.domain.Page
 import org.springframework.data.domain.Pageable
 import org.springframework.data.domain.Sort
@@ -29,7 +26,8 @@ import java.util.*
 @RestController
 @RequestMapping(DUKAN_PATH)
 class DukanController(
-    private val dukanService: DukanService
+    private val dukanService: DukanService,
+    private val favouriteDukanService: FavouriteDukanService
 ) {
     @GetMapping("/styles")
     fun getAllStyles(): ResponseEntity<DukanStyleResponse> {
@@ -88,29 +86,36 @@ class DukanController(
 
     @GetMapping("/categories/{categoryId}")
     fun getAllByCategoryId(
+        @AuthenticationPrincipal userId: UUID,
         @PathVariable("categoryId") categoryId: UUID,
         @PageableDefault(size = 10, page = 0, sort = ["createdAt"], direction = Sort.Direction.DESC) pageable: Pageable
     ): ResponseEntity<Page<DukanResponse>> {
-        return ResponseEntity.ok(dukanService.getAllByCategoryId(categoryId, pageable).map(Dukan::toDukanResponse))
+        val response = dukanService.getAllByCategory(categoryId, userId, pageable)
+            .map { it.dukan.toDukanResponse(it.isFavorite) }
+        return ResponseEntity.ok(response)
     }
-
 
     @GetMapping("/editor_picks")
     fun getEditorPicksDukan(
-        @AuthenticationPrincipal userId: UUID?,
+        @AuthenticationPrincipal userId: UUID,
         @PageableDefault(size = 5, page = 0, sort = ["createdAt"], direction = Sort.Direction.DESC)
         pageable: Pageable
     ): ResponseEntity<Page<DukanResponse>> {
         val dukansPage = dukanService.getAllEditorPicksDukan(userId, pageable)
-        val response = dukansPage.map(Dukan::toDukanResponse)
+        val response = dukansPage.map { it.dukan.toDukanResponse(it.isFavorite) }
         return ResponseEntity.ok(response)
     }
 
-
     @GetMapping("/{dukanId}")
-    fun getDukanDetailsById(@PathVariable("dukanId") dukanId: UUID): ResponseEntity<DukanDetailsResponse> {
-        val dukanDetails = dukanService.getDukanDetailsById(dukanId).toResponse()
-        return ResponseEntity.ok(dukanDetails)
+    fun getDukanDetailsById(
+        @AuthenticationPrincipal userId: UUID,
+        @PathVariable("dukanId") dukanId: UUID
+    ): ResponseEntity<DukanDetailsResponse> {
+        val dukan = dukanService.getDukanDetailsById(dukanId)
+        val isFavorite = favouriteDukanService.isFavorite(userId, dukanId)
+
+        val dukanDetailsResponse = dukan.toResponse(isFavorite)
+        return ResponseEntity.ok(dukanDetailsResponse)
     }
 
     @GetMapping("/nearby/best")
@@ -122,6 +127,15 @@ class DukanController(
     ): ResponseEntity<Page<DukanResponse>> {
         val dukans = dukanService.getAllBestDukansAround(lat, lng, pageable, range)
         val response = dukans.map { it.toDukanResponse() }
+        return ResponseEntity.ok(response)
+    }
+
+    @PostMapping("{dukanId}/toggle_favorite")
+    fun toggleFavoriteStatus(
+        @AuthenticationPrincipal userId: UUID,
+        @PathVariable dukanId: UUID,
+    ): ResponseEntity<Boolean> {
+        val response = favouriteDukanService.toggleFavoriteStatus(userId, dukanId)
         return ResponseEntity.ok(response)
     }
 }
