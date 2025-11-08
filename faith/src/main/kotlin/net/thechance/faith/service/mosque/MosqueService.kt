@@ -6,6 +6,7 @@ import net.thechance.faith.api.dto.nearestMosque.MosqueResponse
 import net.thechance.faith.api.dto.nearestMosque.toMosque
 import net.thechance.faith.api.dto.nearestMosque.toMosqueResponse
 import net.thechance.faith.entity.Mosque
+import net.thechance.faith.exception.ImageUploadFailedException
 import net.thechance.faith.exception.InvalidRequestParameterException
 import net.thechance.faith.repository.MosqueRepository
 import org.springframework.data.domain.Page
@@ -18,7 +19,6 @@ import java.util.*
 class MosqueService(
     private val mosqueRepository: MosqueRepository,
     private val imageStorageService: FaithImageStorageService
-
 ) {
 
     @Transactional
@@ -39,7 +39,7 @@ class MosqueService(
     @Transactional
     fun updateMosqueImage(id: UUID, imageUrl: String): Mosque {
         val mosque = mosqueRepository.findById(id)
-            .orElseThrow { IllegalArgumentException("Mosque not found") }
+            .orElseThrow { ImageUploadFailedException("Mosque not found") }
 
         val updatedMosque = mosque.copy(imageUrl = imageUrl)
         return mosqueRepository.save(updatedMosque)
