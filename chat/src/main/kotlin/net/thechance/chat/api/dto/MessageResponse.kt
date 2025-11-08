@@ -1,6 +1,7 @@
 package net.thechance.chat.api.dto
 
 import net.thechance.chat.entity.Message
+import net.thechance.chat.entity.MessageReaction
 import org.springframework.data.domain.Page
 import java.time.Instant
 import java.util.*
@@ -16,7 +17,10 @@ data class MessageResponse(
     val chatId: UUID,
     val text: String?,
     val imageUrl: String?,
+    val reactions: List<MessageReactionResponse> = emptyList(),
+    val audioUrl: String?,
     val sendAt: Instant,
+    val updatedAt: Instant,
     val isRead: Boolean,
     val isMine: Boolean
 )
@@ -28,7 +32,10 @@ fun Message.toResponse(requesterId: UUID): MessageResponse {
         chatId = chatId,
         text = text,
         imageUrl = imageUrl,
+        reactions = reactions.map(MessageReaction::toResponse),
+        audioUrl = audioUrl,
         sendAt = sentAt,
+        updatedAt = lastModifiedAt,
         isRead = isRead,
         isMine = requesterId == senderId
     )

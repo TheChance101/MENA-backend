@@ -1,9 +1,11 @@
 package net.thechance.identity.exception
 
 abstract class AuthenticationException(message: String) : Exception(message)
+class UserIpIsBlockedException(message: String) : AuthenticationException(message)
 class UserIsBlockedException(message: String) : AuthenticationException(message)
 class InvalidIpException(message: String) : AuthenticationException(message)
 class InvalidCredentialsException(message: String) : AuthenticationException(message)
 class UserNotFoundException(message: String) : AuthenticationException(message)
 class InvalidRefreshTokenException : AuthenticationException("Refresh token is invalid or expired")
 class UnauthorizedException : AuthenticationException("Unauthorized")
+class UserAlreadyExistsException(message: String = "User already exists"): AuthenticationException(message)

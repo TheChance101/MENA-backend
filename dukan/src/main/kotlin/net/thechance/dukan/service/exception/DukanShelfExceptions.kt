@@ -2,6 +2,7 @@ package net.thechance.dukan.service.exception
 
 import net.thechance.dukan.api.utils.ErrorCodes.SHELF_DELETION_NOT_ALLOWED
 import net.thechance.dukan.api.utils.ErrorCodes.SHELF_NAME_ALREADY_TAKEN
+import net.thechance.dukan.api.utils.ErrorCodes.SHELF_NAME_NOT_CHANGED
 import net.thechance.dukan.api.utils.ErrorCodes.SHELF_NOT_FOUND
 import org.springframework.http.HttpStatus
 
@@ -22,4 +23,9 @@ class ShelfNameAlreadyTakenException : DukanException(
     code = SHELF_NAME_ALREADY_TAKEN,
     status = HttpStatus.CONFLICT,
     message = "Shelf name already taken"
+)
+class ShelfNameNotChangedException : DukanException(
+    code = SHELF_NAME_NOT_CHANGED,
+    status = HttpStatus.CONFLICT,
+    message = "Shelf name did not changed"
 )

@@ -13,8 +13,8 @@ import java.time.format.DateTimeFormatter
 
 @Component
 class PrayerRemoteClient(
+    private val restTemplate: RestTemplate,
     private val json: Json = Json { ignoreUnknownKeys = true },
-    private val restTemplate: RestTemplate = RestTemplate(),
     private val logger: Logger = LoggerFactory.getLogger(PrayerRemoteClient::class.java)
 ) {
 

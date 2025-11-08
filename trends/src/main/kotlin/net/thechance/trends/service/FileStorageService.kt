@@ -1,27 +1,32 @@
 package net.thechance.trends.service
 
 import net.thechance.trends.exception.*
-import org.springframework.boot.context.properties.ConfigurationProperties
+import net.thechance.trends.service.config.TrendsExpirationProperties
+import net.thechance.trends.service.config.TrendsStorageProperties
+import org.springframework.beans.factory.annotation.Value
 import org.springframework.boot.context.properties.EnableConfigurationProperties
 import org.springframework.stereotype.Service
 import org.springframework.web.multipart.MultipartFile
 import software.amazon.awssdk.core.sync.RequestBody
 import software.amazon.awssdk.services.s3.S3Client
 import software.amazon.awssdk.services.s3.model.DeleteObjectRequest
+import software.amazon.awssdk.services.s3.model.GetObjectRequest
 import software.amazon.awssdk.services.s3.model.ObjectCannedACL
 import software.amazon.awssdk.services.s3.model.PutObjectRequest
+import software.amazon.awssdk.services.s3.presigner.S3Presigner
+import software.amazon.awssdk.services.s3.presigner.model.GetObjectPresignRequest
+import java.time.Duration
 import java.time.LocalDateTime
 
-@ConfigurationProperties(prefix = "storage.trends")
-data class TrendsStorageProperties(
-    val bucket: String, val cdnEndpoint: String
-)
 
 @Service
-@EnableConfigurationProperties(TrendsStorageProperties::class)
+@EnableConfigurationProperties(TrendsStorageProperties::class, TrendsExpirationProperties::class)
 class FileStorageService(
     private val trendsS3Client: S3Client,
+    private val trendsS3Presigner: S3Presigner,
     private val trendsStorageProperties: TrendsStorageProperties,
+    private val trendsExpirationProperties: TrendsExpirationProperties,
+    @param:Value("\${trends-access.secret-value}") private val accessKey: String
 ) {
     fun uploadVideo(
         file: MultipartFile,
@@ -40,7 +45,7 @@ class FileStorageService(
                     putRequest, RequestBody.fromInputStream(inputStream, file.size)
                 )
             }
-            return "${trendsStorageProperties.cdnEndpoint}/$key"
+            return key
         }.getOrElse {
             throw VideoUploadFailedException()
         }
@@ -56,7 +61,7 @@ class FileStorageService(
             val key = "thumbnail/$newFileName"
             val putReq = createObjectRequest(key, mimeType)
             trendsS3Client.putObject(putReq, RequestBody.fromBytes(file.bytes))
-            return "${trendsStorageProperties.cdnEndpoint}/$key"
+            return key
         }.getOrElse {
             throw ThumbnailUploadFailedException()
         }
@@ -77,9 +82,48 @@ class FileStorageService(
         return response.sdkHttpResponse().isSuccessful
     }
 
+    fun generatePresignedUrl(
+        key: String,
+        expirationMinutes: Long = trendsExpirationProperties.videoUrlMinutes
+    ): String {
+        runCatching {
+            val getObjectRequest = getObjectRequest(key)
+            val presignRequest = getObjectPresignRequest(expirationMinutes, getObjectRequest)
+            val presignedRequest = trendsS3Presigner.presignGetObject(presignRequest)
+
+            val fullUrl = presignedRequest.url().toString().substringAfter("://").substringAfter("/")
+            return fullUrl
+
+        }.getOrElse {
+            throw TrendUrlSigningException("Failed to generate presigned URL for key: $key")
+        }
+    }
+
+    private fun getObjectPresignRequest(
+        expirationMinutes: Long,
+        getObjectRequest: GetObjectRequest
+    ): GetObjectPresignRequest {
+        return GetObjectPresignRequest.builder()
+            .signatureDuration(Duration.ofMinutes(expirationMinutes))
+            .getObjectRequest(getObjectRequest)
+            .build()
+    }
+
+    private fun getObjectRequest(key: String): GetObjectRequest {
+        return GetObjectRequest.builder()
+            .bucket(trendsStorageProperties.bucket)
+            .key(key)
+            .overrideConfiguration { configuration ->
+                configuration.putHeader("X-ACCESS-KEY", accessKey)
+            }
+            .build()
+    }
+
     private fun createObjectRequest(key: String, contentType: String): PutObjectRequest? {
         return PutObjectRequest.builder().bucket(trendsStorageProperties.bucket).key(key).contentType(contentType)
-            .acl(ObjectCannedACL.PUBLIC_READ).build()
+            .acl(ObjectCannedACL.PRIVATE)
+            .contentDisposition("inline")
+            .build()
     }
 
     private companion object {
