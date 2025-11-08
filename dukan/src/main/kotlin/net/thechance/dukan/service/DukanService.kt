@@ -107,8 +107,8 @@ class DukanService(
         return dukanRepository.findBestAroundApprovedDukans(lat, lng, range, pageable)
     }
 
-    fun getAllByCategory(categoryId: UUID, userId: UUID, pageable: Pageable): Page<DukanWithFavorite> =
-        dukanRepository.findAllByCategoryWithFavorite(categoryId, userId, pageable)
+    fun getAllByCategoryIdWithFavorite(categoryId: UUID, userId: UUID, pageable: Pageable): Page<DukanWithFavorite> =
+        dukanRepository.findApprovedDukansWithProductsByCategoryWithFavorite(categoryId, userId, pageable)
 
     companion object {
         private val DUKAN_FOLDER_NAME = "dukan"
