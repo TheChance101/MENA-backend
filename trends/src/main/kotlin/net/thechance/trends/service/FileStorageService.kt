@@ -91,8 +91,7 @@ class FileStorageService(
             val presignRequest = getObjectPresignRequest(expirationMinutes, getObjectRequest)
             val presignedRequest = trendsS3Presigner.presignGetObject(presignRequest)
 
-            val fullUrl = presignedRequest.url().toString().substringAfter("://").substringAfter("/")
-            return fullUrl
+            return presignedRequest.url().toString()
 
         }.getOrElse {
             throw TrendUrlSigningException("Failed to generate presigned URL for key: $key")
