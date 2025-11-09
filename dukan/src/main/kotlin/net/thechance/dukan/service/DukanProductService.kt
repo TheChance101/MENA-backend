@@ -4,20 +4,20 @@ import jakarta.persistence.EntityNotFoundException
 import jakarta.transaction.Transactional
 import net.thechance.dukan.entity.Dukan
 import net.thechance.dukan.entity.DukanProduct
-import net.thechance.dukan.repository.DukanProductRepository
-import net.thechance.dukan.repository.DukanShelfRepository
 import net.thechance.dukan.entity.FavoriteProduct
 import net.thechance.dukan.entity.FavoriteProductId
+import net.thechance.dukan.repository.DukanProductRepository
+import net.thechance.dukan.repository.DukanShelfRepository
+import net.thechance.dukan.repository.FavoriteProductRepository
 import net.thechance.dukan.service.exception.DukanProductCreationFailedException
 import net.thechance.dukan.service.exception.ProductNameAlreadyTakenException
 import net.thechance.dukan.service.exception.ProductNotFoundException
-import net.thechance.dukan.repository.FavoriteProductRepository
 import net.thechance.dukan.service.model.DukanProductCreationParams
-import net.thechance.events.publisher.MenaEventPublisher
 import net.thechance.dukan.service.model.DukanProductUpdateParams
+import net.thechance.dukan.service.model.DukanProductWithFavoriteAndQuantity
 import net.thechance.events.dukan.DukanEvent
 import net.thechance.events.dukan.ProductEvent
-import net.thechance.dukan.service.model.DukanProductWithFavoriteAndQuantity
+import net.thechance.events.publisher.MenaEventPublisher
 import org.springframework.data.domain.Page
 import org.springframework.data.domain.Pageable
 import org.springframework.stereotype.Service
@@ -186,6 +186,23 @@ class DukanProductService(
             folderName = PRODUCT_FOLDER_NAME
         )
         return imageUrl
+    }
+
+    @Transactional
+    fun deleteProduct(ownerId: UUID, productId: UUID) {
+        val product = dukanProductRepository
+            .findByIdAndDukanOwnerId(productId, ownerId)
+            .orElseThrow { ProductNotFoundException() }
+
+        val deletedProduct = product.copy(
+            isDeleted = true,
+        )
+
+        dukanProductRepository.save(deletedProduct)
+
+        eventPublisher.publish(
+            ProductEvent.Delete(product.id.toString())
+        )
     }
 
     private fun checkProductNameExistence(dukanId: UUID, name: String) {
