@@ -7,7 +7,7 @@ import java.util.*
 data class MessageRequestArgs(
     val chatId: UUID,
     val senderId: UUID,
-    val text: String?
+    val text: String
 )
 
 fun MessageRequestDto.toRequestArgs(senderId: UUID): MessageRequestArgs {
