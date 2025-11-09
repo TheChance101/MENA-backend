@@ -15,6 +15,8 @@ data class DukanProductUpdateRequest(
     @field:NotNull(message = "price is required")
     @field:DecimalMin(value = "0.001", inclusive = true, message = "price must be >= 0.001")
     val price: Double,
+    @field:DecimalMin(value = "0.001", inclusive = true, message = "discounted must be >= 0.001")
+    val discountedPrice: Double? = null,
     @field:NotNull(message = "must choose at least one shelf")
     val shelfId: UUID,
     @field:Size(min = 1, max = 10, message = "must have at least one image and not execute then 10")

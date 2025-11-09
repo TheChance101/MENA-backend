@@ -4,6 +4,7 @@ import jakarta.persistence.EntityNotFoundException
 import jakarta.transaction.Transactional
 import net.thechance.dukan.entity.Dukan
 import net.thechance.dukan.entity.DukanProduct
+import net.thechance.dukan.entity.DukanShelf
 import net.thechance.dukan.repository.DukanProductRepository
 import net.thechance.dukan.repository.DukanShelfRepository
 import net.thechance.dukan.entity.FavoriteProduct
@@ -159,15 +160,7 @@ class DukanProductService(
         val shelf = dukanShelfRepository.getReferenceById(updateParams.shelfId)
 
         deleteUnusedProductImages(product.imageUrls, updateParams.imageUrls)
-
-        val updatedProduct = product.copy(
-            name = updateParams.name.trim(),
-            price = updateParams.price,
-            imageUrls = updateParams.imageUrls,
-            description = updateParams.description.trim(),
-            shelf = shelf
-        )
-
+        val updatedProduct = buildUpdatedProduct(product, updateParams, shelf)
         return dukanProductRepository.save(updatedProduct).id
     }
 
@@ -208,7 +201,26 @@ class DukanProductService(
         }
     }
 
-
+    private fun buildUpdatedProduct(
+        product: DukanProduct,
+        params: DukanProductUpdateParams,
+        shelf: DukanShelf
+    ): DukanProduct {
+        val discountedPrice = params.discountedPrice ?: 0.0
+        val discountPercentage = product.calculateDiscountPercentage(
+            price = params.price,
+            discountedPrice = discountedPrice.takeIf { it > 0 }
+        )
+        return product.copy(
+            name = params.name.trim(),
+            price = params.price,
+            discountedPrice = discountedPrice,
+            discount = discountPercentage,
+            imageUrls = params.imageUrls,
+            description = params.description.trim(),
+            shelf = shelf
+        )
+    }
     companion object {
         private const val PRODUCT_FOLDER_NAME = "product"
     }

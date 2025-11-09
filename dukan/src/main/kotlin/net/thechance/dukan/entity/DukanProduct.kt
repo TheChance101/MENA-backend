@@ -30,6 +30,12 @@ data class DukanProduct(
     @Column(name = "price", nullable = false)
     val price: Double,
 
+    @Column(name = "discounted_price", nullable = true)
+    val discountedPrice: Double = 0.0,
+
+    @Column(name = "discount", nullable = true)
+    val discount: Double = 0.0,
+
     @Column(name = "description", nullable = false, columnDefinition = "TEXT")
     val description: String,
 
@@ -50,4 +56,12 @@ data class DukanProduct(
 
     @OneToMany(mappedBy = "product", fetch = FetchType.LAZY)
     val favorites: MutableSet<FavoriteProduct> = emptySet()
-)
+){
+    fun calculateDiscountPercentage(price: Double, discountedPrice: Double?): Double {
+        return if (discountedPrice != null && discountedPrice < price) {
+            ((price - discountedPrice) / price) * 100
+        } else {
+            0.0
+        }
+    }
+}

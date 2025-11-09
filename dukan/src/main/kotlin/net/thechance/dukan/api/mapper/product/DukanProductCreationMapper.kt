@@ -19,6 +19,7 @@ fun DukanProductUpdateRequest.toProductUpdateParams(ownerId: UUID, productId : U
         name = name,
         description = description,
         price = price,
+        discountedPrice = discountedPrice,
         shelfId = shelfId,
         ownerId = ownerId,
         imageUrls = imageUrls,

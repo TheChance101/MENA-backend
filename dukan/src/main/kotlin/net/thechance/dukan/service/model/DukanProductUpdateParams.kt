@@ -8,6 +8,7 @@ data class DukanProductUpdateParams (
     val name: String,
     val description: String,
     val price: Double,
+    val discountedPrice: Double? = null,
     val ownerId: UUID,
     val imageUrls: List<String>,
 )
