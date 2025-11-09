@@ -18,5 +18,7 @@ data class DukanProductUpdateRequest(
     @field:NotNull(message = "must choose at least one shelf")
     val shelfId: UUID,
     @field:Size(min = 1, max = 10, message = "must have at least one image and not execute then 10")
-    val imageUrls: List<String>
+    val imageUrls: List<String>,
+    @field:NotNull(message = "isOutOfStock is required")
+    val isOutOfStock: Boolean,
 )
