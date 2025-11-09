@@ -9,6 +9,7 @@ fun DukanProductWithFavoriteAndQuantity.toResponse() = DukanProductResponse(
     name = this.product.name,
     shelfId = this.product.shelf.id,
     price = this.product.price,
+    discountedPrice = this.product.discountedPrice,
     description = this.product.description,
     imageUrls = this.product.imageUrls,
     quantityInCart = this.quantity,

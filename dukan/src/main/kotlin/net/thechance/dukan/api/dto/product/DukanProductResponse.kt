@@ -9,6 +9,7 @@ data class DukanProductResponse(
     val dukanId:UUID,
     val shelfId: UUID,
     val price:Double,
+    val discountedPrice: Double?,
     val description:String,
     val imageUrls:List<String>,
     val quantityInCart: Int,

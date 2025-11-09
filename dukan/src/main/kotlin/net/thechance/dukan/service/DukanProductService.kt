@@ -13,6 +13,7 @@ import net.thechance.dukan.service.exception.DukanProductCreationFailedException
 import net.thechance.dukan.service.exception.ProductNameAlreadyTakenException
 import net.thechance.dukan.service.exception.ProductNotFoundException
 import net.thechance.dukan.repository.FavoriteProductRepository
+import net.thechance.dukan.service.exception.InvalidDiscountException
 import net.thechance.dukan.service.model.DukanProductCreationParams
 import net.thechance.events.publisher.MenaEventPublisher
 import net.thechance.dukan.service.model.DukanProductUpdateParams
@@ -152,7 +153,9 @@ class DukanProductService(
         val product = dukanProductRepository
             .findByIdAndDukanOwnerId(updateParams.productId, updateParams.ownerId)
             .orElseThrow { ProductNotFoundException() }
-
+        if (updateParams.discountedPrice != null && updateParams.discountedPrice >= updateParams.price) {
+            throw InvalidDiscountException()
+        }
         if (product.name != updateParams.name) {
             checkProductNameExistence(product.dukan.id, updateParams.name)
         }

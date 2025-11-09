@@ -31,10 +31,10 @@ data class DukanProduct(
     val price: Double,
 
     @Column(name = "discounted_price", nullable = true)
-    val discountedPrice: Double = 0.0,
+    val discountedPrice: Double? = null,
 
     @Column(name = "discount", nullable = true)
-    val discount: Double = 0.0,
+    val discount: Double? = null,
 
     @Column(name = "description", nullable = false, columnDefinition = "TEXT")
     val description: String,
