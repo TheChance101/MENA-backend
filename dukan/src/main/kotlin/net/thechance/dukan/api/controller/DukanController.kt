@@ -36,11 +36,22 @@ class DukanController(
     }
 
     @GetMapping("/categories")
-    fun getAllCategories(): ResponseEntity<DukanCategoryResponse> {
-        val categories = dukanService.getAllCategories().let { categories ->
-            // Todo replace default Arabic with the extracted language from the header
-            categories.map { category -> category.toDto(DukanLanguage.ARABIC) }
+    fun getAllCategories(
+        @RequestHeader(
+            name = "Accept-Language",
+            required = false,
+            defaultValue = "ENGLISH"
+        )
+        languageHeader: String
+    ): ResponseEntity<DukanCategoryResponse> {
+
+        val language = try {
+            DukanLanguage.valueOf(languageHeader.uppercase())
+        } catch (e: IllegalArgumentException) {
+            DukanLanguage.ENGLISH
         }
+
+        val categories = dukanService.getAllCategories().map { it.toDto(language) }
         return ResponseEntity.ok(DukanCategoryResponse(categories))
     }
 
