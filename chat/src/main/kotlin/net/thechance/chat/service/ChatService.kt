@@ -57,6 +57,7 @@ class ChatService(
     fun saveMessage(args: MessageRequestArgs): Message {
         return messageRepository.save(
             Message(
+                id = args.messageId,
                 senderId = args.senderId,
                 chatId = args.chatId,
                 text = args.text,
@@ -73,6 +74,7 @@ class ChatService(
 
         return messageRepository.save(
             Message(
+                id = args.messageId,
                 senderId = args.senderId,
                 chatId = args.chatId,
                 imageUrl = imageUrl
@@ -90,6 +92,7 @@ class ChatService(
 
         return messageRepository.save(
             Message(
+                id = args.messageId,
                 senderId = args.senderId,
                 chatId = args.chatId,
                 audioUrl = audioUrl,
