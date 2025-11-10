@@ -16,7 +16,7 @@ data class DukanProductResponse(
     val isFavorite: Boolean
 )
 
-data class AdminDukanProductResponse(
+data class DukanProductAdminResponse(
     val id: UUID,
     val name:String,
     val dukanId:UUID,

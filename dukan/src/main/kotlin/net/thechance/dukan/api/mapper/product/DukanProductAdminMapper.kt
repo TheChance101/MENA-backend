@@ -1,9 +1,9 @@
 package net.thechance.dukan.api.mapper.product
 
-import net.thechance.dukan.api.dto.product.AdminDukanProductResponse
+import net.thechance.dukan.api.dto.product.DukanProductAdminResponse
 import net.thechance.dukan.entity.DukanProduct
 
-fun DukanProduct.toAdminResponse() = AdminDukanProductResponse(
+fun DukanProduct.toAdminResponse() = DukanProductAdminResponse(
     id = this.id,
     name = this.name,
     shelfId = this.shelf.id,

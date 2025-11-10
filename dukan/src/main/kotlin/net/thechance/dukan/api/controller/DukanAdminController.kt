@@ -1,7 +1,7 @@
 package net.thechance.dukan.api.controller
 
 import net.thechance.dukan.api.dto.dukan.DukanAdminDetailsResponse
-import net.thechance.dukan.api.dto.product.AdminDukanProductResponse
+import net.thechance.dukan.api.dto.product.DukanProductAdminResponse
 import net.thechance.dukan.api.dto.shelf.DukanShelfResponse
 import net.thechance.dukan.api.mapper.category.DukanLanguage
 import net.thechance.dukan.api.mapper.category.toDto
@@ -66,7 +66,7 @@ class DukanAdminController(
         @PathVariable("shelfId") shelfId: UUID,
         @PageableDefault(size = 10, page = 0, sort = ["createdAt"], direction = Sort.Direction.DESC)
         pageable: Pageable
-    ): ResponseEntity<Page<AdminDukanProductResponse>> {
+    ): ResponseEntity<Page<DukanProductAdminResponse>> {
         val productsPage: Page<DukanProduct> = dukanProductService.getProductsByShelf(shelfId, pageable)
         val response = productsPage.map { product -> product.toAdminResponse() }
         return ResponseEntity.ok(response)
