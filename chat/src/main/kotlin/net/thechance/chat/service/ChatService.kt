@@ -155,11 +155,16 @@ class ChatService(
 
         val chatsSummaries = chats.map { chat ->
             val otherUser = chat.users.firstOrNull { it.id != userId }
+            val contact = otherUser?.let { contactService.getContactByOwnerIdAndContactUserId(userId, it.id) }
+            val chatName = getChatName(contact, otherUser)
+            val imageUrl = otherUser?.imageUrl.orEmpty()
+
             chat.toSummary(
-                userId,
-                otherUser,
-                lastMessages.firstOrNull { it.chatId == chat.id },
-                unreadCounts.firstOrNull { it.chatId == chat.id }?.unreadCount ?: 0
+                userId = userId,
+                chatName = chatName,
+                imageUrl = imageUrl,
+                lastMessage = lastMessages.firstOrNull { it.chatId == chat.id },
+                unreadCount = unreadCounts.firstOrNull { it.chatId == chat.id }?.unreadCount ?: 0
             )
         }
         return chatsSummaries
@@ -171,11 +176,15 @@ class ChatService(
         val otherUser = chat.users.firstOrNull { it.id != userId }
         val lastMessage = messageRepository.findTopByChatIdOrderBySentAtDesc(chatId)
         val unreadCount = chatRepository.findUnreadCountsForChats(listOf(chatId)).firstOrNull()?.unreadCount ?: 0
+        val contact = otherUser?.let { contactService.getContactByOwnerIdAndContactUserId(userId, it.id) }
+        val chatName = getChatName(contact, otherUser)
+        val imageUrl = otherUser?.imageUrl.orEmpty()
         return chat.toSummary(
-            userId,
-            otherUser,
-            lastMessage,
-            unreadCount
+            userId = userId,
+            chatName = chatName,
+            imageUrl = imageUrl,
+            lastMessage = lastMessage,
+            unreadCount = unreadCount
         )
     }
 
