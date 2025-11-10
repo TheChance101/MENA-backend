@@ -16,6 +16,8 @@ interface DukanProductRepository : JpaRepository<DukanProduct, UUID> {
     fun existsByShelfId(shelfId: UUID): Boolean
     fun findByIdAndDukanOwnerId(id: UUID, ownerId: UUID): Optional<DukanProduct>
 
+    fun findAllByShelfId(shelfId: UUID, pageable: Pageable): Page<DukanProduct>
+
     @Query(
         """
     SELECT new net.thechance.dukan.service.model.DukanProductWithFavoriteAndQuantity(

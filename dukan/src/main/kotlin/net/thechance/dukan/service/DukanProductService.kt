@@ -118,6 +118,11 @@ class DukanProductService(
         return products
     }
 
+
+    fun getProductsByShelf(shelfId: UUID, pageable: Pageable): Page<DukanProduct> {
+        return dukanProductRepository.findAllByShelfId(shelfId, pageable)
+    }
+
     @Transactional
     fun getProductById(userId: UUID, productId: UUID): DukanProductWithFavoriteAndQuantity {
         val product = dukanProductRepository.findProductWithFavoriteAndQuantityById(userId, productId)

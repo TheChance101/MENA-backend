@@ -8,6 +8,7 @@ data class DukanProductResponse(
     val name:String,
     val shelfId: UUID,
     val price:Double,
+    val discountedPrice: Double? = null, //TODO
     val description:String,
     val imageUrls:List<String>,
     val quantityInCart: Int,
