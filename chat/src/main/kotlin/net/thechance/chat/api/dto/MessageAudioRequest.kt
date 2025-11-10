@@ -5,6 +5,7 @@ import org.springframework.web.multipart.MultipartFile
 import java.util.*
 
 data class MessageAudioRequest(
+    val messageId: UUID,
     val chatId: UUID,
     val audio: MultipartFile,
     val audioDurationMs: Long,
@@ -12,6 +13,7 @@ data class MessageAudioRequest(
 
 fun MessageAudioRequest.toRequestArgs(senderId: UUID) =
     MessageAudioRequestArgs(
+        messageId = messageId,
         senderId = senderId,
         chatId = chatId,
         audio = audio,
