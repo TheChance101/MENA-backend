@@ -6,10 +6,7 @@ import java.util.*
 
 @Table(
     name = "carts",
-    schema = "dukan",
-    uniqueConstraints = [
-        UniqueConstraint(columnNames = ["user_id", "dukan_id"])
-    ]
+    schema = "dukan"
 )
 @Entity
 data class Cart(
@@ -27,8 +24,10 @@ data class Cart(
     val items: MutableSet<CartItem> = mutableSetOf(),
 
     @Column(name = "total_price", nullable = false)
-    var totalPrice: Double =0.0,
+    var totalPrice: Double = 0.0,
 
+    @Column(name = "is_order_purchased", nullable = false)
+    var isOrderPurchased: Boolean = false,
 
     @Column(name = "created_at", nullable = false)
     val createdAt: Instant = Instant.now(),
