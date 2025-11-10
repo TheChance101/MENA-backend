@@ -83,12 +83,12 @@ class DukanService(
     }
 
     fun getAllByCategoryId(categoryId: UUID, pageable: Pageable): Page<Dukan> {
-        return dukanRepository.findApprovedDukansWithProductsByCategory(categoryId, pageable)
+        return dukanRepository.findActivatedDukansWithProductsByCategory(categoryId, pageable)
     }
 
     fun getAllEditorPicksDukan(userId: UUID, pageable: Pageable): Page<DukanWithFavorite> {
         // TODO: Filter by user preferences once data model is ready
-        return dukanRepository.findAllApprovedWithShelvesAndProducts(userId, pageable)
+        return dukanRepository.findAllActivatedWithShelvesAndProducts(userId, pageable)
     }
 
     private fun validateDukanCreation(params: DukanCreationParams) {
@@ -107,19 +107,21 @@ class DukanService(
         pageable: Pageable,
         range: Double = 30000.0
     ): Page<Dukan> {
-        return dukanRepository.findBestAroundApprovedDukans(lat, lng, range, pageable)
+        return dukanRepository.findBestAroundActivatedDukans(lat, lng, range, pageable)
     }
 
     fun getAllByCategory(categoryId: UUID, userId: UUID, pageable: Pageable): Page<DukanWithFavorite> =
         dukanRepository.findAllByCategoryWithFavorite(categoryId, userId, pageable)
 
-
-    fun getDukansByStatus(status: Dukan.Status, pageable: Pageable): Page<Dukan> =
-        dukanRepository.findAllByStatus(status = status, pageable = pageable)
-
+    fun getDukansByStatusAndQuery(
+        query: String,
+        status: Dukan.Status,
+        pageable: Pageable
+    ): Page<Dukan> =
+        dukanRepository.findByNameOrAddressAndStatus(query = query, status = status, pageable = pageable)
 
     @Transactional
-    fun updateDukanStatus(dukanId: UUID, status: Dukan.Status, message:String?) {
+    fun updateDukanStatus(dukanId: UUID, status: Dukan.Status, message: String?) {
         val updatedDukanCount = dukanRepository.updateStatus(dukanId = dukanId, status = status)
         if (updatedDukanCount == 0) throw DukanNotFoundException()
 

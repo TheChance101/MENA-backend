@@ -64,7 +64,7 @@ class DukanProductService(
             eventPublisher.publish(
                 event = product.toProductSaveEvent()
             )
-            if (product.dukan.shelves.isNotEmpty() && product.dukan.status == Dukan.Status.APPROVED) {
+            if (product.dukan.shelves.isNotEmpty() && product.dukan.status == Dukan.Status.ACTIVATED) {
                 eventPublisher.publish(
                     product.dukan.toDukanSaveEvent()
                 )
@@ -77,7 +77,7 @@ class DukanProductService(
         id = this.id.toString(),
         name = this.name,
         imageUrl = this.imageUrl,
-        status = DukanEvent.Save.Status.APPROVED,
+        status = DukanEvent.Save.Status.ACTIVATED,
         lat = this.latitude,
         lng = this.longitude
     )

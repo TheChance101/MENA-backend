@@ -30,7 +30,7 @@ class DukanSearchService(
         var totalIndexed = 0
 
         while (true) {
-            val dukansPage = dukanRepository.findAllApprovedWithShelvesAndProducts(PageRequest.of(page, pageSize))
+            val dukansPage = dukanRepository.findAllActivatedWithShelvesAndProducts(PageRequest.of(page, pageSize))
             if (dukansPage.isEmpty) break
 
             val documents = dukansPage.content.map { it.toDocument() }

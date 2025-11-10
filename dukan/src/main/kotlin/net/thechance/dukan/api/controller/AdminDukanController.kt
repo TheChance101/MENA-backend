@@ -20,10 +20,15 @@ class AdminDukanController(
 
     @GetMapping
     fun getDukansByStatus(
+        @RequestParam(required = false) query: String = "",
         @RequestParam status: Dukan.Status,
         pageable: Pageable
     ): ResponseEntity<Page<AdminDukanResponse>> {
-        val dukans = dukanService.getDukansByStatus(status = status, pageable = pageable)
+        val dukans = dukanService.getDukansByStatusAndQuery(
+            query = query,
+            status = status,
+            pageable = pageable
+        )
         val response = dukans.map { it.toAdminResponse() }
         return ResponseEntity.ok(response)
     }

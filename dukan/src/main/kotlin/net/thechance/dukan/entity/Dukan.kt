@@ -48,7 +48,8 @@ data class Dukan(
     val favorites: Set<FavoriteDukan> = emptySet()
 ) {
     enum class Status {
-        APPROVED,
+        ACTIVATED,
+        DEACTIVATED,
         REJECTED,
         PENDING,
     }
