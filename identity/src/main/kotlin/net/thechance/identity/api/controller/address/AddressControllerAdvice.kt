@@ -1,6 +1,6 @@
 package net.thechance.identity.api.controller.address
 
-import net.thechance.identity.api.dto.ErrorResponse
+import net.thechance.identity.api.dto.error.ErrorResponse
 import net.thechance.identity.exception.*
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory

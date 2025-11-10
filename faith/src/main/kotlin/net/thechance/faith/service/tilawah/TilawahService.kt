@@ -9,7 +9,7 @@ import kotlin.jvm.optionals.getOrElse
 @Service
 class TilawahService(
     private val recitersRepository: RecitersRepository,
-    private val ayahSoundUrlGenerator: AyahSoundUrlGenerator
+    private val reciterUrlGenerator: ReciterUrlGenerator
 ) {
     fun getReciters(): List<Reciter> = recitersRepository.findAll()
 
@@ -17,6 +17,20 @@ class TilawahService(
         val reciter = recitersRepository.findById(reciterId).getOrElse {
             throw ReciterNotFoundException(message = "Reciter with id $reciterId not found")
         }
-        return ayahSoundUrlGenerator.generateUrl(surahNumber = surahNumber, ayahNumber = ayahNumber, reciter = reciter)
+        return reciterUrlGenerator.generateAyahSoundUrl(
+            surahNumber = surahNumber,
+            ayahNumber = ayahNumber,
+            reciter = reciter
+        )
+    }
+
+    fun getSurahSoundsUrl(surahNumber: Int, reciterId: Int): String {
+        val reciter = recitersRepository.findById(reciterId).getOrElse {
+            throw ReciterNotFoundException(message = "Reciter with id $reciterId not found")
+        }
+        return reciterUrlGenerator.generateSurahSoundsUrl(
+            surahNumber = surahNumber,
+            reciter = reciter
+        )
     }
 }

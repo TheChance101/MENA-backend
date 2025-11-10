@@ -6,6 +6,7 @@ import java.util.UUID
 data class DukanProductResponse(
     val id: UUID,
     val name:String,
+    val dukanId:UUID,
     val shelfId: UUID,
     val price:Double,
     val discountedPrice: Double? = null, //TODO

@@ -2,6 +2,7 @@ package net.thechance.trends.api.controller
 
 import jakarta.validation.Valid
 import net.thechance.trends.api.dto.base.PagingResponse
+import net.thechance.trends.api.dto.trend.TrendPathsResponse
 import net.thechance.trends.api.dto.trend.TrendResponse
 import net.thechance.trends.api.dto.trend.UpdateTrendRequest
 import net.thechance.trends.api.dto.trend.UploadTrendResponse
@@ -19,6 +20,16 @@ import java.util.*
 class TrendsController(
     private val trendsService: TrendsService
 ) {
+
+    @GetMapping("/{trendId}/refresh")
+    fun getRefreshedTrendUrls(
+        @PathVariable trendId: UUID,
+    ): ResponseEntity<TrendPathsResponse> {
+        val signedUrls = trendsService.generatePresignedUrlsForTrend(trendId)
+        val trendPaths = TrendPathsResponse(signedUrls.videoUrl, signedUrls.thumbnailUrl)
+
+        return ResponseEntity.ok(trendPaths)
+    }
 
     @GetMapping("/feed", "/feed/{trendsId}")
     fun getAllTrendsForFeed(

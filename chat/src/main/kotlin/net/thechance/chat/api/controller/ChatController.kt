@@ -12,6 +12,7 @@ import org.springframework.security.core.annotation.AuthenticationPrincipal
 import org.springframework.stereotype.Controller
 import org.springframework.web.bind.annotation.*
 import java.security.Principal
+import java.time.Instant
 import java.util.UUID
 
 @RequestMapping("/chat")
@@ -53,6 +54,18 @@ class ChatController(
             chatService.getAllChatMessagesByChatId(chatId, pageable)
                 .toPagedMessageResponse(userId)
         )
+    }
+
+    @GetMapping("/{chatId}/messages/latest")
+    fun getLatestMessages(
+        @PathVariable chatId: UUID,
+        @RequestParam lastUpdateTime: String,
+        @AuthenticationPrincipal userId: UUID,
+        pageable: Pageable
+    ): ResponseEntity<PagedResponse<MessageResponse>> {
+        val since = Instant.parse(lastUpdateTime)
+        val updatedMessages = chatService.getLatestMessagesAfter(chatId, since, pageable).toPagedMessageResponse(userId)
+        return ResponseEntity.ok(updatedMessages)
     }
 
     @PostMapping("/image")
@@ -102,7 +115,7 @@ class ChatController(
     fun deleteReaction(
         @Payload body: MessageReactionRequest,
         principal: Principal
-    ){
+    ) {
         val userId = UUID.fromString(principal.name)
         val message = chatService.getMessageById(body.messageId)
         val deletedReaction = chatService.deleteReaction(body.toRequestArgs(userId))
@@ -169,10 +182,32 @@ class ChatController(
             }
     }
 
+    @DeleteMapping("/{chatId}")
+    fun deleteChatById(
+        @PathVariable chatId: UUID
+    ): ResponseEntity<Unit> {
+        chatService.deleteChatById(chatId)
+        sendToChatUser(chatId, DELETE_CHAT){
+            DeleteChatResponse(chatId)
+        }
+        return ResponseEntity.ok().body(Unit)
+    }
+
+    @GetMapping("/deletedChats")
+    fun getDeletedChatsAfter(
+        @RequestParam deletedAfter: String,
+        @AuthenticationPrincipal userId: UUID
+    ): ResponseEntity<List<String>> {
+        val time = Instant.parse(deletedAfter)
+        val deletedChats = chatService.getDeletedChatsIdByUserIdAfterSpecificTime(userId, time)
+        return ResponseEntity.ok(deletedChats)
+    }
+
     companion object {
         const val PRIVATE_MESSAGES = "/private/messages"
         const val MARK_AS_READ = "/private/markAsRead"
         const val ADD_REACTION = "/private/addReaction"
         const val DELETE_REACTION = "/private/deleteReaction"
+        const val DELETE_CHAT = "/private/deleteChat"
     }
 }

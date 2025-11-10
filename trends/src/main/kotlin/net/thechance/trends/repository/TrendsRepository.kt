@@ -1,6 +1,5 @@
 package net.thechance.trends.repository
 
-import jakarta.persistence.QueryHint
 import net.thechance.trends.entity.Trend
 import net.thechance.trends.models.TrendUrls
 import net.thechance.trends.models.TrendWithLikeStatus
@@ -8,7 +7,6 @@ import org.springframework.data.domain.Page
 import org.springframework.data.domain.Pageable
 import org.springframework.data.jpa.repository.JpaRepository
 import org.springframework.data.jpa.repository.Query
-import org.springframework.data.jpa.repository.QueryHints
 import java.util.*
 
 interface TrendsRepository : JpaRepository<Trend, UUID> {
@@ -71,6 +69,9 @@ interface TrendsRepository : JpaRepository<Trend, UUID> {
 
     @Query("SELECT t.videoUrl AS trendVideoUrl, t.thumbnailUrl AS trendThumbnailUrl FROM Trend t WHERE t.id = :id AND t.ownerId = :ownerId")
     fun findVideoUrlByIdAndOwnerId(id: UUID, ownerId: UUID): TrendUrls?
+
+    @Query("SELECT t.videoUrl AS trendVideoUrl, t.thumbnailUrl AS trendThumbnailUrl FROM Trend t WHERE t.id = :id")
+    fun findTrendUrlsById(id: UUID): TrendUrls?
 
     fun deleteTrendById(id: UUID): Int
 

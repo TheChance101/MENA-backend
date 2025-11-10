@@ -20,7 +20,7 @@ class TransactionServiceTest {
 
     private val transactionRepository = mockk<TransactionRepository>()
     private val pendingTransactionRepository = mockk<PendingTransactionRepository>()
-    private val transactionService = TransactionService(transactionRepository = transactionRepository, pendingTransactionRepository = pendingTransactionRepository, walletUserRepository = mockk())
+    private val transactionService = TransactionService(transactionRepository = transactionRepository, pendingTransactionRepository = pendingTransactionRepository, walletUserService = mockk())
 
     @Test
     fun `getTransactionDetails should return transaction when it exists and user is authorized`() {
@@ -92,8 +92,8 @@ class TransactionServiceTest {
 
         val FAKE_TRANSACTION = Transaction(
             id = TRANSACTION_ID,
-            sender = WalletUser(userId = USER_ID, firstName = "First", lastName = "Last", imageUrl = null),
-            receiver = WalletUser(userId = OTHER_USER_ID, firstName = "Other", lastName = "User", imageUrl = null),
+            sender = WalletUser(userId = USER_ID, firstName = "First", lastName = "Last", imageUrl = null, status = WalletUser.Status.ACTIVE),
+            receiver = WalletUser(userId = OTHER_USER_ID, firstName = "Other", lastName = "User", imageUrl = null, status = WalletUser.Status.ACTIVE),
             amount = BigDecimal.TEN,
             createdAt = LocalDateTime.now().minusDays(5),
             status = Transaction.Status.SUCCESS,
