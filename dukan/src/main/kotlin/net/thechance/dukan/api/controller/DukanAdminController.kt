@@ -1,7 +1,7 @@
 package net.thechance.dukan.api.controller
 
 import net.thechance.dukan.api.dto.dukan.DukanAdminDetailsResponse
-import net.thechance.dukan.api.dto.product.DukanProductResponse
+import net.thechance.dukan.api.dto.product.AdminDukanProductResponse
 import net.thechance.dukan.api.dto.shelf.DukanShelfResponse
 import net.thechance.dukan.api.mapper.category.DukanLanguage
 import net.thechance.dukan.api.mapper.category.toDto
@@ -40,7 +40,7 @@ class DukanAdminController(
         val dukanDetails = dukan.toResponse(false)
 
         // TODO replace default Arabic with the extracted language from the header
-        val categories = dukan.categories.map { category -> category.toDto(DukanLanguage.ARABIC) }
+        val categories = dukan.categories.map { category -> category.toDto(DukanLanguage.ENGLISH) }
 
         val response = DukanAdminDetailsResponse(
             dukan = dukanDetails,
@@ -66,7 +66,7 @@ class DukanAdminController(
         @PathVariable("shelfId") shelfId: UUID,
         @PageableDefault(size = 10, page = 0, sort = ["createdAt"], direction = Sort.Direction.DESC)
         pageable: Pageable
-    ): ResponseEntity<Page<DukanProductResponse>> {
+    ): ResponseEntity<Page<AdminDukanProductResponse>> {
         val productsPage: Page<DukanProduct> = dukanProductService.getProductsByShelf(shelfId, pageable)
         val response = productsPage.map { product -> product.toAdminResponse() }
         return ResponseEntity.ok(response)
