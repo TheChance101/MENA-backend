@@ -5,13 +5,13 @@ import jakarta.validation.constraints.NotBlank
 import net.thechance.dukan.api.dto.category.DukanCategoryResponse
 import net.thechance.dukan.api.dto.color.DukanColorResponse
 import net.thechance.dukan.api.dto.dukan.*
-import net.thechance.dukan.api.mapper.category.DukanLanguage
 import net.thechance.dukan.api.mapper.category.toDto
 import net.thechance.dukan.api.mapper.dukan.*
 import net.thechance.dukan.api.utils.EndPoints.DUKAN_PATH
 import net.thechance.dukan.entity.Dukan
 import net.thechance.dukan.service.DukanService
 import net.thechance.dukan.service.FavouriteDukanService
+import org.springframework.context.i18n.LocaleContextHolder
 import org.springframework.data.domain.Page
 import org.springframework.data.domain.Pageable
 import org.springframework.data.domain.Sort
@@ -36,20 +36,9 @@ class DukanController(
     }
 
     @GetMapping("/categories")
-    fun getAllCategories(
-        @RequestHeader(
-            name = "Accept-Language",
-            required = false,
-            defaultValue = "ENGLISH"
-        )
-        languageHeader: String
-    ): ResponseEntity<DukanCategoryResponse> {
+    fun getAllCategories(): ResponseEntity<DukanCategoryResponse> {
 
-        val language = try {
-            DukanLanguage.valueOf(languageHeader.uppercase())
-        } catch (e: IllegalArgumentException) {
-            DukanLanguage.ENGLISH
-        }
+        val language = LocaleContextHolder.getLocale().language
 
         val categories = dukanService.getAllCategories().map { it.toDto(language) }
         return ResponseEntity.ok(DukanCategoryResponse(categories))
