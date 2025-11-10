@@ -101,7 +101,7 @@ class DukanController(
         @PathVariable("categoryId") categoryId: UUID,
         @PageableDefault(size = 10, page = 0, sort = ["createdAt"], direction = Sort.Direction.DESC) pageable: Pageable
     ): ResponseEntity<Page<DukanResponse>> {
-        val response = dukanService.getAllByCategory(categoryId, userId, pageable)
+        val response = dukanService.getAllByCategoryIdWithFavorite(categoryId, userId, pageable)
             .map { it.dukan.toDukanResponse(it.isFavorite) }
         return ResponseEntity.ok(response)
     }
