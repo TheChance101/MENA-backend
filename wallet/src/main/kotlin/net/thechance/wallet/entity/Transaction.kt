@@ -1,7 +1,6 @@
 package net.thechance.wallet.entity
 
 import jakarta.persistence.*
-import net.thechance.events.wallet.TransactionCompletedEvent
 import java.math.BigDecimal
 import java.time.LocalDateTime
 import java.util.*
@@ -51,4 +50,3 @@ data class Transaction(
         ONLINE_PURCHASE
     }
 }
-
