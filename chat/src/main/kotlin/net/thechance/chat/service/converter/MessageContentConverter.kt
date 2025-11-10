@@ -17,6 +17,7 @@ class MessageContentConverter: AttributeConverter<MessageContent, String> {
 
     override fun convertToDatabaseColumn(attribute: MessageContent): String {
         return try {
+            println("\n\n$attribute\n\n")
             json.encodeToString<MessageContent>(attribute)
         } catch (e: Exception) {
             throw MalformedMessageContentException("Failed to serialize message content before saving: ${e.message}")
