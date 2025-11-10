@@ -5,19 +5,25 @@ import net.thechance.wallet.entity.Transaction
 
 fun Transaction.toTransactionCompletedEvent(): TransactionCompletedEvent {
     return TransactionCompletedEvent(
-        transactionId = this.id,
-        createdAt = this.createdAt,
-        status = when (this.status) {
-            Transaction.Status.FAILED -> TransactionCompletedEvent.TransactionStatus.FAILED
-            Transaction.Status.SUCCESS -> TransactionCompletedEvent.TransactionStatus.SUCCESS
-            Transaction.Status.PENDING -> TransactionCompletedEvent.TransactionStatus.PENDING
-        },
-        type = when (this.type) {
-            Transaction.Type.P2P -> TransactionCompletedEvent.TransactionType.P2P
-            Transaction.Type.ONLINE_PURCHASE -> TransactionCompletedEvent.TransactionType.ONLINE_PURCHASE
-        },
-        senderId = this.sender.userId,
-        receiverId = this.receiver.userId,
-        amount = this.amount
+        transactionId = id,
+        createdAt = createdAt,
+        status = status.toEventStatus(),
+        type = type.toEventType(),
+        senderId = sender.userId,
+        receiverId = receiver.userId,
+        amount = amount
     )
 }
+
+private fun Transaction.Status.toEventStatus(): TransactionCompletedEvent.TransactionStatus =
+    when (this) {
+        Transaction.Status.FAILED -> TransactionCompletedEvent.TransactionStatus.FAILED
+        Transaction.Status.SUCCESS -> TransactionCompletedEvent.TransactionStatus.SUCCESS
+        Transaction.Status.PENDING -> TransactionCompletedEvent.TransactionStatus.PENDING
+    }
+
+private fun Transaction.Type.toEventType(): TransactionCompletedEvent.TransactionType =
+    when (this) {
+        Transaction.Type.P2P -> TransactionCompletedEvent.TransactionType.P2P
+        Transaction.Type.ONLINE_PURCHASE -> TransactionCompletedEvent.TransactionType.ONLINE_PURCHASE
+    }
