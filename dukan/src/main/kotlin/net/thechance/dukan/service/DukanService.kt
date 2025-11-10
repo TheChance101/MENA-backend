@@ -6,10 +6,12 @@ import net.thechance.dukan.api.mapper.dukan.toDukan
 import net.thechance.dukan.entity.Dukan
 import net.thechance.dukan.entity.DukanCategory
 import net.thechance.dukan.entity.DukanColor
+import net.thechance.dukan.entity.DukanReview
 import net.thechance.dukan.service.model.DukanWithFavorite
 import net.thechance.dukan.repository.DukanCategoryRepository
 import net.thechance.dukan.repository.DukanColorRepository
 import net.thechance.dukan.repository.DukanRepository
+import net.thechance.dukan.repository.DukanReviewRepository
 import net.thechance.dukan.service.exception.DukanCreationFailedException
 import net.thechance.dukan.service.exception.DukanNotFoundException
 import net.thechance.dukan.service.model.DukanCreationParams
@@ -28,6 +30,7 @@ class DukanService(
     private val dukanColorRepository: DukanColorRepository,
     private val imageStorageService: ImageStorageService,
     private val dukanCategoryRepository: DukanCategoryRepository,
+    private val dukanReviewRepository: DukanReviewRepository,
     private val eventPublisher: MenaEventPublisher
 ) {
     fun getAllStyles(): EnumEntries<Dukan.Style> = Dukan.Style.entries
@@ -109,6 +112,33 @@ class DukanService(
 
     fun getAllByCategory(categoryId: UUID, userId: UUID, pageable: Pageable): Page<DukanWithFavorite> =
         dukanRepository.findAllByCategoryWithFavorite(categoryId, userId, pageable)
+
+
+    fun getDukansByStatus(status: Dukan.Status, pageable: Pageable): Page<Dukan> =
+        dukanRepository.findAllByStatus(status = status, pageable = pageable)
+
+
+    @Transactional
+    fun updateDukanStatus(dukanId: UUID, status: Dukan.Status, message:String?) {
+        val updatedDukanCount = dukanRepository.updateStatus(dukanId = dukanId, status = status)
+        if (updatedDukanCount == 0) throw DukanNotFoundException()
+
+        val dukan = dukanRepository.findByIdOrNull(dukanId) ?: throw DukanNotFoundException()
+
+        val review = DukanReview(
+            dukan = dukan,
+            status = status,
+            rejectionMessage = message,
+        )
+
+        dukanReviewRepository.insertDukanReview(
+            id = review.id,
+            dukanId = dukanId,
+            status = review.status.name,
+            rejectionMessage = review.rejectionMessage,
+            createdAt = review.createdAt,
+        )
+    }
 
     companion object {
         private val DUKAN_FOLDER_NAME = "dukan"
