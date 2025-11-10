@@ -8,7 +8,7 @@ import net.thechance.chat.service.exception.MalformedMessageContentException
 import net.thechance.chat.service.model.MessageContent
 
 @Converter(autoApply = true)
-class MessageContentConverter: AttributeConverter<MessageContent, String> {
+class MessageContentConverter : AttributeConverter<MessageContent, String> {
     private val json = Json {
         ignoreUnknownKeys = true
         encodeDefaults = true
@@ -17,7 +17,6 @@ class MessageContentConverter: AttributeConverter<MessageContent, String> {
 
     override fun convertToDatabaseColumn(attribute: MessageContent): String {
         return try {
-            println("\n\n$attribute\n\n")
             json.encodeToString<MessageContent>(attribute)
         } catch (e: Exception) {
             throw MalformedMessageContentException("Failed to serialize message content before saving: ${e.message}")
