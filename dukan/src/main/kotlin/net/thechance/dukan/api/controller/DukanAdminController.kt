@@ -4,9 +4,8 @@ import net.thechance.dukan.api.dto.dukan.DukanAdminDetailsResponse
 import net.thechance.dukan.api.dto.product.DukanProductAdminResponse
 import net.thechance.dukan.api.dto.shelf.DukanShelfResponse
 import net.thechance.dukan.api.mapper.category.DukanLanguage
-import net.thechance.dukan.api.mapper.category.toDto
+import net.thechance.dukan.api.mapper.dukan.toAdminResponse
 import net.thechance.dukan.api.mapper.product.toAdminResponse
-import net.thechance.dukan.api.mapper.dukan.toResponse
 import net.thechance.dukan.api.mapper.shelf.toResponse
 import net.thechance.dukan.api.utils.EndPoints.DUKAN_PATH
 import net.thechance.dukan.entity.DukanProduct
@@ -37,16 +36,7 @@ class DukanAdminController(
     @GetMapping("/{dukanId}")
     fun getDukanDetails(@PathVariable("dukanId") dukanId: UUID): ResponseEntity<DukanAdminDetailsResponse> {
         val dukan = dukanService.getDukanDetailsById(dukanId)
-        val dukanDetails = dukan.toResponse(false)
-
-        // TODO replace default Arabic with the extracted language from the header
-        val categories = dukan.categories.map { category -> category.toDto(DukanLanguage.ENGLISH) }
-
-        val response = DukanAdminDetailsResponse(
-            dukan = dukanDetails,
-            categories = categories,
-        )
-
+        val response = dukan.toAdminResponse(DukanLanguage.ENGLISH)
         return ResponseEntity.ok(response)
     }
 
