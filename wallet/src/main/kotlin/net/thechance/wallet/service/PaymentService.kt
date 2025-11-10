@@ -4,10 +4,10 @@ import net.thechance.events.publisher.MenaEventPublisher
 import net.thechance.wallet.entity.PendingTransaction
 import net.thechance.wallet.entity.Transaction
 import net.thechance.wallet.entity.toTransaction
-import net.thechance.wallet.entity.toTransactionCompletedEvent
 import net.thechance.wallet.exception.BlockedWalletUserException
 import net.thechance.wallet.repository.PendingTransactionRepository
 import net.thechance.wallet.repository.TransactionRepository
+import net.thechance.wallet.service.mapper.toTransactionCompletedEvent
 import org.springframework.stereotype.Service
 import org.springframework.transaction.annotation.Transactional
 import java.util.*
