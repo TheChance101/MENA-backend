@@ -28,10 +28,14 @@ class SecurityConfig(
             .csrf { it.disable() }
             .authorizeHttpRequests {
                 it.requestMatchers(
-                    "/identity/authentication/**",
-                    "/identity/admin/authentication/**",
-                    "/.well-known/**"
-                ).permitAll()
+	                "/identity/authentication/**",
+	                "/identity/admin/authentication/**",
+	                "download.html",
+	                "/images/**",
+	                "/apple-app-site-association",
+					        "downloads/android_app_latest.apk",
+                  "/.well-known/**"
+			        	).permitAll()
                 it.anyRequest().authenticated()
             }
             .sessionManagement { it.sessionCreationPolicy(SessionCreationPolicy.STATELESS) }
