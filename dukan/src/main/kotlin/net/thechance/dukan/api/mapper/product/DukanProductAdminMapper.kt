@@ -13,5 +13,6 @@ fun DukanProduct.toAdminResponse() = DukanProductResponse(
     imageUrls = this.imageUrls,
     quantityInCart = 0,
     createdAt = this.createdAt,
-    isFavorite = false
+    isFavorite = false,
+    dukanId = this.dukan.id
 )

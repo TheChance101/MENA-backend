@@ -37,7 +37,7 @@ class DukanAdminController(
     @GetMapping("/{dukanId}")
     fun getDukanDetails(@PathVariable("dukanId") dukanId: UUID): ResponseEntity<DukanAdminDetailsResponse> {
         val dukan = dukanService.getDukanDetailsById(dukanId)
-        val dukanDetails = dukan.toResponse()
+        val dukanDetails = dukan.toResponse(false)
 
         // TODO replace default Arabic with the extracted language from the header
         val categories = dukan.categories.map { category -> category.toDto(DukanLanguage.ARABIC) }
