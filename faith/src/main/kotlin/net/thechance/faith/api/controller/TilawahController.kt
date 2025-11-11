@@ -8,6 +8,7 @@ import net.thechance.faith.api.dto.tilawah.toResponse
 import net.thechance.faith.service.tilawah.TilawahService
 import org.springframework.http.ResponseEntity
 import org.springframework.web.bind.annotation.GetMapping
+import org.springframework.web.bind.annotation.PostMapping
 import org.springframework.web.bind.annotation.RequestBody
 import org.springframework.web.bind.annotation.RequestMapping
 import org.springframework.web.bind.annotation.RestController
@@ -24,7 +25,7 @@ class TilawahController(
         return ResponseEntity.ok(reciters.toResponse())
     }
 
-    @GetMapping("/ayah/sound")
+    @PostMapping("/ayah/sound")
     fun getAyahSoundUrl(
         @Valid @RequestBody
         ayahSoundRequest: AyahSoundRequest
@@ -37,7 +38,7 @@ class TilawahController(
         return ResponseEntity.ok(soundUrl)
     }
 
-    @GetMapping("/surah/sound")
+    @PostMapping("/surah/sound")
     fun getSurahSoundUrl(
         @Valid @RequestBody
         surahSoundRequest: SurahSoundRequest
