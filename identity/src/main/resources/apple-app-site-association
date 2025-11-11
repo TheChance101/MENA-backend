@@ -1,0 +1,11 @@
+{
+  "applinks": {
+    "apps": [],
+    "details": [
+      {
+        "appID": "TEAM_ID.net.thechance.mena.MENA",
+        "paths": ["*"]
+      }
+    ]
+  }
+}

@@ -17,31 +17,6 @@ interface DukanRepository : JpaRepository<Dukan, UUID> {
     fun existsByOwnerId(ownerId: UUID): Boolean
     fun findByOwnerId(ownerId: UUID): Dukan?
 
-    @Query(
-        """
-    SELECT DISTINCT d
-    FROM Dukan d
-    JOIN d.categories c
-    WHERE d.status = net.thechance.dukan.entity.Dukan.Status.APPROVED
-      AND c.id = :categoryId
-      AND EXISTS (
-          SELECT 1 
-          FROM DukanShelf s
-          WHERE s.dukan = d
-      )
-      AND EXISTS (
-          SELECT 1
-          FROM DukanProduct p
-          WHERE p.dukan = d
-      )
-    ORDER BY d.createdAt DESC
-    """
-    )
-    fun findApprovedDukansWithProductsByCategory(
-        categoryId: UUID,
-        pageable: Pageable
-    ): Page<Dukan>
-
 
     @Query(
         """
@@ -144,9 +119,17 @@ interface DukanRepository : JpaRepository<Dukan, UUID> {
     LEFT JOIN FavoriteDukan favoriteDukan
         ON favoriteDukan.id.dukanId = dukan.id AND favoriteDukan.id.userId = :userId
     WHERE category.id = :categoryId
+    AND dukan.ownerId != :userId
+    AND dukan.status = net.thechance.dukan.entity.Dukan.Status.APPROVED
+    AND EXISTS (
+          SELECT 1
+          FROM DukanProduct product
+          WHERE product.dukan = dukan
+      )
+      ORDER BY dukan.createdAt DESC
     """
     )
-    fun findAllByCategoryWithFavorite(
+    fun findApprovedDukansWithProductsByCategoryWithFavorite(
         categoryId: UUID,
         userId: UUID,
         pageable: Pageable
