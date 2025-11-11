@@ -5,23 +5,27 @@ import java.time.Instant
 import java.util.*
 
 @Entity
-@Table(name = "dukan_reviews")
-data class DukanReview(
+@Table(name = "status_change_logs")
+data class StatusChangeLog(
     @Id
     @GeneratedValue(strategy = GenerationType.UUID)
     val id: UUID = UUID.randomUUID(),
 
-    @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "dukan_id", nullable = false)
-    val dukan: Dukan,
+    @Column(nullable = false)
+    val dukanId: UUID,
 
     @Enumerated(EnumType.STRING)
     @Column(nullable = false)
-    val status: Dukan.Status,
+    val status: Status,
 
-    @Column(nullable = true)
-    val rejectionMessage: String? = null,
+    @Column(nullable = false)
+    val reason: String,
 
     @Column(nullable = false)
     val createdAt: Instant = Instant.now()
-)
+){
+    enum class Status {
+        REJECTED,
+        DEACTIVATED
+    }
+}

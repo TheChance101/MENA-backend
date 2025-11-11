@@ -40,6 +40,9 @@ data class Dukan(
     @Enumerated(EnumType.STRING)
     @Column(name = "status", nullable = false)
     val status: Status = Status.PENDING,
+    @Enumerated(EnumType.STRING)
+    @Column(name = "activation_status", nullable = true)
+    val activationStatus: ActivationStatus? = null,
     @OneToMany(mappedBy = "dukan", cascade = [CascadeType.ALL])
     val shelves: Set<DukanShelf> = emptySet(),
     @Column(name = "createdAt")
@@ -48,10 +51,14 @@ data class Dukan(
     val favorites: Set<FavoriteDukan> = emptySet()
 ) {
     enum class Status {
-        ACTIVATED,
-        DEACTIVATED,
+        APPROVED,
         REJECTED,
         PENDING,
+    }
+
+    enum class ActivationStatus {
+        ACTIVATED,
+        DEACTIVATED,
     }
 
     enum class Style {

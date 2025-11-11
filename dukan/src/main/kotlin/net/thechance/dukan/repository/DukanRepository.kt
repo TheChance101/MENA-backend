@@ -22,7 +22,7 @@ interface DukanRepository : JpaRepository<Dukan, UUID> {
     SELECT DISTINCT d
     FROM Dukan d
     JOIN d.categories c
-    WHERE d.status = net.thechance.dukan.entity.Dukan.Status.ACTIVATED
+    WHERE d.status = net.thechance.dukan.entity.Dukan.Status.APPROVED
       AND c.id = :categoryId
       AND EXISTS (
           SELECT 1 
@@ -37,7 +37,7 @@ interface DukanRepository : JpaRepository<Dukan, UUID> {
     ORDER BY d.createdAt DESC
     """
     )
-    fun findActivatedDukansWithProductsByCategory(
+    fun findApprovedDukansWithProductsByCategory(
         categoryId: UUID,
         pageable: Pageable
     ): Page<Dukan>
@@ -47,7 +47,7 @@ interface DukanRepository : JpaRepository<Dukan, UUID> {
         """
     SELECT DISTINCT d
     FROM Dukan d
-    WHERE d.status = net.thechance.dukan.entity.Dukan.Status.ACTIVATED
+    WHERE d.status = net.thechance.dukan.entity.Dukan.Status.APPROVED
     AND EXISTS (
         SELECT 1 
         FROM DukanShelf s
@@ -61,7 +61,7 @@ interface DukanRepository : JpaRepository<Dukan, UUID> {
     ORDER BY d.createdAt DESC
     """
     )
-    fun findAllActivatedWithShelvesAndProducts(pageable: Pageable): Page<Dukan>
+    fun findAllApprovedWithShelvesAndProducts(pageable: Pageable): Page<Dukan>
 
     @Query(
         """
@@ -72,7 +72,7 @@ interface DukanRepository : JpaRepository<Dukan, UUID> {
     FROM Dukan dukan
     LEFT JOIN FavoriteDukan favoriteDukan
         ON favoriteDukan.id.dukanId = dukan.id AND favoriteDukan.id.userId = :userId
-    WHERE dukan.status = net.thechance.dukan.entity.Dukan.Status.ACTIVATED
+    WHERE dukan.status = net.thechance.dukan.entity.Dukan.Status.APPROVED
       AND EXISTS (
           SELECT 1 
           FROM DukanShelf dukanShelf
@@ -86,7 +86,7 @@ interface DukanRepository : JpaRepository<Dukan, UUID> {
     ORDER BY dukan.createdAt DESC
     """
     )
-    fun findAllActivatedWithShelvesAndProducts(
+    fun findAllApprovedWithShelvesAndProducts(
         userId: UUID,
         pageable: Pageable
     ): Page<DukanWithFavorite>
@@ -101,7 +101,7 @@ interface DukanRepository : JpaRepository<Dukan, UUID> {
                         sin(radians(:lat)) * sin(radians(d.latitude))
                     )) AS distance
                 FROM dukan.dukans d
-                WHERE d.status = 'ACTIVATED'
+                WHERE d.status = 'APPROVED'
                   AND EXISTS (SELECT 1 FROM dukan.dukan_shelves s WHERE s.dukan_id = d.id)
                   AND EXISTS (SELECT 1 FROM dukan.dukan_products p WHERE p.dukan_id = d.id)
             )
@@ -118,7 +118,7 @@ interface DukanRepository : JpaRepository<Dukan, UUID> {
                         sin(radians(:lat)) * sin(radians(d.latitude))
                     )) AS distance
                 FROM dukan.dukans d
-                WHERE d.status = 'ACTIVATED'
+                WHERE d.status = 'APPROVED'
                   AND EXISTS (SELECT 1 FROM dukan.dukan_shelves s WHERE s.dukan_id = d.id)
                   AND EXISTS (SELECT 1 FROM dukan.dukan_products p WHERE p.dukan_id = d.id)
             )
@@ -126,7 +126,7 @@ interface DukanRepository : JpaRepository<Dukan, UUID> {
             """,
         nativeQuery = true
     )
-    fun findBestAroundActivatedDukans(
+    fun findBestAroundApprovedDukans(
         @Param("lat") lat: Double,
         @Param("lng") lng: Double,
         @Param("range") range: Double,

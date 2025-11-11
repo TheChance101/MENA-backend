@@ -12,8 +12,7 @@ sealed class DukanEvent : MenaEvent {
         val lng:Double
     ):DukanEvent() {
         enum class Status {
-            ACTIVATED,
-            DEACTIVATED,
+            APPROVED,
             REJECTED,
             PENDING,
         }

@@ -6,12 +6,12 @@ import net.thechance.dukan.api.mapper.dukan.toDukan
 import net.thechance.dukan.entity.Dukan
 import net.thechance.dukan.entity.DukanCategory
 import net.thechance.dukan.entity.DukanColor
-import net.thechance.dukan.entity.DukanReview
+import net.thechance.dukan.entity.StatusChangeLog
 import net.thechance.dukan.service.model.DukanWithFavorite
 import net.thechance.dukan.repository.DukanCategoryRepository
 import net.thechance.dukan.repository.DukanColorRepository
 import net.thechance.dukan.repository.DukanRepository
-import net.thechance.dukan.repository.DukanReviewRepository
+import net.thechance.dukan.repository.StatusChangeLogRepository
 import net.thechance.dukan.service.exception.DukanCreationFailedException
 import net.thechance.dukan.service.exception.DukanNotFoundException
 import net.thechance.dukan.service.model.DukanCreationParams
@@ -30,7 +30,7 @@ class DukanService(
     private val dukanColorRepository: DukanColorRepository,
     private val imageStorageService: ImageStorageService,
     private val dukanCategoryRepository: DukanCategoryRepository,
-    private val dukanReviewRepository: DukanReviewRepository,
+    private val statusChangeLogRepository: StatusChangeLogRepository,
     private val eventPublisher: MenaEventPublisher
 ) {
     fun getAllStyles(): EnumEntries<Dukan.Style> = Dukan.Style.entries
@@ -83,12 +83,12 @@ class DukanService(
     }
 
     fun getAllByCategoryId(categoryId: UUID, pageable: Pageable): Page<Dukan> {
-        return dukanRepository.findActivatedDukansWithProductsByCategory(categoryId, pageable)
+        return dukanRepository.findApprovedDukansWithProductsByCategory(categoryId, pageable)
     }
 
     fun getAllEditorPicksDukan(userId: UUID, pageable: Pageable): Page<DukanWithFavorite> {
         // TODO: Filter by user preferences once data model is ready
-        return dukanRepository.findAllActivatedWithShelvesAndProducts(userId, pageable)
+        return dukanRepository.findAllApprovedWithShelvesAndProducts(userId, pageable)
     }
 
     private fun validateDukanCreation(params: DukanCreationParams) {
@@ -107,7 +107,7 @@ class DukanService(
         pageable: Pageable,
         range: Double = 30000.0
     ): Page<Dukan> {
-        return dukanRepository.findBestAroundActivatedDukans(lat, lng, range, pageable)
+        return dukanRepository.findBestAroundApprovedDukans(lat, lng, range, pageable)
     }
 
     fun getAllByCategory(categoryId: UUID, userId: UUID, pageable: Pageable): Page<DukanWithFavorite> =
@@ -121,25 +121,25 @@ class DukanService(
         dukanRepository.findByNameOrAddressAndStatus(query = query, status = status, pageable = pageable)
 
     @Transactional
-    fun updateDukanStatus(dukanId: UUID, status: Dukan.Status, message: String?) {
-        val updatedDukanCount = dukanRepository.updateStatus(dukanId = dukanId, status = status)
-        if (updatedDukanCount == 0) throw DukanNotFoundException()
+    fun updateDukanStatus(dukanId: UUID, status: Dukan.Status, reason: String?) {
+        val updatedDukansCount = dukanRepository.updateStatus(dukanId = dukanId, status = status)
+        if (updatedDukansCount == 0) throw DukanNotFoundException()
 
-        val dukan = dukanRepository.findByIdOrNull(dukanId) ?: throw DukanNotFoundException()
+        if (status == Dukan.Status.REJECTED) {
+            val statusChangeLog = StatusChangeLog(
+                dukanId = dukanId,
+                status = StatusChangeLog.Status.REJECTED,
+                reason = reason!!
+            )
 
-        val review = DukanReview(
-            dukan = dukan,
-            status = status,
-            rejectionMessage = message,
-        )
-
-        dukanReviewRepository.insertDukanReview(
-            id = review.id,
-            dukanId = dukanId,
-            status = review.status.name,
-            rejectionMessage = review.rejectionMessage,
-            createdAt = review.createdAt,
-        )
+            statusChangeLogRepository.insertStatusChangeLog(
+                id = statusChangeLog.id,
+                dukanId = dukanId,
+                status = statusChangeLog.status.name,
+                reason = reason,
+                createdAt = statusChangeLog.createdAt,
+            )
+        }
     }
 
     companion object {

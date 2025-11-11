@@ -41,7 +41,7 @@ class AdminDukanController(
         dukanService.updateDukanStatus(
             dukanId = dukanId,
             status = updateStatusRequest.status,
-            message = updateStatusRequest.message
+            reason = updateStatusRequest.reason
         )
         return ResponseEntity.ok().build()
     }
