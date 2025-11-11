@@ -140,7 +140,7 @@ class DukanService(
         }
 
         /*TODO, we have to update activation status here to activated if the dukan status is approved */
-        val dukan = dukanRepository.getReferenceById(dukanId)
+        val dukan = getDukanDetailsById(dukanId)
 
         eventPublisher.publish(dukan.toDukanStatusChangedEvent())
     }

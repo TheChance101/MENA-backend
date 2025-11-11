@@ -26,6 +26,7 @@ class WalletEventListener(
     }
 
     @EventListener
+    @Async
     fun onDukanStatusUpdated(event: DukanStatusChangedEvent) {
         if (event.status == DukanStatusChangedEvent.DukanEventStatus.APPROVED &&
             event.activationStatus == DukanStatusChangedEvent.DukanEventActivationStatus.ACTIVATED

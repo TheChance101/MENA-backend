@@ -12,6 +12,7 @@ fun Dukan.toAdminResponse(): AdminDukanResponse {
         latitude = latitude,
         longitude = longitude,
         status = status,
-        createdAt = createdAt,
+        activationStatus = activationStatus,
+        createdAt = createdAt
     )
 }

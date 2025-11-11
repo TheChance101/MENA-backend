@@ -12,5 +12,6 @@ data class AdminDukanResponse(
     val latitude: Double,
     val longitude: Double,
     val status: Dukan.Status,
+    val activationStatus: Dukan.ActivationStatus?,
     val createdAt: Instant,
 )
