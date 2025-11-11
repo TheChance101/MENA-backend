@@ -60,7 +60,7 @@ class ChatService(
             Message(
                 senderId = args.senderId,
                 chatId = args.chatId,
-                type = MessageType.TEXT,
+                type = Message.MessageType.TEXT,
                 content = MessageContent.Text(args.text)
             )
         )
@@ -77,7 +77,7 @@ class ChatService(
             Message(
                 senderId = args.senderId,
                 chatId = args.chatId,
-                type = MessageType.IMAGE,
+                type = Message.MessageType.IMAGE,
                 content = MessageContent.Image(imageUrl)
             )
         )
@@ -95,7 +95,7 @@ class ChatService(
             Message(
                 senderId = args.senderId,
                 chatId = args.chatId,
-                type = MessageType.AUDIO,
+                type = Message.MessageType.AUDIO,
                 content = MessageContent.Audio(audioUrl, args.audioDurationMs)
             )
         )

@@ -34,10 +34,12 @@ data class Message(
 
     @Column(name = "chat_id", columnDefinition = "uuid", nullable = false, updatable = false)
     val chatId: UUID
-)
 
-enum class MessageType {
-    TEXT,
-    IMAGE,
-    AUDIO
+
+) {
+    enum class MessageType {
+        TEXT,
+        IMAGE,
+        AUDIO
+    }
 }

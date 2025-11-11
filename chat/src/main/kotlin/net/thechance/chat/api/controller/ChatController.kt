@@ -30,7 +30,7 @@ class ChatController(
         val senderId = UUID.fromString(principal.name)
         val message = chatService.saveMessage(chatMessage.toRequestArgs(senderId))
 
-        sendToChatUser(chatId = chatMessage.chatId) { message.toResponse(it) }
+        sendToChatParticipants(chatId = chatMessage.chatId) { message.toResponse(it) }
     }
 
 
@@ -77,7 +77,7 @@ class ChatController(
         val messageImageArgs = request.toRequestArgs(senderId)
         val message = chatService.saveMessageImage(messageImageArgs)
 
-        sendToChatUser(chatId = request.chatId) { message.toResponse(it) }
+        sendToChatParticipants(chatId = request.chatId) { message.toResponse(it) }
 
         return ResponseEntity.ok(message.toResponse(senderId))
     }
@@ -89,7 +89,7 @@ class ChatController(
     ): ResponseEntity<MessageResponse> {
         val messageAudioArgs = request.toRequestArgs(senderId)
         val message = chatService.saveMessageAudio(messageAudioArgs)
-        sendToChatUser(request.chatId) { message.toResponse(it) }
+        sendToChatParticipants(request.chatId) { message.toResponse(it) }
         return ResponseEntity.ok(message.toResponse(senderId))
     }
 
@@ -102,7 +102,7 @@ class ChatController(
         val message = chatService.getMessageById(body.messageId)
         val reactionResponse = chatService.addReaction(body.toRequestArgs(userId)).toResponse()
 
-        sendToChatUser(message.chatId, ADD_REACTION) { reactionResponse }
+        sendToChatParticipants(message.chatId, ADD_REACTION) { reactionResponse }
     }
 
     @MessageMapping("/chat.deleteMessageReaction")
@@ -114,7 +114,7 @@ class ChatController(
         val message = chatService.getMessageById(body.messageId)
         val deletedReaction = chatService.deleteReaction(body.toRequestArgs(userId))
 
-        sendToChatUser(message.chatId, DELETE_REACTION) { deletedReaction.toResponse() }
+        sendToChatParticipants(message.chatId, DELETE_REACTION) { deletedReaction.toResponse() }
     }
 
     @MessageMapping("/chat.markAsRead")
@@ -125,7 +125,7 @@ class ChatController(
         val userId = UUID.fromString(principal.name)
         chatService.markChatMessagesAsRead(markAsReadRequest.chatId, userId)
 
-        sendToChatUser(
+        sendToChatParticipants(
             chatId = markAsReadRequest.chatId,
             destination = MARK_AS_READ
         ) { chatParticipantId ->
@@ -165,7 +165,7 @@ class ChatController(
         @PathVariable chatId: UUID
     ): ResponseEntity<Unit> {
         chatService.deleteChatById(chatId)
-        sendToChatUser(chatId, DELETE_CHAT){
+        sendToChatParticipants(chatId, DELETE_CHAT){
             DeleteChatResponse(chatId)
         }
         return ResponseEntity.ok().body(Unit)
@@ -181,7 +181,7 @@ class ChatController(
         return ResponseEntity.ok(deletedChats)
     }
 
-    private fun sendToChatUser(
+    private fun sendToChatParticipants(
         chatId: UUID,
         destination: String = PRIVATE_MESSAGES,
         payload: (userId: UUID) -> Any
