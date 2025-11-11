@@ -14,6 +14,7 @@ import net.thechance.dukan.repository.DukanRepository
 import net.thechance.dukan.repository.StatusChangeLogRepository
 import net.thechance.dukan.service.exception.DukanCreationFailedException
 import net.thechance.dukan.service.exception.DukanNotFoundException
+import net.thechance.dukan.service.mapper.toDukanStatusChangedEvent
 import net.thechance.dukan.service.model.DukanCreationParams
 import net.thechance.events.publisher.MenaEventPublisher
 import org.springframework.data.domain.Page
@@ -137,6 +138,11 @@ class DukanService(
                 createdAt = statusChangeLog.createdAt,
             )
         }
+
+        /*TODO, we have to update activation status here to activated if the dukan status is approved */
+        val dukan = dukanRepository.getReferenceById(dukanId)
+
+        eventPublisher.publish(dukan.toDukanStatusChangedEvent())
     }
 
     companion object {
