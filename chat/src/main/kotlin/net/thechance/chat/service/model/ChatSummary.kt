@@ -1,7 +1,6 @@
 package net.thechance.chat.service.model
 
 import net.thechance.chat.entity.Chat
-import net.thechance.chat.entity.ContactUser
 import net.thechance.chat.entity.Message
 import java.time.Instant
 import java.util.UUID
@@ -19,11 +18,11 @@ data class ChatSummary(
         val isMine: Boolean
     )
 }
-fun Chat.toSummary(userId: UUID, otherUser: ContactUser?, lastMessage: Message?, unreadCount: Int): ChatSummary {
+fun Chat.toSummary(userId: UUID, chatName: String, imageUrl:String, lastMessage: Message?, unreadCount: Int): ChatSummary {
     return ChatSummary(
         id = id,
-        name = otherUser?.let { "${otherUser.firstName} ${otherUser.lastName}" } ?: "",
-        imageUrl = otherUser?.imageUrl,
+        name = chatName,
+        imageUrl = imageUrl,
         lastMessage = lastMessage?.let { msg ->
             val displayText = when {
                 !msg.text.isNullOrEmpty() -> msg.text

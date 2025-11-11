@@ -16,7 +16,8 @@ fun DukanProductWithFavoriteAndQuantity.toResponse() = DukanProductResponse(
     quantityInCart = this.quantity,
     createdAt = this.product.createdAt,
     isFavorite = this.isFavorite,
-    dukanId = this.product.dukan.id
+    dukanId = this.product.dukan.id,
+    isOutOfStock = this.product.isOutOfStock,
     )
 
 fun DukanProduct.toAdminResponse() = DukanProductAdminResponse(

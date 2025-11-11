@@ -13,7 +13,8 @@ data class DukanProductResponse(
     val imageUrls:List<String>,
     val quantityInCart: Int,
     val createdAt: Instant,
-    val isFavorite: Boolean
+    val isFavorite: Boolean,
+    val isOutOfStock: Boolean,
 )
 
 data class DukanProductAdminResponse(

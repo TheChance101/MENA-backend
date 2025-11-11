@@ -2,10 +2,12 @@ package net.thechance.wallet.service
 
 import com.google.common.truth.Truth.assertThat
 import io.mockk.*
+import net.thechance.events.publisher.MenaEventPublisher
 import net.thechance.wallet.entity.Block
 import net.thechance.wallet.entity.PendingTransaction
 import net.thechance.wallet.entity.Transaction
 import net.thechance.wallet.entity.WalletUser
+import net.thechance.wallet.exception.BlockedWalletUserException
 import net.thechance.wallet.repository.PendingTransactionRepository
 import net.thechance.wallet.repository.TransactionRepository
 import org.junit.Assert.assertThrows
@@ -21,14 +23,27 @@ class PaymentServiceTest {
     private val balanceService = mockk<BalanceService>()
     private val blockService = mockk<BlockService>()
     private lateinit var paymentService: PaymentService
+    private val eventPublisher: MenaEventPublisher = mockk(relaxed = true)
 
     private val userId = UUID.randomUUID()
     private val receiverId = UUID.randomUUID()
     private val transactionId = UUID.randomUUID()
     private val blockId = UUID.randomUUID()
     private val block = Block(id = blockId, previousBlockHash = "prev", timestamp = LocalDateTime.now())
-    private val sender = WalletUser(userId = userId, firstName = "Sender", lastName = "User", imageUrl = null, status = WalletUser.Status.ACTIVE)
-    private val receiver = WalletUser(userId = receiverId, firstName = "Receiver", lastName = "User", imageUrl = null, status = WalletUser.Status.ACTIVE)
+    private val sender = WalletUser(
+        userId = userId,
+        firstName = "Sender",
+        lastName = "User",
+        imageUrl = null,
+        status = WalletUser.Status.ACTIVE
+    )
+    private val receiver = WalletUser(
+        userId = receiverId,
+        firstName = "Receiver",
+        lastName = "User",
+        imageUrl = null,
+        status = WalletUser.Status.ACTIVE
+    )
     private val pendingTransaction = PendingTransaction(
         id = transactionId,
         sender = sender,
@@ -54,7 +69,8 @@ class PaymentServiceTest {
             pendingTransactionRepository,
             transactionRepository,
             balanceService,
-            blockService
+            blockService,
+            eventPublisher
         )
     }
 
@@ -80,7 +96,11 @@ class PaymentServiceTest {
     @Test
     fun `pay throws if user is not authorized`() {
         every { transactionRepository.existsById(transactionId) } returns false
-        every { pendingTransactionRepository.findById(transactionId) } returns Optional.of(pendingTransaction.copy(sender = WalletUser(UUID.randomUUID(), "other", "Other", "User", null, WalletUser.Status.ACTIVE)))
+        every { pendingTransactionRepository.findById(transactionId) } returns Optional.of(
+            pendingTransaction.copy(
+                sender = WalletUser(UUID.randomUUID(), "other", "Other", "User", null, WalletUser.Status.ACTIVE)
+            )
+        )
         val ex = assertThrows(IllegalArgumentException::class.java) {
             paymentService.pay(userId, transactionId)
         }
@@ -152,5 +172,39 @@ class PaymentServiceTest {
         verify { blockService.getCurrentBlock() }
         verify { transactionRepository.save(any()) }
         verify { pendingTransactionRepository.deleteById(transactionId) }
+    }
+
+    @Test
+    fun `pay publishes event when transaction succeeds`() {
+        every { transactionRepository.existsById(transactionId) } returns false
+        every { pendingTransactionRepository.findById(transactionId) } returns Optional.of(pendingTransaction)
+        every { balanceService.getUserBalance(userId) } returns 100.0
+        every { blockService.getCurrentBlock() } returns block
+        every { transactionRepository.save(any()) } returns transaction
+        every { pendingTransactionRepository.deleteById(transactionId) } just Runs
+
+        paymentService.pay(userId, transactionId)
+
+        verify(exactly = 1) { eventPublisher.publish(any()) }
+        verify { transactionRepository.save(any()) }
+        verify { pendingTransactionRepository.deleteById(transactionId) }
+    }
+
+    @Test
+    fun `pay publishes event even when transaction fails`() {
+        val blockedSender = sender.copy(status = WalletUser.Status.BLOCKED)
+        val failedPendingTransaction = pendingTransaction.copy(sender = blockedSender)
+        every { transactionRepository.existsById(transactionId) } returns false
+        every { pendingTransactionRepository.findById(transactionId) } returns Optional.of(failedPendingTransaction)
+        every { balanceService.getUserBalance(userId) } returns 100.0
+        every { blockService.getCurrentBlock() } returns block
+        every { transactionRepository.save(any()) } returns transaction.copy(status = Transaction.Status.FAILED)
+        every { pendingTransactionRepository.deleteById(transactionId) } just Runs
+
+        assertThrows(BlockedWalletUserException::class.java) {
+            paymentService.pay(userId, transactionId)
+        }
+
+        verify(exactly = 1) { eventPublisher.publish(any()) }
     }
 }

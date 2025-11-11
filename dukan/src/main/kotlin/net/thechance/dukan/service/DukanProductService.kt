@@ -170,7 +170,8 @@ class DukanProductService(
             price = updateParams.price,
             imageUrls = updateParams.imageUrls,
             description = updateParams.description.trim(),
-            shelf = shelf
+            shelf = shelf,
+            isOutOfStock = updateParams.isOutOfStock,
         )
 
         return dukanProductRepository.save(updatedProduct).id
