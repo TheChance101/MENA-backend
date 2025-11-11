@@ -10,6 +10,7 @@ fun DukanProduct.toDocument():ProductDocument{
         name = name,
         price = price,
         dukanName = dukan.name,
+        dukanId = dukan.id.toString(),
         mainImageUrl = imageUrls.first(),
         shelfName = shelf.title
     )
@@ -21,6 +22,7 @@ fun ProductDocument.toSearchResultPreviewItem(isFavorite:Boolean = false):Produc
         id = id,
         name = name,
         dukanName = dukanName,
+        dukanId = dukanId,
         price = price,
         mainImageUrl = mainImageUrl,
         isFavorite = isFavorite
