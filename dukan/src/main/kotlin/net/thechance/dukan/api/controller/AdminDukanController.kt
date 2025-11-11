@@ -1,6 +1,5 @@
 package net.thechance.dukan.api.controller
 
-
 import net.thechance.dukan.api.dto.dukan.AdminDukanResponse
 import net.thechance.dukan.api.dto.dukan.UpdateDukanStatusRequest
 import net.thechance.dukan.api.mapper.dukan.toAdminResponse
@@ -29,6 +28,7 @@ class AdminDukanController(
             status = status,
             pageable = pageable
         )
+
         val response = dukans.map { it.toAdminResponse() }
         return ResponseEntity.ok(response)
     }
@@ -43,6 +43,7 @@ class AdminDukanController(
             status = updateStatusRequest.status,
             reason = updateStatusRequest.reason
         )
+
         return ResponseEntity.ok().build()
     }
 }

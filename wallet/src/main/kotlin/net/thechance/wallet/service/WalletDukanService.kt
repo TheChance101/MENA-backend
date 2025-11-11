@@ -22,6 +22,4 @@ class WalletDukanService(
     fun removeDukan(dukanId: UUID) {
         walletDukanRepository.deleteById(dukanId)
     }
-
-
 }
