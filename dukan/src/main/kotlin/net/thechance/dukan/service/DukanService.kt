@@ -120,29 +120,37 @@ class DukanService(
 
     @Transactional
     fun updateDukanStatus(dukanId: UUID, status: Dukan.Status, reason: String?) {
-        val updatedDukansCount = dukanRepository.updateStatus(dukanId = dukanId, status = status)
-        if (updatedDukansCount == 0) throw DukanNotFoundException()
+        val isUpdated = dukanRepository.updateStatus(dukanId, status) > 0
+        if (!isUpdated) throw DukanNotFoundException()
 
+        handleUpdatingStatusActions(dukanId, status, reason)
+
+    }
+
+    private fun handleUpdatingStatusActions(dukanId: UUID, status: Dukan.Status, reason: String?) {
         if (status == Dukan.Status.REJECTED) {
-            val statusChangelog = StatusChangelog(
-                dukanId = dukanId,
-                status = StatusChangelog.Status.REJECTED,
-                reason = reason.orEmpty()
-            )
-
-            statusChangeLogRepository.insertStatusChangelog(
-                id = statusChangelog.id,
-                dukanId = dukanId,
-                status = statusChangelog.status.name,
-                reason = reason,
-                createdAt = statusChangelog.createdAt,
-            )
+            insertRejectionChangelog(dukanId, reason)
         }
 
         /*TODO, we have to update activation status here to activated if the dukan status is approved */
-        val dukan = getDukanDetailsById(dukanId)
 
+        val dukan = getDukanDetailsById(dukanId)
         eventPublisher.publish(dukan.toDukanStatusChangedEvent())
+    }
+
+    private fun insertRejectionChangelog(dukanId: UUID, reason: String?) {
+        val changelog = StatusChangelog(
+            dukanId = dukanId,
+            status = StatusChangelog.Status.REJECTED,
+            reason = reason.orEmpty()
+        )
+        statusChangeLogRepository.insertStatusChangelog(
+            id = changelog.id,
+            dukanId = dukanId,
+            status = changelog.status.name,
+            reason = reason,
+            createdAt = changelog.createdAt,
+        )
     }
 
     companion object {

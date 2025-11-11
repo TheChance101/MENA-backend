@@ -18,7 +18,7 @@ class AdminDukanController(
 ) {
 
     @GetMapping
-    fun getDukansByStatus(
+    fun getDukansByStatusAndSearchQuery(
         @RequestParam(required = false) query: String = "",
         @RequestParam status: Dukan.Status,
         pageable: Pageable
