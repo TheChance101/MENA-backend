@@ -219,7 +219,7 @@ class UserServiceTest {
     @Test
     fun `deleteUserImage should publish event when image deleted`() {
         every { userRepository.findById(any()) } returns Optional.of(userWithImage)
-        every { identityImageStorageService.deleteImage(any()) } just runs
+        every { identityImageStorageService.deleteImage(any(), any()) } just runs
         every { userRepository.save(any()) } returns userWithImageAsNull
 
         userService.deleteUserImage(userId)
@@ -346,6 +346,7 @@ class UserServiceTest {
     fun `updateUserStatus() should complete successfully when user exists`() {
         val newStatus = User.Status.ACTIVE
         every { userRepository.updateStatus(userId, newStatus) } returns 1
+        every { userRepository.findByIdOrNull(userId) } returns user.copy(status = newStatus)
 
         userService.updateUserStatus(userId, newStatus)
 
@@ -356,16 +357,18 @@ class UserServiceTest {
     fun `updateUserStatus() should publish event when user status updated`() {
         val newStatus = User.Status.ACTIVE
         every { userRepository.updateStatus(userId, newStatus) } returns 1
+        every { userRepository.findByIdOrNull(userId) } returns user.copy(status = newStatus)
 
         userService.updateUserStatus(userId, newStatus)
 
-        verify(exactly = 1) { eventPublisher.publish(any()) }
+        verify(exactly = 2) { eventPublisher.publish(any()) }
     }
 
     @Test
     fun `updateUserStatus() should logout user if user is blocked`() {
         val newStatus = User.Status.BLOCKED
         every { userRepository.updateStatus(userId, newStatus) } returns 1
+        every { userRepository.findByIdOrNull(userId) } returns user.copy(status = newStatus)
 
         userService.updateUserStatus(userId, newStatus)
 
