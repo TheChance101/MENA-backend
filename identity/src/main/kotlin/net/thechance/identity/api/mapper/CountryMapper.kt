@@ -9,5 +9,6 @@ private fun LocalizedCountry.toCountryResponse() = CountryResponse(
     name = name,
     callingCode = callingCode,
     countryCodeName = countryCodeName,
-    flagEmoji = flagEmoji
+    flagEmoji = flagEmoji,
+    phoneNumberRegex = phoneNumberRegex
 )
