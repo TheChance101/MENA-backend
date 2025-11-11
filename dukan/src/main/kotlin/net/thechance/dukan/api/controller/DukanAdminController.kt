@@ -3,7 +3,6 @@ package net.thechance.dukan.api.controller
 import net.thechance.dukan.api.dto.dukan.DukanAdminDetailsResponse
 import net.thechance.dukan.api.dto.product.DukanProductAdminResponse
 import net.thechance.dukan.api.dto.shelf.DukanShelfResponse
-import net.thechance.dukan.api.mapper.category.DukanLanguage
 import net.thechance.dukan.api.mapper.dukan.toAdminResponse
 import net.thechance.dukan.api.mapper.product.toAdminResponse
 import net.thechance.dukan.api.mapper.shelf.toResponse
@@ -13,6 +12,7 @@ import net.thechance.dukan.entity.DukanShelf
 import net.thechance.dukan.service.DukanProductService
 import net.thechance.dukan.service.DukanService
 import net.thechance.dukan.service.DukanShelfService
+import org.springframework.context.i18n.LocaleContextHolder
 import org.springframework.data.domain.Page
 import org.springframework.data.domain.Pageable
 import org.springframework.data.domain.Sort
@@ -36,7 +36,8 @@ class DukanAdminController(
     @GetMapping("/{dukanId}")
     fun getDukanDetails(@PathVariable("dukanId") dukanId: UUID): ResponseEntity<DukanAdminDetailsResponse> {
         val dukan = dukanService.getDukanDetailsById(dukanId)
-        val response = dukan.toAdminResponse(DukanLanguage.ENGLISH)
+        val language = LocaleContextHolder.getLocale().language
+        val response = dukan.toAdminResponse(language)
         return ResponseEntity.ok(response)
     }
 

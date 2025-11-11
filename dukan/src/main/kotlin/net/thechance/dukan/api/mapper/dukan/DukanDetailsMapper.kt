@@ -2,7 +2,6 @@ package net.thechance.dukan.api.mapper.dukan
 
 import net.thechance.dukan.api.dto.dukan.DukanAdminDetailsResponse
 import net.thechance.dukan.api.dto.dukan.DukanDetailsResponse
-import net.thechance.dukan.api.mapper.category.DukanLanguage
 import net.thechance.dukan.api.mapper.category.toDto
 import net.thechance.dukan.entity.Dukan
 
@@ -21,7 +20,7 @@ fun Dukan.toResponse(isFavorite: Boolean): DukanDetailsResponse{
     )
 }
 
-fun Dukan.toAdminResponse(language: DukanLanguage): DukanAdminDetailsResponse {
+fun Dukan.toAdminResponse(language: String): DukanAdminDetailsResponse {
     return DukanAdminDetailsResponse(
         id = id,
         name = name,
