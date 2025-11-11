@@ -89,13 +89,7 @@ class ChatController(
     ): ResponseEntity<MessageResponse> {
         val messageAudioArgs = request.toRequestArgs(senderId)
         val message = chatService.saveMessageAudio(messageAudioArgs)
-        chatService.getChatUsersIds(chatId = request.chatId).forEach { chatParticipantId ->
-            messagingTemplate.convertAndSendToUser(
-                chatParticipantId.toString(),
-                PRIVATE_MESSAGES,
-                message.toResponse(chatParticipantId)
-            )
-        }
+        sendToChatUser(request.chatId) { message.toResponse(it) }
         return ResponseEntity.ok(message.toResponse(senderId))
     }
 
@@ -166,22 +160,6 @@ class ChatController(
         return ResponseEntity.ok(chat.toResponse())
     }
 
-    private fun sendToChatUser(
-        chatId: UUID,
-        destination: String = PRIVATE_MESSAGES,
-        payload: (userId: UUID) -> Any
-    ) {
-        chatService
-            .getChatUsersIds(chatId = chatId)
-            .forEach { chatParticipantId ->
-                messagingTemplate.convertAndSendToUser(
-                    chatParticipantId.toString(),
-                    destination,
-                    payload(chatParticipantId)
-                )
-            }
-    }
-
     @DeleteMapping("/{chatId}")
     fun deleteChatById(
         @PathVariable chatId: UUID
@@ -201,6 +179,22 @@ class ChatController(
         val time = Instant.parse(deletedAfter)
         val deletedChats = chatService.getDeletedChatsIdByUserIdAfterSpecificTime(userId, time)
         return ResponseEntity.ok(deletedChats)
+    }
+
+    private fun sendToChatUser(
+        chatId: UUID,
+        destination: String = PRIVATE_MESSAGES,
+        payload: (userId: UUID) -> Any
+    ) {
+        chatService
+            .getChatUsersIds(chatId = chatId)
+            .forEach { chatParticipantId ->
+                messagingTemplate.convertAndSendToUser(
+                    chatParticipantId.toString(),
+                    destination,
+                    payload(chatParticipantId)
+                )
+            }
     }
 
     companion object {
