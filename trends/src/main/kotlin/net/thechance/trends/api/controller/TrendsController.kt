@@ -44,14 +44,16 @@ class TrendsController(
         return ResponseEntity.ok(result)
     }
 
-    @GetMapping("/favorites")
+    @GetMapping("/favorites", "/favorites/{trendsId}")
     fun getFavoriteTrends(
         pageable: Pageable,
+        @PathVariable(required = false) trendsId: UUID? = null,
         @AuthenticationPrincipal currentUserId: UUID
     ): ResponseEntity<PagingResponse<TrendResponse>> {
         val trends = trendsService.getUserFavoriteTrends(
-            pageable,
-            currentUserId
+            pageable = pageable,
+            currentUserId = currentUserId,
+            trendId = trendsId,
         ).content.map { trend -> trend.toResponse() }
 
         val result = PagingResponse(

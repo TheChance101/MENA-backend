@@ -77,6 +77,7 @@ class TrendsService(
     fun getUserFavoriteTrends(
         pageable: Pageable,
         currentUserId: UUID,
+        trendId: UUID? = null,
     ): Page<TrendWithOwnerShipAndLikeStatus> {
         val adjustedPageable = PageRequest.of(
             pageable.pageNumber,
@@ -85,7 +86,7 @@ class TrendsService(
         )
 
         return trendsRepository
-            .getUserLikedTrends(currentUserId, adjustedPageable)
+            .getUserLikedTrends(currentUserId, trendId, adjustedPageable)
             .map {
                 generatePresignedUrlsForTrend(it)
                     .withOwnership(currentUserId)
