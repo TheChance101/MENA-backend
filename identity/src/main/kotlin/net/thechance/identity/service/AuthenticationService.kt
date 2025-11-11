@@ -60,7 +60,7 @@ class AuthenticationService(
     fun getCountries(): List<LocalizedCountry> {
         val currentLocale = LocaleContextHolder.getLocale()
         return Country.entries.map {
-            it.getLocalizedCountryName(messageSource, currentLocale)
+            it.getLocalizedCountry(messageSource, currentLocale)
         }
     }
 }

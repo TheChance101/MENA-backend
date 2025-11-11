@@ -33,7 +33,7 @@ enum class Country(
     YEMEN("identity.country.yemen", "+967", "YE", "🇾🇪");
 
 
-    fun getLocalizedCountryName(messageSource: MessageSource, locale: Locale): LocalizedCountry {
+    fun getLocalizedCountry(messageSource: MessageSource, locale: Locale): LocalizedCountry {
         val localizedName = messageSource.getMessage(countryNameStringKey, null, locale)
         val formattedCode = if (locale.isRtl()) callingCode.drop(1) + "+" else callingCode
 
