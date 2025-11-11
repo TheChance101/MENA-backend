@@ -6,9 +6,7 @@ import net.thechance.events.dukan.DukanStatusChangedEvent
 fun Dukan.toDukanStatusChangedEvent(): DukanStatusChangedEvent {
     return DukanStatusChangedEvent(
         dukanId = this.id,
-        name = this.name,
         status = this.status.toEventStatus(),
-        imageUrl = this.imageUrl,
         activationStatus = this.activationStatus?.toEventActivationStatus()
     )
 }

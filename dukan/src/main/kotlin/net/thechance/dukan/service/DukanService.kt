@@ -6,12 +6,12 @@ import net.thechance.dukan.api.mapper.dukan.toDukan
 import net.thechance.dukan.entity.Dukan
 import net.thechance.dukan.entity.DukanCategory
 import net.thechance.dukan.entity.DukanColor
-import net.thechance.dukan.entity.StatusChangeLog
+import net.thechance.dukan.entity.StatusChangelog
 import net.thechance.dukan.service.model.DukanWithFavorite
 import net.thechance.dukan.repository.DukanCategoryRepository
 import net.thechance.dukan.repository.DukanColorRepository
 import net.thechance.dukan.repository.DukanRepository
-import net.thechance.dukan.repository.StatusChangeLogRepository
+import net.thechance.dukan.repository.StatusChangelogRepository
 import net.thechance.dukan.service.exception.DukanCreationFailedException
 import net.thechance.dukan.service.exception.DukanNotFoundException
 import net.thechance.dukan.service.mapper.toDukanStatusChangedEvent
@@ -31,7 +31,7 @@ class DukanService(
     private val dukanColorRepository: DukanColorRepository,
     private val imageStorageService: ImageStorageService,
     private val dukanCategoryRepository: DukanCategoryRepository,
-    private val statusChangeLogRepository: StatusChangeLogRepository,
+    private val statusChangeLogRepository: StatusChangelogRepository,
     private val eventPublisher: MenaEventPublisher
 ) {
     fun getAllStyles(): EnumEntries<Dukan.Style> = Dukan.Style.entries
@@ -124,18 +124,18 @@ class DukanService(
         if (updatedDukansCount == 0) throw DukanNotFoundException()
 
         if (status == Dukan.Status.REJECTED) {
-            val statusChangeLog = StatusChangeLog(
+            val statusChangelog = StatusChangelog(
                 dukanId = dukanId,
-                status = StatusChangeLog.Status.REJECTED,
-                reason = reason!!
+                status = StatusChangelog.Status.REJECTED,
+                reason = reason.orEmpty()
             )
 
-            statusChangeLogRepository.insertStatusChangeLog(
-                id = statusChangeLog.id,
+            statusChangeLogRepository.insertStatusChangelog(
+                id = statusChangelog.id,
                 dukanId = dukanId,
-                status = statusChangeLog.status.name,
+                status = statusChangelog.status.name,
                 reason = reason,
-                createdAt = statusChangeLog.createdAt,
+                createdAt = statusChangelog.createdAt,
             )
         }
 

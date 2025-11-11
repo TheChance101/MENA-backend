@@ -27,24 +27,6 @@ class WalletEventListener(
 
     @EventListener
     @Async
-    fun onDukanStatusUpdated(event: DukanStatusChangedEvent) {
-        if (event.status == DukanStatusChangedEvent.DukanEventStatus.APPROVED &&
-            event.activationStatus == DukanStatusChangedEvent.DukanEventActivationStatus.ACTIVATED
-        ) {
-            dukanService.addDukan(
-                dukanId = event.dukanId,
-                name = event.name,
-                imageUrl = event.imageUrl
-            )
-        }
-
-        else if(event.activationStatus == DukanStatusChangedEvent.DukanEventActivationStatus.DEACTIVATED){
-            dukanService.removeDukan(dukanId = event.dukanId)
-        }
-    }
-
-    @EventListener
-    @Async
     fun onUserStatusUpdated(event: UserStatusUpdatedEvent) {
         userService.updateUserStatus(
             userId = event.userId,
