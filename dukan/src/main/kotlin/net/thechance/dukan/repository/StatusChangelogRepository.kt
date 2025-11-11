@@ -1,6 +1,6 @@
 package net.thechance.dukan.repository
 
-import net.thechance.dukan.entity.StatusChangeLog
+import net.thechance.dukan.entity.StatusChangelog
 import org.springframework.data.jpa.repository.JpaRepository
 import org.springframework.data.jpa.repository.Modifying
 import org.springframework.data.jpa.repository.Query
@@ -8,7 +8,7 @@ import org.springframework.data.repository.query.Param
 import java.time.Instant
 import java.util.UUID
 
-interface StatusChangeLogRepository: JpaRepository<StatusChangeLog, UUID> {
+interface StatusChangelogRepository: JpaRepository<StatusChangelog, UUID> {
     @Modifying
     @Query(
         value = """
@@ -17,7 +17,7 @@ interface StatusChangeLogRepository: JpaRepository<StatusChangeLog, UUID> {
         """,
         nativeQuery = true
     )
-    fun insertStatusChangeLog(
+    fun insertStatusChangelog(
         @Param("id") id: UUID,
         @Param("dukanId") dukanId: UUID,
         @Param("status") status: String,

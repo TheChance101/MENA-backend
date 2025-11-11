@@ -5,8 +5,8 @@ import java.time.Instant
 import java.util.*
 
 @Entity
-@Table(name = "status_change_logs")
-data class StatusChangeLog(
+@Table(name = "status_changelogs")
+data class StatusChangelog(
     @Id
     @GeneratedValue(strategy = GenerationType.UUID)
     val id: UUID = UUID.randomUUID(),
