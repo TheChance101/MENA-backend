@@ -16,3 +16,13 @@ data class DukanProductResponse(
     val isFavorite: Boolean,
     val isOutOfStock: Boolean,
 )
+
+data class DukanProductAdminResponse(
+    val id: UUID,
+    val name:String,
+    val price:Double,
+    val discountedPrice: Double?,
+    val description:String,
+    val imageUrls:List<String>,
+    val createdAt: Instant,
+)
