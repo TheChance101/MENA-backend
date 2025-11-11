@@ -14,7 +14,7 @@ interface StatusChangelogRepository: JpaRepository<StatusChangelog, UUID> {
     @Modifying
     @Query(
         value = """
-            INSERT INTO dukan.status_change_logs (id, dukan_id, status, reason, created_at)
+            INSERT INTO dukan.status_changelogs (id, dukan_id, status, reason, created_at)
             VALUES (:id, :dukanId, :status, :reason, :createdAt)
         """,
         nativeQuery = true
