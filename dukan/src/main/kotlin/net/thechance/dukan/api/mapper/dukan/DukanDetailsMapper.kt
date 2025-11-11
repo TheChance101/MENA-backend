@@ -24,7 +24,6 @@ fun Dukan.toResponse(isFavorite: Boolean): DukanDetailsResponse{
 fun Dukan.toAdminResponse(language: DukanLanguage): DukanAdminDetailsResponse {
     return DukanAdminDetailsResponse(
         id = id,
-        ownerId = ownerId,
         name = name,
         imageUrl = imageUrl.orEmpty(),
         address = address,

@@ -7,7 +7,6 @@ import java.util.*
 
 data class DukanAdminDetailsResponse(
     val id: UUID,
-    val ownerId: UUID,
     val name: String,
     val imageUrl: String,
     val address: String,

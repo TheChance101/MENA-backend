@@ -51,7 +51,7 @@ class DukanAdminController(
         return ResponseEntity.ok(shelvesPage)
     }
 
-    @GetMapping("/shelves/{shelfId}/products")
+    @GetMapping("/shelf/{shelfId}/products")
     fun getShelfProductsForAdmin(
         @PathVariable("shelfId") shelfId: UUID,
         @PageableDefault(size = 10, page = 0, sort = ["createdAt"], direction = Sort.Direction.DESC)

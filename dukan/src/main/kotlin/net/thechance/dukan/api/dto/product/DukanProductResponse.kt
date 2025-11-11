@@ -19,8 +19,6 @@ data class DukanProductResponse(
 data class DukanProductAdminResponse(
     val id: UUID,
     val name:String,
-    val dukanId:UUID,
-    val shelfId: UUID,
     val price:Double,
     val discountedPrice: Double?,
     val description:String,
