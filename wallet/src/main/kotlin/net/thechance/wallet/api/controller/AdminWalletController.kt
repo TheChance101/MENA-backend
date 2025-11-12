@@ -1,7 +1,7 @@
 package net.thechance.wallet.api.controller
 
 import net.thechance.wallet.api.dto.balance.AdminDepositRequest
-import net.thechance.wallet.service.AdminWalletService
+import net.thechance.wallet.service.DepositService
 import org.springframework.http.ResponseEntity
 import org.springframework.security.core.annotation.AuthenticationPrincipal
 import org.springframework.web.bind.annotation.PostMapping
@@ -13,7 +13,7 @@ import java.util.*
 @RestController
 @RequestMapping("/wallet/admin")
 class AdminWalletController(
-    private val adminWalletService: AdminWalletService
+    private val adminWalletService: DepositService
 ) {
     @PostMapping("/deposit")
     fun depositMoneyToUser(

@@ -8,7 +8,7 @@ import java.math.BigDecimal
 import java.util.*
 
 @Service
-class AdminWalletService(
+class DepositService(
     private val transactionRepository: TransactionRepository,
     private val walletUserService: WalletUserService,
     private val blockService: BlockService
