@@ -8,6 +8,7 @@ import net.thechance.identity.exception.PasswordNotUpdatedException
 import net.thechance.identity.exception.UserNotFoundException
 import net.thechance.identity.repository.UserRepository
 import net.thechance.identity.service.mapper.toEventStatus
+import net.thechance.identity.service.mapper.toUserUpdatedEvent
 import net.thechance.identity.service.model.UserServiceModel
 import org.springframework.beans.factory.annotation.Value
 import org.springframework.context.annotation.Lazy
@@ -25,9 +26,9 @@ private typealias ImageUri = String
 class UserService(
     private val userRepository: UserRepository,
     private val identityImageStorageService: IdentityImageStorageService,
-    private val eventPublisher: MenaEventPublisher,
     @param:Value("\${identity.resources.profile-image-directory}") private val profileImageDirectory: String,
-    @param:Lazy private val authenticationService: AuthenticationService
+    private val eventPublisher: MenaEventPublisher,
+    @param:Lazy private val authenticationService: AuthenticationService,
 ) {
 
     fun findByPhoneNumber(phoneNumber: String): User {
@@ -47,6 +48,7 @@ class UserService(
         val userWithNewPassword = getUserWithNewPassword(phoneNumber, newPassword)
         val savedUser = userRepository.save(userWithNewPassword)
         if (savedUser.password != newPassword) throw PasswordNotUpdatedException()
+        eventPublisher.publish(savedUser.toUserUpdatedEvent())
     }
 
     private fun getUserWithNewPassword(phoneNumber: String, newPassword: String): User {
@@ -63,13 +65,14 @@ class UserService(
             birthDate = user.birthDate,
             gender = user.gender
         )
-
-        return userRepository.save(updatedUser)
+        val savedUser = userRepository.save(updatedUser)
+        eventPublisher.publish(savedUser.toUserUpdatedEvent())
+        return savedUser
     }
 
     fun updateUserImage(
         userId: UUID,
-        imageFile: MultipartFile
+        imageFile: MultipartFile,
     ): ImageUri {
         val user = findById(userId)
         val newImageUrl = identityImageStorageService.uploadImage(
@@ -77,8 +80,8 @@ class UserService(
             fileName = "${user.id}",
             folderName = profileImageDirectory
         )
-        val updatedUser = user.copy(imageUrl = newImageUrl)
-        userRepository.save(updatedUser)
+        val savedUser = userRepository.save(user.copy(imageUrl = newImageUrl))
+        eventPublisher.publish(savedUser.toUserUpdatedEvent())
         return newImageUrl
     }
 
@@ -89,7 +92,8 @@ class UserService(
                 fileName = imageUrl,
                 folderName = profileImageDirectory
             )
-            userRepository.save(user.copy(imageUrl = null))
+            val savedUser = userRepository.save(user.copy(imageUrl = null))
+            eventPublisher.publish(savedUser.toUserUpdatedEvent())
         }
     }
 
@@ -125,6 +129,7 @@ class UserService(
     fun updateUserStatus(userId: UUID, status: User.Status) {
         val updatedUserCount = userRepository.updateStatus(userId, status)
         if (updatedUserCount == 0) throw UserNotFoundException("User with id: $userId not found")
+        eventPublisher.publish(findById(userId = userId).toUserUpdatedEvent())
         eventPublisher.publish(UserStatusUpdatedEvent(userId, status.toEventStatus()))
         if (status == User.Status.BLOCKED) authenticationService.logout(userId)
     }
