@@ -1,4 +1,4 @@
-package net.thechance.chat.service.converter
+package net.thechance.chat.repository.converter
 
 import jakarta.persistence.AttributeConverter
 import jakarta.persistence.Converter

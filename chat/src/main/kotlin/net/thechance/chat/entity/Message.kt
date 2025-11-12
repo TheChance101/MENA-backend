@@ -1,7 +1,7 @@
 package net.thechance.chat.entity
 
 import jakarta.persistence.*
-import net.thechance.chat.service.converter.MessageContentConverter
+import net.thechance.chat.repository.converter.MessageContentConverter
 import net.thechance.chat.service.model.MessageContent
 import java.time.Instant
 import java.util.*
