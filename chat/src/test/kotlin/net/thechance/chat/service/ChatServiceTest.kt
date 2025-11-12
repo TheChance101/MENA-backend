@@ -5,7 +5,7 @@ import io.mockk.every
 import io.mockk.mockk
 import io.mockk.verify
 import jakarta.persistence.EntityManager
-import net.thechance.chat.api.dto.MessageRequestDto
+import net.thechance.chat.api.dto.TextMessageRequestDto
 import net.thechance.chat.entity.Chat
 import net.thechance.chat.entity.Contact
 import net.thechance.chat.entity.ContactUser
@@ -131,7 +131,7 @@ class ChatServiceTest {
     @Test
     fun `saveMessage saves message when chat exists`() {
         val chat = testChat()
-        val messageDto = MessageRequestDto(
+        val messageDto = TextMessageRequestDto(
             chatId = chat.id,
             text = "message 1"
         )
@@ -139,7 +139,7 @@ class ChatServiceTest {
         every { messageRepository.findById(any()) } answers { Optional.empty() }
         every { messageRepository.save(any()) } answers { firstArg<Message>() }
 
-        service.saveMessage(MessageRequestArgs(chat.id, UUID.randomUUID(), messageDto.text))
+        service.saveTextMessage(MessageRequestArgs(chat.id, UUID.randomUUID(), messageDto.text))
 
         verify {
             messageRepository.save(

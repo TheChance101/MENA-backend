@@ -24,11 +24,11 @@ class ChatController(
 
     @MessageMapping("/chat.privateMessage")
     fun sendPrivateMessage(
-        @Payload chatMessage: MessageRequestDto,
+        @Payload chatMessage: TextMessageRequestDto,
         principal: Principal
     ) {
         val senderId = UUID.fromString(principal.name)
-        val message = chatService.saveMessage(chatMessage.toRequestArgs(senderId))
+        val message = chatService.saveTextMessage(chatMessage.toRequestArgs(senderId))
 
         sendToChatParticipants(chatId = chatMessage.chatId) { message.toResponse(it) }
     }

@@ -7,7 +7,7 @@ import org.springframework.data.domain.Page
 import java.time.Instant
 import java.util.*
 
-data class MessageRequestDto(
+data class TextMessageRequestDto(
     val chatId: UUID,
     val text: String
 )
@@ -17,25 +17,26 @@ data class MessageResponse(
     val senderId: UUID,
     val chatId: UUID,
     val type: String,
-    val content: MessageContentResponse,
+    val content: MessageResponse.MessageContent,
     val reactions: List<MessageReactionResponse> = emptyList(),
     val sendAt: Instant,
     val updatedAt: Instant,
     val isRead: Boolean,
     val isMine: Boolean
-)
+) {
+    sealed class MessageContent {
+        data class Text(val text: String) : MessageResponse.MessageContent()
+        data class Image(val url: String) : MessageResponse.MessageContent()
+        data class Audio(val url: String, val duration: Long) : MessageResponse.MessageContent()
+    }
+}
 
 fun MessageContent.toResponse() = when(this) {
-    is MessageContent.Text -> MessageContentResponse.Text(text)
-    is MessageContent.Image -> MessageContentResponse.Image(url)
-    is MessageContent.Audio -> MessageContentResponse.Audio(url, durationMs)
+    is MessageContent.Text -> MessageResponse.MessageContent.Text(text)
+    is MessageContent.Image -> MessageResponse.MessageContent.Image(url)
+    is MessageContent.Audio -> MessageResponse.MessageContent.Audio(url, durationMs)
 }
 
-sealed class MessageContentResponse {
-    data class Text(val text: String) : MessageContentResponse()
-    data class Image(val url: String) : MessageContentResponse()
-    data class Audio(val url: String, val duration: Long) : MessageContentResponse()
-}
 
 
 fun Message.toResponse(requesterId: UUID): MessageResponse {

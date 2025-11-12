@@ -55,7 +55,7 @@ class ChatService(
     }
 
     @Transactional
-    fun saveMessage(args: MessageRequestArgs): Message {
+    fun saveTextMessage(args: MessageRequestArgs): Message {
         return messageRepository.save(
             Message(
                 senderId = args.senderId,
