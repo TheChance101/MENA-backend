@@ -16,6 +16,7 @@ import net.thechance.dukan.service.exception.DukanNotFoundException
 import net.thechance.dukan.service.exception.ProductAlreadyInCartException
 import net.thechance.dukan.service.exception.ProductNotFoundException
 import net.thechance.dukan.service.exception.ProductNotInCartException
+import net.thechance.dukan.service.exception.ProductOutOfStockException
 import net.thechance.dukan.service.model.AddOrUpdateCartItemParams
 import net.thechance.dukan.service.model.CartCheckoutParams
 import net.thechance.dukan.service.model.CartCheckoutPreview
@@ -41,6 +42,8 @@ class CartService(
     fun addItem(params: AddOrUpdateCartItemParams): Cart {
         val cart = getOrCreateActiveCart(params.userId, params.dukanId)
         val product = getProduct(params.productId)
+
+        if (product.isOutOfStock) throw ProductOutOfStockException()
 
         if (cart.items.any { it.product.id == product.id })
             throw ProductAlreadyInCartException()

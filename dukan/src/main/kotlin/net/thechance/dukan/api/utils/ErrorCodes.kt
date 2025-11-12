@@ -12,6 +12,7 @@ internal object ErrorCodes {
     const val PRODUCT_NAME_ALREADY_TAKEN = 1303
 
     const val PRODUCT_UPDATE_FAILED = 1304
+    const val PRODUCT_OUT_OF_STOCK = 1305
     const val SHELF_DELETION_NOT_ALLOWED = 1401
     const val SHELF_NOT_FOUND = 1402
     const val SHELF_NAME_ALREADY_TAKEN = 1403

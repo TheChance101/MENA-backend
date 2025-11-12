@@ -8,7 +8,6 @@ import org.springframework.data.jpa.repository.JpaRepository
 import org.springframework.data.jpa.repository.Modifying
 import org.springframework.data.jpa.repository.Query
 import org.springframework.data.repository.query.Param
-import org.springframework.transaction.annotation.Transactional
 import java.util.UUID
 
 interface ContactRepository : JpaRepository<Contact, UUID> {
@@ -34,35 +33,9 @@ interface ContactRepository : JpaRepository<Contact, UUID> {
     ): Page<ContactModel>
 
 
-    @Modifying
-    @Transactional
-    @Query(
-        value = """
-    INSERT INTO 
-    chat.contacts (
-                    contact_owner_id,
-                    phone_number,
-                    first_name,
-                    last_name
-                    )   
-        (
-        SELECT :userId, t.phone_number, t.first_name, t.last_name
-        FROM unnest(CAST(:phones AS text[]), CAST(:firstNames AS text[]), CAST(:lastNames AS text[])) 
-             WITH ORDINALITY AS t(phone_number, first_name, last_name, ord)
-        )
-    ON CONFLICT (contact_owner_id, phone_number)
-    DO UPDATE SET
-        first_name = EXCLUDED.first_name,
-        last_name  = EXCLUDED.last_name
-    """,
-        nativeQuery = true
-    )
-    fun bulkUpsert(
-        @Param("userId") userId: UUID,
-        @Param("phones") phones: Array<String>,
-        @Param("firstNames") firstNames: Array<String>,
-        @Param("lastNames") lastNames: Array<String>
-    )
-
     fun findByContactOwnerIdAndPhoneNumber(ownerId: UUID, phoneNumber: String): Contact?
+
+    @Modifying
+    @Query("DELETE FROM Contact c WHERE c.contactOwnerId = :contactOwnerId AND c.phoneNumber IN (:phoneNumbers)")
+    fun deleteByContactOwnerIdAndPhoneNumbers(contactOwnerId: UUID, phoneNumbers: List<String>)
 }

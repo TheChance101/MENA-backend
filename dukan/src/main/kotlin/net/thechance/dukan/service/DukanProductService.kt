@@ -85,7 +85,8 @@ class DukanProductService(
     private fun DukanProduct.toProductSaveEvent() = ProductEvent.Save(
         id = this.id.toString(),
         name = this.name,
-        description = this.description,
+        dukanName = this.description,
+        dukanId = this.dukan.id.toString(),
         mainImageUrl = this.imageUrls.firstOrNull().orEmpty(),
         price = this.price,
         shelfName = this.shelf.title
@@ -116,6 +117,11 @@ class DukanProductService(
     fun getProductsByShelf(userId: UUID, shelfId: UUID, pageable: Pageable): Page<DukanProductWithFavoriteAndQuantity> {
         val products = dukanProductRepository.findProductsWithFavoriteAndQuantityByShelf(userId, shelfId, pageable)
         return products
+    }
+
+
+    fun getProductsByShelf(shelfId: UUID, pageable: Pageable): Page<DukanProduct> {
+        return dukanProductRepository.findAllByShelfId(shelfId, pageable)
     }
 
     @Transactional

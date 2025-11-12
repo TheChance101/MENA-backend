@@ -75,6 +75,16 @@ class FaithExceptionHandler {
             status = HttpStatus.BAD_REQUEST
         )
     }
+
+    @ExceptionHandler(FailedToCreateMosqueException::class)
+    fun onFailedToCreateMosqueError(exception: FailedToCreateMosqueException): ResponseEntity<ApiErrorResponse> {
+        return createErrorResponse(
+            message = "Failed to create mosque",
+            exception = exception,
+            status = HttpStatus.BAD_REQUEST,
+        )
+    }
+
     private fun createErrorResponse(
         message: String,
         exception: Exception,
@@ -84,4 +94,5 @@ class FaithExceptionHandler {
         val apiError = ApiErrorResponse(status = status.value(), message = message)
         return ResponseEntity(apiError, status)
     }
+
 }
