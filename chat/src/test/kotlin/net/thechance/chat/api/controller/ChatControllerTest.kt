@@ -3,14 +3,15 @@ package net.thechance.chat.api.controller
 import com.google.common.truth.Truth.assertThat
 import io.mockk.*
 import net.thechance.chat.api.controller.ChatController.Companion.MARK_AS_READ
+import net.thechance.chat.api.controller.ChatController.Companion.PRIVATE_MESSAGES
 import net.thechance.chat.api.dto.*
 import net.thechance.chat.entity.Chat
 import net.thechance.chat.entity.Message
 import net.thechance.chat.service.ChatService
 import net.thechance.chat.service.exception.NotFoundException
 import net.thechance.chat.service.model.ChatModel
+import net.thechance.chat.service.model.MessageContent
 import net.thechance.chat.service.model.MessageImageRequestArgs
-import net.thechance.chat.service.model.MessageWithReactions
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.assertThrows
 import org.springframework.data.domain.PageImpl
@@ -39,7 +40,7 @@ class ChatControllerTest {
     fun `sendPrivateMessage should save message and send to user`() {
         val chatId = UUID.randomUUID()
         val senderId = UUID.randomUUID()
-        val dto = TextMessageRequestDto(chatId, "message1")
+        val dto = TextMessageRequestDto(UUID.randomUUID(), chatId, "message1")
 
         val principal = mockk<Principal>()
         every { principal.name } returns senderId.toString()
@@ -83,11 +84,18 @@ class ChatControllerTest {
         every { chatService.getChatUsersIds(chatId) } returns listOf(userId)
         justRun { messagingTemplate.convertAndSendToUser(any(), any(), any()) }
 
-        val messageImageArgs = MessageImageRequest(chatId, image)
+        val messageImageArgs = MessageImageRequest(chatId, image, UUID.randomUUID())
         controller.sendMessageImage(messageImageArgs, principal)
 
         verify {
-            chatService.saveMessageImage(match { it == MessageImageRequestArgs(chatId, senderId, image) })
+            chatService.saveMessageImage(match {
+                it == MessageImageRequestArgs(
+                    UUID.randomUUID(),
+                    chatId,
+                    senderId,
+                    image
+                )
+            })
         }
     }
 
@@ -104,9 +112,8 @@ class ChatControllerTest {
             id = UUID.randomUUID(),
             chatId = chatId,
             senderId = senderId,
-            text = null,
-            imageUrl = null,
-            audioUrl = "https://cdn.example.com/audio/test.m4a",
+            type = Message.MessageType.AUDIO,
+            content = MessageContent.Audio("https://cdn.example.com/audio/test.m4a", 1000),
             sentAt = Instant.now(),
             isRead = false
         )
@@ -115,12 +122,17 @@ class ChatControllerTest {
         every { chatService.getChatUsersIds(chatId) } returns listOf(senderId, userId)
         justRun { messagingTemplate.convertAndSendToUser(any(), any(), any()) }
 
-        val request = MessageAudioRequest(chatId = chatId, audio = audio)
+        val request = MessageAudioRequest(UUID.randomUUID(), chatId = chatId, audio = audio, 1000L)
 
-        val response = controller.sendMessageAudio(request, principal)
+        val response = controller.sendMessageAudio(request, senderId)
 
         assertThat(response.statusCode).isEqualTo(HttpStatus.OK)
-        assertThat(response.body?.audioUrl).isEqualTo("https://cdn.example.com/audio/test.m4a")
+        assertThat(response.body?.content).isEqualTo(
+            MessageContent.Audio(
+                "https://cdn.example.com/audio/test.m4a",
+                1000
+            )
+        )
 
         verify {
             chatService.saveMessageAudio(
@@ -150,22 +162,20 @@ class ChatControllerTest {
         val chatId = UUID.randomUUID()
         val pageable: Pageable = PageRequest.of(0, 10)
 
-        val messagesWithReactions = listOf(
-            MessageWithReactions(
-                message = Message(
-                    id = UUID.randomUUID(),
-                    chatId = chatId,
-                    senderId = UUID.randomUUID(),
-                    text = "Hi",
-                    sentAt = Instant.now(),
-                    isRead = false
-                ),
-                reactions = emptyList()
+        val messages = listOf(
+            Message(
+                id = UUID.randomUUID(),
+                chatId = chatId,
+                senderId = UUID.randomUUID(),
+                type = Message.MessageType.TEXT,
+                reactions = emptyList(),
+                content = MessageContent.Text("hi"),
+                sentAt = Instant.now(),
+                isRead = false
             )
-
         )
 
-        val page = PageImpl(messagesWithReactions, pageable, messagesWithReactions.size.toLong())
+        val page = PageImpl(messages, pageable, messages.size.toLong())
 
         every { chatService.getAllChatMessagesByChatId(chatId, pageable) } returns page
 
@@ -240,7 +250,8 @@ class ChatControllerTest {
             id = UUID.randomUUID(),
             senderId = senderId,
             chatId = chatId,
-            text = text,
+            type = Message.MessageType.TEXT,
+            content = MessageContent.Text(text.orEmpty()),
             sentAt = Instant.now()
         )
     }
