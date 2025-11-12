@@ -13,7 +13,7 @@ class AdminWalletService(
     private val walletUserService: WalletUserService,
     private val blockService: BlockService
 ) {
-    fun deposit(adminId: UUID, receiverPhoneNumber: String, amount: Double) {
+    fun depositMoney(adminId: UUID, receiverPhoneNumber: String, amount: Double) {
         val block = blockService.getCurrentBlock()
         val sender = walletUserService.getUserById(adminId)
         val receiver = walletUserService.getUserByPhoneNumber(receiverPhoneNumber)

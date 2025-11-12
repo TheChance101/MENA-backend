@@ -16,11 +16,11 @@ class AdminWalletController(
     private val adminWalletService: AdminWalletService
 ) {
     @PostMapping("/deposit")
-    fun depositToUser(
+    fun depositMoneyToUser(
         @AuthenticationPrincipal adminId: UUID,
         @RequestBody request: AdminDepositRequest
     ): ResponseEntity<Unit> {
-        adminWalletService.deposit(
+        adminWalletService.depositMoney(
             adminId = adminId,
             receiverPhoneNumber = request.phoneNumber,
             amount = request.amount
