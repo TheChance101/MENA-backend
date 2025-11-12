@@ -2,6 +2,7 @@ package net.thechance.dukan.entity
 
 import jakarta.persistence.*
 import java.math.BigDecimal
+import java.math.RoundingMode
 import java.time.Instant
 import java.util.*
 
@@ -27,9 +28,8 @@ data class Cart(
     @OneToMany(mappedBy = "cart", cascade = [CascadeType.ALL], orphanRemoval = true)
     val items: MutableSet<CartItem> = mutableSetOf(),
 
-    @Column(name = "total_price", nullable = false, precision = 10, scale = 2)
-    var totalPrice: BigDecimal = BigDecimal.ZERO,
-
+    @Embedded
+    var price: Price = Price(BigDecimal.ZERO, BigDecimal.ZERO),
 
     @Column(name = "created_at", nullable = false)
     val createdAt: Instant = Instant.now(),
@@ -38,12 +38,37 @@ data class Cart(
     var updatedAt: Instant = Instant.now()
 ) {
     fun calculateTotalPrice() {
-        totalPrice = items.sumOf {
-            it.product.price.final.multiply(BigDecimal(it.quantity))
+        val safeItems = items ?: mutableSetOf()
+        if (safeItems.isEmpty()) return
+
+        val totalBefore = safeItems.sumOf {
+            it.product.price.base.multiply(BigDecimal(it.quantity))
         }
+
+        val totalAfter = safeItems.sumOf {
+            val basePrice = it.product.price.base
+            val discount = it.product.discount
+            val discountedPrice = basePrice.subtract(
+                basePrice.multiply(discount).divide(BigDecimal(100), 2, RoundingMode.HALF_UP)
+            )
+            discountedPrice.multiply(BigDecimal(it.quantity))
+        }
+
+        price = price.copy(
+            base = totalBefore,
+            final = totalAfter
+        )
+
         updatedAt = Instant.now()
     }
-
+    fun getDiscountPercentage(): BigDecimal {
+        return if (price.base > BigDecimal.ZERO) {
+            price.base.subtract(price.final)
+                .divide(price.base, 10, RoundingMode.HALF_UP)
+                .multiply(BigDecimal(100))
+                .setScale(2, RoundingMode.HALF_UP)
+        } else BigDecimal.ZERO
+    }
     @PrePersist
     @PreUpdate
     fun beforeSave() = calculateTotalPrice()

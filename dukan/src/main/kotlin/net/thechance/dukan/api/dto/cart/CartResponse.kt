@@ -6,5 +6,7 @@ import java.util.*
 
 data class CartResponse(
     val id: UUID,
-    val totalPrice: BigDecimal,
+    val totalPriceBeforeDiscount: BigDecimal,
+    val totalPriceAfterDiscount: BigDecimal,
+    val discount : BigDecimal
 )
