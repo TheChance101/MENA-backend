@@ -13,7 +13,7 @@ fun MosqueRequest.toMosque(userId: UUID,imageUrl: String): Mosque {
         longitude = longitude,
         createdAt = Instant.now(),
         imageUrl = imageUrl,
-        userId = userId
+        creatorId = userId
     )
 }
 

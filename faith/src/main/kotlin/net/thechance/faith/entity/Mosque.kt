@@ -12,7 +12,7 @@ data class Mosque(
     val id: UUID = UUID.randomUUID(),
 
     @Id
-    val userId: UUID,
+    val creatorId: UUID,
 
     @Column(nullable = false)
     val name: String,
