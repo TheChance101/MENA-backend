@@ -21,7 +21,7 @@ class AdminWalletController(
         @RequestBody request: AdminDepositRequest
     ): ResponseEntity<Unit> {
         adminWalletService.deposit(
-            userId = adminId,
+            adminId = adminId,
             receiverPhoneNumber = request.phoneNumber,
             amount = request.amount
         )
