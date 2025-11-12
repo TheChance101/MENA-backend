@@ -25,6 +25,7 @@ fun DukanProductUpdateRequest.toProductUpdateParams(ownerId: UUID, productId : U
         ownerId = ownerId,
         imageUrls = imageUrls,
         productId = productId,
+        isOutOfStock = isOutOfStock,
     )
 }
 fun PriceRequest.toEntity(): Price {

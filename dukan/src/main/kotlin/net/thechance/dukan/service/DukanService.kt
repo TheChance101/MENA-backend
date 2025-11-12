@@ -79,9 +79,6 @@ class DukanService(
         return dukanRepository.findByIdOrNull(dukanId) ?: throw DukanNotFoundException()
     }
 
-    fun getAllByCategoryId(categoryId: UUID, pageable: Pageable): Page<Dukan> {
-        return dukanRepository.findApprovedDukansWithProductsByCategory(categoryId, pageable)
-    }
 
     fun getAllEditorPicksDukan(userId: UUID, pageable: Pageable): Page<DukanWithFavorite> {
         // TODO: Filter by user preferences once data model is ready
@@ -107,8 +104,8 @@ class DukanService(
         return dukanRepository.findBestAroundApprovedDukans(lat, lng, range, pageable)
     }
 
-    fun getAllByCategory(categoryId: UUID, userId: UUID, pageable: Pageable): Page<DukanWithFavorite> =
-        dukanRepository.findAllByCategoryWithFavorite(categoryId, userId, pageable)
+    fun getAllByCategoryIdWithFavorite(categoryId: UUID, userId: UUID, pageable: Pageable): Page<DukanWithFavorite> =
+        dukanRepository.findApprovedDukansWithProductsByCategoryWithFavorite(categoryId, userId, pageable)
 
     companion object {
         private val DUKAN_FOLDER_NAME = "dukan"

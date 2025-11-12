@@ -8,7 +8,8 @@ sealed class ProductEvent: MenaEvent {
         val id: String,
         val name: String,
         val price: BigDecimal,
-        val description: String,
+        val dukanName: String,
+        val dukanId:String,
         val mainImageUrl: String,
         val shelfName: String
     ):ProductEvent()

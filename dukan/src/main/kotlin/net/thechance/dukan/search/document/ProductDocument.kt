@@ -20,6 +20,9 @@ data class ProductDocument(
     val dukanName:String,
 
     @Field(type = FieldType.Text)
+    val dukanId:String,
+
+    @Field(type = FieldType.Text)
     val mainImageUrl:String,
 
     @Field(type = FieldType.Text)

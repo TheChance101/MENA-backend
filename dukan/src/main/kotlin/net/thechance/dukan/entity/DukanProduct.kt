@@ -53,5 +53,7 @@ data class DukanProduct(
     val createdAt: Instant = Instant.now(),
 
     @OneToMany(mappedBy = "product", fetch = FetchType.LAZY)
-    val favorites: MutableSet<FavoriteProduct> = emptySet()
+    val favorites: MutableSet<FavoriteProduct> = emptySet(),
+    @Column(name = "is_out_of_stock", nullable = false)
+    val isOutOfStock: Boolean = false,
 )

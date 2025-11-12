@@ -1,5 +1,6 @@
 package net.thechance.chat.service
 
+import jakarta.transaction.Transactional
 import net.thechance.chat.entity.Contact
 import net.thechance.chat.repository.ContactRepository
 import net.thechance.chat.service.model.ContactModel
@@ -23,16 +24,14 @@ class ContactService(
         )
     }
 
-    fun syncContacts(userId: UUID, contactRequests: List<Contact>) {
-        val uniqueContacts = contactRequests.distinctBy { it.phoneNumber }
+    @Transactional
+    fun syncContacts(contactRequests: List<Contact>) {
+        val uniqueContacts = contactRequests.distinctBy { it.phoneNumber }.toMutableList()
 
         if (uniqueContacts.isEmpty()) return
-
-        val phones = uniqueContacts.map { it.phoneNumber }.toTypedArray()
-        val firstNames = uniqueContacts.map { it.firstName }.toTypedArray()
-        val lastNames = uniqueContacts.map { it.lastName }.toTypedArray()
-
-        contactRepository.bulkUpsert(userId, phones, firstNames, lastNames)
+        val ownerId = contactRequests.first().contactOwnerId
+        contactRepository.deleteByContactOwnerIdAndPhoneNumbers(ownerId, uniqueContacts.map { it.phoneNumber })
+        contactRepository.saveAll(uniqueContacts)
     }
 
     fun getContactByOwnerIdAndContactUserId(ownerId: UUID, contactUserId: UUID): Contact? {

@@ -12,4 +12,5 @@ data class DukanProductUpdateParams (
     val discountedPrice: Double? = null,
     val ownerId: UUID,
     val imageUrls: List<String>,
+    val isOutOfStock: Boolean,
 )
