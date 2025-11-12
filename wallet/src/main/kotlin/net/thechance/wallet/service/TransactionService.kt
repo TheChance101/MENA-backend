@@ -37,8 +37,6 @@ class TransactionService(
 
         val endDate = transactionFilterParams.endDateTime.orNow()
 
-        println("**********************Start Date: $startDate, End Date: $endDate&*******************")
-
         return transactionRepository.findFilteredTransactions(
             status = transactionFilterParams.status,
             transactionTypes = transactionFilterParams.types?.map { it.name },
