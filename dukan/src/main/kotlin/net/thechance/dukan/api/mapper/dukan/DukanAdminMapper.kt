@@ -8,7 +8,7 @@ fun Dukan.toAdminResponse(language: String): DukanAdminResponse {
     return DukanAdminResponse(
         id = id,
         name = name,
-        imageUrl = imageUrl,
+        imageUrl = imageUrl.orEmpty(),
         address = address,
         latitude = latitude,
         longitude = longitude,

@@ -10,7 +10,7 @@ import java.util.*
 data class DukanAdminResponse(
     val id: UUID,
     val name: String,
-    val imageUrl: String?,
+    val imageUrl: String,
     val address: String,
     val latitude: Double,
     val longitude: Double,
