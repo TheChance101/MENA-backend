@@ -26,4 +26,5 @@ private fun Transaction.Type.toEventType(): TransactionCompletedEvent.Transactio
     when (this) {
         Transaction.Type.P2P -> TransactionCompletedEvent.TransactionType.P2P
         Transaction.Type.ONLINE_PURCHASE -> TransactionCompletedEvent.TransactionType.ONLINE_PURCHASE
+        Transaction.Type.DEPOSIT -> TransactionCompletedEvent.TransactionType.DEPOSIT
     }
