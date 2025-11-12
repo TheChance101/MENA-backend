@@ -32,4 +32,16 @@ class ContactController(
         contactService.syncContacts(contacts.toContacts(userId))
         return ResponseEntity.status(HttpStatus.CREATED).build()
     }
+
+    @GetMapping("/search")
+    fun searchContacts(
+        @RequestParam query: String,
+        @RequestParam(defaultValue = "false") onlyMenaUsers: Boolean,
+        pageable: Pageable,
+        @AuthenticationPrincipal userId: UUID
+    ): ResponseEntity<PagedResponse<ContactResponse>> {
+        val results = contactService.searchContacts(userId, query, onlyMenaUsers, pageable)
+        return ResponseEntity.ok(results.toResponse())
+    }
+
 }

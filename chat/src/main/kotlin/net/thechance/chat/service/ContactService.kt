@@ -38,4 +38,14 @@ class ContactService(
         val userPhone = contactUserService.getPhoneNumberByUserId(contactUserId)
         return contactRepository.findByContactOwnerIdAndPhoneNumber(ownerId, userPhone)
     }
+
+    fun searchContacts(userId: UUID, query: String, onlyMenaUsers: Boolean, pageable: Pageable): Page<ContactModel> {
+        return contactRepository.searchContacts(
+            contactOwnerId = userId,
+            query = query.trim(),
+            onlyMenaUsers = onlyMenaUsers,
+            pageable = pageable
+        )
+    }
+
 }
