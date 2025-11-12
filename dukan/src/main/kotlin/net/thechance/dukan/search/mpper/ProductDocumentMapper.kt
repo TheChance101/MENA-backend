@@ -8,7 +8,7 @@ fun DukanProduct.toDocument():ProductDocument{
     return ProductDocument(
         id = id.toString(),
         name = name,
-        price = price,
+        price = price.final,
         dukanName = dukan.name,
         mainImageUrl = imageUrls.first(),
         shelfName = shelf.title

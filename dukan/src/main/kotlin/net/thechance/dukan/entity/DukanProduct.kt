@@ -1,6 +1,7 @@
 package net.thechance.dukan.entity
 
 import jakarta.persistence.*
+import java.math.BigDecimal
 import java.time.Instant
 import java.util.*
 import java.util.Collections.emptySet
@@ -27,14 +28,11 @@ data class DukanProduct(
     @JoinColumn(name = "dukan_id", nullable = false)
     val dukan: Dukan,
 
-    @Column(name = "price", nullable = false)
-    val price: Double,
+    @Embedded
+    val price: Price,
 
-    @Column(name = "discounted_price", nullable = true)
-    val discountedPrice: Double? = null,
-
-    @Column(name = "discount", nullable = true)
-    val discount: Double? = null,
+    @Column(name = "discount", precision = 5, scale = 2)
+    val discount: BigDecimal = BigDecimal.ZERO,
 
     @Column(name = "description", nullable = false, columnDefinition = "TEXT")
     val description: String,
@@ -56,12 +54,4 @@ data class DukanProduct(
 
     @OneToMany(mappedBy = "product", fetch = FetchType.LAZY)
     val favorites: MutableSet<FavoriteProduct> = emptySet()
-){
-    fun calculateDiscountPercentage(price: Double, discountedPrice: Double?): Double {
-        return if (discountedPrice != null && discountedPrice < price) {
-            ((price - discountedPrice) / price) * 100
-        } else {
-            0.0
-        }
-    }
-}
+)

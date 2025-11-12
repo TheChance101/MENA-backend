@@ -1,5 +1,6 @@
 package net.thechance.dukan.service.model
 
+import net.thechance.dukan.entity.Price
 import java.util.UUID
 
 data class DukanProductCreationParams(
@@ -7,5 +8,5 @@ data class DukanProductCreationParams(
     val ownerId: UUID,
     val shelfId: UUID,
     val description: String,
-    val price: Double
+    val price: Price
 )

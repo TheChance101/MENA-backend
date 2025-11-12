@@ -11,7 +11,7 @@ fun CartItem.toResponse(): CartItemResponse {
         productName = this.product.name,
         description = this.product.description,
         quantity = this.quantity,
-        price = this.product.price,
+        price = this.product.price.final,
         imageUrl = this.product.imageUrls.firstOrNull()
     )
 }

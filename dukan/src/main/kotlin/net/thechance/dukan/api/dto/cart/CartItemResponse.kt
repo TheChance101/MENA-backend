@@ -1,6 +1,7 @@
 package net.thechance.dukan.api.dto.cart
 
 import com.fasterxml.jackson.annotation.JsonProperty
+import java.math.BigDecimal
 import java.util.*
 
 data class CartItemResponse(
@@ -8,6 +9,6 @@ data class CartItemResponse(
     val productName: String,
     val description: String,
     val quantity: Int,
-    val price: Double,
+    val price: BigDecimal,
     val imageUrl: String?
 )

@@ -1,6 +1,7 @@
 package net.thechance.dukan.entity
 
 import jakarta.persistence.*
+import java.math.BigDecimal
 import java.time.Instant
 import java.util.*
 
@@ -26,8 +27,8 @@ data class Cart(
     @OneToMany(mappedBy = "cart", cascade = [CascadeType.ALL], orphanRemoval = true)
     val items: MutableSet<CartItem> = mutableSetOf(),
 
-    @Column(name = "total_price", nullable = false)
-    var totalPrice: Double =0.0,
+    @Column(name = "total_price", nullable = false, precision = 10, scale = 2)
+    var totalPrice: BigDecimal = BigDecimal.ZERO,
 
 
     @Column(name = "created_at", nullable = false)
@@ -37,7 +38,9 @@ data class Cart(
     var updatedAt: Instant = Instant.now()
 ) {
     fun calculateTotalPrice() {
-        totalPrice = (items ?: emptySet()).sumOf { it.quantity * it.product.price }
+        totalPrice = items.sumOf {
+            it.product.price.final.multiply(BigDecimal(it.quantity))
+        }
         updatedAt = Instant.now()
     }
 

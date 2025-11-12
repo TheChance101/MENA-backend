@@ -1,5 +1,7 @@
 package net.thechance.dukan.api.dto.product
 
+import net.thechance.dukan.entity.Price
+import java.math.BigDecimal
 import java.time.Instant
 import java.util.UUID
 
@@ -8,8 +10,8 @@ data class DukanProductResponse(
     val name:String,
     val dukanId:UUID,
     val shelfId: UUID,
-    val price:Double,
-    val discountedPrice: Double?,
+    val price: Price,
+    val discount: BigDecimal,
     val description:String,
     val imageUrls:List<String>,
     val quantityInCart: Int,
