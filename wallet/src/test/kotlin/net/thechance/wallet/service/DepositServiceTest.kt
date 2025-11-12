@@ -36,7 +36,7 @@ class DepositServiceTest {
     @Test
     fun `deposit throws when receiver is blocked`() {
         val blockedReceiver = receiver.copy(status = WalletUser.Status.BLOCKED)
-        every { walletUserService.getUserById(senderId) } returns sender
+        every { walletUserService.getReferenceById(senderId) } returns sender
         every { walletUserService.getUserByPhoneNumber(blockedReceiver.phoneNumber) } returns blockedReceiver
         every { blockService.getCurrentBlock() } returns block
 
@@ -48,7 +48,7 @@ class DepositServiceTest {
 
     @Test
     fun `deposit throws when receiver not found`() {
-        every { walletUserService.getUserById(senderId) } returns sender
+        every { walletUserService.getReferenceById(senderId) } returns sender
         every {
             walletUserService.getUserByPhoneNumber(nonExistentPhone)
         } throws IllegalArgumentException("User with phone number $nonExistentPhone not found")
@@ -63,7 +63,7 @@ class DepositServiceTest {
 
     @Test
     fun `deposit creates a successful transaction`() {
-        every { walletUserService.getUserById(senderId) } returns sender
+        every { walletUserService.getReferenceById(senderId) } returns sender
         every { walletUserService.getUserByPhoneNumber(receiver.phoneNumber) } returns receiver
         every { blockService.getCurrentBlock() } returns block
         every { transactionRepository.save(any()) } answers { firstArg() }
@@ -71,7 +71,7 @@ class DepositServiceTest {
         adminWalletService.depositMoney(senderId, receiver.phoneNumber, 100.0)
 
         verify(exactly = 1) { blockService.getCurrentBlock() }
-        verify(exactly = 1) { walletUserService.getUserById(senderId) }
+        verify(exactly = 1) { walletUserService.getReferenceById(senderId) }
         verify(exactly = 1) { walletUserService.getUserByPhoneNumber(receiver.phoneNumber) }
         verify(exactly = 1) { transactionRepository.save(any()) }
 
