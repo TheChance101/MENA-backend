@@ -1,4 +1,4 @@
-package net.thechance.faith.service
+package net.thechance.faith.service.mosque
 
 import net.thechance.faith.exception.ImageUploadFailedException
 import net.thechance.faith.exception.InvalidImageFormatException
