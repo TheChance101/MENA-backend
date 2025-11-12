@@ -8,8 +8,6 @@ import net.thechance.faith.api.dto.tilawah.toResponse
 import net.thechance.faith.service.tilawah.TilawahService
 import org.springframework.http.ResponseEntity
 import org.springframework.web.bind.annotation.GetMapping
-import org.springframework.web.bind.annotation.PostMapping
-import org.springframework.web.bind.annotation.RequestBody
 import org.springframework.web.bind.annotation.RequestMapping
 import org.springframework.web.bind.annotation.RestController
 
@@ -25,27 +23,25 @@ class TilawahController(
         return ResponseEntity.ok(reciters.toResponse())
     }
 
-    @PostMapping("/ayah/sound")
+    @GetMapping("/ayah/sound")
     fun getAyahSoundUrl(
-        @Valid @RequestBody
-        ayahSoundRequest: AyahSoundRequest
+        @Valid request: AyahSoundRequest,
     ): ResponseEntity<String> {
         val soundUrl = recitersService.getAyahSoundUrl(
-            reciterId = ayahSoundRequest.reciterId,
-            surahNumber = ayahSoundRequest.surahNumber,
-            ayahNumber = ayahSoundRequest.ayahNumber
+            reciterId = request.reciterId,
+            surahNumber = request.surahNumber,
+            ayahNumber = request.ayahNumber
         )
         return ResponseEntity.ok(soundUrl)
     }
 
-    @PostMapping("/surah/sound")
+    @GetMapping("/surah/sound")
     fun getSurahSoundUrl(
-        @Valid @RequestBody
-        surahSoundRequest: SurahSoundRequest
+        @Valid request: SurahSoundRequest,
     ): ResponseEntity<String> {
         val soundUrl = recitersService.getSurahSoundsUrl(
-            reciterId = surahSoundRequest.reciterId,
-            surahNumber = surahSoundRequest.surahNumber,
+            reciterId = request.reciterId,
+            surahNumber = request.surahNumber,
         )
         return ResponseEntity.ok(soundUrl)
     }
