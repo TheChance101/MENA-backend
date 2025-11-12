@@ -75,8 +75,8 @@ class StatementHtmlGenerator(
         val absAmount = kotlin.math.abs(amount)
         val formatted = formatter.format(absAmount)
 
-        val sign = if (amount < 0) "-" else "+"
-        return "$sign $formatted"
+        val sign = if (amount < 0) "- " else ""
+        return "$sign$formatted"
     }
 
     private fun formatTransactionAmount(currentUserId: UUID, transaction: Transaction): String {
