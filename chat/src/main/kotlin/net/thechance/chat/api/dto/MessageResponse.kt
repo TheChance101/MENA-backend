@@ -8,6 +8,7 @@ import java.time.Instant
 import java.util.*
 
 data class TextMessageRequestDto(
+    val messageId: UUID,
     val chatId: UUID,
     val text: String
 )

@@ -10,6 +10,7 @@ import net.thechance.dukan.service.exception.CartNotFoundException
 import net.thechance.dukan.service.exception.ProductAlreadyInCartException
 import net.thechance.dukan.service.exception.ProductNotFoundException
 import net.thechance.dukan.service.exception.ProductNotInCartException
+import net.thechance.dukan.service.exception.ProductOutOfStockException
 import net.thechance.dukan.service.model.AddOrUpdateCartItemParams
 import org.springframework.data.domain.Page
 import org.springframework.data.domain.Pageable
@@ -30,6 +31,8 @@ class CartService(
             ?: createCart(params.userId, params.dukanId)
 
         val product = getProduct(params.productId)
+
+        if (product.isOutOfStock) throw ProductOutOfStockException()
 
         if (cart.items.any { it.product.id == product.id })
             throw ProductAlreadyInCartException()

@@ -6,11 +6,23 @@ import java.util.UUID
 data class DukanProductResponse(
     val id: UUID,
     val name:String,
+    val dukanId:UUID,
     val shelfId: UUID,
     val price:Double,
     val description:String,
     val imageUrls:List<String>,
     val quantityInCart: Int,
     val createdAt: Instant,
-    val isFavorite: Boolean
+    val isFavorite: Boolean,
+    val isOutOfStock: Boolean,
+)
+
+data class DukanProductAdminResponse(
+    val id: UUID,
+    val name:String,
+    val price:Double,
+    val discountedPrice: Double?,
+    val description:String,
+    val imageUrls:List<String>,
+    val createdAt: Instant,
 )
