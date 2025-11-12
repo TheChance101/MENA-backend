@@ -4,6 +4,7 @@ import jakarta.transaction.Transactional
 import net.thechance.chat.entity.Contact
 import net.thechance.chat.repository.ContactRepository
 import net.thechance.chat.service.model.ContactModel
+import net.thechance.chat.service.model.SearchContactsArgs
 import org.springframework.data.domain.Page
 import org.springframework.data.domain.PageRequest
 import org.springframework.data.domain.Pageable
@@ -39,12 +40,12 @@ class ContactService(
         return contactRepository.findByContactOwnerIdAndPhoneNumber(ownerId, userPhone)
     }
 
-    fun searchContacts(userId: UUID, query: String, onlyMenaUsers: Boolean, pageable: Pageable): Page<ContactModel> {
+    fun searchContacts(args: SearchContactsArgs): Page<ContactModel> {
         return contactRepository.searchContacts(
-            contactOwnerId = userId,
-            query = query.trim(),
-            onlyMenaUsers = onlyMenaUsers,
-            pageable = pageable
+            contactOwnerId = args.userId,
+            query = args.query.trim(),
+            onlyMenaUsers = args.onlyMenaUsers,
+            pageable = args.pageable
         )
     }
 

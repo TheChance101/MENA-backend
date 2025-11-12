@@ -3,6 +3,7 @@ package net.thechance.chat.api.controller
 import jakarta.validation.Valid
 import net.thechance.chat.api.dto.*
 import net.thechance.chat.service.ContactService
+import net.thechance.chat.service.model.SearchContactsArgs
 import org.springframework.data.domain.Pageable
 import org.springframework.http.HttpStatus
 import org.springframework.http.ResponseEntity
@@ -40,7 +41,8 @@ class ContactController(
         pageable: Pageable,
         @AuthenticationPrincipal userId: UUID
     ): ResponseEntity<PagedResponse<ContactResponse>> {
-        val results = contactService.searchContacts(userId, query, onlyMenaUsers, pageable)
+        val args = SearchContactsArgs(query, userId, onlyMenaUsers, pageable)
+        val results = contactService.searchContacts(args)
         return ResponseEntity.ok(results.toResponse())
     }
 
