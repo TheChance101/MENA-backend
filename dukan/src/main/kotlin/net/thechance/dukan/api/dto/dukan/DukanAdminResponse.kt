@@ -17,7 +17,5 @@ data class DukanAdminResponse(
     val status: Dukan.Status,
     val activationStatus: Dukan.ActivationStatus?,
     val createdAt: Instant,
-    val color: DukanColor,
-    val style: Style,
     val categories: List<DukanCategoryDto>
 )

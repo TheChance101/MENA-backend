@@ -15,8 +15,6 @@ fun Dukan.toAdminResponse(language: String): DukanAdminResponse {
         status = status,
         activationStatus = activationStatus,
         createdAt = createdAt,
-        color = color,
-        style = style,
         categories = categories.map{it.toDto(language)},
     )
 }
