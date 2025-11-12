@@ -5,14 +5,12 @@ import net.thechance.wallet.exception.NoTransactionsFoundException
 import net.thechance.wallet.service.model.input.TransactionFilterParams
 import net.thechance.wallet.service.model.input.UserTransactionType
 import net.thechance.wallet.service.model.output.StatementData
-import net.thechance.wallet.service.utils.atEndOfDay
 import net.thechance.wallet.service.utils.orNow
 import org.springframework.data.domain.Page
 import org.springframework.data.domain.PageRequest
 import org.springframework.data.domain.Sort
 import org.springframework.stereotype.Service
 import java.math.BigDecimal
-import java.time.LocalDate
 import java.time.LocalDateTime
 import java.util.*
 
@@ -25,11 +23,11 @@ class StatementService(
     fun getStatementData(
         userId: UUID,
         types: List<UserTransactionType>?,
-        startDate: LocalDate?,
-        endDate: LocalDate?
+        startDateTime: LocalDateTime?,
+        endDateTime: LocalDateTime?
     ): StatementData {
-        val startDateTime = getStartDateTime(startDate, userId)
-        val endDateTime = getEndDateTime(endDate)
+        val startDateTime = getStartDateTime(startDateTime, userId)
+        val endDateTime = getEndDateTime(endDateTime)
 
         return StatementData(
             userId = userId,
@@ -42,14 +40,13 @@ class StatementService(
         )
     }
 
-    private fun getStartDateTime(startDate: LocalDate?, userId: UUID): LocalDateTime {
-        return startDate?.atStartOfDay()
-            ?: transactionService.getUserFirstTransactionDate(userId)
+    private fun getStartDateTime(startDateTime: LocalDateTime?, userId: UUID): LocalDateTime {
+        return startDateTime ?: transactionService.getUserFirstTransactionDate(userId)
                 .orNow().toLocalDate().atStartOfDay()
     }
 
-    private fun getEndDateTime(endDate: LocalDate?): LocalDateTime {
-        return endDate?.atEndOfDay().orNow()
+    private fun getEndDateTime(endDateTime: LocalDateTime?): LocalDateTime {
+        return endDateTime.orNow()
     }
 
     private fun getUserName(userId: UUID): String {
@@ -81,8 +78,8 @@ class StatementService(
             transactionFilterParams = TransactionFilterParams(
                 status = Transaction.Status.SUCCESS,
                 types = types,
-                startDate = startDateTime.toLocalDate(),
-                endDate = endDateTime.toLocalDate()
+                startDateTime = startDateTime,
+                endDateTime = endDateTime
             ),
             currentUserId = userId,
             pageable = PageRequest.of(

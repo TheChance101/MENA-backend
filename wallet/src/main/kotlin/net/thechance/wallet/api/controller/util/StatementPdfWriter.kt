@@ -17,7 +17,7 @@ import org.springframework.core.io.ResourceLoader
 import org.springframework.stereotype.Component
 import java.io.OutputStream
 import java.math.BigDecimal
-import java.time.LocalDate
+import java.time.LocalDateTime
 import java.util.*
 
 @Component
@@ -29,11 +29,11 @@ class StatementPdfWriter(
     fun writePdfToStream(
         userId: UUID,
         types: List<UserTransactionType>?,
-        startDate: LocalDate?,
-        endDate: LocalDate?,
+        startDateTime: LocalDateTime?,
+        endDateTime: LocalDateTime?,
         outputStream: OutputStream
     ): StatementMetadata {
-        val statementData = statementService.getStatementData(userId, types, startDate, endDate)
+        val statementData = statementService.getStatementData(userId, types, startDateTime, endDateTime)
 
         val writer = PdfWriter(outputStream)
         val pdf = PdfDocument(writer)
