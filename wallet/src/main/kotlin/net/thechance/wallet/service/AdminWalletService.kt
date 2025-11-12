@@ -15,7 +15,7 @@ class AdminWalletService(
 ) {
     fun depositMoney(adminId: UUID, receiverPhoneNumber: String, amount: Double) {
         val block = blockService.getCurrentBlock()
-        val sender = walletUserService.getUserById(adminId)
+        val sender = walletUserService.getReferenceById(adminId)
         val receiver = walletUserService.getUserByPhoneNumber(receiverPhoneNumber)
         if (receiver.isBlocked())
             throw BlockedWalletUserException("Receiver is blocked")

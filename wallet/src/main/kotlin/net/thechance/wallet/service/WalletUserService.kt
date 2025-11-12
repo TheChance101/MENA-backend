@@ -26,4 +26,8 @@ class WalletUserService (
         val updatedRowsCount = userRepository.updateStatus(userId, status)
         if (updatedRowsCount == 0) throw IllegalArgumentException("User with id $userId not found")
     }
+
+    fun getReferenceById(userId: UUID): WalletUser {
+        return userRepository.getReferenceById(userId)
+    }
 }
