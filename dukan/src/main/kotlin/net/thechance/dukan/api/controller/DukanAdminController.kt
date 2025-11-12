@@ -38,14 +38,6 @@ class DukanAdminController(
     private val dukanProductService: DukanProductService
 ) {
 
-    @GetMapping("/{dukanId}")
-    fun getDukanDetails(@PathVariable("dukanId") dukanId: UUID): ResponseEntity<DukanAdminResponse> {
-        val dukan = dukanService.getDukanDetailsById(dukanId)
-        val language = LocaleContextHolder.getLocale().language
-        val response = dukan.toAdminResponse(language)
-        return ResponseEntity.ok(response)
-    }
-
     @GetMapping("/shelf/{dukanId}")
     fun getAllShelvesByDukanId(
         @PathVariable dukanId: UUID,
