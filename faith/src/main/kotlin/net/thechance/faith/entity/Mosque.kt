@@ -12,6 +12,9 @@ data class Mosque(
     val id: UUID = UUID.randomUUID(),
 
     @Column(nullable = false)
+    val creatorId: UUID,
+
+    @Column(nullable = false)
     val name: String,
 
     @Column(nullable = false)

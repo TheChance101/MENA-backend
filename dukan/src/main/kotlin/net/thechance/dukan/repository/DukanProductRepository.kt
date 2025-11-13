@@ -17,6 +17,8 @@ interface DukanProductRepository : JpaRepository<DukanProduct, UUID> {
     fun existsByShelfIdAndIsDeletedFalse(shelfId: UUID): Boolean
     fun findByIdAndDukanOwnerIdAndIsDeletedFalse(id: UUID, ownerId: UUID): Optional<DukanProduct>
 
+    fun findAllByShelfId(shelfId: UUID, pageable: Pageable): Page<DukanProduct>
+
     @Query(
         """
         SELECT new net.thechance.dukan.service.model.DukanProductWithFavoriteAndQuantity(

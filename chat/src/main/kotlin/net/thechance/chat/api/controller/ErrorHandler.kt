@@ -64,4 +64,13 @@ class ChatControllerAdvice : ResponseEntityExceptionHandler() {
         )
         return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(error)
     }
+
+    @ExceptionHandler(MalformedMessageContentException::class)
+    fun handleMalformedMessageContentException(e: MalformedMessageContentException): ResponseEntity<ErrorResponse> {
+        val error = ErrorResponse(
+            code = ErrorCodes.MALFORMED_MESSAGE_CONTENT,
+            message = e.message
+        )
+        return ResponseEntity.status(HttpStatus.UNPROCESSABLE_ENTITY).body(error)
+    }
 }
