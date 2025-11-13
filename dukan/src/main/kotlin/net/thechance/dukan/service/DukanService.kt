@@ -16,6 +16,7 @@ import net.thechance.dukan.service.exception.DukanCreationFailedException
 import net.thechance.dukan.service.exception.DukanNotFoundException
 import net.thechance.dukan.service.mapper.toDukanStatusChangedEvent
 import net.thechance.dukan.service.model.DukanCreationParams
+import net.thechance.dukan.service.model.DukanWithDiscount
 import net.thechance.events.publisher.MenaEventPublisher
 import org.springframework.data.domain.Page
 import org.springframework.data.domain.Pageable
@@ -124,6 +125,13 @@ class DukanService(
         if (!isUpdated) throw DukanNotFoundException()
 
         handleUpdatingStatusActions(dukanId, status, reason)
+    }
+
+    fun findTopDukansWithDiscounts(
+        userId: UUID,
+        pageable: Pageable
+    ): Page<DukanWithDiscount> {
+        return dukanRepository.findTopDukansWithDiscounts(userId, pageable)
     }
 
     private fun handleUpdatingStatusActions(dukanId: UUID, status: Dukan.Status, reason: String?) {
