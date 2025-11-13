@@ -3,7 +3,7 @@ package net.thechance.identity.service.model
 import java.time.Instant
 
 data class PrivacyAndPolicyModel(
-    val updatedAt: Instant?,
+    val updatedAt: Instant,
     val sections: List<PrivacyAndPolicySectionModel>
 )
 

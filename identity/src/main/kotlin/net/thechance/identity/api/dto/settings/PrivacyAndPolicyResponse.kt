@@ -3,7 +3,7 @@ package net.thechance.identity.api.dto.settings
 import java.time.Instant
 
 class PrivacyAndPolicyResponse(
-    val updatedAt: Instant?,
+    val updatedAt: Instant,
     val sections: List<PrivacyAndPolicySection>
 )
 
