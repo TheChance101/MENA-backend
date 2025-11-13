@@ -17,7 +17,6 @@ data class MessageResponse(
     val id: UUID,
     val senderId: UUID,
     val chatId: UUID,
-    val type: String,
     val content: MessageResponse.MessageContent,
     val reactions: List<MessageReactionResponse> = emptyList(),
     val sendAt: Instant,
@@ -26,10 +25,21 @@ data class MessageResponse(
     val isMine: Boolean
 ) {
     sealed class MessageContent {
-        data class Text(val text: String) : MessageResponse.MessageContent()
-        data class Image(val url: String) : MessageResponse.MessageContent()
-        data class Audio(val url: String, val duration: Long) : MessageResponse.MessageContent()
+        abstract val type: String
+
+        data class Text(val text: String) : MessageContent() {
+            override val type = Message.MessageType.TEXT.name
+        }
+
+        data class Image(val url: String) : MessageContent() {
+            override val type = Message.MessageType.IMAGE.name
+        }
+
+        data class Audio(val url: String, val duration: Long) : MessageContent() {
+            override val type = Message.MessageType.AUDIO.name
+        }
     }
+
 }
 
 fun MessageContent.toResponse() = when(this) {
@@ -45,7 +55,6 @@ fun Message.toResponse(requesterId: UUID): MessageResponse {
         id = id,
         senderId = senderId,
         chatId = chatId,
-        type = type.name,
         content = content.toResponse(),
         reactions = reactions.map(MessageReaction::toResponse),
         sendAt = sentAt,
