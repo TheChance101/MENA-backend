@@ -48,16 +48,17 @@ interface MessageRepository : JpaRepository<Message, UUID> {
 
     fun findTopByChatIdOrderBySentAtDesc(chatId: UUID): Message?
 
-    @Query(
-        nativeQuery = true,
-        value = """
-        SELECT DISTINCT ON (m.chat_id) 
-        m.chat_id, m.id, m.text, m.image_url,m.audio_url,m.audio_duration_ms, m.last_modified_at, m.sender_id, m.sent_at, m.is_read
-        FROM chat.messages m
-        WHERE m.chat_id IN :chatIds
-        ORDER BY m.chat_id, m.sent_at DESC
-    """
-    )
+    @Query("""
+    SELECT m
+    FROM Message m
+    WHERE m.chatId IN :chatIds
+      AND m.sentAt = (
+        SELECT MAX(m2.sentAt)
+        FROM Message m2
+        WHERE m2.chatId = m.chatId
+      )
+    ORDER BY m.chatId ASC, m.sentAt DESC
+""")
     fun findLastMessagesForChats(@Param("chatIds") chatIds: List<UUID>): List<Message>
 
     fun findAllByChatIdAndLastModifiedAtAfterOrderByLastModifiedAtAsc(
