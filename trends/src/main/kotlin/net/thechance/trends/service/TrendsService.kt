@@ -74,6 +74,25 @@ class TrendsService(
         return trends
     }
 
+    fun getUserFavoriteTrends(
+        pageable: Pageable,
+        currentUserId: UUID,
+        trendId: UUID? = null,
+    ): Page<TrendWithOwnerShipAndLikeStatus> {
+        val adjustedPageable = PageRequest.of(
+            pageable.pageNumber,
+            10,
+            pageable.getSortOr(Sort.by(Sort.Direction.DESC, "createdAt"))
+        )
+
+        return trendsRepository
+            .getUserLikedTrends(currentUserId, trendId, adjustedPageable)
+            .map {
+                generatePresignedUrlsForTrend(it)
+                    .withOwnership(currentUserId)
+            }
+    }
+
     @Transactional
     fun deleteTrendById(id: UUID, currentUserId: UUID) {
         val trendUrls = trendsRepository.findVideoUrlByIdAndOwnerId(id, currentUserId)
@@ -149,7 +168,11 @@ class TrendsService(
     }
 
     fun getTrendOrThrow(trendId: UUID, userId: UUID): TrendWithLikeStatus {
-        return trendsRepository.findByIdAndIsPublishedWithLikeStatus(trendId = trendId, isPublished = true, userId = userId) ?: throw TrendNotFoundException()
+        return trendsRepository.findByIdAndIsPublishedWithLikeStatus(
+            trendId = trendId,
+            isPublished = true,
+            userId = userId
+        ) ?: throw TrendNotFoundException()
     }
 
     private fun generatePresignedUrlsForTrend(
@@ -171,7 +194,7 @@ class TrendsService(
         }
     }
 
-    private fun createTrendWithLikeStatus(trend: Trend, isLiked: Boolean): TrendWithLikeStatus{
+    private fun createTrendWithLikeStatus(trend: Trend, isLiked: Boolean): TrendWithLikeStatus {
         return object : TrendWithLikeStatus {
             override fun getTrend(): Trend = trend
             override fun getIsLiked(): Boolean = isLiked
