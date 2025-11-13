@@ -82,4 +82,13 @@ class ProfileController(
         val response = ChangePasswordResponse("Password changed successfully")
         return ResponseEntity.ok(response)
     }
+
+    @PostMapping("/delete-account")
+    fun deleteAccount(
+        @AuthenticationPrincipal userId: UUID
+    ): ResponseEntity<Unit> {
+        userService.deleteUser(userId)
+        return ResponseEntity.ok().build()
+    }
+
 }

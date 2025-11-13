@@ -120,4 +120,9 @@ class UserService(
          and if the user is blocked call logout function to invalidate his access token
          */
     }
+
+    fun deleteUser(userId: UUID) {
+        if (userExists(userId).not()) throw UserNotFoundException("User with id: $userId not found")
+        userRepository.deleteById(userId)
+    }
 }
