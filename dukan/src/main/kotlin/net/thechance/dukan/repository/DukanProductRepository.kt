@@ -14,8 +14,8 @@ import java.util.*
 interface DukanProductRepository : JpaRepository<DukanProduct, UUID> {
 
     fun existsByDukanIdAndNameIgnoreCase(dukanId: UUID, name: String): Boolean
-    fun existsByShelfId(shelfId: UUID): Boolean
-    fun findByIdAndDukanOwnerId(id: UUID, ownerId: UUID): Optional<DukanProduct>
+    fun existsByShelfIdAndIsDeletedFalse(shelfId: UUID): Boolean
+    fun findByIdAndDukanOwnerIdAndIsDeletedFalse(id: UUID, ownerId: UUID): Optional<DukanProduct>
 
     @Query(
         """

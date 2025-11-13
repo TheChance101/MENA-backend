@@ -149,7 +149,7 @@ class DukanProductService(
         updateParams: DukanProductUpdateParams
     ): UUID {
         val product = dukanProductRepository
-            .findByIdAndDukanOwnerId(updateParams.productId, updateParams.ownerId)
+            .findByIdAndDukanOwnerIdAndIsDeletedFalse(updateParams.productId, updateParams.ownerId)
             .orElseThrow { ProductNotFoundException() }
 
         if (product.name != updateParams.name) {
@@ -178,7 +178,7 @@ class DukanProductService(
         file: MultipartFile
     ): String {
         val product = dukanProductRepository
-            .findByIdAndDukanOwnerId(productId, ownerId)
+            .findByIdAndDukanOwnerIdAndIsDeletedFalse(productId, ownerId)
             .orElseThrow { ProductNotFoundException() }
         val imageUrl = imageStorageService.uploadImage(
             file = file,
@@ -191,7 +191,7 @@ class DukanProductService(
     @Transactional
     fun deleteProduct(ownerId: UUID, productId: UUID) {
         val product = dukanProductRepository
-            .findByIdAndDukanOwnerId(productId, ownerId)
+            .findByIdAndDukanOwnerIdAndIsDeletedFalse(productId, ownerId)
             .orElseThrow { ProductNotFoundException() }
 
         val deletedProduct = product.copy(
