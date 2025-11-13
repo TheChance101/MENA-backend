@@ -8,3 +8,5 @@ open class ChatException(
 class NotFoundException(message: String) : ChatException(message = message)
 
 class InvalidTimeFormatException(message: String) : ChatException(message = message)
+
+class MalformedMessageContentException(message: String): ChatException(message = message)

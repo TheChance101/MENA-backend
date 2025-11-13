@@ -7,7 +7,7 @@ import java.time.LocalDate
 import java.time.LocalDateTime
 import java.util.*
 
-data class UserCreatedEvent(
+data class UserUpdatedEvent(
     val id: UUID,
     val phoneNumber: String,
     val password: String,

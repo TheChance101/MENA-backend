@@ -27,3 +27,7 @@ class InvalidImageFormatException(
 class ImageUploadFailedException(
     message: String = "Image uploading failed"
 ) : RuntimeException(message)
+
+class FailedToCreateMosqueException(
+    message: String = "Failed to create mosque"
+) : RuntimeException(message)

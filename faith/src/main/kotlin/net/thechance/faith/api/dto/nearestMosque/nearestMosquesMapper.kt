@@ -2,15 +2,18 @@ package net.thechance.faith.api.dto.nearestMosque
 
 import net.thechance.faith.entity.Mosque
 import java.time.Instant
+import java.util.*
 
-fun MosqueRequest.toMosque(): Mosque {
+fun MosqueRequest.toMosque(userId: UUID,imageUrl: String): Mosque {
     return Mosque(
+        id = UUID.randomUUID(),
         name = name,
         address = address,
         latitude = latitude,
         longitude = longitude,
-        imageUrl = imageUrl,
         createdAt = Instant.now(),
+        imageUrl = imageUrl,
+        creatorId = userId
     )
 }
 

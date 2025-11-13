@@ -2,7 +2,6 @@ package net.thechance.identity.service
 
 import com.google.common.truth.Truth.assertThat
 import io.mockk.*
-import net.thechance.events.identity.UserStatusUpdatedEvent
 import net.thechance.events.publisher.MenaEventPublisher
 import net.thechance.identity.entity.User
 import net.thechance.identity.exception.PasswordNotUpdatedException
@@ -22,15 +21,16 @@ import java.util.*
 class UserServiceTest {
     private val userRepository: UserRepository = mockk(relaxed = true)
     private val identityImageStorageService: IdentityImageStorageService = mockk(relaxed = true)
-    private val authenticationService: AuthenticationService = mockk(relaxed = true)
     private val eventPublisher: MenaEventPublisher = mockk(relaxed = true)
-    private val userService = UserService(
-        userRepository = userRepository,
-        identityImageStorageService = identityImageStorageService,
-        eventPublisher = eventPublisher,
-        authenticationService = authenticationService,
-        profileImageDirectory = "profile-images"
-    )
+    private val authenticationService: AuthenticationService = mockk(relaxed = true)
+    private val userService =
+        UserService(
+            userRepository = userRepository,
+            identityImageStorageService = identityImageStorageService,
+            "profile-images",
+            eventPublisher = eventPublisher,
+            authenticationService = authenticationService
+        )
     private val mockImageFile: MultipartFile = mockk(relaxed = true)
 
     @Test
@@ -139,6 +139,16 @@ class UserServiceTest {
     }
 
     @Test
+    fun `updatePasswordByPhoneNumber() should publish event after password updated`() {
+        every { userRepository.findByPhoneNumber(any()) } returns user
+        every { userRepository.save(any()) } returns updatedUser
+
+        userService.updatePasswordByPhoneNumber(phoneNumber, PASSWORD)
+
+        verify(exactly = 1) { eventPublisher.publish(any()) }
+    }
+
+    @Test
     fun `updateUserProfile should update fields and save user when called`() {
         every { userRepository.findById(userId) } returns Optional.of(user)
         every { userRepository.save(any()) } returns user
@@ -148,6 +158,16 @@ class UserServiceTest {
         assertThat(updatedUser.id).isEqualTo(userId)
         assertThat(updatedUser.username).isEqualTo(userModel.username)
         assertThat(updatedUser.firstName).isEqualTo(userModel.firstName)
+    }
+
+    @Test
+    fun `updateUserProfile should publish event when user saved`() {
+        every { userRepository.findById(userId) } returns Optional.of(user)
+        every { userRepository.save(any()) } returns user
+
+        userService.updateUserProfile(userModel)
+
+        verify(exactly = 1) { eventPublisher.publish(any()) }
     }
 
     @Test
@@ -168,6 +188,23 @@ class UserServiceTest {
     }
 
     @Test
+    fun `updateUserImage should publish event when image updated`() {
+        every { userRepository.findById(any()) } returns Optional.of(user)
+        every {
+            identityImageStorageService.uploadImage(
+                file = mockImageFile,
+                fileName = any(),
+                folderName = any()
+            )
+        } returns NEW_IMAGE_URL
+        every { userRepository.save(any()) } returns user.copy(imageUrl = NEW_IMAGE_URL)
+
+        userService.updateUserImage(userId, mockImageFile)
+
+        verify(exactly = 1) { eventPublisher.publish(any()) }
+    }
+
+    @Test
     fun `deleteUserImage should delete from storage and set url to null when image exists`() {
         every { userRepository.findById(any()) } returns Optional.of(userWithImage)
         every { identityImageStorageService.deleteImage(any(), any()) } just runs
@@ -177,6 +214,17 @@ class UserServiceTest {
 
         verify(exactly = 1) { identityImageStorageService.deleteImage(any(), any()) }
         verify(exactly = 1) { userRepository.save(userWithImageAsNull) }
+    }
+
+    @Test
+    fun `deleteUserImage should publish event when image deleted`() {
+        every { userRepository.findById(any()) } returns Optional.of(userWithImage)
+        every { identityImageStorageService.deleteImage(any(), any()) } just runs
+        every { userRepository.save(any()) } returns userWithImageAsNull
+
+        userService.deleteUserImage(userId)
+
+        verify(exactly = 1) { eventPublisher.publish(any()) }
     }
 
     @Test
@@ -267,7 +315,7 @@ class UserServiceTest {
     @Test
     fun `updateUserLastLoginTime() should throw UserNotFoundException when user is not found`() {
         val now = LocalDateTime.now()
-        every{ userRepository.updateLastLoginTime(userId, LocalDateTime.now()) } returns 0
+        every { userRepository.updateLastLoginTime(userId, LocalDateTime.now()) } returns 0
 
         assertThrows(UserNotFoundException::class.java) {
             userService.updateUserLastLoginTime(userId, now)
@@ -277,7 +325,7 @@ class UserServiceTest {
     @Test
     fun `updateUserLastVisitTime() should complete successfully when user exists`() {
         val now = LocalDateTime.now()
-        every{ userRepository.updateLastVisitTime(userId, now) } returns 1
+        every { userRepository.updateLastVisitTime(userId, now) } returns 1
 
         userService.updateUserLastVisitTime(userId, now)
 
@@ -287,7 +335,7 @@ class UserServiceTest {
     @Test
     fun `updateUserLastVisitTime() should throw UserNotFoundException when user is not found`() {
         val now = LocalDateTime.now()
-        every{ userRepository.updateLastVisitTime(userId, LocalDateTime.now()) } returns 0
+        every { userRepository.updateLastVisitTime(userId, LocalDateTime.now()) } returns 0
 
         assertThrows(UserNotFoundException::class.java) {
             userService.updateUserLastVisitTime(userId, now)
@@ -297,7 +345,8 @@ class UserServiceTest {
     @Test
     fun `updateUserStatus() should complete successfully when user exists`() {
         val newStatus = User.Status.ACTIVE
-        every{ userRepository.updateStatus(userId, newStatus) } returns 1
+        every { userRepository.updateStatus(userId, newStatus) } returns 1
+        every { userRepository.findByIdOrNull(userId) } returns user.copy(status = newStatus)
 
         userService.updateUserStatus(userId, newStatus)
 
@@ -305,20 +354,21 @@ class UserServiceTest {
     }
 
     @Test
-    fun `updateUserStatus() should publish UserStatusUpdatedEvent when it updates successfully`() {
+    fun `updateUserStatus() should publish event when user status updated`() {
         val newStatus = User.Status.ACTIVE
-        val event = UserStatusUpdatedEvent(userId, UserStatusUpdatedEvent.UserStatus.ACTIVE)
-        every{ userRepository.updateStatus(userId, newStatus) } returns 1
+        every { userRepository.updateStatus(userId, newStatus) } returns 1
+        every { userRepository.findByIdOrNull(userId) } returns user.copy(status = newStatus)
 
         userService.updateUserStatus(userId, newStatus)
 
-        verify(exactly = 1) { eventPublisher.publish(event) }
+        verify(exactly = 2) { eventPublisher.publish(any()) }
     }
 
     @Test
     fun `updateUserStatus() should logout user if user is blocked`() {
         val newStatus = User.Status.BLOCKED
-        every{ userRepository.updateStatus(userId, newStatus) } returns 1
+        every { userRepository.updateStatus(userId, newStatus) } returns 1
+        every { userRepository.findByIdOrNull(userId) } returns user.copy(status = newStatus)
 
         userService.updateUserStatus(userId, newStatus)
 
@@ -328,7 +378,7 @@ class UserServiceTest {
     @Test
     fun `updateUserStatus() should throw UserNotFoundException when user is not found`() {
         val newStatus = User.Status.ACTIVE
-        every{ userRepository.updateStatus(userId, newStatus) } returns 0
+        every { userRepository.updateStatus(userId, newStatus) } returns 0
 
         assertThrows(UserNotFoundException::class.java) {
             userService.updateUserStatus(userId, newStatus)
