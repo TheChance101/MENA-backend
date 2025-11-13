@@ -33,7 +33,7 @@ interface DukanProductRepository : JpaRepository<DukanProduct, UUID> {
             ON cart.userId = :userId AND cart.dukanId = dukan.id
         LEFT JOIN cart.items cartItem
             ON cartItem.product.id = product.id
-        WHERE product.id = :productId AND (product.isDeleted = false OR product.isDeleted IS null)
+        WHERE product.id = :productId AND (product.isDeleted = false)
         """
     )
     fun findProductWithFavoriteAndQuantityById(
@@ -57,7 +57,7 @@ interface DukanProductRepository : JpaRepository<DukanProduct, UUID> {
             ON cart.userId = :userId AND cart.dukanId = dukan.id
         LEFT JOIN cart.items cartItem
             ON cartItem.product.id = product.id
-        WHERE shelf.id = :shelfId AND (product.isDeleted = false OR product.isDeleted IS null)
+        WHERE shelf.id = :shelfId AND (product.isDeleted = false)
         """
     )
     fun findProductsWithFavoriteAndQuantityByShelf(
