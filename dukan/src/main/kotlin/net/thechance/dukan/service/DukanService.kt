@@ -124,7 +124,6 @@ class DukanService(
         if (!isUpdated) throw DukanNotFoundException()
 
         handleUpdatingStatusActions(dukanId, status, reason)
-
     }
 
     private fun handleUpdatingStatusActions(dukanId: UUID, status: Dukan.Status, reason: String?) {
