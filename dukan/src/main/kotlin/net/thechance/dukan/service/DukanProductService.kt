@@ -213,7 +213,7 @@ class DukanProductService(
     }
 
     private fun checkProductNameExistence(dukanId: UUID, name: String) {
-        if (dukanProductRepository.existsByDukanIdAndNameIgnoreCase(dukanId, name)) {
+        if (dukanProductRepository.existsByDukanIdAndNameIgnoreCaseAndIsDeletedFalse(dukanId, name)) {
             throw ProductNameAlreadyTakenException()
         }
     }
