@@ -133,4 +133,9 @@ class UserService(
         eventPublisher.publish(UserStatusUpdatedEvent(userId, status.toEventStatus()))
         if (status == User.Status.BLOCKED) authenticationService.logout(userId)
     }
+
+    fun deleteUser(userId: UUID) {
+        if (userExists(userId).not()) throw UserNotFoundException("User with id: $userId not found")
+        userRepository.deleteById(userId)
+    }
 }
