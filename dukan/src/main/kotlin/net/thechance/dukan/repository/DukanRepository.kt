@@ -5,6 +5,7 @@ import net.thechance.dukan.service.model.DukanWithFavorite
 import org.springframework.data.domain.Page
 import org.springframework.data.domain.Pageable
 import org.springframework.data.jpa.repository.JpaRepository
+import org.springframework.data.jpa.repository.Modifying
 import org.springframework.data.jpa.repository.Query
 import org.springframework.data.repository.query.Param
 import org.springframework.stereotype.Repository
@@ -133,4 +134,28 @@ interface DukanRepository : JpaRepository<Dukan, UUID> {
         userId: UUID,
         pageable: Pageable
     ): Page<DukanWithFavorite>
+
+    @Query(
+        """
+    SELECT d FROM Dukan d
+    WHERE 
+        d.status = :status
+        AND (
+            LOWER(d.name) LIKE LOWER(CONCAT('%', :query, '%'))
+            OR LOWER(d.address) LIKE LOWER(CONCAT('%', :query, '%'))
+        )
+    """
+    )
+    fun findByNameOrAddressAndStatus(
+        @Param("query") query: String,
+        @Param("status") status: Dukan.Status,
+        pageable: Pageable
+    ): Page<Dukan>
+
+    @Modifying
+    @Query("UPDATE Dukan d SET d.status = :status WHERE d.id = :dukanId")
+    fun updateStatus(
+        @Param("dukanId") dukanId: UUID,
+        @Param("status") status: Dukan.Status
+    ): Int
 }

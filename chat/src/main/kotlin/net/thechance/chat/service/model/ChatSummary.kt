@@ -24,11 +24,11 @@ fun Chat.toSummary(userId: UUID, chatName: String, imageUrl:String, lastMessage:
         name = chatName,
         imageUrl = imageUrl,
         lastMessage = lastMessage?.let { msg ->
-            val displayText = when {
-                !msg.text.isNullOrEmpty() -> msg.text
-                !msg.imageUrl.isNullOrEmpty() -> "Photo"
-                !msg.audioUrl.isNullOrEmpty() -> "Audio"
-                else -> "Unsupported"
+            val content = msg.content
+            val displayText = when(content) {
+                is MessageContent.Text -> content.text
+                is MessageContent.Image -> "Photo"
+                is MessageContent.Audio -> "Audio"
             }
 
             ChatSummary.Message(

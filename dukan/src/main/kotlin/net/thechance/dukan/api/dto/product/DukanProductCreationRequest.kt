@@ -1,6 +1,5 @@
 package net.thechance.dukan.api.dto.product
 
-import jakarta.validation.constraints.DecimalMin
 import jakarta.validation.constraints.NotBlank
 import jakarta.validation.constraints.NotNull
 import jakarta.validation.constraints.Size
@@ -13,8 +12,7 @@ data class DukanProductCreationRequest(
     @field:NotBlank(message = "description must not be blank")
     val description: String,
     @field:NotNull(message = "price is required")
-    @field:DecimalMin(value = "0.001", inclusive = true, message = "price must be >= 0.001")
-    val price: Double,
+    val price: PriceRequest,
     @field:NotNull(message = "must choose at least one shelf")
     val shelfId: UUID
 )

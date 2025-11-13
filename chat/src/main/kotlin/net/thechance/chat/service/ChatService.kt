@@ -2,8 +2,8 @@ package net.thechance.chat.service
 
 import net.thechance.chat.entity.*
 import net.thechance.chat.repository.ChatRepository
-import net.thechance.chat.repository.MessageReactionRepository
 import net.thechance.chat.repository.DeletedChatRepository
+import net.thechance.chat.repository.MessageReactionRepository
 import net.thechance.chat.repository.MessageRepository
 import net.thechance.chat.service.exception.InvalidTimeFormatException
 import net.thechance.chat.service.exception.NotFoundException
@@ -14,7 +14,7 @@ import org.springframework.data.repository.findByIdOrNull
 import org.springframework.stereotype.Service
 import org.springframework.transaction.annotation.Transactional
 import java.time.Instant
-import java.util.UUID
+import java.util.*
 
 @Service
 class ChatService(
@@ -26,6 +26,7 @@ class ChatService(
     private val attachmentStorageService: AttachmentStorageService,
     private val contactService: ContactService
 ) {
+
     @Transactional
     fun getChatByUserIds(userId: UUID, receiverId: UUID): ChatModel {
         val usersId = setOf(userId, receiverId)
@@ -54,13 +55,14 @@ class ChatService(
     }
 
     @Transactional
-    fun saveMessage(args: MessageRequestArgs): Message {
+    fun saveTextMessage(args: MessageRequestArgs): Message {
         return messageRepository.save(
             Message(
                 id = args.messageId,
                 senderId = args.senderId,
                 chatId = args.chatId,
-                text = args.text,
+                type = Message.MessageType.TEXT,
+                content = MessageContent.Text(args.text)
             )
         )
     }
@@ -77,7 +79,8 @@ class ChatService(
                 id = args.messageId,
                 senderId = args.senderId,
                 chatId = args.chatId,
-                imageUrl = imageUrl
+                type = Message.MessageType.IMAGE,
+                content = MessageContent.Image(imageUrl)
             )
         )
     }
@@ -95,8 +98,8 @@ class ChatService(
                 id = args.messageId,
                 senderId = args.senderId,
                 chatId = args.chatId,
-                audioUrl = audioUrl,
-                audioDurationMs = args.audioDurationMs
+                type = Message.MessageType.AUDIO,
+                content = MessageContent.Audio(audioUrl, args.audioDurationMs)
             )
         )
     }
@@ -213,8 +216,9 @@ class ChatService(
     }
 
     @Transactional
-    fun deleteChatById(chatId: UUID){
-        val currentChat = chatRepository.findByIdOrNull(chatId) ?: throw NotFoundException("no chat found with this id $chatId")
+    fun deleteChatById(chatId: UUID) {
+        val currentChat =
+            chatRepository.findByIdOrNull(chatId) ?: throw NotFoundException("no chat found with this id $chatId")
         val deletedChats = currentChat.users.map {
             DeletedChat(
                 chatId = chatId,
@@ -225,7 +229,7 @@ class ChatService(
         deletedChatRepository.saveAll(deletedChats)
     }
 
-    fun getDeletedChatsIdByUserIdAfterSpecificTime(userId: UUID, time: Instant): List<String>{
+    fun getDeletedChatsIdByUserIdAfterSpecificTime(userId: UUID, time: Instant): List<String> {
         return deletedChatRepository.getDeletedChatsIdByUserIdAfterSpecificTime(
             userId = userId,
             time = time
@@ -236,6 +240,7 @@ class ChatService(
         return contact?.let { "${it.firstName} ${it.lastName}" }
             ?: user?.let { "${it.firstName} ${it.lastName}" }.orEmpty()
     }
+
 
     companion object {
         private const val FOLDER_NAME = "chat_attachments"

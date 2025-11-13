@@ -5,19 +5,17 @@ import io.mockk.every
 import io.mockk.mockk
 import io.mockk.verify
 import jakarta.persistence.EntityManager
-import net.thechance.chat.api.dto.MessageRequestDto
+import net.thechance.chat.api.dto.TextMessageRequestDto
 import net.thechance.chat.entity.Chat
 import net.thechance.chat.entity.Contact
 import net.thechance.chat.entity.ContactUser
 import net.thechance.chat.entity.Message
 import net.thechance.chat.repository.ChatRepository
+import net.thechance.chat.repository.DeletedChatRepository
 import net.thechance.chat.repository.MessageReactionRepository
 import net.thechance.chat.repository.MessageRepository
 import net.thechance.chat.service.exception.NotFoundException
-import net.thechance.chat.service.model.ChatModel
-import net.thechance.chat.service.model.MessageImageRequestArgs
-import net.thechance.chat.service.model.MessageRequestArgs
-import net.thechance.chat.service.model.toModel
+import net.thechance.chat.service.model.*
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.assertThrows
@@ -34,6 +32,7 @@ class ChatServiceTest {
     private lateinit var chatRepository: ChatRepository
     private lateinit var messageReactionRepository: MessageReactionRepository
     private lateinit var attachmentStorageService: AttachmentStorageService
+    private lateinit var deletedChatRepository: DeletedChatRepository
     private lateinit var contactUserService: ContactUserService
     private lateinit var contactService: ContactService
     private lateinit var entityManager: EntityManager
@@ -66,6 +65,7 @@ class ChatServiceTest {
         messageRepository = mockk(relaxed = true)
         chatRepository = mockk(relaxed = true)
         messageReactionRepository = mockk(relaxed = true)
+        deletedChatRepository = mockk(relaxed = true)
         contactUserService = mockk(relaxed = true)
         attachmentStorageService = mockk(relaxed = true)
         entityManager = mockk(relaxed = true)
@@ -76,6 +76,7 @@ class ChatServiceTest {
             messageRepository,
             messageReactionRepository,
             chatRepository,
+            deletedChatRepository,
             contactUserService,
             attachmentStorageService,
             contactService
@@ -131,7 +132,8 @@ class ChatServiceTest {
     @Test
     fun `saveMessage saves message when chat exists`() {
         val chat = testChat()
-        val messageDto = MessageRequestDto(
+        val messageDto = TextMessageRequestDto(
+            UUID.randomUUID(),
             chatId = chat.id,
             text = "message 1"
         )
@@ -139,13 +141,13 @@ class ChatServiceTest {
         every { messageRepository.findById(any()) } answers { Optional.empty() }
         every { messageRepository.save(any()) } answers { firstArg<Message>() }
 
-        service.saveMessage(MessageRequestArgs(chat.id, UUID.randomUUID(), messageDto.text))
+        service.saveTextMessage(MessageRequestArgs(UUID.randomUUID(), chat.id, UUID.randomUUID(), messageDto.text))
 
         verify {
             messageRepository.save(
                 withArg {
                     assertThat(it.chatId).isEqualTo(chat.id)
-                    assertThat(it.text).isEqualTo("message 1")
+                    assertThat(it.content).isEqualTo(MessageContent.Text("message 1"))
                 }
             )
         }
@@ -163,7 +165,8 @@ class ChatServiceTest {
             MessageImageRequestArgs(
                 chatId = chat.id,
                 senderId = senderId,
-                image = image
+                image = image,
+                messageId = UUID.randomUUID()
             )
         )
 
@@ -171,7 +174,6 @@ class ChatServiceTest {
             messageRepository.save(
                 withArg {
                     assertThat(it.chatId).isEqualTo(chat.id)
-                    assertThat(it.text).isEqualTo(null)
                     assertThat(it.senderId).isEqualTo(senderId)
                 }
             )
@@ -247,7 +249,8 @@ class ChatServiceTest {
     ) {
         message = Message(
             id = UUID.randomUUID(),
-            text = lastMessageText,
+            type = Message.MessageType.TEXT,
+            content = MessageContent.Text(lastMessageText),
             sentAt = Instant.now(),
             senderId = otherUser.id,
             chatId = chat.id,
@@ -270,6 +273,7 @@ class ChatServiceTest {
         )
         every { contactService.getContactByOwnerIdAndContactUserId(userId, otherUser.id) } returns contact
     }
+
     @Test
     fun `saveMessageAudio should upload audio and return message with audio url`() {
         val chat = testChat()
@@ -282,12 +286,11 @@ class ChatServiceTest {
         every { messageRepository.save(any()) } answers { firstArg() }
 
         val result = service.saveMessageAudio(
-            net.thechance.chat.service.model.MessageAudioRequestArgs(chat.id, senderId, audio)
+            net.thechance.chat.service.model.MessageAudioRequestArgs(UUID.randomUUID(), chat.id, senderId, audio, 1000L)
         )
 
-        assertThat(result.audioUrl).isEqualTo(uploadedAudioUrl)
-        assertThat(result.text).isNull()
-        assertThat(result.imageUrl).isNull()
+        assertThat(result.content).isEqualTo(MessageContent.Audio(uploadedAudioUrl, 1000L))
+
     }
 
 
@@ -302,7 +305,13 @@ class ChatServiceTest {
 
         assertThrows<RuntimeException> {
             service.saveMessageAudio(
-                net.thechance.chat.service.model.MessageAudioRequestArgs(chat.id, senderId, audio)
+                net.thechance.chat.service.model.MessageAudioRequestArgs(
+                    UUID.randomUUID(),
+                    chat.id,
+                    senderId,
+                    audio,
+                    1000L
+                )
             )
         }
     }
@@ -312,7 +321,8 @@ class ChatServiceTest {
         setupChatEnvironment()
         val myMessage = Message(
             id = UUID.randomUUID(),
-            text = "My message",
+            type = Message.MessageType.TEXT,
+            content = MessageContent.Text("My message"),
             sentAt = Instant.now(),
             senderId = userId,
             chatId = chat.id,
