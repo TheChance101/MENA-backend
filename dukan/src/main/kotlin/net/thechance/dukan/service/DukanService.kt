@@ -6,12 +6,15 @@ import net.thechance.dukan.api.mapper.dukan.toDukan
 import net.thechance.dukan.entity.Dukan
 import net.thechance.dukan.entity.DukanCategory
 import net.thechance.dukan.entity.DukanColor
+import net.thechance.dukan.entity.StatusChangelog
 import net.thechance.dukan.service.model.DukanWithFavorite
 import net.thechance.dukan.repository.DukanCategoryRepository
 import net.thechance.dukan.repository.DukanColorRepository
 import net.thechance.dukan.repository.DukanRepository
+import net.thechance.dukan.repository.StatusChangelogRepository
 import net.thechance.dukan.service.exception.DukanCreationFailedException
 import net.thechance.dukan.service.exception.DukanNotFoundException
+import net.thechance.dukan.service.mapper.toDukanStatusChangedEvent
 import net.thechance.dukan.service.model.DukanCreationParams
 import net.thechance.events.publisher.MenaEventPublisher
 import org.springframework.data.domain.Page
@@ -28,6 +31,7 @@ class DukanService(
     private val dukanColorRepository: DukanColorRepository,
     private val imageStorageService: ImageStorageService,
     private val dukanCategoryRepository: DukanCategoryRepository,
+    private val statusChangeLogRepository: StatusChangelogRepository,
     private val eventPublisher: MenaEventPublisher
 ) {
     fun getAllStyles(): EnumEntries<Dukan.Style> = Dukan.Style.entries
@@ -106,6 +110,41 @@ class DukanService(
 
     fun getAllByCategoryIdWithFavorite(categoryId: UUID, userId: UUID, pageable: Pageable): Page<DukanWithFavorite> =
         dukanRepository.findApprovedDukansWithProductsByCategoryWithFavorite(categoryId, userId, pageable)
+
+    fun getDukansByStatusAndQuery(
+        query: String,
+        status: Dukan.Status,
+        pageable: Pageable
+    ): Page<Dukan> =
+        dukanRepository.findByNameOrAddressAndStatus(query = query, status = status, pageable = pageable)
+
+    @Transactional
+    fun updateDukanStatus(dukanId: UUID, status: Dukan.Status, reason: String?) {
+        val isUpdated = dukanRepository.updateStatus(dukanId, status) > 0
+        if (!isUpdated) throw DukanNotFoundException()
+
+        handleUpdatingStatusActions(dukanId, status, reason)
+    }
+
+    private fun handleUpdatingStatusActions(dukanId: UUID, status: Dukan.Status, reason: String?) {
+        if (status == Dukan.Status.REJECTED) {
+            insertRejectionChangelog(dukanId, reason)
+        }
+
+        /*TODO, we have to update activation status here to activated if the dukan status is approved */
+
+        val dukan = getDukanDetailsById(dukanId)
+        eventPublisher.publish(dukan.toDukanStatusChangedEvent())
+    }
+
+    private fun insertRejectionChangelog(dukanId: UUID, reason: String?) {
+        val changelog = StatusChangelog(
+            dukanId = dukanId,
+            status = StatusChangelog.Status.REJECTED,
+            reason = reason.orEmpty()
+        )
+        statusChangeLogRepository.save(changelog)
+    }
 
     companion object {
         private val DUKAN_FOLDER_NAME = "dukan"

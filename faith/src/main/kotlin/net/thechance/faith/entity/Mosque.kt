@@ -11,7 +11,7 @@ data class Mosque(
     @GeneratedValue(strategy = GenerationType.UUID)
     val id: UUID = UUID.randomUUID(),
 
-    @Id
+    @Column(nullable = false)
     val creatorId: UUID,
 
     @Column(nullable = false)
