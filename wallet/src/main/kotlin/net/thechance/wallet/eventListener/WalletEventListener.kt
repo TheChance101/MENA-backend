@@ -13,7 +13,7 @@ import org.springframework.stereotype.Component
 @Component
 class WalletEventListener(
     private val transactionService: TransactionService,
-    private val userService: WalletUserService,
+    private val userService: WalletUserService
 ) {
 
     @EventListener
