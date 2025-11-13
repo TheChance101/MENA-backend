@@ -5,7 +5,7 @@ import java.time.Instant
 import java.util.*
 
 @Entity
-@Table(name = "status_changelogs")
+@Table(name = "status_changelogs", schema = "dukan")
 data class StatusChangelog(
     @Id
     @GeneratedValue(strategy = GenerationType.UUID)

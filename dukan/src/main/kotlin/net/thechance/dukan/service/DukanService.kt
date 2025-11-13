@@ -144,13 +144,7 @@ class DukanService(
             status = StatusChangelog.Status.REJECTED,
             reason = reason.orEmpty()
         )
-        statusChangeLogRepository.insertStatusChangelog(
-            id = changelog.id,
-            dukanId = dukanId,
-            status = changelog.status.name,
-            reason = reason,
-            createdAt = changelog.createdAt,
-        )
+        statusChangeLogRepository.save(changelog)
     }
 
     companion object {
