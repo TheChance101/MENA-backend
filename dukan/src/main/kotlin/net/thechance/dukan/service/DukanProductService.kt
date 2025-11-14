@@ -2,13 +2,6 @@ package net.thechance.dukan.service
 
 import jakarta.persistence.EntityNotFoundException
 import jakarta.transaction.Transactional
-import net.thechance.dukan.entity.Dukan
-import net.thechance.dukan.entity.DukanProduct
-import net.thechance.dukan.entity.FavoriteProduct
-import net.thechance.dukan.entity.FavoriteProductId
-import net.thechance.dukan.repository.DukanProductRepository
-import net.thechance.dukan.repository.DukanShelfRepository
-import net.thechance.dukan.repository.FavoriteProductRepository
 import net.thechance.dukan.entity.*
 import net.thechance.dukan.repository.DukanProductRepository
 import net.thechance.dukan.repository.DukanShelfRepository
