@@ -8,5 +8,5 @@ data class CartResponse(
     val id: UUID,
     val totalPriceBeforeDiscount: BigDecimal,
     val totalPriceAfterDiscount: BigDecimal,
-    val discount : BigDecimal
+    val discount : BigDecimal = BigDecimal.ZERO,
 )
