@@ -210,14 +210,6 @@ class ChatController(
             }
     }
 
-    @PostMapping("/ayah")
-    fun saveAyah(
-        @RequestBody ayahRequest: AyahMessageRequestDto,
-        @AuthenticationPrincipal userId: UUID
-    ): ResponseEntity<MessageResponse>{
-        val message = chatService.saveAyahMessage(ayahRequest.toRequestArgs(userId))
-        return ResponseEntity.ok(message.toResponse(userId))
-    }
 
     companion object {
         const val PRIVATE_MESSAGES = "/private/messages"
