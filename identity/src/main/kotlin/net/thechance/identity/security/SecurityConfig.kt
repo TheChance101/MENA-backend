@@ -27,6 +27,7 @@ class SecurityConfig(
         http
             .csrf { it.disable() }
             .authorizeHttpRequests {
+                it.requestMatchers("/identity/authentication/logout").authenticated()
                 it.requestMatchers(
                     "/identity/authentication/**",
                     "/identity/admin/authentication/**",
