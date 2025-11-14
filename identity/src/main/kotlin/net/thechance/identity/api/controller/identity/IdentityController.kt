@@ -18,6 +18,7 @@ import net.thechance.identity.service.RegisterService
 import net.thechance.identity.service.ResetPasswordService
 import net.thechance.identity.service.UserService
 import org.springframework.http.ResponseEntity
+import org.springframework.security.core.annotation.AuthenticationPrincipal
 import org.springframework.web.bind.annotation.*
 import java.util.*
 
@@ -124,5 +125,11 @@ class IdentityController(
     fun getSupportedCountries(): ResponseEntity<List<CountryResponse>> {
         val response = authenticationService.getCountries().toCountryResponses()
         return ResponseEntity.ok(response)
+    }
+
+    @PostMapping("/logout")
+    fun logout(@AuthenticationPrincipal userId: UUID): ResponseEntity<Unit> {
+        authenticationService.logout(userId)
+        return ResponseEntity.ok().build()
     }
 }
