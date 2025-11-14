@@ -9,8 +9,6 @@ import net.thechance.wallet.entity.Transaction
 import net.thechance.wallet.service.TransactionService
 import net.thechance.wallet.service.model.input.TransactionFilterParams
 import net.thechance.wallet.service.model.input.UserTransactionType
-import net.thechance.wallet.service.model.output.ReceiverDetails
-import net.thechance.wallet.service.model.output.toReceiverDetails
 import org.springframework.data.domain.PageRequest
 import org.springframework.data.domain.Pageable
 import org.springframework.data.domain.Sort
@@ -104,17 +102,6 @@ class TransactionController(
         )
 
         return ResponseEntity.ok(transaction.id)
-    }
-
-    @GetMapping("/{transactionId}/receiver-details")
-    fun getReceiverDetails(
-        @PathVariable transactionId: UUID,
-    ): ResponseEntity<ReceiverDetails> {
-        val response = transactionService.getTransactionDetails(transactionId).let{
-            it.receiver.toReceiverDetails(it.type)
-        }
-
-        return ResponseEntity.ok(response)
     }
 
     private fun setStatementMetadataHeaders(
