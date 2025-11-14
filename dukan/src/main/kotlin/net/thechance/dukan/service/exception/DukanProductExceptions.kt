@@ -1,6 +1,7 @@
 package net.thechance.dukan.service.exception
 
 import net.thechance.dukan.api.utils.ErrorCodes.DUKAN_PRODUCT_CREATION_FAILED
+import net.thechance.dukan.api.utils.ErrorCodes.INVALID_DISCOUNT
 import net.thechance.dukan.api.utils.ErrorCodes.PRODUCT_NAME_ALREADY_TAKEN
 import net.thechance.dukan.api.utils.ErrorCodes.PRODUCT_NOT_FOUND
 import net.thechance.dukan.api.utils.ErrorCodes.PRODUCT_OUT_OF_STOCK
@@ -35,4 +36,12 @@ class ProductUpdateFailedException : DukanException(
     code = PRODUCT_UPDATE_FAILED,
     status = HttpStatus.BAD_REQUEST,
     message = "Product update failed"
+)
+
+class InvalidDiscountException(
+    message: String = "Discounted price cannot be greater than the original price"
+) : DukanException(
+    code = INVALID_DISCOUNT,
+    status = HttpStatus.BAD_REQUEST,
+    message = message
 )

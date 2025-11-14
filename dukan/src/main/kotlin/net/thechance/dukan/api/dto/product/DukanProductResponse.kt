@@ -1,16 +1,19 @@
 package net.thechance.dukan.api.dto.product
 
+import net.thechance.dukan.entity.Price
+import java.math.BigDecimal
 import java.time.Instant
 import java.util.UUID
 
 data class DukanProductResponse(
     val id: UUID,
-    val name:String,
-    val dukanId:UUID,
+    val name: String,
+    val dukanId: UUID,
     val shelfId: UUID,
-    val price:Double,
-    val description:String,
-    val imageUrls:List<String>,
+    val price: Price,
+    val discount: BigDecimal,
+    val description: String,
+    val imageUrls: List<String>,
     val quantityInCart: Int,
     val createdAt: Instant,
     val isFavorite: Boolean,
@@ -19,10 +22,10 @@ data class DukanProductResponse(
 
 data class DukanProductAdminResponse(
     val id: UUID,
-    val name:String,
-    val price:Double,
-    val discountedPrice: Double?,
-    val description:String,
-    val imageUrls:List<String>,
+    val name: String,
+    val price: BigDecimal,
+    val discountedPrice: BigDecimal,
+    val description: String,
+    val imageUrls: List<String>,
     val createdAt: Instant,
 )

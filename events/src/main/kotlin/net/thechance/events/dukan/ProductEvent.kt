@@ -1,12 +1,13 @@
 package net.thechance.events.dukan
 
 import net.thechance.events.MenaEvent
+import java.math.BigDecimal
 
 sealed class ProductEvent: MenaEvent {
     data class Save(
         val id: String,
         val name: String,
-        val price: Double,
+        val price: BigDecimal,
         val dukanName: String,
         val dukanId:String,
         val mainImageUrl: String,

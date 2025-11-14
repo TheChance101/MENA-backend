@@ -17,8 +17,11 @@ fun CartItem.toResponse(): CartItemResponse {
 }
 
 fun Cart.toResponse(): CartResponse {
+    val discountPercentage = getDiscountPercentage()
     return CartResponse(
         id = this.id,
-        totalPrice = totalPrice
+        totalPriceBeforeDiscount = price.base,
+        totalPriceAfterDiscount = price.final,
+        discount =discountPercentage
     )
 }

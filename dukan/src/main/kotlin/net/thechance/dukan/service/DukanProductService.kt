@@ -9,7 +9,12 @@ import net.thechance.dukan.entity.FavoriteProductId
 import net.thechance.dukan.repository.DukanProductRepository
 import net.thechance.dukan.repository.DukanShelfRepository
 import net.thechance.dukan.repository.FavoriteProductRepository
+import net.thechance.dukan.entity.*
+import net.thechance.dukan.repository.DukanProductRepository
+import net.thechance.dukan.repository.DukanShelfRepository
+import net.thechance.dukan.repository.FavoriteProductRepository
 import net.thechance.dukan.service.exception.DukanProductCreationFailedException
+import net.thechance.dukan.service.exception.InvalidDiscountException
 import net.thechance.dukan.service.exception.ProductNameAlreadyTakenException
 import net.thechance.dukan.service.exception.ProductNotFoundException
 import net.thechance.dukan.service.model.DukanProductCreationParams
@@ -22,6 +27,8 @@ import org.springframework.data.domain.Page
 import org.springframework.data.domain.Pageable
 import org.springframework.stereotype.Service
 import org.springframework.web.multipart.MultipartFile
+import java.math.BigDecimal
+import java.math.RoundingMode
 import java.util.*
 
 @Service
@@ -88,7 +95,7 @@ class DukanProductService(
         dukanName = this.description,
         dukanId = this.dukan.id.toString(),
         mainImageUrl = this.imageUrls.firstOrNull().orEmpty(),
-        price = this.price,
+        price = this.price.final,
         shelfName = this.shelf.title
     )
 
@@ -97,12 +104,15 @@ class DukanProductService(
             val dukan = dukanService.getDukanByOwnerId(params.ownerId)
             val shelf = dukanShelfRepository.getReferenceById(params.shelfId)
             checkProductNameExistence(dukan.id, params.name)
+
+            val discountValue = calculateDiscount(params.price)
             val product = dukanProductRepository.save(
                 DukanProduct(
                     name = params.name.trim(),
                     shelf = shelf,
                     dukan = dukan,
                     price = params.price,
+                    discount = discountValue,
                     description = params.description.trim(),
                     imageUrls = emptyList() // Images will be uploaded using a different endpoint
                 )
@@ -157,7 +167,6 @@ class DukanProductService(
         val product = dukanProductRepository
             .findByIdAndDukanOwnerIdAndIsDeletedFalse(updateParams.productId, updateParams.ownerId)
             .orElseThrow { ProductNotFoundException() }
-
         if (product.name != updateParams.name) {
             checkProductNameExistence(product.dukan.id, updateParams.name)
         }
@@ -165,16 +174,7 @@ class DukanProductService(
         val shelf = dukanShelfRepository.getReferenceById(updateParams.shelfId)
 
         deleteUnusedProductImages(product.imageUrls, updateParams.imageUrls)
-
-        val updatedProduct = product.copy(
-            name = updateParams.name.trim(),
-            price = updateParams.price,
-            imageUrls = updateParams.imageUrls,
-            description = updateParams.description.trim(),
-            shelf = shelf,
-            isOutOfStock = updateParams.isOutOfStock,
-        )
-
+        val updatedProduct = buildUpdatedProduct(product, updateParams, shelf)
         return dukanProductRepository.save(updatedProduct).id
     }
 
@@ -232,6 +232,33 @@ class DukanProductService(
         }
     }
 
+    private fun calculateDiscount(price: Price): BigDecimal {
+        val basePrice = price.base
+        val finalPrice = price.final
+        if (finalPrice > basePrice) throw InvalidDiscountException()
+
+        return (basePrice - finalPrice)
+            .divide(basePrice, 10, RoundingMode.HALF_UP)
+            .multiply(BigDecimal(100))
+            .setScale(2, RoundingMode.HALF_UP)
+    }
+
+    private fun buildUpdatedProduct(
+        product: DukanProduct,
+        params: DukanProductUpdateParams,
+        shelf: DukanShelf
+    ): DukanProduct {
+        val discountValue = calculateDiscount(params.price)
+        return product.copy(
+            name = params.name.trim(),
+            price = params.price,
+            discount = discountValue,
+            imageUrls = params.imageUrls,
+            description = params.description.trim(),
+            shelf = shelf,
+            isOutOfStock = params.isOutOfStock,
+        )
+    }
 
     companion object {
         private const val PRODUCT_FOLDER_NAME = "product"
