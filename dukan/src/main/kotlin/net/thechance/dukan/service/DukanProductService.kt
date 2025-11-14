@@ -158,7 +158,7 @@ class DukanProductService(
         updateParams: DukanProductUpdateParams
     ): UUID {
         val product = dukanProductRepository
-            .findByIdAndDukanOwnerId(updateParams.productId, updateParams.ownerId)
+            .findByIdAndDukanOwnerIdAndIsDeletedFalse(updateParams.productId, updateParams.ownerId)
             .orElseThrow { ProductNotFoundException() }
         if (product.name != updateParams.name) {
             checkProductNameExistence(product.dukan.id, updateParams.name)
@@ -178,7 +178,7 @@ class DukanProductService(
         file: MultipartFile
     ): String {
         val product = dukanProductRepository
-            .findByIdAndDukanOwnerId(productId, ownerId)
+            .findByIdAndDukanOwnerIdAndIsDeletedFalse(productId, ownerId)
             .orElseThrow { ProductNotFoundException() }
         val imageUrl = imageStorageService.uploadImage(
             file = file,
@@ -188,8 +188,25 @@ class DukanProductService(
         return imageUrl
     }
 
+    @Transactional
+    fun deleteProduct(ownerId: UUID, productId: UUID) {
+        val product = dukanProductRepository
+            .findByIdAndDukanOwnerIdAndIsDeletedFalse(productId, ownerId)
+            .orElseThrow { ProductNotFoundException() }
+
+        val deletedProduct = product.copy(
+            isDeleted = true,
+        )
+
+        dukanProductRepository.save(deletedProduct)
+
+        eventPublisher.publish(
+            ProductEvent.Delete(product.id.toString())
+        )
+    }
+
     private fun checkProductNameExistence(dukanId: UUID, name: String) {
-        if (dukanProductRepository.existsByDukanIdAndNameIgnoreCase(dukanId, name)) {
+        if (dukanProductRepository.existsByDukanIdAndNameIgnoreCaseAndIsDeletedFalse(dukanId, name)) {
             throw ProductNameAlreadyTakenException()
         }
     }

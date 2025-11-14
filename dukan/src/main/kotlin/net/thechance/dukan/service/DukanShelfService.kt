@@ -44,7 +44,7 @@ class DukanShelfService(
     fun deleteShelf(shelfId: UUID, ownerId: UUID) {
         val shelf = getShelfById(shelfId, ownerId)
 
-        if (dukanProductRepository.existsByShelfId(shelfId)) {
+        if (dukanProductRepository.existsByShelfIdAndIsDeletedFalse(shelfId)) {
             throw ShelfDeletionNotAllowedException()
         }
 
