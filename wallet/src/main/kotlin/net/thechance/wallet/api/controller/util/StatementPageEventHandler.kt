@@ -140,5 +140,5 @@ class StatementPageEventHandler(
     }
 
     private fun LocalDateTime.formatHeaderDate(): String =
-        this.format(DateTimeFormatter.ofPattern("dd MMM yyyy"))
+        this.format(DateTimeFormatter.ofPattern("MMM dd yyyy"))
 }

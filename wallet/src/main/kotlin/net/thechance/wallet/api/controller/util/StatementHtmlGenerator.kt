@@ -2,20 +2,19 @@ package net.thechance.wallet.api.controller.util
 
 import net.thechance.wallet.entity.Transaction
 import net.thechance.wallet.service.model.output.StatementData
-import org.springframework.core.io.ResourceLoader
 import org.springframework.data.domain.Page
 import org.springframework.stereotype.Component
 import org.thymeleaf.TemplateEngine
 import org.thymeleaf.context.Context
 import java.math.BigDecimal
+import java.text.DecimalFormat
 import java.time.LocalDateTime
 import java.time.format.DateTimeFormatter
 import java.util.*
 
 @Component
 class StatementHtmlGenerator(
-    private val templateEngine: TemplateEngine,
-    private val resourceLoader: ResourceLoader
+    private val templateEngine: TemplateEngine
 ) {
 
     fun generateForPage(
@@ -28,8 +27,8 @@ class StatementHtmlGenerator(
 
         val templateData = mapOf(
             "userName" to statementData.username,
-            "openingBalance" to String.format("%.2f", statementData.openingBalance),
-            "closingBalance" to String.format("%.2f", statementData.closingBalance),
+            "openingBalance" to formatBalance(statementData.openingBalance),
+            "closingBalance" to formatBalance(statementData.closingBalance),
             "transactions" to formattedTransactions,
             "isFirstPage" to (transactionsPage.pageable.pageNumber == 0),
             "isLastPage" to (transactionsPage.pageable.pageNumber == transactionsPage.totalPages - 1)
@@ -43,12 +42,12 @@ class StatementHtmlGenerator(
 
     private fun formatTransaction(transaction: Transaction, currentUserId: UUID): Map<String, Any> {
         return mapOf(
-            "id" to "TX-" + transaction.id.toString().substring(0, 8),
+            "id" to "TX-" + transaction.id.toString().substring(0, 6),
             "date" to transaction.createdAt.formatRowItemDate(),
             "time" to transaction.createdAt.formatRowItemTime(),
             "typeHeader" to getTypeHeader(transaction, currentUserId),
             "counterParty" to getCounterParty(transaction, currentUserId),
-            "amount" to getFormattedAmount(currentUserId, transaction),
+            "amount" to formatTransactionAmount(currentUserId, transaction),
             "amountValue" to getAmountValue(currentUserId, transaction)
         )
     }
@@ -71,12 +70,23 @@ class StatementHtmlGenerator(
         }
     }
 
-    private fun getFormattedAmount(currentUserId: UUID, transaction: Transaction): String {
-        return if (currentUserId == transaction.sender.userId) {
-            "-${String.format("%.2f", transaction.amount)}"
-        } else {
-            "+${String.format("%.2f", transaction.amount)}"
-        }
+    private fun formatBalance(amount: Double): String {
+        val formatter = DecimalFormat("#,###.##")
+        val absAmount = kotlin.math.abs(amount)
+        val formatted = formatter.format(absAmount)
+
+        val sign = if (amount < 0) "- " else ""
+        return "$sign$formatted"
+    }
+
+    private fun formatTransactionAmount(currentUserId: UUID, transaction: Transaction): String {
+        val isSender = currentUserId == transaction.sender.userId
+        val sign = if (isSender) "-" else "+"
+
+        val formatter = DecimalFormat("#,###.##")
+        val formattedAmount = formatter.format(transaction.amount)
+
+        return "$sign $formattedAmount"
     }
 
     private fun getAmountValue(currentUserId: UUID, transaction: Transaction): BigDecimal {
