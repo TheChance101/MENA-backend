@@ -11,9 +11,9 @@ import java.time.LocalDateTime
 import java.util.*
 
 interface UserRepository: JpaRepository<User, UUID> {
-    fun findByPhoneNumber(phoneNumber: String): User?
-    fun existsByUsername(username: String): Boolean
-    fun existsByPhoneNumber(phoneNumber: String): Boolean
+    fun findByPhoneNumberAndIsDeletedFalse(phoneNumber: String): User?
+    fun existsByUsernameAndIsDeletedFalse(username: String): Boolean
+    fun existsByPhoneNumberAndIsDeletedFalse(phoneNumber: String): Boolean
 
     @Query("""
     SELECT u FROM User u
@@ -47,4 +47,5 @@ interface UserRepository: JpaRepository<User, UUID> {
         @Param("status") status: User.Status
     ): Int
 
+    fun existsByIdAndIsDeletedFalse(userId: UUID): Boolean
 }

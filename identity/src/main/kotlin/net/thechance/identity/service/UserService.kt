@@ -32,7 +32,7 @@ class UserService(
 ) {
 
     fun findByPhoneNumber(phoneNumber: String): User {
-        return userRepository.findByPhoneNumber(phoneNumber) ?: throw UserNotFoundException("User not found")
+        return userRepository.findByPhoneNumberAndIsDeletedFalse(phoneNumber) ?: throw UserNotFoundException("User not found")
     }
 
     fun findById(userId: UUID): User {
@@ -98,11 +98,11 @@ class UserService(
     }
 
     fun userExistsByUserName(username: String): Boolean {
-        return userRepository.existsByUsername(username)
+        return userRepository.existsByUsernameAndIsDeletedFalse(username)
     }
 
     fun userExistsByPhoneNumber(phoneNumber: String): Boolean {
-        return userRepository.existsByPhoneNumber(phoneNumber)
+        return userRepository.existsByPhoneNumberAndIsDeletedFalse(phoneNumber)
     }
 
     fun saveUser(user: User): User {
@@ -135,7 +135,13 @@ class UserService(
     }
 
     fun deleteUser(userId: UUID) {
-        if (userExists(userId).not()) throw UserNotFoundException("User with id: $userId not found")
-        userRepository.deleteById(userId)
+        userIsNotDeleted(userId)
+        val user = findById(userId)
+        userRepository.save(user.copy(isDeleted = true, deletedAt = LocalDateTime.now()))
+        eventPublisher.publish(user.toUserUpdatedEvent())
+    }
+
+    fun userIsNotDeleted(userId: UUID){
+        if (userRepository.existsByIdAndIsDeletedFalse(userId).not()) throw UserNotFoundException("User with id: $userId not found")
     }
 }
