@@ -50,7 +50,7 @@ class ContactService(
             .mapNotNull { contact ->
                 try {
                     val validatedPhoneNumber = phoneNumberValidator.validateAndParse(contact.phoneNumber, ownerRegion)
-                    contact.copy(phoneNumber = validatedPhoneNumber.phoneNumber)
+                    contact.copy(phoneNumber = validatedPhoneNumber.phoneNumber).takeIf { it.phoneNumber != ownerPhoneNumber }
                 } catch (e: InvalidPhoneNumberException) {
                     null
                 }
