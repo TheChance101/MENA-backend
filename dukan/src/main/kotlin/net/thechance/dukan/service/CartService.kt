@@ -115,7 +115,7 @@ class CartService(
 
         return CartCheckoutPreview(
             transactionId = transactionId,
-            totalAmount = cart.totalPrice
+            totalAmount = cart.price.final.toDouble()
         )
     }
 
@@ -139,7 +139,7 @@ class CartService(
             type = InitiateTransactionEvent.TransactionType.ONLINE_PURCHASE,
             senderId = cart.userId,
             receiverId = dukan.ownerId,
-            amount = cart.totalPrice
+            amount = cart.price.final.toDouble()
         )
 
         eventPublisher.publish(transactionEvent)
@@ -159,7 +159,7 @@ class CartService(
             address = checkoutParams.address,
             longitude = checkoutParams.longitude,
             latitude = checkoutParams.latitude,
-            totalPrice = cart.totalPrice,
+            totalPrice = cart.price.final.toDouble(),
         )
 
         cart.items.forEach { cartItem ->
@@ -178,6 +178,7 @@ class CartService(
     private fun getCartByUserAndDukan(userId: UUID, dukanId: UUID): Cart? {
         return cartRepository.findActiveCartByUserIdAndDukanId(userId, dukanId)
     }
+
     private fun getOrCreateActiveCart(userId: UUID, dukanId: UUID): Cart {
         return cartRepository.findActiveCartByUserIdAndDukanId(userId, dukanId)
             ?: createCart(userId, dukanId)
