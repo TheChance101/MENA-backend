@@ -168,7 +168,7 @@ interface DukanRepository : JpaRepository<Dukan, UUID> {
         )
         FROM DukanProduct product
         JOIN product.dukan dukan
-        WHERE dukan.ownerId <> :userId
+        WHERE dukan.ownerId != :userId
           AND product.discount IS NOT NULL
         GROUP BY dukan.id
         ORDER BY MAX(product.discount) DESC
