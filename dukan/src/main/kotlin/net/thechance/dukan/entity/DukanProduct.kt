@@ -37,6 +37,9 @@ data class DukanProduct(
     @Column(name = "description", nullable = false, columnDefinition = "TEXT")
     val description: String,
 
+    @Column(name = "is_deleted")
+    val isDeleted: Boolean= false,
+
     @ElementCollection
     @CollectionTable(
         name = "product_images",

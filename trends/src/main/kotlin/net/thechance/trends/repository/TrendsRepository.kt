@@ -34,7 +34,12 @@ interface TrendsRepository : JpaRepository<Trend, UUID> {
         ))
         """
     )
-    fun findByOwnerIdAndIsPublished(ownerId: UUID, isPublished: Boolean, trendId: UUID?, pageable: Pageable): Page<TrendWithLikeStatus>
+    fun findByOwnerIdAndIsPublished(
+        ownerId: UUID,
+        isPublished: Boolean,
+        trendId: UUID?,
+        pageable: Pageable
+    ): Page<TrendWithLikeStatus>
 
     @Query(
         """
@@ -116,4 +121,33 @@ interface TrendsRepository : JpaRepository<Trend, UUID> {
         trendId: UUID?,
         pageable: Pageable
     ): Page<TrendWithLikeStatus>
+
+
+    @Query(
+        """
+    SELECT DISTINCT t AS trend, 
+           true AS isLiked
+    FROM Trend t
+    INNER JOIN TrendLike tl ON tl.trendId = t.id AND tl.userId = :userId
+    WHERE t.isPublished = true
+    AND (:trendId IS NULL OR t.createdAt <= (
+        SELECT t2.createdAt FROM Trend t2 WHERE t2.id = :trendId
+    ))
+    """,
+        countQuery = """
+    SELECT COUNT(DISTINCT t.id)
+    FROM Trend t
+    INNER JOIN TrendLike tl ON tl.trendId = t.id AND tl.userId = :userId
+    WHERE t.isPublished = true
+    AND (:trendId IS NULL OR t.createdAt <= (
+        SELECT t2.createdAt FROM Trend t2 WHERE t2.id = :trendId
+    ))
+    """
+    )
+    fun getUserLikedTrends(
+        userId: UUID,
+        trendId: UUID?,
+        pageable: Pageable
+    ): Page<TrendWithLikeStatus>
+
 }

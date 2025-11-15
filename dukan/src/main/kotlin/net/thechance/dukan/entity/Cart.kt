@@ -39,22 +39,26 @@ data class Cart(
 ) {
     fun calculateTotalPrice() {
         val safeItems = items ?: mutableSetOf()
-        if (safeItems.isEmpty()) return
+        if (safeItems.isEmpty()) {
+            price = Price(BigDecimal.ZERO, BigDecimal.ZERO)
+            return
+        }
 
         val totalBefore = safeItems.sumOf {
-            it.product.price.base.multiply(BigDecimal(it.quantity))
+            val basePrice = it.product.price.base ?: BigDecimal.ZERO
+            basePrice.multiply(BigDecimal(it.quantity))
         }
 
         val totalAfter = safeItems.sumOf {
-            val basePrice = it.product.price.base
-            val discount = it.product.discount
+            val basePrice = it.product.price.base ?: BigDecimal.ZERO
+            val discount = it.product.discount ?: BigDecimal.ZERO
             val discountedPrice = basePrice.subtract(
                 basePrice.multiply(discount).divide(BigDecimal(100), 2, RoundingMode.HALF_UP)
             )
             discountedPrice.multiply(BigDecimal(it.quantity))
         }
 
-        price = price.copy(
+        price = Price(
             base = totalBefore,
             final = totalAfter
         )

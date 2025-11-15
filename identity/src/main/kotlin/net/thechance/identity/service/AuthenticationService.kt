@@ -7,6 +7,10 @@ import net.thechance.identity.exception.InvalidRefreshTokenException
 import net.thechance.identity.exception.UserIsBlockedException
 import net.thechance.identity.repository.RefreshTokenRepository
 import net.thechance.identity.security.JwtService
+import net.thechance.identity.service.model.Country
+import net.thechance.identity.service.model.LocalizedCountry
+import org.springframework.context.MessageSource
+import org.springframework.context.i18n.LocaleContextHolder
 import org.springframework.security.crypto.password.PasswordEncoder
 import org.springframework.stereotype.Service
 import java.time.LocalDateTime
@@ -18,7 +22,8 @@ class AuthenticationService(
     private val refreshRepo: RefreshTokenRepository,
     private val jwtService: JwtService,
     private val refreshTokenService: RefreshTokenService,
-    private val passwordEncoder: PasswordEncoder
+    private val passwordEncoder: PasswordEncoder,
+    private val messageSource: MessageSource
 ) {
 
     fun login(phoneNumber: String, password: String): AuthResponse {
@@ -50,5 +55,12 @@ class AuthenticationService(
         val refreshToken = refreshTokenService.createRefreshToken(user).refreshToken
         userService.updateUserLastVisitTime(userId = user.id, time = LocalDateTime.now())
         return AuthResponse(accessToken, refreshToken)
+    }
+
+    fun getCountries(): List<LocalizedCountry> {
+        val currentLocale = LocaleContextHolder.getLocale()
+        return Country.entries.map {
+            it.getLocalizedCountry(messageSource, currentLocale)
+        }
     }
 }

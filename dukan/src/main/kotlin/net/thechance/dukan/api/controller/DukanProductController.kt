@@ -81,6 +81,15 @@ class DukanProductController(
         return DukanProductUpdateResponse(productId)
     }
 
+    @DeleteMapping("/{productId}")
+    fun deleteProduct(
+        @AuthenticationPrincipal userId: UUID,
+        @PathVariable productId: UUID
+    ): ResponseEntity<Unit> {
+        dukanProductService.deleteProduct(userId, productId)
+        return ResponseEntity.noContent().build()
+    }
+
     @PostMapping("/{productId}/image")
     fun uploadProductImage(
         @AuthenticationPrincipal userId: UUID,
