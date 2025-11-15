@@ -7,10 +7,10 @@ import net.thechance.chat.service.exception.InvalidPhoneNumberException
 import org.springframework.stereotype.Service
 
 @Service
-class GooglePhoneNumberValidatorImpl : PhoneNumberValidator {
+class GooglePhoneNumberParsesImpl : PhoneNumberParses {
     private val phoneNumberUtil: PhoneNumberUtil = PhoneNumberUtil.getInstance()
 
-    override fun validateAndParse(phoneNumberString: String, defaultRegion: String): ValidatedPhoneNumber {
+    override fun parse(phoneNumberString: String, defaultRegion: String): ValidatedPhoneNumber {
         val parsedNumber: Phonenumber.PhoneNumber
         try {
             parsedNumber = phoneNumberUtil.parse(phoneNumberString, defaultRegion.uppercase())
@@ -27,13 +27,17 @@ class GooglePhoneNumberValidatorImpl : PhoneNumberValidator {
             throw InvalidPhoneNumberException("Phone number is not a valid mobile number (Type: $numberType).")
         }
 
-        val e164Format = phoneNumberUtil.format(parsedNumber, PhoneNumberUtil.PhoneNumberFormat.E164)
-        val countryCode = parsedNumber.countryCode.toString()
-        val regionCode = phoneNumberUtil.getRegionCodeForNumber(parsedNumber)
+        return parsedNumber.toValidatedPhoneNumber()
+    }
 
-        val nationalNumberString = parsedNumber.nationalNumber.toString()
+    private fun Phonenumber.PhoneNumber.toValidatedPhoneNumber(): ValidatedPhoneNumber {
+        val e164Format = phoneNumberUtil.format(this, PhoneNumberUtil.PhoneNumberFormat.E164)
+        val countryCode = this.countryCode.toString()
+        val regionCode = phoneNumberUtil.getRegionCodeForNumber(this)
+
+        val nationalNumberString = this.nationalNumber.toString()
         val carrierPrefix = if (nationalNumberString.length >= 3) {
-            nationalNumberString.substring(0, 3)
+            nationalNumberString.take(3)
         } else {
             nationalNumberString
         }

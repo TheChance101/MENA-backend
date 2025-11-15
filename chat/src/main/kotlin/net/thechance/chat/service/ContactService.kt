@@ -5,8 +5,7 @@ import net.thechance.chat.entity.Contact
 import net.thechance.chat.repository.ContactRepository
 import net.thechance.chat.service.exception.InvalidPhoneNumberException
 import net.thechance.chat.service.model.ContactModel
-import net.thechance.chat.service.phone_number.MenaCountry
-import net.thechance.chat.service.phone_number.PhoneNumberValidator
+import net.thechance.chat.service.phone_number.PhoneNumberParses
 import org.springframework.data.domain.Page
 import org.springframework.data.domain.PageRequest
 import org.springframework.data.domain.Pageable
@@ -18,7 +17,7 @@ import java.util.UUID
 class ContactService(
     private val contactRepository: ContactRepository,
     private val contactUserService: ContactUserService,
-    private val phoneNumberValidator: PhoneNumberValidator
+    private val phoneNumberParses: PhoneNumberParses
 ) {
 
     fun getPagedContactByUserId(userId: UUID, pageable: Pageable): Page<ContactModel> {
@@ -29,29 +28,25 @@ class ContactService(
     }
 
     @Transactional
-    fun syncContacts(contactRequests: List<Contact>) {
-        val checkedUniqueContacts = contactRequests
-            .let(::checkValidContacts)
+    fun syncContacts(contactRequests: List<Contact>, ownerId: UUID) {
+        val checkedUniqueContacts = parseContacts(contactRequests, ownerId)
             .distinctBy { it.phoneNumber }
             .takeIf { it.isNotEmpty() } ?: return
 
-        val ownerId = checkedUniqueContacts.first().contactOwnerId
         contactRepository.deleteByContactOwnerIdAndPhoneNumbers(ownerId, checkedUniqueContacts.map { it.phoneNumber })
         contactRepository.saveAll(checkedUniqueContacts)
     }
 
-    fun checkValidContacts(contacts: List<Contact>): List<Contact> {
+    fun parseContacts(contacts: List<Contact>, ownerId: UUID): List<Contact> {
         if (contacts.isEmpty()) return emptyList()
-        val ownerId = contacts.first().contactOwnerId
-        val ownerPhoneNumber = contactUserService.getUserById(ownerId).phoneNumber
-        val ownerRegion = MenaCountry.fromPhoneNumber(ownerPhoneNumber)?.countryCodeName
-            ?: throw InvalidPhoneNumberException("can't get the region of the owner phone number")
+        val ownerPhoneNumber = contactUserService.getPhoneNumberByUserId(ownerId) ?: return emptyList()
+        val ownerRegion = phoneNumberParses.parse(ownerPhoneNumber, "").countryCode
         return contacts
             .mapNotNull { contact ->
                 try {
-                    val validatedPhoneNumber = phoneNumberValidator.validateAndParse(contact.phoneNumber, ownerRegion)
+                    val validatedPhoneNumber = phoneNumberParses.parse(contact.phoneNumber, ownerRegion)
                     contact.copy(phoneNumber = validatedPhoneNumber.phoneNumber).takeIf { it.phoneNumber != ownerPhoneNumber }
-                } catch (e: InvalidPhoneNumberException) {
+                } catch (_: InvalidPhoneNumberException) {
                     null
                 }
             }
@@ -59,7 +54,7 @@ class ContactService(
 
 
     fun getContactByOwnerIdAndContactUserId(ownerId: UUID, contactUserId: UUID): Contact? {
-        val userPhone = contactUserService.getPhoneNumberByUserId(contactUserId)
+        val userPhone = contactUserService.getPhoneNumberByUserId(contactUserId) ?: return null
         return contactRepository.findByContactOwnerIdAndPhoneNumber(ownerId, userPhone)
     }
 }
