@@ -16,7 +16,15 @@ class AyahBookmarkService(
 
     @Transactional
     fun saveBookmark(ayahBookmark: AyahBookmark): AyahBookmark {
-        return ayahBookmarkRepository.save(ayahBookmark)
+        ayahBookmarkRepository.upsert(ayahBookmark).let {
+            if (it <= 0) throw AyahBookmarkNotFoundException("Failed to save bookmark")
+        }
+
+        return ayahBookmarkRepository.findBySurahIdAndAyahNumberAndUserId(
+            surahId = ayahBookmark.surahId,
+            ayahNumber = ayahBookmark.ayahNumber,
+            userId = ayahBookmark.userId
+        ) ?: throw AyahBookmarkNotFoundException()
     }
 
     @Transactional
