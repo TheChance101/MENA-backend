@@ -89,6 +89,7 @@ interface TrendsRepository : JpaRepository<Trend, UUID> {
         LEFT JOIN FETCH t.owner
         LEFT JOIN TrendLike tl ON tl.trendId = t.id AND tl.userId = :userId
         WHERE t.isPublished = true
+        AND t.owner.status = 'ACTIVE'
         AND EXISTS (
             SELECT 1 FROM t.categories tc
             WHERE tc.id IN (
