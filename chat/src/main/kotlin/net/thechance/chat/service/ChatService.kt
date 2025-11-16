@@ -1,5 +1,7 @@
 package net.thechance.chat.service
 
+import net.thechance.chat.api.controller.ChatController
+import net.thechance.chat.api.dto.toResponse
 import net.thechance.chat.entity.*
 import net.thechance.chat.repository.ChatRepository
 import net.thechance.chat.repository.DeletedChatRepository
@@ -11,6 +13,7 @@ import net.thechance.chat.service.model.*
 import org.springframework.data.domain.Page
 import org.springframework.data.domain.Pageable
 import org.springframework.data.repository.findByIdOrNull
+import org.springframework.messaging.simp.SimpMessagingTemplate
 import org.springframework.stereotype.Service
 import org.springframework.transaction.annotation.Transactional
 import java.time.Instant
@@ -24,7 +27,8 @@ class ChatService(
     private val deletedChatRepository: DeletedChatRepository,
     private val contactUserService: ContactUserService,
     private val attachmentStorageService: AttachmentStorageService,
-    private val contactService: ContactService
+    private val contactService: ContactService,
+    private val messagingTemplate: SimpMessagingTemplate
 ) {
 
     @Transactional
@@ -227,6 +231,17 @@ class ChatService(
             )
         }
         deletedChatRepository.saveAll(deletedChats)
+    }
+
+    fun sendMessageToChatParticipants(message: Message) {
+        val chatParticipants = getChatUsersIds(message.chatId)
+        chatParticipants.forEach { userId ->
+            messagingTemplate.convertAndSendToUser(
+                userId.toString(),
+                ChatController.PRIVATE_MESSAGES,
+                message.toResponse(userId)
+            )
+        }
     }
 
     fun getDeletedChatsIdByUserIdAfterSpecificTime(userId: UUID, time: Instant): List<String> {
