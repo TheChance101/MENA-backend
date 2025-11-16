@@ -1,6 +1,6 @@
 package net.thechance.identity.service
 
-import jakarta.transaction.Transactional
+import org.springframework.transaction.annotation.Transactional
 import net.thechance.events.identity.UserDeletedEvent
 import net.thechance.events.identity.UserStatusUpdatedEvent
 import net.thechance.events.publisher.MenaEventPublisher
@@ -135,12 +135,13 @@ class UserService(
         if (status == User.Status.BLOCKED) authenticationService.logout(userId)
     }
 
+    @Transactional
     fun deleteUser(userId: UUID) {
         checkUserIsNotDeleted(userId)
         val user = findById(userId)
         userRepository.save(user.copy(isDeleted = true, deletedAt = LocalDateTime.now()))
-        eventPublisher.publish(UserDeletedEvent(id = user.id))
         authenticationService.logout(user.id)
+        eventPublisher.publish(UserDeletedEvent(id = user.id))
     }
 
     fun checkUserIsNotDeleted(userId: UUID){
