@@ -1,5 +1,6 @@
 package net.thechance.dukan.api.controller
 
+import net.thechance.dukan.api.dto.dukan.DeactivateDukanRequest
 import net.thechance.dukan.api.dto.dukan.DukanAdminResponse
 import net.thechance.dukan.api.dto.dukan.UpdateDukanStatusRequest
 import net.thechance.dukan.api.dto.product.DukanProductAdminResponse
@@ -23,6 +24,7 @@ import org.springframework.http.ResponseEntity
 import org.springframework.web.bind.annotation.GetMapping
 import org.springframework.web.bind.annotation.PatchMapping
 import org.springframework.web.bind.annotation.PathVariable
+import org.springframework.web.bind.annotation.PostMapping
 import org.springframework.web.bind.annotation.RequestBody
 import org.springframework.web.bind.annotation.RequestMapping
 import org.springframework.web.bind.annotation.RequestParam
@@ -88,6 +90,23 @@ class DukanAdminController(
             reason = updateStatusRequest.reason
         )
 
+        return ResponseEntity.ok().build()
+    }
+
+    @PatchMapping("{dukanId}/deactivate")
+    fun deactivate(
+        @PathVariable("dukanId") dukanId: UUID,
+        @RequestBody request: DeactivateDukanRequest
+    ): ResponseEntity<String> {
+        dukanService.deactivateDukan(dukanId, request.reason)
+        return ResponseEntity.ok().build()
+    }
+
+    @PatchMapping("{dukanId}/activate")
+    fun activate(
+        @PathVariable("dukanId") dukanId: UUID
+    ): ResponseEntity<String> {
+        dukanService.activateDukan(dukanId)
         return ResponseEntity.ok().build()
     }
 }
