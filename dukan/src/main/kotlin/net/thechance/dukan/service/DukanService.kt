@@ -131,10 +131,37 @@ class DukanService(
             insertRejectionChangelog(dukanId, reason)
         }
 
-        /*TODO, we have to update activation status here to activated if the dukan status is approved */
+        if (status == Dukan.Status.APPROVED) {
+            dukanRepository.updateActivationStatus(
+                dukanId = dukanId,
+                status = Dukan.ActivationStatus.ACTIVATED,
+                reason = null
+            )
+
+        }
 
         val dukan = getDukanDetailsById(dukanId)
         eventPublisher.publish(dukan.toDukanStatusChangedEvent())
+    }
+
+    @Transactional
+    fun deactivateDukan(dukanId: UUID, reason: String) {
+        val activationStatusUpdated = dukanRepository.updateActivationStatus(
+            dukanId = dukanId,
+            status = Dukan.ActivationStatus.DEACTIVATED,
+            reason = reason
+        ) > 0
+        if (!activationStatusUpdated) throw DukanNotFoundException()
+    }
+
+    @Transactional
+    fun activateDukan(dukanId: UUID) {
+        val activationStatusUpdated = dukanRepository.updateActivationStatus(
+            dukanId = dukanId,
+            status = Dukan.ActivationStatus.ACTIVATED,
+            reason = null
+        ) > 0
+        if (!activationStatusUpdated) throw DukanNotFoundException()
     }
 
     private fun insertRejectionChangelog(dukanId: UUID, reason: String?) {
