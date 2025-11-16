@@ -153,16 +153,16 @@ interface DukanRepository : JpaRepository<Dukan, UUID> {
     ): Page<Dukan>
 
     @Modifying
-    @Query("UPDATE Dukan d SET d.status = :status WHERE d.id = :dukanId")
+    @Query("UPDATE Dukan d SET d.status = :activationStatus WHERE d.id = :dukanId")
     fun updateStatus(
         @Param("dukanId") dukanId: UUID,
         @Param("status") status: Dukan.Status
     ): Int
 
     @Modifying
-    @Query("UPDATE Dukan d SET d.activationStatus = :status WHERE d.id = :dukanId")
+    @Query("UPDATE Dukan d SET d.activationStatus = :activationStatus WHERE d.id = :dukanId")
     fun updateActivationStatus(
         @Param("dukanId") dukanId: UUID,
-        @Param("status") status: Dukan.ActivationStatus,
+        @Param("activationStatus") activationStatus: Dukan.ActivationStatus,
     ): Int
 }
