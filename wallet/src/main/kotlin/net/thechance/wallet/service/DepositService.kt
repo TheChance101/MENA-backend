@@ -13,7 +13,7 @@ class DepositService(
     private val walletUserService: WalletUserService,
     private val blockService: BlockService
 ) {
-    fun depositMoney(adminId: UUID, receiverPhoneNumber: String, amount: Double) {
+    fun depositMoney(adminId: UUID, receiverPhoneNumber: String, amount: BigDecimal) {
         val block = blockService.getCurrentBlock()
         val sender = walletUserService.getReferenceById(adminId)
         val receiver = walletUserService.getUserByPhoneNumber(receiverPhoneNumber)
@@ -24,7 +24,7 @@ class DepositService(
             id = UUID.randomUUID(),
             sender = sender,
             receiver = receiver,
-            amount = BigDecimal.valueOf(amount),
+            amount = amount,
             block = block,
             status = Transaction.Status.SUCCESS,
             type = Transaction.Type.DEPOSIT
