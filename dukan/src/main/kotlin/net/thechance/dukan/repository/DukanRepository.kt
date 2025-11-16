@@ -160,6 +160,13 @@ interface DukanRepository : JpaRepository<Dukan, UUID> {
         @Param("status") status: Dukan.Status
     ): Int
 
+    @Modifying
+    @Query("UPDATE Dukan d SET d.activationStatus = :activationStatus WHERE d.id = :dukanId")
+    fun updateActivationStatus(
+        @Param("dukanId") dukanId: UUID,
+        @Param("activationStatus") activationStatus: Dukan.ActivationStatus,
+    ): Int
+
     @Query(
         """
         SELECT new net.thechance.dukan.service.model.DukanWithDiscount(
