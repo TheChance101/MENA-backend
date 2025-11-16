@@ -9,7 +9,7 @@ data class DukanCreationEvent(
     val name: String,
     val imageUrl: String?,
     val status: Status = Status.PENDING,
-    val activationStatus: ActivationStatus? = null
+    val activationStatus: ActivationStatus?
 ) : MenaEvent {
     enum class Status {
         APPROVED,
