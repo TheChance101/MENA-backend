@@ -140,6 +140,7 @@ class UserService(
         val user = findById(userId)
         userRepository.save(user.copy(isDeleted = true, deletedAt = LocalDateTime.now()))
         eventPublisher.publish(UserDeletedEvent(id = user.id))
+        authenticationService.logout(user.id)
     }
 
     fun checkUserIsNotDeleted(userId: UUID){
