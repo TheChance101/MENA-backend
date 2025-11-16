@@ -17,10 +17,9 @@ class OrderService(
         val order = orderRepository.findByIdAndDukanId(orderId, dukanId)
             ?: throw OrderNotFoundException()
 
+        if (userId != order.userId) throw ForbiddenException()
+
         val isDukanOwner = dukanService.getDukanDetailsById(dukanId).ownerId == userId
-
-        if (userId != order.userId && userId != order.dukanId) throw ForbiddenException()
-
         return order.toResponse(isDukanOwner)
     }
 }
