@@ -14,12 +14,11 @@ class OrderService(
     private val dukanService: DukanService
 ) {
     fun getOrderByIdAndDukanId(userId: UUID, dukanId: UUID, orderId: UUID): OrderResponse {
-        val order = orderRepository.findByIdAndDukanId(orderId, dukanId)
-            ?: throw OrderNotFoundException()
-
-        if (userId != order.userId) throw ForbiddenException()
+        val order = orderRepository.findById(orderId) ?: throw OrderNotFoundException()
 
         val isDukanOwner = dukanService.getDukanDetailsById(dukanId).ownerId == userId
+        if (userId != order.userId && isDukanOwner.not()) throw ForbiddenException()
+
         return order.toResponse(isDukanOwner)
     }
 }
