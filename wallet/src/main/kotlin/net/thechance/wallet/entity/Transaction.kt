@@ -47,6 +47,7 @@ data class Transaction(
 
     enum class Type {
         P2P,
-        ONLINE_PURCHASE
+        ONLINE_PURCHASE,
+        DEPOSIT
     }
 }
