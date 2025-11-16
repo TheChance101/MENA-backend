@@ -6,7 +6,7 @@ import java.time.Instant
 import java.time.ZoneId
 import java.time.format.DateTimeFormatter
 
-fun Order.orderDetailsMapper(): OrderResponse {
+fun Order.toResponse(isDukanOwner: Boolean): OrderResponse {
     return OrderResponse(
         time = createdAt.toDateAsString(),
         orderItemResponse = items.map { it.toResponse() },
@@ -16,7 +16,8 @@ fun Order.orderDetailsMapper(): OrderResponse {
         addersLine = deliveryAddress,
         customerName = customerName,
         customerNumber = customerPhone,
-        customerImage = customerImage
+        customerImage = customerImage,
+        isDukanOwner = isDukanOwner
     )
 }
 

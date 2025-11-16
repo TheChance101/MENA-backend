@@ -12,4 +12,5 @@ class OrderResponse(
     val customerName: String,
     val customerNumber: String,
     val customerImage: String? = null,
+    val isDukanOwner: Boolean
 )
