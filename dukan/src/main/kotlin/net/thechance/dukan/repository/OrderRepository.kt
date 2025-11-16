@@ -12,5 +12,4 @@ interface OrderRepository : JpaRepository<Order, UUID> {
     @Transactional
     @Query("UPDATE Order order SET order.status = :status WHERE order.id = :orderId")
     fun updateOrderStatus(orderId: UUID, status: Order.OrderStatus): Int
-    fun findById(id: UUID): Order?
 }
