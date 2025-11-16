@@ -18,12 +18,10 @@ class OrderController(
     @GetMapping("/{dukanId}/{orderId}")
     fun getOrderByIdAndDukanId(
         @AuthenticationPrincipal userId: UUID,
-        @PathVariable dukanId: UUID,
         @PathVariable orderId: UUID
     ): OrderResponse {
         return orderService.getOrderByIdAndDukanId(
             userId = userId,
-            dukanId = dukanId,
             orderId = orderId
         )
     }
