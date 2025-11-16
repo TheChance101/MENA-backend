@@ -6,10 +6,10 @@ import java.math.BigDecimal
 
 @Embeddable
 data class Price(
-    @Column(name = "base_price", nullable = false, precision = 10, scale = 2)
+    @Column(name = "base_price", nullable = false, precision = 18, scale = 2)
     val base: BigDecimal,
 
-    @Column(name = "final_price", nullable = false, precision = 10, scale = 2)
+    @Column(name = "final_price", nullable = false, precision = 18, scale = 2)
     val final: BigDecimal,
 )
 
