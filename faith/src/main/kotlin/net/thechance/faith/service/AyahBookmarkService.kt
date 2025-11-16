@@ -3,6 +3,7 @@ package net.thechance.faith.service
 import jakarta.transaction.Transactional
 import net.thechance.faith.entity.AyahBookmark
 import net.thechance.faith.exception.AyahBookmarkNotFoundException
+import net.thechance.faith.exception.FailedToCreateBookmarkException
 import net.thechance.faith.repository.AyahBookmarkRepository
 import org.springframework.data.domain.Page
 import org.springframework.data.domain.Pageable
@@ -15,16 +16,10 @@ class AyahBookmarkService(
 ) {
 
     @Transactional
-    fun saveBookmark(ayahBookmark: AyahBookmark): AyahBookmark {
+    fun saveBookmark(ayahBookmark: AyahBookmark) {
         ayahBookmarkRepository.upsert(ayahBookmark).let {
-            if (it <= 0) throw AyahBookmarkNotFoundException("Failed to save bookmark")
+            if (it <= 0) throw FailedToCreateBookmarkException("Failed to save bookmark")
         }
-
-        return ayahBookmarkRepository.findBySurahIdAndAyahNumberAndUserId(
-            surahId = ayahBookmark.surahId,
-            ayahNumber = ayahBookmark.ayahNumber,
-            userId = ayahBookmark.userId
-        ) ?: throw AyahBookmarkNotFoundException()
     }
 
     @Transactional

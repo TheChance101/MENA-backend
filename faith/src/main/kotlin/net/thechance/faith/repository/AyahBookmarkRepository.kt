@@ -24,5 +24,4 @@ interface AyahBookmarkRepository : JpaRepository<AyahBookmark, Int> {
     )
     fun upsert(ayahBookmark: AyahBookmark): Int
 
-    fun findBySurahIdAndAyahNumberAndUserId(surahId: Int, ayahNumber: Int, userId: UUID): AyahBookmark?
 }
