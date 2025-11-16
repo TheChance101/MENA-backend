@@ -43,8 +43,6 @@ data class Dukan(
     @Enumerated(EnumType.STRING)
     @Column(name = "activation_status", nullable = true)
     val activationStatus: ActivationStatus? = null,
-    @Column(name = "deactivation_reason")
-    val deactivationReason: String? = null,
     @OneToMany(mappedBy = "dukan", cascade = [CascadeType.ALL])
     val shelves: Set<DukanShelf> = emptySet(),
     @Column(name = "createdAt")

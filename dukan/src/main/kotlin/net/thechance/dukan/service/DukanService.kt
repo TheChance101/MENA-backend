@@ -130,12 +130,10 @@ class DukanService(
         if (status == Dukan.Status.REJECTED) {
             insertRejectionChangelog(dukanId, reason)
         }
-
         if (status == Dukan.Status.APPROVED) {
             dukanRepository.updateActivationStatus(
                 dukanId = dukanId,
                 status = Dukan.ActivationStatus.ACTIVATED,
-                reason = null
             )
 
         }
@@ -144,24 +142,37 @@ class DukanService(
         eventPublisher.publish(dukan.toDukanStatusChangedEvent())
     }
 
-    @Transactional
     fun deactivateDukan(dukanId: UUID, reason: String) {
         val activationStatusUpdated = dukanRepository.updateActivationStatus(
             dukanId = dukanId,
             status = Dukan.ActivationStatus.DEACTIVATED,
-            reason = reason
         ) > 0
         if (!activationStatusUpdated) throw DukanNotFoundException()
+        insertDeactivationChangelog(
+            dukanId = dukanId,
+            reason = reason
+        )
+        val dukan = getDukanDetailsById(dukanId)
+        eventPublisher.publish(dukan.toDukanStatusChangedEvent())
     }
 
-    @Transactional
     fun activateDukan(dukanId: UUID) {
         val activationStatusUpdated = dukanRepository.updateActivationStatus(
             dukanId = dukanId,
-            status = Dukan.ActivationStatus.ACTIVATED,
-            reason = null
+            status = Dukan.ActivationStatus.ACTIVATED
         ) > 0
         if (!activationStatusUpdated) throw DukanNotFoundException()
+        val dukan = getDukanDetailsById(dukanId)
+        eventPublisher.publish(dukan.toDukanStatusChangedEvent())
+    }
+
+    private fun insertDeactivationChangelog(dukanId: UUID, reason: String?) {
+        val changelog = StatusChangelog(
+            dukanId = dukanId,
+            status = StatusChangelog.Status.DEACTIVATED,
+            reason = reason.orEmpty()
+        )
+        statusChangeLogRepository.save(changelog)
     }
 
     private fun insertRejectionChangelog(dukanId: UUID, reason: String?) {
