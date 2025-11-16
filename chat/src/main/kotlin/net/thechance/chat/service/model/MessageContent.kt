@@ -17,4 +17,8 @@ sealed class MessageContent {
     @Serializable
     @SerialName("AUDIO")
     data class Audio(val url: String, val durationMs: Long) : MessageContent()
+
+    @Serializable
+    @SerialName("MONEY")
+    data class Money(val amount: Double) : MessageContent()
 }
