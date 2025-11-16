@@ -10,7 +10,6 @@ import java.util.Locale
 @Service
 class PrivacyAndPolicyService(private val messageSource: MessageSource) {
     fun getPrivacyAndPolicy(locale: Locale): PrivacyAndPolicyModel {
-        val updatedAt = getUpdatedAt(locale)
         val sections = getSections(locale)
         return PrivacyAndPolicyModel(updatedAt = updatedAt, sections = sections)
     }
@@ -21,12 +20,8 @@ class PrivacyAndPolicyService(private val messageSource: MessageSource) {
         PrivacyAndPolicySectionModel(title = title, content = content)
     }
 
-    private fun getUpdatedAt(locale: Locale): Instant {
-        val updatedAtString = messageSource.getMessage("identity.privacy.policy.updatedAt", null, locale)
-        return Instant.parse(updatedAtString)
-    }
-
     companion object {
+        private val updatedAt = Instant.parse("2026-11-11T00:00:00Z")
         private const val MAX_SECTIONS = 3
     }
 }
