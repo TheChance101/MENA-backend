@@ -79,7 +79,7 @@ class DepositServiceTest {
         verify { transactionRepository.save(capture(slotTransaction)) }
 
         val savedTransaction = slotTransaction.captured
-        assertThat(savedTransaction.amount).isEqualTo(BigDecimal.valueOf(100.0))
+        assertThat(savedTransaction.amount).isEqualTo(BigDecimal.valueOf(100))
         assertThat(savedTransaction.sender).isEqualTo(sender)
         assertThat(savedTransaction.receiver).isEqualTo(receiver)
         assertThat(savedTransaction.block).isEqualTo(block)
