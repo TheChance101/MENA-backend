@@ -41,7 +41,7 @@ class DepositServiceTest {
         every { blockService.getCurrentBlock() } returns block
 
         val exception = assertThrows(BlockedWalletUserException::class.java) {
-            adminWalletService.depositMoney(senderId, blockedReceiver.phoneNumber, 50.0)
+            adminWalletService.depositMoney(senderId, blockedReceiver.phoneNumber, BigDecimal.valueOf(50))
         }
         assertThat(exception.message).isEqualTo("Receiver is blocked")
     }
@@ -55,7 +55,7 @@ class DepositServiceTest {
         every { blockService.getCurrentBlock() } returns block
 
         val exception = assertThrows(IllegalArgumentException::class.java) {
-            adminWalletService.depositMoney(senderId, nonExistentPhone, 10.0)
+            adminWalletService.depositMoney(senderId, nonExistentPhone, BigDecimal.valueOf(10))
         }
 
         assertThat(exception.message).isEqualTo("User with phone number $nonExistentPhone not found")
@@ -68,7 +68,7 @@ class DepositServiceTest {
         every { blockService.getCurrentBlock() } returns block
         every { transactionRepository.save(any()) } answers { firstArg() }
 
-        adminWalletService.depositMoney(senderId, receiver.phoneNumber, 100.0)
+        adminWalletService.depositMoney(senderId, receiver.phoneNumber, BigDecimal.valueOf(100))
 
         verify(exactly = 1) { blockService.getCurrentBlock() }
         verify(exactly = 1) { walletUserService.getReferenceById(senderId) }
