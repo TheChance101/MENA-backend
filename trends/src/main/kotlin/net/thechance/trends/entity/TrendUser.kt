@@ -2,7 +2,6 @@ package net.thechance.trends.entity
 
 import jakarta.persistence.*
 import java.util.*
-import java.util.Collections.emptySet
 
 @Table(name = "users", schema = "trends")
 @Entity
@@ -25,15 +24,6 @@ data class TrendUser(
 
     @Column(name = "image_url", nullable = true, length = 2083)
     val imageUrl: String?,
-
-    @ManyToMany(fetch = FetchType.LAZY)
-    @JoinTable(
-        name = "user_categories",
-        joinColumns = [JoinColumn(name = "user_id")],
-        inverseJoinColumns = [JoinColumn(name = "category_id")],
-        schema = "trends",
-    )
-    val categories: MutableSet<Category> = emptySet(),
 
     @Enumerated(EnumType.STRING)
     @Column(name = "status", nullable = false)
