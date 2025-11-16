@@ -28,23 +28,26 @@ class Order(
     val totalBeforeDiscount: BigDecimal,
 
     @Column(name = "discount_amount", nullable = false)
-    val discountAmount: BigDecimal,
+    val discountPercentage: BigDecimal,
 
     @Column(name = "total_after_discount", nullable = false)
     val totalAfterDiscount: BigDecimal,
+
+    @Column(name = "platform_fees", nullable = false)
+    val platformFees: BigDecimal,
 
     @Enumerated(EnumType.STRING)
     @Column(name = "status", nullable = false)
     var status: OrderStatus = OrderStatus.PENDING,
 
-    @Column(name = "receiver_name", nullable = false)
-    val receiverName: String,
+    @Column(name = " customer_name", nullable = false)
+    val customerName: String,
 
-    @Column(name = "receiver_phone", nullable = false)
-    val receiverPhone: String,
+    @Column(name = " customer_phone", nullable = false)
+    val customerPhone: String,
 
-    @Column(name = "receiver_image", nullable = false)
-    val receiverImage: String,
+    @Column(name = " customer_image", nullable = false)
+    val customerImage: String,
 
     @Column(name = "delivery_address", nullable = false)
     val deliveryAddress: String,

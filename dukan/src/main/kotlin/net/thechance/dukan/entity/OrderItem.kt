@@ -29,11 +29,11 @@ class OrderItem(
     val productImage: String,
 
     @Column(name = "product_price", nullable = false)
-    val productPrice: BigDecimal,
+    val priceBeforeDiscount: BigDecimal,
 
     @Column(name = "quantity", nullable = false)
     val quantity: Int,
 
     @Column(name = "total_price", nullable = false)
-    val totalPrice: BigDecimal
+    val priceAfterDiscount: BigDecimal
 )
