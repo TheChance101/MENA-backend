@@ -9,6 +9,8 @@ class OrderResponse(
     val platformFees: BigDecimal,
     val totalAmount: BigDecimal,
     val addersLine: String,
+    val latitude: Double,
+    val longitude: Double,
     val customerName: String,
     val customerNumber: String,
     val customerImage: String? = null,
