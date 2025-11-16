@@ -143,27 +143,22 @@ class DukanService(
     }
 
     @Transactional
-    fun deactivateDukan(dukanId: UUID, reason: String) {
+    fun updateDukanActivationStatus(
+        dukanId: UUID,
+        reason: String?,
+        activationStatus: Dukan.ActivationStatus
+    ) {
         val activationStatusUpdated = dukanRepository.updateActivationStatus(
             dukanId = dukanId,
-            activationStatus = Dukan.ActivationStatus.DEACTIVATED,
+            activationStatus = activationStatus,
         ) > 0
         if (!activationStatusUpdated) throw DukanNotFoundException()
-        insertDeactivationChangelog(
-            dukanId = dukanId,
-            reason = reason
-        )
-        val dukan = getDukanDetailsById(dukanId)
-        eventPublisher.publish(dukan.toDukanStatusChangedEvent())
-    }
-
-    @Transactional
-    fun activateDukan(dukanId: UUID) {
-        val activationStatusUpdated = dukanRepository.updateActivationStatus(
-            dukanId = dukanId,
-            activationStatus = Dukan.ActivationStatus.ACTIVATED
-        ) > 0
-        if (!activationStatusUpdated) throw DukanNotFoundException()
+        if (activationStatus == Dukan.ActivationStatus.DEACTIVATED) {
+            insertDeactivationChangelog(
+                dukanId = dukanId,
+                reason = reason
+            )
+        }
         val dukan = getDukanDetailsById(dukanId)
         eventPublisher.publish(dukan.toDukanStatusChangedEvent())
     }
