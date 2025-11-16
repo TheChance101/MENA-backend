@@ -11,5 +11,5 @@ data class OrderCreationEvent(
     val dukanOwnerId: UUID,
     val totalProducts: Int,
     val totalPrice: BigDecimal,
-    val address: String
+    val deliverToAddress: String
 ) : MenaEvent
