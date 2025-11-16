@@ -15,7 +15,7 @@ import java.util.*
 class OrderController(
     val orderService: OrderService
 ) {
-    @GetMapping("/{dukanId}/{orderId}")
+    @GetMapping("/{orderId}")
     fun getOrderByIdAndDukanId(
         @AuthenticationPrincipal userId: UUID,
         @PathVariable orderId: UUID
