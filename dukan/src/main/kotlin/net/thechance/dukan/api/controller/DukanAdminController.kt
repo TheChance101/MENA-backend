@@ -96,7 +96,7 @@ class DukanAdminController(
     fun deactivate(
         @PathVariable("dukanId") dukanId: UUID,
         @RequestBody request: DeactivateDukanRequest
-    ): ResponseEntity<String> {
+    ): ResponseEntity<Unit> {
         dukanService.deactivateDukan(dukanId, request.reason)
         return ResponseEntity.ok().build()
     }
@@ -104,7 +104,7 @@ class DukanAdminController(
     @PatchMapping("{dukanId}/activate")
     fun activate(
         @PathVariable("dukanId") dukanId: UUID
-    ): ResponseEntity<String> {
+    ): ResponseEntity<Unit> {
         dukanService.activateDukan(dukanId)
         return ResponseEntity.ok().build()
     }
