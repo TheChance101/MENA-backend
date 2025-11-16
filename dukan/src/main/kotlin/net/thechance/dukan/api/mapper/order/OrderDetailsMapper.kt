@@ -14,12 +14,14 @@ fun Order.toResponse(isDukanOwner: Boolean): OrderResponse {
         platformFees = platformFees,
         totalAmount = totalAfterDiscount,
         addersLine = deliveryAddress,
-        latitude = deliveryLat,
-        longitude = deliveryLng,
+        customerLatitude = deliveryLat,
+        customerLongitude = deliveryLng,
         customerName = customerName,
         customerNumber = customerPhone,
         customerImage = customerImage,
-        isDukanOwner = isDukanOwner
+        dukanLatitude = dukanLatitude,
+        dukanLongitude = dukanLongitude,
+        isDukanOwner = isDukanOwner,
     )
 }
 

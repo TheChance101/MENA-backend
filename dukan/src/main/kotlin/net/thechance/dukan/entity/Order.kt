@@ -58,6 +58,12 @@ class Order(
     @Column(name = "delivery_lng", nullable = false)
     val deliveryLng: Double,
 
+    @Column(name = "dukan_longitude", nullable = false)
+    val dukanLongitude: Double,
+
+    @Column(name = "dukan_latitude", nullable = false)
+    val dukanLatitude: Double,
+
     @Column(name = "created_at", nullable = false)
     val createdAt: Instant = Instant.now(),
 
