@@ -2,36 +2,24 @@ package net.thechance.trends.service
 
 import net.thechance.trends.api.dto.base.PatchMetadata
 import net.thechance.trends.api.dto.category.toUserSelectedCategories
+import net.thechance.trends.entity.UserCategories
 import net.thechance.trends.exception.InvalidTrendInputException
 import net.thechance.trends.exception.TrendCategoryNotFoundException
-import net.thechance.trends.exception.TrendUserNotFoundException
 import net.thechance.trends.models.UserSelectedCategories
 import net.thechance.trends.repository.CategoryRepository
-import net.thechance.trends.repository.TrendUserRepository
+import net.thechance.trends.repository.UserCategoryRepository
 import org.springframework.stereotype.Service
 import org.springframework.transaction.annotation.Transactional
+import java.time.LocalDateTime
 import java.util.*
-import kotlin.jvm.optionals.getOrNull
 
 @Service
 @Transactional
 class TrendUserService(
-    private val trendUserRepository: TrendUserRepository,
     private val categoryRepository: CategoryRepository,
     private val categoryService: CategoryService,
+    private val userCategoryRepository: UserCategoryRepository
 ) {
-    fun saveCategoriesToUser(userId: UUID, categoryIds: List<UUID>) {
-        validateCategoriesNotEmpty(categoryIds)
-        validateCategoriesExist(categoryIds)
-
-        val trendUser = getUserOrThrow(userId)
-        val categoryProxies = categoryIds.map { categoryId ->
-            categoryRepository.getReferenceById(categoryId)
-        }.toMutableSet()
-
-        val updatedUser = trendUser.copy(categories = categoryProxies)
-        trendUserRepository.save(updatedUser)
-    }
 
     fun updateUserCategories(
         userId: UUID,
@@ -43,37 +31,65 @@ class TrendUserService(
         validateCategoriesNotEmpty(allCategoryIds)
         validateCategoriesExist(allCategoryIds)
 
-        val trendUser = getUserOrThrow(userId)
-        val currentCategoryIds = trendUser.categories.mapTo(mutableSetOf()) { it.id }
+        val currentCategories = userCategoryRepository.findUserCategoriesByUserId(userId)
+        val currentCategoryIds = currentCategories.map { it.categoryId }
 
-        val actualRemoved = categoriesToRemove.filterTo(mutableSetOf()) { it in currentCategoryIds }
-        val actualAdded = categoriesToAdd.filterTo(mutableSetOf()) { it !in currentCategoryIds }
+        val actualRemoved = categoriesToRemove.filterTo(mutableListOf()) { it in currentCategoryIds }
 
-        if (actualAdded.isEmpty() && actualRemoved.isEmpty()) {
+        val changedToSelected = categoriesToAdd.filterTo(mutableListOf()) { it in currentCategoryIds }
+
+        val actualAdded = categoriesToAdd.filterTo(mutableListOf()) { it !in currentCategoryIds }
+
+        if (actualAdded.isEmpty() && actualRemoved.isEmpty() && changedToSelected.isEmpty()) {
             return PatchMetadata(addedCount = 0, removedCount = 0)
         }
 
-        val updatedCategories = trendUser.categories
-            .filterNot { it.id in actualRemoved }
-            .plus(actualAdded.map { categoryRepository.getReferenceById(it) })
-            .toMutableSet()
+        val now = LocalDateTime.now()
 
-        trendUserRepository.save(trendUser.copy(categories = updatedCategories))
+        val updatedUserCategories = currentCategories.map { userCategory ->
+            when (userCategory.categoryId) {
+                in changedToSelected -> userCategory.copy(isSelected = true, lastUpdated = now)
+                in actualRemoved -> userCategory.copy(isSelected = false, lastUpdated = now)
+                else -> userCategory
+            }
+        }.plus (
+            actualAdded.map { categoryId ->
+                UserCategories(
+                    userId = userId,
+                    categoryId = categoryId,
+                    isSelected = true,
+                    lastUpdated = now
+                )
+            }
+        )
 
-        return PatchMetadata(addedCount = actualAdded.size, removedCount = actualRemoved.size)
+        userCategoryRepository.saveAll(updatedUserCategories)
+
+        return PatchMetadata(addedCount = actualAdded.size + changedToSelected.size, removedCount = actualRemoved.size)
     }
 
     fun getUserSelectedCategories(userId: UUID): List<UserSelectedCategories> {
         val allCategories = categoryService.getAllCategories()
-        val userCategories = trendUserRepository.findById(userId).getOrNull()?.categories.orEmpty()
+        val userCategories = userCategoryRepository.findUserCategoriesByUserId(userId)
+
+        val selectedCategoryIds = userCategories
+            .filter { it.isSelected }
+            .map { it.categoryId }
+            .toSet()
 
         return allCategories.map { category ->
-            category.toUserSelectedCategories(isSelected = category in userCategories)
+            category.toUserSelectedCategories(isSelected = category.id in selectedCategoryIds)
         }
     }
 
-    private fun getUserOrThrow(userId: UUID) =
-        trendUserRepository.findById(userId).getOrNull() ?: throw TrendUserNotFoundException()
+    fun updateUserAffinities(userId: UUID, categoryId: UUID) {
+        val userCategory = userCategoryRepository.findByUserIdAndCategoryId(userId, categoryId)
+        val affinity = userCategory?.affinity?.plus(1) ?: 0
+        val newCategory = userCategory?.copy(affinity = affinity)
+        if (newCategory != null) {
+            userCategoryRepository.save(newCategory)
+        }
+    }
 
     private fun validateCategoriesNotEmpty(categoryIds: List<UUID>) {
         if (categoryIds.isEmpty()) throw InvalidTrendInputException()
