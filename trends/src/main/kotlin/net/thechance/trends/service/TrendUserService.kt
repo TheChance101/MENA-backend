@@ -2,7 +2,6 @@ package net.thechance.trends.service
 
 import net.thechance.trends.api.dto.base.PatchMetadata
 import net.thechance.trends.api.dto.category.toUserSelectedCategories
-import net.thechance.trends.entity.TrendUser
 import net.thechance.trends.exception.InvalidTrendInputException
 import net.thechance.trends.exception.TrendCategoryNotFoundException
 import net.thechance.trends.exception.TrendUserNotFoundException
@@ -12,7 +11,6 @@ import net.thechance.trends.repository.TrendUserRepository
 import org.springframework.stereotype.Service
 import org.springframework.transaction.annotation.Transactional
 import java.util.*
-import kotlin.jvm.optionals.getOrElse
 import kotlin.jvm.optionals.getOrNull
 
 @Service
@@ -26,7 +24,7 @@ class TrendUserService(
         validateCategoriesNotEmpty(categoryIds)
         validateCategoriesExist(categoryIds)
 
-        val trendUser = getOrCreateUser(userId)
+        val trendUser = getUserOrThrow(userId)
         val categoryProxies = categoryIds.map { categoryId ->
             categoryRepository.getReferenceById(categoryId)
         }.toMutableSet()
@@ -76,9 +74,6 @@ class TrendUserService(
 
     private fun getUserOrThrow(userId: UUID) =
         trendUserRepository.findById(userId).getOrNull() ?: throw TrendUserNotFoundException()
-
-    private fun getOrCreateUser(userId: UUID) =
-        trendUserRepository.findById(userId).getOrElse { TrendUser(userId = userId) }
 
     private fun validateCategoriesNotEmpty(categoryIds: List<UUID>) {
         if (categoryIds.isEmpty()) throw InvalidTrendInputException()
