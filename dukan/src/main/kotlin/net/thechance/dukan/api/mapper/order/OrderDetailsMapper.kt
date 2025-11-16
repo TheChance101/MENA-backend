@@ -14,9 +14,9 @@ fun Order.orderDetailsMapper(): OrderResponse {
         platformFees = platformFees,
         totalAmount = totalAfterDiscount,
         addersLine = deliveryAddress,
-        customerName = receiverImage,
-        customerNumber = receiverPhone,
-        customerImage = receiverImage
+        customerName = customerName,
+        customerNumber = customerPhone,
+        customerImage = customerImage
     )
 }
 
