@@ -23,8 +23,7 @@ data class DukanProductResponse(
 data class DukanProductAdminResponse(
     val id: UUID,
     val name: String,
-    val price: BigDecimal,
-    val discountedPrice: BigDecimal,
+    val price: Price,
     val description: String,
     val imageUrls: List<String>,
     val createdAt: Instant,
