@@ -19,7 +19,7 @@ class CategoryController(
         @RequestBody @Valid userCategoriesRequest: SubmitUserCategoriesRequest,
         @AuthenticationPrincipal userId: UUID
     ): ResponseEntity<SubmitUserCategoriesResponse> {
-        trendUserService.saveCategoriesToUser(userId, userCategoriesRequest.categoryIds)
+        trendUserService.updateUserCategories(userId, userCategoriesRequest.categoryIds, emptyList())
 
         return ResponseEntity.ok(
             SubmitUserCategoriesResponse(
