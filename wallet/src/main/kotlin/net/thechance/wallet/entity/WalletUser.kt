@@ -18,6 +18,9 @@ data class WalletUser(
     @Column(nullable = true)
     val imageUrl: String?,
 
+    @Column(nullable = false, unique = true)
+    val phoneNumber: String,
+
     @OneToOne(cascade = [CascadeType.ALL], fetch = FetchType.EAGER)
     @JoinColumn(name = "dukan_id", referencedColumnName = "dukanId")
     val dukan: WalletDukan? = null,
