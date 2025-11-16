@@ -38,17 +38,29 @@ data class MessageResponse(
         data class Audio(val url: String, val duration: Long) : MessageContent() {
             override val type = Message.MessageType.AUDIO.name
         }
+
+        data class Order(
+            val orderId: String,
+            val totalProducts: Int,
+            val totalPrice: String,
+            val deliverToAddress: String,
+            val dukanId: String,
+            val dukanOwnerId: String
+        ) : MessageContent() {
+            override val type = Message.MessageType.ORDER.name
+        }
     }
 
 }
 
-fun MessageContent.toResponse() = when(this) {
+fun MessageContent.toResponse() = when (this) {
     is MessageContent.Text -> MessageResponse.MessageContent.Text(text)
     is MessageContent.Image -> MessageResponse.MessageContent.Image(url)
     is MessageContent.Audio -> MessageResponse.MessageContent.Audio(url, durationMs)
+    is MessageContent.Order -> MessageResponse.MessageContent.Order(
+        orderId, totalProducts, totalPrice, deliverToAddress, dukanId, dukanOwnerId
+    )
 }
-
-
 
 fun Message.toResponse(requesterId: UUID): MessageResponse {
     return MessageResponse(
