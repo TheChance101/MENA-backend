@@ -239,7 +239,7 @@ class UserServiceTest {
 
     @Test
     fun `userExistsByUserName should return true when user exists`() {
-        every { userRepository.existsByUsernameAndIsDeletedFalse(any()) } returns true
+        every { userRepository.existsByUsername(any()) } returns true
 
         val result = userService.userExistsByUserName(user.username)
 
@@ -248,7 +248,7 @@ class UserServiceTest {
 
     @Test
     fun `userExistsByUserName should return false when user does not exist`() {
-        every { userRepository.existsByUsernameAndIsDeletedFalse(any()) } returns false
+        every { userRepository.existsByUsername(any()) } returns false
 
         val result = userService.userExistsByUserName(user.username)
 

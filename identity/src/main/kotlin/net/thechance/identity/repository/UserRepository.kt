@@ -12,7 +12,7 @@ import java.util.*
 
 interface UserRepository: JpaRepository<User, UUID> {
     fun findByPhoneNumberAndIsDeletedFalse(phoneNumber: String): User?
-    fun existsByUsernameAndIsDeletedFalse(username: String): Boolean
+    fun existsByUsername(username: String): Boolean
     fun existsByPhoneNumberAndIsDeletedFalse(phoneNumber: String): Boolean
 
     @Query("""

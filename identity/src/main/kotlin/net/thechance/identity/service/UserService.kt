@@ -1,6 +1,7 @@
 package net.thechance.identity.service
 
 import jakarta.transaction.Transactional
+import net.thechance.events.identity.UserDeletedEvent
 import net.thechance.events.identity.UserStatusUpdatedEvent
 import net.thechance.events.publisher.MenaEventPublisher
 import net.thechance.identity.entity.User
@@ -98,7 +99,7 @@ class UserService(
     }
 
     fun userExistsByUserName(username: String): Boolean {
-        return userRepository.existsByUsernameAndIsDeletedFalse(username)
+        return userRepository.existsByUsername(username)
     }
 
     fun userExistsByPhoneNumber(phoneNumber: String): Boolean {
@@ -135,13 +136,13 @@ class UserService(
     }
 
     fun deleteUser(userId: UUID) {
-        userIsNotDeleted(userId)
+        checkUserIsNotDeleted(userId)
         val user = findById(userId)
         userRepository.save(user.copy(isDeleted = true, deletedAt = LocalDateTime.now()))
-        eventPublisher.publish(user.toUserUpdatedEvent())
+        eventPublisher.publish(UserDeletedEvent(id = user.id))
     }
 
-    fun userIsNotDeleted(userId: UUID){
+    fun checkUserIsNotDeleted(userId: UUID){
         if (userRepository.existsByIdAndIsDeletedFalse(userId).not()) throw UserNotFoundException("User with id: $userId not found")
     }
 }
