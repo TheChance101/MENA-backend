@@ -28,8 +28,10 @@ fun Order.toResponse(isDukanOwner: Boolean): OrderResponse {
 }
 
 fun Instant.toDateAsString(): String {
-    return this
-        .atZone(ZoneId.systemDefault())
-        .toLocalDate()
-        .format(DateTimeFormatter.ofPattern("dd/MM/yyyy"))
+    val zone = ZoneId.systemDefault()
+    val zonedDateTime = this.atZone(zone)
+
+    val datePattern = DateTimeFormatter.ofPattern("dd/MM/yyyy 'GMT'XXX")
+
+    return zonedDateTime.format(datePattern)
 }
