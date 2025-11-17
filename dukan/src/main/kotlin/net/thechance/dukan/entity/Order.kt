@@ -39,10 +39,6 @@ class Order(
     @Column(name = "platform_fees", nullable = false)
     val platformFees: BigDecimal,
 
-    @Enumerated(EnumType.STRING)
-    @Column(name = "status", nullable = false)
-    var status: OrderStatus = OrderStatus.PENDING,
-
     @Column(name = " customer_name", nullable = false)
     val customerName: String,
 
@@ -75,10 +71,4 @@ class Order(
 
     @OneToMany(mappedBy = "order", cascade = [CascadeType.ALL])
     val items: MutableList<OrderItem> = mutableListOf()
-) {
-    enum class OrderStatus {
-        PENDING,
-        SUCCESSFUL,
-        FAILED
-    }
-}
+)
