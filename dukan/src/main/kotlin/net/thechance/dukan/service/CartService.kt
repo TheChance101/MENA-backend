@@ -4,19 +4,11 @@ import net.thechance.dukan.entity.Cart
 import net.thechance.dukan.entity.CartItem
 import net.thechance.dukan.entity.Dukan
 import net.thechance.dukan.entity.DukanProduct
-import net.thechance.dukan.entity.PendingOrder
-import net.thechance.dukan.entity.PendingOrderItem
 import net.thechance.dukan.repository.CartItemRepository
 import net.thechance.dukan.repository.CartRepository
 import net.thechance.dukan.repository.DukanProductRepository
 import net.thechance.dukan.repository.DukanRepository
-import net.thechance.dukan.repository.PendingOrderRepository
-import net.thechance.dukan.service.exception.CartNotFoundException
-import net.thechance.dukan.service.exception.DukanNotFoundException
-import net.thechance.dukan.service.exception.ProductAlreadyInCartException
-import net.thechance.dukan.service.exception.ProductNotFoundException
-import net.thechance.dukan.service.exception.ProductNotInCartException
-import net.thechance.dukan.service.exception.ProductOutOfStockException
+import net.thechance.dukan.service.exception.*
 import net.thechance.dukan.service.model.AddOrUpdateCartItemParams
 import net.thechance.dukan.service.model.CartCheckoutParams
 import net.thechance.dukan.service.model.CartCheckoutPreview
@@ -34,7 +26,6 @@ class CartService(
     private val productRepository: DukanProductRepository,
     private val cartItemRepository: CartItemRepository,
     private val dukanRepository: DukanRepository,
-    private val pendingOrderRepository: PendingOrderRepository,
     private val eventPublisher: MenaEventPublisher
 ) {
 
@@ -108,8 +99,7 @@ class CartService(
             .orElseThrow { DukanNotFoundException() }
 
         val transactionId = UUID.randomUUID()
-
-        createPendingOrder(transactionId, userId, cart, checkoutParams)
+        println("THIS IS THE CART SERVICE TRANSACTION ID: $transactionId")
 
         createTransactionEvent(transactionId, cart, dukan)
 
@@ -143,36 +133,6 @@ class CartService(
         )
 
         eventPublisher.publish(transactionEvent)
-    }
-
-    private fun createPendingOrder(
-        transactionId: UUID,
-        userId: UUID,
-        cart: Cart,
-        checkoutParams: CartCheckoutParams
-    ) {
-
-        val pendingOrder = PendingOrder(
-            transactionId = transactionId,
-            userId = userId,
-            dukanId = cart.dukanId,
-            address = checkoutParams.address,
-            longitude = checkoutParams.longitude,
-            latitude = checkoutParams.latitude,
-            totalPrice = cart.price.final.toDouble(),
-        )
-
-        cart.items.forEach { cartItem ->
-            pendingOrder.items.add(
-                PendingOrderItem(
-                    pendingOrder = pendingOrder,
-                    productId = cartItem.product.id,
-                    quantity = cartItem.quantity
-                )
-            )
-        }
-
-        pendingOrderRepository.save(pendingOrder)
     }
 
     private fun getCartByUserAndDukan(userId: UUID, dukanId: UUID): Cart? {
