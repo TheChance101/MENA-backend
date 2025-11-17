@@ -4,4 +4,7 @@ import net.thechance.dukan.entity.SoldProduct
 import org.springframework.data.jpa.repository.JpaRepository
 import java.util.UUID
 
-interface SoldProductRepository : JpaRepository<SoldProduct, UUID>
+interface SoldProductRepository : JpaRepository<SoldProduct, UUID> {
+
+    fun findByProductIdAndDukanId(productId: UUID, dukanId: UUID): SoldProduct?
+}
