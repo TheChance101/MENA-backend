@@ -14,9 +14,11 @@ import net.thechance.dukan.repository.DukanRepository
 import net.thechance.dukan.repository.StatusChangelogRepository
 import net.thechance.dukan.service.exception.DukanCreationFailedException
 import net.thechance.dukan.service.exception.DukanNotFoundException
+import net.thechance.dukan.service.mapper.toDukanCreationEvent
 import net.thechance.dukan.service.mapper.toDukanStatusChangedEvent
 import net.thechance.dukan.service.model.DukanCreationParams
 import net.thechance.dukan.service.model.DukanWithDiscount
+import net.thechance.events.dukan.DukanCreationEvent
 import net.thechance.events.publisher.MenaEventPublisher
 import org.springframework.data.domain.Page
 import org.springframework.data.domain.Pageable
@@ -61,7 +63,12 @@ class DukanService(
                 color = color,
                 categories = categories
             )
-            return dukanRepository.save(dukan)
+
+            val savedDukan = dukanRepository.save(dukan)
+
+            eventPublisher.publish(savedDukan.toDukanCreationEvent())
+
+            return savedDukan
         } catch (_: EntityNotFoundException) {
             throw DukanCreationFailedException()
         }
