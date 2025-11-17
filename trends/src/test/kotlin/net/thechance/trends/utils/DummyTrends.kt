@@ -5,7 +5,7 @@ import java.util.UUID
 
 object DummyTrends {
     val trend1 = Trend(
-        id = UUID.fromString("10000000-0000-0000-0000-000000000001"),
+        id = UUID.randomUUID(),
         ownerId = DummyTrendUsers.user2.userId,
         videoUrl = "https://example.com/video1.mp4",
         description = "Tech trend",
@@ -14,7 +14,7 @@ object DummyTrends {
     )
 
     val trend2 = Trend(
-        id = UUID.fromString("10000000-0000-0000-0000-000000000002"),
+        id = UUID.randomUUID(),
         ownerId = DummyTrendUsers.user2.userId,
         videoUrl = "https://example.com/video2.mp4",
         description = "Sports trend",
@@ -23,7 +23,7 @@ object DummyTrends {
     )
 
     val trend3 = Trend(
-        id = UUID.fromString("10000000-0000-0000-0000-000000000003"),
+        id = UUID.randomUUID(),
         ownerId = DummyTrendUsers.user3.userId,
         videoUrl = "https://example.com/video3.mp4",
         description = "Multi category trend",
@@ -32,7 +32,7 @@ object DummyTrends {
     )
 
     val trend4 = Trend(
-        id = UUID.fromString("10000000-0000-0000-0000-000000000004"),
+        id = UUID.randomUUID(),
         ownerId = DummyTrendUsers.user3.userId,
         videoUrl = "https://example.com/video4.mp4",
         description = "Fashion and science trend",

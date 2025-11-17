@@ -6,37 +6,37 @@ import java.util.UUID
 
 object DummyCategories {
     val technology = Category(
-        id = UUID.fromString("00000000-0000-0000-0000-000000000001"),
+        id = UUID.randomUUID(),
         name = "technology",
         emoji = "💻"
     )
 
     val sports = Category(
-        id = UUID.fromString("00000000-0000-0000-0000-000000000002"),
+        id = UUID.randomUUID(),
         name = "sports",
         emoji = "⚽"
     )
 
     val nature = Category(
-        id = UUID.fromString("00000000-0000-0000-0000-000000000003"),
+        id = UUID.randomUUID(),
         name = "nature",
         emoji = "🌿"
     )
 
     val productivity = Category(
-        id = UUID.fromString("00000000-0000-0000-0000-000000000004"),
+        id = UUID.randomUUID(),
         name = "productivity",
         emoji = "📊"
     )
 
     val fashion = Category(
-        id = UUID.fromString("00000000-0000-0000-0000-000000000005"),
+        id = UUID.randomUUID(),
         name = "fashion",
         emoji = "👗"
     )
 
     val science = Category(
-        id = UUID.fromString("00000000-0000-0000-0000-000000000006"),
+        id = UUID.randomUUID(),
         name = "science",
         emoji = "🔬"
     )
