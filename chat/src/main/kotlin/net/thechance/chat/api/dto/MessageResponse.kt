@@ -39,6 +39,11 @@ data class MessageResponse(
             override val type = Message.MessageType.AUDIO.name
         }
 
+        data class Ayah(val ayahNumber: Int, val suraNumber:Int, val ayahText: String): MessageContent(){
+            override val type = Message.MessageType.AYAH.name
+        }
+
+
         data class Order(
             val orderId: String,
             val totalProducts: Int,
@@ -57,10 +62,17 @@ fun MessageContent.toResponse() = when (this) {
     is MessageContent.Text -> MessageResponse.MessageContent.Text(text)
     is MessageContent.Image -> MessageResponse.MessageContent.Image(url)
     is MessageContent.Audio -> MessageResponse.MessageContent.Audio(url, durationMs)
+    is MessageContent.Ayah -> MessageResponse.MessageContent.Ayah(
+        ayahNumber = ayahNumber,
+        suraNumber = suraNumber,
+        ayahText = ayahText
+    )
     is MessageContent.Order -> MessageResponse.MessageContent.Order(
         orderId, totalProducts, totalPrice, deliverToAddress, dukanId, dukanOwnerId
     )
 }
+
+
 
 fun Message.toResponse(requesterId: UUID): MessageResponse {
     return MessageResponse(

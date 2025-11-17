@@ -19,6 +19,10 @@ sealed class MessageContent {
     data class Audio(val url: String, val durationMs: Long) : MessageContent()
 
     @Serializable
+    @SerialName("AYAH")
+    data class Ayah(val ayahNumber: Int, val suraNumber:Int, val ayahText: String): MessageContent()
+
+    @Serializable
     @SerialName("ORDER")
     data class Order(
         val orderId: String,
