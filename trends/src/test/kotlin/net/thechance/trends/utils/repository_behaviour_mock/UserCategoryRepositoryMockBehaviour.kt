@@ -28,7 +28,7 @@ object UserCategoryRepositoryMockBehaviour {
         every { userCategoryRepository.saveAll(any<List<UserCategories>>()) } answers {
             val toSave = firstArg<List<UserCategories>>()
 
-            toSave.forEach { newCategory ->
+            toSave.forEach { newCategory: UserCategories ->
                 val existingIndex = userCategoryList.indexOfFirst {
                     it.userId == newCategory.userId &&
                             it.categoryId == newCategory.categoryId
