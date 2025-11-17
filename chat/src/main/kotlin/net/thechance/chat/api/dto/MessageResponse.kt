@@ -43,22 +43,20 @@ data class MessageResponse(
             override val type = Message.MessageType.AYAH.name
         }
 
-    }
 
+        data class Money(val amount: Double) : MessageContent() {
+            override val type = Message.MessageType.MONEY.name
+        }
+    }
 }
 
 fun MessageContent.toResponse() = when(this) {
     is MessageContent.Text -> MessageResponse.MessageContent.Text(text)
     is MessageContent.Image -> MessageResponse.MessageContent.Image(url)
     is MessageContent.Audio -> MessageResponse.MessageContent.Audio(url, durationMs)
-    is MessageContent.Ayah -> MessageResponse.MessageContent.Ayah(
-        ayahNumber = ayahNumber,
-        suraNumber = suraNumber,
-        ayahText = ayahText
-    )
+    is MessageContent.Ayah -> MessageResponse.MessageContent.Ayah(ayahNumber, suraNumber, ayahText)
+    is MessageContent.Money -> MessageResponse.MessageContent.Money(amount)
 }
-
-
 
 fun Message.toResponse(requesterId: UUID): MessageResponse {
     return MessageResponse(
