@@ -38,6 +38,11 @@ data class MessageResponse(
         data class Audio(val url: String, val duration: Long) : MessageContent() {
             override val type = Message.MessageType.AUDIO.name
         }
+
+        data class Ayah(val ayahNumber: Int, val suraNumber:Int, val ayahText: String): MessageContent(){
+            override val type = Message.MessageType.AYAH.name
+        }
+
     }
 
 }
@@ -46,6 +51,11 @@ fun MessageContent.toResponse() = when(this) {
     is MessageContent.Text -> MessageResponse.MessageContent.Text(text)
     is MessageContent.Image -> MessageResponse.MessageContent.Image(url)
     is MessageContent.Audio -> MessageResponse.MessageContent.Audio(url, durationMs)
+    is MessageContent.Ayah -> MessageResponse.MessageContent.Ayah(
+        ayahNumber = ayahNumber,
+        suraNumber = suraNumber,
+        ayahText = ayahText
+    )
 }
 
 
