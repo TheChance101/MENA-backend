@@ -6,7 +6,16 @@ import java.time.Instant
 import java.util.*
 
 @Entity
-@Table(name = "ayah_bookmarks", schema = "faith")
+@Table(
+    name = "ayah_bookmarks",
+    schema = "faith",
+    uniqueConstraints = [
+        UniqueConstraint(
+            name = "unique_user_surah_ayah",
+            columnNames = ["userId", "surahId", "ayahNumber"]
+        )
+    ]
+)
 data class AyahBookmark(
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)

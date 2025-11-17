@@ -22,6 +22,15 @@ class FaithExceptionHandler {
         )
     }
 
+    @ExceptionHandler(FailedToCreateBookmarkException::class)
+    fun onFailedToCreateBookmarkError(exception: FailedToCreateBookmarkException): ResponseEntity<ApiErrorResponse> {
+        return createErrorResponse(
+            message = "failed to create bookmark",
+            exception = exception,
+            status = HttpStatus.INTERNAL_SERVER_ERROR,
+        )
+    }
+
     @ExceptionHandler(FailedToGetPrayerTimesException::class)
     fun onCannotGetPrayerTimesError(exception: FailedToGetPrayerTimesException): ResponseEntity<ApiErrorResponse> {
         return createErrorResponse(

@@ -18,8 +18,8 @@ import java.util.UUID
 @RequestMapping("/chat")
 @Controller
 class ChatController(
-    private val messagingTemplate: SimpMessagingTemplate,
     private val chatService: ChatService,
+    private val messageSender: MessageSender
 ) {
 
     @MessageMapping("/chat.privateMessage")
@@ -199,15 +199,7 @@ class ChatController(
         destination: String = PRIVATE_MESSAGES,
         payload: (userId: UUID) -> Any
     ) {
-        chatService
-            .getChatUsersIds(chatId = chatId)
-            .forEach { chatParticipantId ->
-                messagingTemplate.convertAndSendToUser(
-                    chatParticipantId.toString(),
-                    destination,
-                    payload(chatParticipantId)
-                )
-            }
+        messageSender.sendMessageToChat(chatId, destination, payload)
     }
 
 
