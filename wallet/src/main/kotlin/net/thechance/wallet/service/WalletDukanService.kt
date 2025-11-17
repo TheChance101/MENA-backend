@@ -15,13 +15,15 @@ class WalletDukanService(
     }
 
     @Transactional
-    fun updateDukanStatus(
+    fun updateDukan(
         dukanId: UUID,
+        imageUrl:String?,
         status: WalletDukan.Status,
         activationStatus: WalletDukan.ActivationStatus?
     ) {
-        val isUpdated = walletDukanRepository.updateStatuses(
+        val isUpdated = walletDukanRepository.updateDukan(
             dukanId = dukanId,
+            imageUrl = imageUrl,
             status = status,
             activationStatus = activationStatus
         ) > 0

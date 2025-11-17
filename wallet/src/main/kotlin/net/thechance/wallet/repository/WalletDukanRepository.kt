@@ -13,11 +13,13 @@ interface WalletDukanRepository: JpaRepository<WalletDukan, UUID>{
     UPDATE WalletDukan w 
     SET 
         w.status = :status,
-        w.activationStatus = :activationStatus
+        w.activationStatus = :activationStatus,
+        w.imageUrl = :imageUrl
     WHERE w.id = :dukanId
     """)
-    fun updateStatuses(
+    fun updateDukan(
         @Param("dukanId") dukanId: UUID,
+        @Param("imageUrl") imageUrl: String?,
         @Param("status") status: WalletDukan.Status,
         @Param("activationStatus") activationStatus: WalletDukan.ActivationStatus?
     ): Int

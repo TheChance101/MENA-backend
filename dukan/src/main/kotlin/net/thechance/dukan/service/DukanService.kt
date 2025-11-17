@@ -15,10 +15,9 @@ import net.thechance.dukan.repository.StatusChangelogRepository
 import net.thechance.dukan.service.exception.DukanCreationFailedException
 import net.thechance.dukan.service.exception.DukanNotFoundException
 import net.thechance.dukan.service.mapper.toDukanCreationEvent
-import net.thechance.dukan.service.mapper.toDukanStatusChangedEvent
+import net.thechance.dukan.service.mapper.toDukanUpdateEvent
 import net.thechance.dukan.service.model.DukanCreationParams
 import net.thechance.dukan.service.model.DukanWithDiscount
-import net.thechance.events.dukan.DukanCreationEvent
 import net.thechance.events.publisher.MenaEventPublisher
 import org.springframework.data.domain.Page
 import org.springframework.data.domain.Pageable
@@ -83,7 +82,9 @@ class DukanService(
                 fileName = "${dukan.name}-${file.originalFilename}",
                 folderName = DUKAN_FOLDER_NAME
             )
-        dukanRepository.save(dukan.copy(imageUrl = imageUrl))
+
+        val savedDukan = dukanRepository.save(dukan.copy(imageUrl = imageUrl))
+        eventPublisher.publish(savedDukan.toDukanUpdateEvent())
         return imageUrl
     }
 
@@ -154,7 +155,7 @@ class DukanService(
         }
 
         val dukan = getDukanDetailsById(dukanId)
-        eventPublisher.publish(dukan.toDukanStatusChangedEvent())
+        eventPublisher.publish(dukan.toDukanUpdateEvent())
     }
 
     @Transactional
@@ -175,7 +176,7 @@ class DukanService(
             )
         }
         val dukan = getDukanDetailsById(dukanId)
-        eventPublisher.publish(dukan.toDukanStatusChangedEvent())
+        eventPublisher.publish(dukan.toDukanUpdateEvent())
     }
 
     private fun insertDeactivationChangelog(dukanId: UUID, reason: String?) {
