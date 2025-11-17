@@ -14,7 +14,7 @@ data class User(
     @Column(columnDefinition = "uuid", updatable = false, nullable = false)
     val id: UUID = UUID.randomUUID(),
 
-    @Column(name = "phone_number", nullable = false, unique = true)
+    @Column(name = "phone_number", nullable = false)
     val phoneNumber: String,
 
     @Column(name = "password", nullable = false)
@@ -48,7 +48,13 @@ data class User(
 
     @Enumerated(EnumType.STRING)
     @Column(name="status", nullable = false)
-    val status: Status
+    val status: Status,
+
+    @Column(name = "is_deleted", nullable = false)
+    val isDeleted: Boolean = false,
+
+    @Column(name = "deleted_at", nullable = true)
+    val deletedAt: LocalDateTime? = null,
 ) {
     object Gender {
         const val MALE = 1L

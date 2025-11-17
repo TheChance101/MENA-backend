@@ -1,6 +1,7 @@
 package net.thechance.dukan.repository
 
 import net.thechance.dukan.entity.Dukan
+import net.thechance.dukan.service.model.DukanWithDiscount
 import net.thechance.dukan.service.model.DukanWithFavorite
 import org.springframework.data.domain.Page
 import org.springframework.data.domain.Pageable
@@ -158,4 +159,30 @@ interface DukanRepository : JpaRepository<Dukan, UUID> {
         @Param("dukanId") dukanId: UUID,
         @Param("status") status: Dukan.Status
     ): Int
+
+    @Modifying
+    @Query("UPDATE Dukan d SET d.activationStatus = :activationStatus WHERE d.id = :dukanId")
+    fun updateActivationStatus(
+        @Param("dukanId") dukanId: UUID,
+        @Param("activationStatus") activationStatus: Dukan.ActivationStatus,
+    ): Int
+
+    @Query(
+        """
+        SELECT new net.thechance.dukan.service.model.DukanWithDiscount(
+            dukan,
+            MAX(product.discount)
+        )
+        FROM DukanProduct product
+        JOIN product.dukan dukan
+        WHERE dukan.ownerId != :userId
+          AND product.discount IS NOT NULL
+        GROUP BY dukan.id
+        ORDER BY MAX(product.discount) DESC
+    """
+    )
+    fun findTopDukansWithDiscounts(
+        userId: UUID,
+        pageable: Pageable
+    ): Page<DukanWithDiscount>
 }

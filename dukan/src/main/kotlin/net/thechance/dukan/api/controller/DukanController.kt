@@ -138,4 +138,14 @@ class DukanController(
         val response = favouriteDukanService.toggleFavoriteStatus(userId, dukanId)
         return ResponseEntity.ok(response)
     }
+
+    @GetMapping("/top/discounts")
+    fun getDukansWihtDiscounts(
+        @AuthenticationPrincipal userId: UUID,
+        @PageableDefault(size = 5, page = 0)
+        pageable: Pageable
+    ): ResponseEntity<Page<DukanWithDiscountResponse>> {
+        val topDukans = dukanService.findTopDukansWithDiscounts(userId, pageable)
+        return ResponseEntity.ok(topDukans.map { it.toResponse() })
+    }
 }

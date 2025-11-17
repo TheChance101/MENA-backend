@@ -35,7 +35,7 @@ class UserServiceTest {
 
     @Test
     fun `findByPhoneNumber() should return User when user exists`() {
-        every { userRepository.findByPhoneNumber(any()) } returns user
+        every { userRepository.findByPhoneNumberAndIsDeletedFalse(any()) } returns user
 
         val resultUser = userService.findByPhoneNumber(phoneNumber)
 
@@ -44,18 +44,18 @@ class UserServiceTest {
 
     @Test
     fun `findByPhoneNumber() should throw UserNotFoundException when user not exists`() {
-        every { userRepository.findByPhoneNumber(any()) } returns null
+        every { userRepository.findByPhoneNumberAndIsDeletedFalse(any()) } returns null
 
         assertThrows(UserNotFoundException::class.java) { userService.findByPhoneNumber(phoneNumber) }
     }
 
     @Test
     fun `findByPhoneNumber() should call findByPhoneNumber in userRepository one time when called`() {
-        every { userRepository.findByPhoneNumber(any()) } returns user
+        every { userRepository.findByPhoneNumberAndIsDeletedFalse(any()) } returns user
 
         userService.findByPhoneNumber(phoneNumber)
 
-        verify(exactly = 1) { userRepository.findByPhoneNumber(any()) }
+        verify(exactly = 1) { userRepository.findByPhoneNumberAndIsDeletedFalse(any()) }
     }
 
     @Test
@@ -112,7 +112,7 @@ class UserServiceTest {
 
     @Test
     fun `updatePasswordByPhoneNumber() should return runs with no exceptions when password updated`() {
-        every { userRepository.findByPhoneNumber(any()) } returns user
+        every { userRepository.findByPhoneNumberAndIsDeletedFalse(any()) } returns user
         every { userRepository.save(any()) } returns updatedUser
 
         userService.updatePasswordByPhoneNumber(phoneNumber, PASSWORD)
@@ -120,7 +120,7 @@ class UserServiceTest {
 
     @Test
     fun `updatePasswordByPhoneNumber() should throw PasswordNotUpdatedException when password not updated`() {
-        every { userRepository.findByPhoneNumber(any()) } returns user
+        every { userRepository.findByPhoneNumberAndIsDeletedFalse(any()) } returns user
         every { userRepository.save(any()) } returns user
 
         assertThrows(PasswordNotUpdatedException::class.java) {
@@ -131,7 +131,7 @@ class UserServiceTest {
 
     @Test
     fun `updatePasswordByPhoneNumber() should throw UserNotFoundException user not found`() {
-        every { userRepository.findByPhoneNumber(any()) } returns null
+        every { userRepository.findByPhoneNumberAndIsDeletedFalse(any()) } returns null
 
         assertThrows(UserNotFoundException::class.java) {
             userService.updatePasswordByPhoneNumber(phoneNumber, PASSWORD)
@@ -140,7 +140,7 @@ class UserServiceTest {
 
     @Test
     fun `updatePasswordByPhoneNumber() should publish event after password updated`() {
-        every { userRepository.findByPhoneNumber(any()) } returns user
+        every { userRepository.findByPhoneNumberAndIsDeletedFalse(any()) } returns user
         every { userRepository.save(any()) } returns updatedUser
 
         userService.updatePasswordByPhoneNumber(phoneNumber, PASSWORD)
@@ -257,7 +257,7 @@ class UserServiceTest {
 
     @Test
     fun `userExistsByPhoneNumber should return true when user exists`() {
-        every { userRepository.existsByPhoneNumber(any()) } returns true
+        every { userRepository.existsByPhoneNumberAndIsDeletedFalse(any()) } returns true
 
         val result = userService.userExistsByPhoneNumber(user.phoneNumber)
 
@@ -266,7 +266,7 @@ class UserServiceTest {
 
     @Test
     fun `userExistsByPhoneNumber should return false when user does not exist`() {
-        every { userRepository.existsByPhoneNumber(any()) } returns false
+        every { userRepository.existsByPhoneNumberAndIsDeletedFalse(any()) } returns false
 
         val result = userService.userExistsByPhoneNumber(user.phoneNumber)
 

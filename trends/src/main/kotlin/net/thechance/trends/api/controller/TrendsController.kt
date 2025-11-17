@@ -4,6 +4,7 @@ import jakarta.validation.Valid
 import net.thechance.trends.api.dto.base.PagingResponse
 import net.thechance.trends.api.dto.trend.*
 import net.thechance.trends.service.TrendsService
+import org.springframework.beans.factory.annotation.Value
 import org.springframework.data.domain.Pageable
 import org.springframework.http.ResponseEntity
 import org.springframework.security.core.annotation.AuthenticationPrincipal
@@ -14,8 +15,12 @@ import java.util.*
 @RestController
 @RequestMapping("/trends")
 class TrendsController(
+    @Value("\${storage.mena.cdn-endpoint}") cdnEndpoint: String,
+    @Value("\${identity.resources.profile-image-directory}") profileImageDirectory: String,
     private val trendsService: TrendsService
 ) {
+
+    private val imagesBaseUrl: String = "$cdnEndpoint$profileImageDirectory"
 
     @GetMapping("/{trendId}/refresh")
     fun getRefreshedTrendUrls(
@@ -33,7 +38,11 @@ class TrendsController(
         @PathVariable(required = false) trendsId: UUID? = null,
         @AuthenticationPrincipal currentUserId: UUID
     ): ResponseEntity<PagingResponse<TrendResponse>> {
-        val trends = trendsService.getAllTrendsForFeed(pageable, currentUserId, trendsId).content.map { trend -> trend.toResponse() }
+        val trends = trendsService.getAllTrendsForFeed(
+            pageable,
+            currentUserId,
+            trendsId
+        ).content.map { trend -> trend.toResponse(imagesBaseUrl) }
 
         val result = PagingResponse(
             pageNumber = pageable.pageNumber,
@@ -54,7 +63,7 @@ class TrendsController(
             pageable = pageable,
             currentUserId = currentUserId,
             trendId = trendsId,
-        ).content.map { trend -> trend.toResponse() }
+        ).content.map { trend -> trend.toResponse(imagesBaseUrl) }
 
         val result = PagingResponse(
             pageNumber = pageable.pageNumber,
@@ -131,7 +140,7 @@ class TrendsController(
     ): ResponseEntity<TrendResponse> {
         val trend = trendsService.likeTrend(trendId = trendId, currentUserId)
 
-        val trendResponse = trend.toResponse()
+        val trendResponse = trend.toResponse(imagesBaseUrl)
         return ResponseEntity.ok(trendResponse)
     }
 
@@ -139,10 +148,10 @@ class TrendsController(
     fun removeTrendLike(
         @PathVariable trendId: UUID,
         @AuthenticationPrincipal currentUserId: UUID
-    ): ResponseEntity<TrendResponse>{
+    ): ResponseEntity<TrendResponse> {
         val trend = trendsService.unlikeTrend(trendId, currentUserId)
 
-        val trendResponse = trend.toResponse()
+        val trendResponse = trend.toResponse(imagesBaseUrl)
         return ResponseEntity.ok(trendResponse)
     }
 }

@@ -28,6 +28,8 @@ dependencies {
 
     // phone number
     implementation("com.googlecode.libphonenumber:libphonenumber:9.0.14")
+    
+    implementation(project(":events"))
 }
 
 tasks.test {
