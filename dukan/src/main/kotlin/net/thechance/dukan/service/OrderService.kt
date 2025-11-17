@@ -1,7 +1,6 @@
 package net.thechance.dukan.service
 
-import net.thechance.dukan.api.dto.order.OrderResponse
-import net.thechance.dukan.api.mapper.order.toResponse
+import net.thechance.dukan.entity.Order
 import net.thechance.dukan.repository.OrderRepository
 import net.thechance.dukan.service.exception.ForbiddenException
 import net.thechance.dukan.service.exception.OrderNotFoundException
@@ -13,7 +12,7 @@ class OrderService(
     private val orderRepository: OrderRepository,
     private val dukanService: DukanService
 ) {
-    fun getOrderByIdAndUserId(userId: UUID, orderId: UUID): OrderResponse {
+    fun getOrderByIdAndUserId(userId: UUID, orderId: UUID): Pair<Order, Boolean> {
         val order = orderRepository.findById(orderId).orElseThrow { OrderNotFoundException() }
 
         val isDukanOwner = dukanService.getDukanDetailsById(order.dukanId).ownerId == userId
@@ -21,6 +20,6 @@ class OrderService(
 
         if (isCustomer.not() && isDukanOwner.not()) throw ForbiddenException()
 
-        return order.toResponse(isDukanOwner)
+        return Pair(order, isDukanOwner)
     }
 }

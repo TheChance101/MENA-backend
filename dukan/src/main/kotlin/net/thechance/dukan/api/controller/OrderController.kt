@@ -1,6 +1,7 @@
 package net.thechance.dukan.api.controller
 
 import net.thechance.dukan.api.dto.order.OrderResponse
+import net.thechance.dukan.api.mapper.order.toResponse
 import net.thechance.dukan.api.utils.EndPoints.DUKAN_PATH
 import net.thechance.dukan.service.OrderService
 import org.springframework.security.core.annotation.AuthenticationPrincipal
@@ -11,7 +12,7 @@ import org.springframework.web.bind.annotation.RestController
 import java.util.*
 
 @RestController
-@RequestMapping("$DUKAN_PATH/order")
+@RequestMapping("$DUKAN_PATH/orders")
 class OrderController(
     val orderService: OrderService
 ) {
@@ -20,9 +21,10 @@ class OrderController(
         @AuthenticationPrincipal userId: UUID,
         @PathVariable orderId: UUID
     ): OrderResponse {
-        return orderService.getOrderByIdAndUserId(
+        val response = orderService.getOrderByIdAndUserId(
             userId = userId,
             orderId = orderId
         )
+        return response.first.toResponse(response.second)
     }
 }
