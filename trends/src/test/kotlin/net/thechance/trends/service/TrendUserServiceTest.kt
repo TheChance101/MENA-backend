@@ -59,7 +59,7 @@ class TrendUserServiceTest {
     }
 
     @Test
-    fun `when new user watches trend for first time should calculate initial affinity`() {
+    fun `when new user watches trend with new category for first time should calculate initial affinity`() {
         val userId = DummyTrendUsers.user4.userId
         val request = SubmitWatchTimeRequest(
             userId = userId,
@@ -122,7 +122,7 @@ class TrendUserServiceTest {
     }
 
     @Test
-    fun `when existing user watches trend on same day should not apply decay`() {
+    fun `when existing user watches trend with category last updated today should not apply decay`() {
         val userId = DummyTrendUsers.user1.userId
         inMemoryUserCategories.add(DummyUserCategories.user1TechnologySelected)
 
@@ -143,7 +143,7 @@ class TrendUserServiceTest {
     }
 
     @Test
-    fun `when existing user watches trend after 1 day should apply single day decay`() {
+    fun `when existing user watches trend with category last updated 1 day ago should apply single day decay`() {
         val userId = DummyTrendUsers.user1.userId
         val oldCategory = UserCategories(
             userId = userId,
@@ -172,7 +172,7 @@ class TrendUserServiceTest {
     }
 
     @Test
-    fun `when existing user watches trend after 30 days should apply 30 day decay`() {
+    fun `when existing user watches trend with category last updated 30 days ago should apply 30 day decay`() {
         val userId = DummyTrendUsers.user1.userId
         val oldCategory = UserCategories(
             userId = userId,
@@ -201,7 +201,7 @@ class TrendUserServiceTest {
     }
 
     @Test
-    fun `when existing user watches trend after 100 days should apply heavy decay`() {
+    fun `when existing user watches trend with category last updated 100 days ago should apply heavy decay`() {
         val userId = DummyTrendUsers.user2.userId
         inMemoryUserCategories.add(
             DummyUserCategories.user2TechnologyDecayed.copy(
