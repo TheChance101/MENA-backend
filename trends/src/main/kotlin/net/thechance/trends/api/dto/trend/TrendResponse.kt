@@ -35,7 +35,10 @@ fun Trend.toResponse(isLiked: Boolean = false): TrendResponse {
     )
 }
 
-fun TrendWithOwnerShipAndLikeStatus.toResponse(): TrendResponse {
+fun TrendWithOwnerShipAndLikeStatus.toResponse(pictureBaseUrl: String): TrendResponse {
+
+    val imageUrl = if (profileImageUrl.isNullOrBlank()) null else "$pictureBaseUrl/$profileImageUrl"
+
     return TrendResponse(
         trendId = trendId,
         thumbnailUrl = thumbnailUrl,
@@ -47,6 +50,6 @@ fun TrendWithOwnerShipAndLikeStatus.toResponse(): TrendResponse {
         isCurrentUserOwner = isCurrentUserOwner,
         isLiked = isLiked,
         username = username,
-        profilePictureUrl = profileImageUrl
+        profilePictureUrl = imageUrl
     )
 }
