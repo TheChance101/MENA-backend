@@ -66,6 +66,22 @@ class ChatService(
             )
         )
     }
+    
+    fun saveAyahMessage(args: MessageAyahRequestArgs): Message{
+        return messageRepository.save(
+            Message(
+                id = args.messageId,
+                senderId = args.senderId,
+                type = Message.MessageType.AYAH,
+                content = MessageContent.Ayah(
+                    ayahNumber = args.ayahNumber,
+                    suraNumber = args.suraNumber,
+                    ayahText = args.ayahText
+                ),
+                chatId = args.chatId
+            )
+        )
+    }
 
     @Transactional
     fun saveMessageImage(args: MessageImageRequestArgs): Message {
