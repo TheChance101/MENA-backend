@@ -84,7 +84,9 @@ class DukanService(
             )
 
         val savedDukan = dukanRepository.save(dukan.copy(imageUrl = imageUrl))
+
         eventPublisher.publish(savedDukan.toDukanUpdateEvent())
+
         return imageUrl
     }
 
