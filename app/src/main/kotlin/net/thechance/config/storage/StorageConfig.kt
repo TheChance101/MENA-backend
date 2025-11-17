@@ -84,8 +84,6 @@ class StorageConfig(
     fun pathStyleStorageConfiguration(): S3Configuration {
         return S3Configuration.builder()
             .pathStyleAccessEnabled(true)
-            .chunkedEncodingEnabled(false)
-            .checksumValidationEnabled(false)
             .build()
     }
 }
