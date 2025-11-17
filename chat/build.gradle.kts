@@ -5,6 +5,7 @@ plugins {
     kotlin("plugin.spring")
     kotlin("plugin.jpa")
     id("org.jetbrains.kotlinx.kover")
+    kotlin("plugin.serialization") version "2.0.21"
 }
 
 dependencies {
@@ -23,6 +24,12 @@ dependencies {
     // AWS Configuration
     implementation(platform("software.amazon.awssdk:bom:2.33.8"))
     implementation("software.amazon.awssdk:s3")
+    implementation("org.jetbrains.kotlinx:kotlinx-serialization-json:1.7.3")
+
+    // phone number
+    implementation("com.googlecode.libphonenumber:libphonenumber:9.0.14")
+    
+    implementation(project(":events"))
 }
 
 tasks.test {

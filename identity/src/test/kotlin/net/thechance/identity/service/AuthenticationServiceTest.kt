@@ -3,14 +3,19 @@ package net.thechance.identity.service
 import com.google.common.truth.Truth.assertThat
 import io.mockk.every
 import io.mockk.mockk
+import io.mockk.mockkStatic
 import io.mockk.verify
+import junit.framework.TestCase.assertEquals
 import net.thechance.identity.entity.RefreshToken
 import net.thechance.identity.exception.InvalidCredentialsException
 import net.thechance.identity.repository.RefreshTokenRepository
 import net.thechance.identity.security.JwtService
+import net.thechance.identity.service.model.Country
 import net.thechance.identity.utils.DummyUsers
 import org.junit.Assert.assertThrows
 import org.junit.Test
+import org.springframework.context.MessageSource
+import org.springframework.context.i18n.LocaleContextHolder
 import org.springframework.security.crypto.password.PasswordEncoder
 import java.util.*
 
@@ -20,12 +25,14 @@ class AuthenticationServiceTest {
     private val refreshTokenService: RefreshTokenService = mockk(relaxed = true)
     private val passwordEncoder: PasswordEncoder = mockk(relaxed = true)
     private val jwtService: JwtService = mockk(relaxed = true)
+    private val messageSource: MessageSource = mockk(relaxed = true)
     private val authenticationService = AuthenticationService(
         userService = userService,
         jwtService = jwtService,
         refreshTokenService = refreshTokenService,
         passwordEncoder = passwordEncoder,
-        refreshRepo = refreshTokenRepository
+        refreshRepo = refreshTokenRepository,
+        messageSource = messageSource
     )
 
     @Test
@@ -110,6 +117,21 @@ class AuthenticationServiceTest {
 
         assertThrows(RuntimeException::class.java) {
             authenticationService.logout(userId)
+        }
+    }
+
+    @Test
+    fun `should return all countries when getCountries is called`() {
+        val locale = Locale.ENGLISH
+        mockkStatic(LocaleContextHolder::class)
+        every { LocaleContextHolder.getLocale() } returns locale
+        every { messageSource.getMessage(any(), any(), locale) } returns "Country Name"
+
+        val result = authenticationService.getCountries()
+
+        assertEquals(Country.entries.size, result.size)
+        verify(exactly = Country.entries.size) {
+            messageSource.getMessage(any(), any(), locale)
         }
     }
 }

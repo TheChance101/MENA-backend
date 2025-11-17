@@ -15,6 +15,7 @@ dependencies {
     implementation("org.springframework.boot:spring-boot-starter-validation")
     implementation(platform("software.amazon.awssdk:bom:2.33.8"))
     implementation("software.amazon.awssdk:s3")
+    implementation(project(":events"))
 }
 
 kover.reports {

@@ -12,6 +12,8 @@ internal object ErrorCodes {
     const val PRODUCT_NAME_ALREADY_TAKEN = 1303
 
     const val PRODUCT_UPDATE_FAILED = 1304
+    const val PRODUCT_OUT_OF_STOCK = 1305
+    const val  INVALID_DISCOUNT = 1305
     const val SHELF_DELETION_NOT_ALLOWED = 1401
     const val SHELF_NOT_FOUND = 1402
     const val SHELF_NAME_ALREADY_TAKEN = 1403
@@ -19,4 +21,6 @@ internal object ErrorCodes {
     const val CART_NOT_FOUND = 1501
     const val PRODUCT_NOT_IN_CART = 1502
     const val PRODUCT_ALREADY_IN_CART = 1503
+    const val FORBIDDEN_ORDER_ACCESS = 1601
+    const val ORDER_NOT_FOUND = 1602
 }

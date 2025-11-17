@@ -17,7 +17,8 @@ data class TransactionCompletedEvent(
 
     enum class TransactionType {
         P2P,
-        ONLINE_PURCHASE
+        ONLINE_PURCHASE,
+        DEPOSIT
     }
 
     enum class TransactionStatus {

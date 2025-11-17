@@ -1,12 +1,14 @@
 package net.thechance.identity.service
 
 
+import net.thechance.events.publisher.MenaEventPublisher
 import net.thechance.identity.api.dto.auth.AuthResponse
 import net.thechance.identity.api.dto.otp.RequestOtpResponse
 import net.thechance.identity.entity.User
 import net.thechance.identity.exception.UnauthorizedException
 import net.thechance.identity.exception.UserAlreadyExistsException
 import net.thechance.identity.security.JwtService
+import net.thechance.identity.service.mapper.toUserCreatedEvent
 import net.thechance.identity.service.model.RegisterUserModel
 import net.thechance.identity.service.phoneNumberValidator.PhoneNumberValidator
 import net.thechance.identity.service.sms.SmsSender
@@ -24,6 +26,7 @@ class RegisterService(
     private val passwordEncoder: PasswordEncoder,
     private val jwtService: JwtService,
     private val refreshTokenService: RefreshTokenService,
+    private val eventPublisher: MenaEventPublisher
 ) {
 
     fun requestOtp(phoneNumber: String, defaultRegion: String): RequestOtpResponse {
@@ -49,6 +52,7 @@ class RegisterService(
         val user = saveUser(registerUserModel)
         val authResponse = generateAuthResponse(user)
         otpService.expireOtpBySessionId(registerUserModel.sessionId)
+        eventPublisher.publish(user.toUserCreatedEvent())
         return authResponse
     }
 

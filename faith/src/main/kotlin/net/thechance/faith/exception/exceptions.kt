@@ -4,6 +4,10 @@ class AyahBookmarkNotFoundException(
     message: String = "Bookmark not found"
 ) : RuntimeException(message)
 
+class FailedToCreateBookmarkException(
+    message: String = "failed to create bookmark"
+) : RuntimeException(message)
+
 class FailedToGetPrayerTimesException(
     message: String = "failed to get prayer times"
 ) : RuntimeException(message)
@@ -26,4 +30,8 @@ class InvalidImageFormatException(
 
 class ImageUploadFailedException(
     message: String = "Image uploading failed"
+) : RuntimeException(message)
+
+class FailedToCreateMosqueException(
+    message: String = "Failed to create mosque"
 ) : RuntimeException(message)

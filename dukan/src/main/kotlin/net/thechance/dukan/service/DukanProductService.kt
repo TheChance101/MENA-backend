@@ -2,26 +2,26 @@ package net.thechance.dukan.service
 
 import jakarta.persistence.EntityNotFoundException
 import jakarta.transaction.Transactional
-import net.thechance.dukan.entity.Dukan
-import net.thechance.dukan.entity.DukanProduct
+import net.thechance.dukan.entity.*
 import net.thechance.dukan.repository.DukanProductRepository
 import net.thechance.dukan.repository.DukanShelfRepository
-import net.thechance.dukan.entity.FavoriteProduct
-import net.thechance.dukan.entity.FavoriteProductId
+import net.thechance.dukan.repository.FavoriteProductRepository
 import net.thechance.dukan.service.exception.DukanProductCreationFailedException
+import net.thechance.dukan.service.exception.InvalidDiscountException
 import net.thechance.dukan.service.exception.ProductNameAlreadyTakenException
 import net.thechance.dukan.service.exception.ProductNotFoundException
-import net.thechance.dukan.repository.FavoriteProductRepository
 import net.thechance.dukan.service.model.DukanProductCreationParams
-import net.thechance.events.publisher.MenaEventPublisher
 import net.thechance.dukan.service.model.DukanProductUpdateParams
+import net.thechance.dukan.service.model.DukanProductWithFavoriteAndQuantity
 import net.thechance.events.dukan.DukanEvent
 import net.thechance.events.dukan.ProductEvent
-import net.thechance.dukan.service.model.DukanProductWithFavoriteAndQuantity
+import net.thechance.events.publisher.MenaEventPublisher
 import org.springframework.data.domain.Page
 import org.springframework.data.domain.Pageable
 import org.springframework.stereotype.Service
 import org.springframework.web.multipart.MultipartFile
+import java.math.BigDecimal
+import java.math.RoundingMode
 import java.util.*
 
 @Service
@@ -85,9 +85,10 @@ class DukanProductService(
     private fun DukanProduct.toProductSaveEvent() = ProductEvent.Save(
         id = this.id.toString(),
         name = this.name,
-        description = this.description,
+        dukanName = this.description,
+        dukanId = this.dukan.id.toString(),
         mainImageUrl = this.imageUrls.firstOrNull().orEmpty(),
-        price = this.price,
+        price = this.price.final,
         shelfName = this.shelf.title
     )
 
@@ -96,12 +97,15 @@ class DukanProductService(
             val dukan = dukanService.getDukanByOwnerId(params.ownerId)
             val shelf = dukanShelfRepository.getReferenceById(params.shelfId)
             checkProductNameExistence(dukan.id, params.name)
+
+            val discountValue = calculateDiscount(params.price)
             val product = dukanProductRepository.save(
                 DukanProduct(
                     name = params.name.trim(),
                     shelf = shelf,
                     dukan = dukan,
                     price = params.price,
+                    discount = discountValue,
                     description = params.description.trim(),
                     imageUrls = emptyList() // Images will be uploaded using a different endpoint
                 )
@@ -116,6 +120,11 @@ class DukanProductService(
     fun getProductsByShelf(userId: UUID, shelfId: UUID, pageable: Pageable): Page<DukanProductWithFavoriteAndQuantity> {
         val products = dukanProductRepository.findProductsWithFavoriteAndQuantityByShelf(userId, shelfId, pageable)
         return products
+    }
+
+
+    fun getProductsByShelf(shelfId: UUID, pageable: Pageable): Page<DukanProduct> {
+        return dukanProductRepository.findAllByShelfId(shelfId, pageable)
     }
 
     @Transactional
@@ -149,9 +158,8 @@ class DukanProductService(
         updateParams: DukanProductUpdateParams
     ): UUID {
         val product = dukanProductRepository
-            .findByIdAndDukanOwnerId(updateParams.productId, updateParams.ownerId)
+            .findByIdAndDukanOwnerIdAndIsDeletedFalse(updateParams.productId, updateParams.ownerId)
             .orElseThrow { ProductNotFoundException() }
-
         if (product.name != updateParams.name) {
             checkProductNameExistence(product.dukan.id, updateParams.name)
         }
@@ -159,16 +167,7 @@ class DukanProductService(
         val shelf = dukanShelfRepository.getReferenceById(updateParams.shelfId)
 
         deleteUnusedProductImages(product.imageUrls, updateParams.imageUrls)
-
-        val updatedProduct = product.copy(
-            name = updateParams.name.trim(),
-            price = updateParams.price,
-            imageUrls = updateParams.imageUrls,
-            description = updateParams.description.trim(),
-            shelf = shelf,
-            isOutOfStock = updateParams.isOutOfStock,
-        )
-
+        val updatedProduct = buildUpdatedProduct(product, updateParams, shelf)
         return dukanProductRepository.save(updatedProduct).id
     }
 
@@ -179,7 +178,7 @@ class DukanProductService(
         file: MultipartFile
     ): String {
         val product = dukanProductRepository
-            .findByIdAndDukanOwnerId(productId, ownerId)
+            .findByIdAndDukanOwnerIdAndIsDeletedFalse(productId, ownerId)
             .orElseThrow { ProductNotFoundException() }
         val imageUrl = imageStorageService.uploadImage(
             file = file,
@@ -189,8 +188,25 @@ class DukanProductService(
         return imageUrl
     }
 
+    @Transactional
+    fun deleteProduct(ownerId: UUID, productId: UUID) {
+        val product = dukanProductRepository
+            .findByIdAndDukanOwnerIdAndIsDeletedFalse(productId, ownerId)
+            .orElseThrow { ProductNotFoundException() }
+
+        val deletedProduct = product.copy(
+            isDeleted = true,
+        )
+
+        dukanProductRepository.save(deletedProduct)
+
+        eventPublisher.publish(
+            ProductEvent.Delete(product.id.toString())
+        )
+    }
+
     private fun checkProductNameExistence(dukanId: UUID, name: String) {
-        if (dukanProductRepository.existsByDukanIdAndNameIgnoreCase(dukanId, name)) {
+        if (dukanProductRepository.existsByDukanIdAndNameIgnoreCaseAndIsDeletedFalse(dukanId, name)) {
             throw ProductNameAlreadyTakenException()
         }
     }
@@ -209,6 +225,33 @@ class DukanProductService(
         }
     }
 
+    private fun calculateDiscount(price: Price): BigDecimal {
+        val basePrice = price.base
+        val finalPrice = price.final
+        if (finalPrice > basePrice) throw InvalidDiscountException()
+
+        return (basePrice - finalPrice)
+            .divide(basePrice, 10, RoundingMode.HALF_UP)
+            .multiply(BigDecimal(100))
+            .setScale(2, RoundingMode.HALF_UP)
+    }
+
+    private fun buildUpdatedProduct(
+        product: DukanProduct,
+        params: DukanProductUpdateParams,
+        shelf: DukanShelf
+    ): DukanProduct {
+        val discountValue = calculateDiscount(params.price)
+        return product.copy(
+            name = params.name.trim(),
+            price = params.price,
+            discount = discountValue,
+            imageUrls = params.imageUrls,
+            description = params.description.trim(),
+            shelf = shelf,
+            isOutOfStock = params.isOutOfStock,
+        )
+    }
 
     companion object {
         private const val PRODUCT_FOLDER_NAME = "product"

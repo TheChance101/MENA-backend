@@ -30,7 +30,7 @@ class ContactController(
         @RequestBody @Valid contacts: List<ContactRequest>,
         @AuthenticationPrincipal userId: UUID
     ): ResponseEntity<String> {
-        contactService.syncContacts(contacts.toContacts(userId))
+        contactService.syncContacts(contacts.toContacts(userId), userId)
         return ResponseEntity.status(HttpStatus.CREATED).build()
     }
 

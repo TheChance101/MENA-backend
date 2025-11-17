@@ -1,6 +1,7 @@
 package net.thechance.dukan.api.mapper.dukan
 
 import net.thechance.dukan.api.dto.dukan.DukanDetailsResponse
+import net.thechance.dukan.api.mapper.category.toDto
 import net.thechance.dukan.entity.Dukan
 
 fun Dukan.toResponse(isFavorite: Boolean): DukanDetailsResponse{

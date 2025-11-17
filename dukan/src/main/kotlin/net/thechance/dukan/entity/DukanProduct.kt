@@ -1,6 +1,7 @@
 package net.thechance.dukan.entity
 
 import jakarta.persistence.*
+import java.math.BigDecimal
 import java.time.Instant
 import java.util.*
 import java.util.Collections.emptySet
@@ -27,11 +28,17 @@ data class DukanProduct(
     @JoinColumn(name = "dukan_id", nullable = false)
     val dukan: Dukan,
 
-    @Column(name = "price", nullable = false)
-    val price: Double,
+    @Embedded
+    val price: Price,
+
+    @Column(name = "discount", precision = 5, scale = 2)
+    val discount: BigDecimal = BigDecimal.ZERO,
 
     @Column(name = "description", nullable = false, columnDefinition = "TEXT")
     val description: String,
+
+    @Column(name = "is_deleted")
+    val isDeleted: Boolean= false,
 
     @ElementCollection
     @CollectionTable(

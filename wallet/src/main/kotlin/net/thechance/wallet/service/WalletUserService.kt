@@ -16,9 +16,18 @@ class WalletUserService (
         }
     }
 
+    fun getUserByPhoneNumber(phoneNumber: String): WalletUser {
+        return userRepository.findByPhoneNumber(phoneNumber)
+            ?: throw IllegalArgumentException("User with phone number $phoneNumber not found")
+    }
+
     @Transactional
     fun updateUserStatus(userId: UUID, status: WalletUser.Status){
         val updatedRowsCount = userRepository.updateStatus(userId, status)
         if (updatedRowsCount == 0) throw IllegalArgumentException("User with id $userId not found")
+    }
+
+    fun getReferenceById(userId: UUID): WalletUser {
+        return userRepository.getReferenceById(userId)
     }
 }

@@ -4,6 +4,7 @@ import net.thechance.trends.api.dto.base.PagingResponse
 import net.thechance.trends.api.dto.trend.TrendResponse
 import net.thechance.trends.api.dto.trend.toResponse
 import net.thechance.trends.service.TrendsService
+import org.springframework.beans.factory.annotation.Value
 import org.springframework.data.domain.Pageable
 import org.springframework.http.ResponseEntity
 import org.springframework.security.core.annotation.AuthenticationPrincipal
@@ -16,8 +17,12 @@ import java.util.*
 @RestController
 @RequestMapping("/trends/user")
 class TrendUserController(
+    @Value("\${storage.mena.cdn-endpoint}") cdnEndpoint: String,
+    @Value("\${identity.resources.profile-image-directory}") profileImageDirectory: String,
     private val trendsService: TrendsService
 ) {
+
+    private val imagesBaseUrl: String = "$cdnEndpoint$profileImageDirectory"
 
     @GetMapping("/{trendId}", "")
     fun getAllTrendsByUserId(
@@ -26,7 +31,7 @@ class TrendUserController(
         @AuthenticationPrincipal currentUserId: UUID
     ): ResponseEntity<PagingResponse<TrendResponse>> {
 
-        val trends = trendsService.getAllTrendsByUserId(pageable, currentUserId, trendId).content.map { it.toResponse() }
+        val trends = trendsService.getAllTrendsByUserId(pageable, currentUserId, trendId).content.map { it.toResponse(imagesBaseUrl) }
 
         val result = PagingResponse(
             pageNumber = pageable.pageNumber,

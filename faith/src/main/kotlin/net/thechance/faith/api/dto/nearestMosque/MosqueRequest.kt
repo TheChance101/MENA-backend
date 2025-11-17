@@ -1,6 +1,7 @@
 package net.thechance.faith.api.dto.nearestMosque
 
 import jakarta.validation.constraints.*
+import org.springframework.web.multipart.MultipartFile
 
 data class MosqueRequest(
     @field:NotBlank(message = "Mosque name must not be blank")
@@ -15,6 +16,6 @@ data class MosqueRequest(
     @field:DecimalMin(value = "-180.0", message = "Longitude must be >= -180")
     @field:DecimalMax(value = "180.0", message = "Longitude must be <= 180")
     val longitude: Double,
-    @field:NotBlank(message = "Image URL must not be blank")
-    val imageUrl: String,
+    @field:NotBlank(message = "Image file must not be blank")
+    val image: MultipartFile,
 )

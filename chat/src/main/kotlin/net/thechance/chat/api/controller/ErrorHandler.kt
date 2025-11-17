@@ -29,6 +29,15 @@ class ChatControllerAdvice : ResponseEntityExceptionHandler() {
         return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(error)
     }
 
+    @ExceptionHandler(InvalidPhoneNumberException::class)
+    fun handleInvalidPhoneNumberException(e: InvalidPhoneNumberException): ResponseEntity<ErrorResponse> {
+        val error = ErrorResponse(
+            code = ErrorCodes.INVALID_PHONE_NUMBER,
+            message = e.message
+        )
+        return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(error)
+    }
+
     @ExceptionHandler(ImageUploadFailedException::class)
     fun handleImageUploadException(e: ImageUploadFailedException): ResponseEntity<ErrorResponse> {
         val error = ErrorResponse(
@@ -63,5 +72,14 @@ class ChatControllerAdvice : ResponseEntityExceptionHandler() {
             message = e.message
         )
         return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(error)
+    }
+
+    @ExceptionHandler(MalformedMessageContentException::class)
+    fun handleMalformedMessageContentException(e: MalformedMessageContentException): ResponseEntity<ErrorResponse> {
+        val error = ErrorResponse(
+            code = ErrorCodes.MALFORMED_MESSAGE_CONTENT,
+            message = e.message
+        )
+        return ResponseEntity.status(HttpStatus.UNPROCESSABLE_ENTITY).body(error)
     }
 }

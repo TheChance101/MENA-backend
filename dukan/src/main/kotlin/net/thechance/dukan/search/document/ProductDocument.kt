@@ -4,6 +4,7 @@ import org.springframework.data.annotation.Id
 import org.springframework.data.elasticsearch.annotations.Document
 import org.springframework.data.elasticsearch.annotations.Field
 import org.springframework.data.elasticsearch.annotations.FieldType
+import java.math.BigDecimal
 
 @Document(indexName = "products")
 data class ProductDocument(
@@ -13,10 +14,13 @@ data class ProductDocument(
     val name: String,
 
     @Field(type = FieldType.Double)
-    val price:Double,
+    val price: BigDecimal,
 
     @Field(type = FieldType.Text)
     val dukanName:String,
+
+    @Field(type = FieldType.Text)
+    val dukanId:String,
 
     @Field(type = FieldType.Text)
     val mainImageUrl:String,

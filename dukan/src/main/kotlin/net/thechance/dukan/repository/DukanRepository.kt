@@ -1,10 +1,12 @@
 package net.thechance.dukan.repository
 
 import net.thechance.dukan.entity.Dukan
+import net.thechance.dukan.service.model.DukanWithDiscount
 import net.thechance.dukan.service.model.DukanWithFavorite
 import org.springframework.data.domain.Page
 import org.springframework.data.domain.Pageable
 import org.springframework.data.jpa.repository.JpaRepository
+import org.springframework.data.jpa.repository.Modifying
 import org.springframework.data.jpa.repository.Query
 import org.springframework.data.repository.query.Param
 import org.springframework.stereotype.Repository
@@ -133,4 +135,54 @@ interface DukanRepository : JpaRepository<Dukan, UUID> {
         userId: UUID,
         pageable: Pageable
     ): Page<DukanWithFavorite>
+
+    @Query(
+        """
+    SELECT d FROM Dukan d
+    WHERE 
+        d.status = :status
+        AND (
+            LOWER(d.name) LIKE LOWER(CONCAT('%', :query, '%'))
+            OR LOWER(d.address) LIKE LOWER(CONCAT('%', :query, '%'))
+        )
+    """
+    )
+    fun findByNameOrAddressAndStatus(
+        @Param("query") query: String,
+        @Param("status") status: Dukan.Status,
+        pageable: Pageable
+    ): Page<Dukan>
+
+    @Modifying
+    @Query("UPDATE Dukan d SET d.status = :status WHERE d.id = :dukanId")
+    fun updateStatus(
+        @Param("dukanId") dukanId: UUID,
+        @Param("status") status: Dukan.Status
+    ): Int
+
+    @Modifying
+    @Query("UPDATE Dukan d SET d.activationStatus = :activationStatus WHERE d.id = :dukanId")
+    fun updateActivationStatus(
+        @Param("dukanId") dukanId: UUID,
+        @Param("activationStatus") activationStatus: Dukan.ActivationStatus,
+    ): Int
+
+    @Query(
+        """
+        SELECT new net.thechance.dukan.service.model.DukanWithDiscount(
+            dukan,
+            MAX(product.discount)
+        )
+        FROM DukanProduct product
+        JOIN product.dukan dukan
+        WHERE dukan.ownerId != :userId
+          AND product.discount IS NOT NULL
+        GROUP BY dukan.id
+        ORDER BY MAX(product.discount) DESC
+    """
+    )
+    fun findTopDukansWithDiscounts(
+        userId: UUID,
+        pageable: Pageable
+    ): Page<DukanWithDiscount>
 }

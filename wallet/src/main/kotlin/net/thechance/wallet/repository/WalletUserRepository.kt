@@ -15,4 +15,6 @@ interface WalletUserRepository : JpaRepository<WalletUser, UUID> {
         @Param("userId") userId: UUID,
         @Param("status") status: WalletUser.Status
     ): Int
+
+    fun findByPhoneNumber(phoneNumber: String): WalletUser?
 }
