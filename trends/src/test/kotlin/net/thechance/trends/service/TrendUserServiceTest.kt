@@ -3,7 +3,6 @@ package net.thechance.trends.service
 import com.google.common.truth.Truth.assertThat
 import io.mockk.mockk
 import net.thechance.trends.api.dto.analytics.SubmitWatchTimeRequest
-import net.thechance.trends.api.dto.analytics.WatchTimeDto
 import net.thechance.trends.entity.Trend
 import net.thechance.trends.entity.UserCategories
 import net.thechance.trends.exception.TrendUserUnauthorizedException
@@ -14,6 +13,7 @@ import net.thechance.trends.utils.DummyCategories
 import net.thechance.trends.utils.DummyTrendUsers
 import net.thechance.trends.utils.DummyTrends
 import net.thechance.trends.utils.DummyUserCategories
+import net.thechance.trends.utils.getWatchTimeDto
 import net.thechance.trends.utils.repository_behaviour_mock.TrendRepositoryMockBehaviour
 import net.thechance.trends.utils.repository_behaviour_mock.UserCategoryRepositoryMockBehaviour
 import org.junit.Assert.assertThrows
@@ -28,7 +28,7 @@ class TrendUserServiceTest {
     private val categoryService: CategoryService = mockk(relaxed = true)
     private val categoryRepository: CategoryRepository = mockk(relaxed = true)
 
-
+    
     private val trendUserService: TrendUserService = TrendUserService(
         categoryRepository = categoryRepository,
         categoryService = categoryService,
@@ -64,7 +64,7 @@ class TrendUserServiceTest {
         val request = SubmitWatchTimeRequest(
             userId = userId,
             watchTimes = listOf(
-                WatchTimeDto(
+                getWatchTimeDto(
                     trendId = DummyTrends.trend1.id,
                     percentWatched = 0.95
                 )
@@ -88,9 +88,9 @@ class TrendUserServiceTest {
         val request = SubmitWatchTimeRequest(
             userId = userId,
             watchTimes = listOf(
-                WatchTimeDto(trendId = DummyTrends.trend1.id, percentWatched = 0.95), // tech: +5
-                WatchTimeDto(trendId = DummyTrends.trend1.id, percentWatched = 0.75), // tech: +4
-                WatchTimeDto(trendId = DummyTrends.trend1.id, percentWatched = 0.55)  // tech: +3
+                getWatchTimeDto(trendId = DummyTrends.trend1.id, percentWatched = 0.95), // tech: +5
+                getWatchTimeDto(trendId = DummyTrends.trend1.id, percentWatched = 0.75), // tech: +4
+                getWatchTimeDto(trendId = DummyTrends.trend1.id, percentWatched = 0.55)  // tech: +3
             )
         )
 
@@ -108,7 +108,7 @@ class TrendUserServiceTest {
     fun `when new user accumulates high affinity should cap at 100`() {
         val userId = DummyTrendUsers.user4.userId
         val watchTimes = (1..25).map {
-            WatchTimeDto(trendId = DummyTrends.trend1.id, percentWatched = 0.95)
+            getWatchTimeDto(trendId = DummyTrends.trend1.id, percentWatched = 0.95)
         }
         val request = SubmitWatchTimeRequest(userId = userId, watchTimes = watchTimes)
 
@@ -129,7 +129,7 @@ class TrendUserServiceTest {
         val request = SubmitWatchTimeRequest(
             userId = userId,
             watchTimes = listOf(
-                WatchTimeDto(trendId = DummyTrends.trend1.id, percentWatched = 0.95)
+                getWatchTimeDto(trendId = DummyTrends.trend1.id, percentWatched = 0.95)
             )
         )
 
@@ -157,7 +157,7 @@ class TrendUserServiceTest {
         val request = SubmitWatchTimeRequest(
             userId = userId,
             watchTimes = listOf(
-                WatchTimeDto(trendId = DummyTrends.trend1.id, percentWatched = 0.95)
+                getWatchTimeDto(trendId = DummyTrends.trend1.id, percentWatched = 0.95)
             )
         )
 
@@ -186,7 +186,7 @@ class TrendUserServiceTest {
         val request = SubmitWatchTimeRequest(
             userId = userId,
             watchTimes = listOf(
-                WatchTimeDto(trendId = DummyTrends.trend1.id, percentWatched = 0.95)
+                getWatchTimeDto(trendId = DummyTrends.trend1.id, percentWatched = 0.95)
             )
         )
 
@@ -212,7 +212,7 @@ class TrendUserServiceTest {
         val request = SubmitWatchTimeRequest(
             userId = userId,
             watchTimes = listOf(
-                WatchTimeDto(trendId = DummyTrends.trend1.id, percentWatched = 0.95)
+                getWatchTimeDto(trendId = DummyTrends.trend1.id, percentWatched = 0.95)
             )
         )
 
@@ -241,7 +241,7 @@ class TrendUserServiceTest {
         val request = SubmitWatchTimeRequest(
             userId = userId,
             watchTimes = listOf(
-                WatchTimeDto(trendId = DummyTrends.trend1.id, percentWatched = 0.95)
+                getWatchTimeDto(trendId = DummyTrends.trend1.id, percentWatched = 0.95)
             )
         )
 
@@ -279,7 +279,7 @@ class TrendUserServiceTest {
         val request = SubmitWatchTimeRequest(
             userId = userId,
             watchTimes = listOf(
-                WatchTimeDto(trendId = DummyTrends.trend3.id, percentWatched = 0.95) // tech, sports, nature
+                getWatchTimeDto(trendId = DummyTrends.trend3.id, percentWatched = 0.95) // tech, sports, nature
             )
         )
 
@@ -326,7 +326,7 @@ class TrendUserServiceTest {
         val request = SubmitWatchTimeRequest(
             userId = userId,
             watchTimes = listOf(
-                WatchTimeDto(trendId = DummyTrends.trend3.id, percentWatched = 0.95)
+                getWatchTimeDto(trendId = DummyTrends.trend3.id, percentWatched = 0.95)
             )
         )
 
@@ -351,7 +351,7 @@ class TrendUserServiceTest {
         val request = SubmitWatchTimeRequest(
             userId = userId,
             watchTimes = listOf(
-                WatchTimeDto(trendId = nonExistentTrendId, percentWatched = 0.95)
+                getWatchTimeDto(trendId = nonExistentTrendId, percentWatched = 0.95)
             )
         )
 
@@ -366,11 +366,11 @@ class TrendUserServiceTest {
         val request = SubmitWatchTimeRequest(
             userId = userId,
             watchTimes = listOf(
-                WatchTimeDto(trendId = DummyTrends.trend1.id, percentWatched = 0.95), // +5
-                WatchTimeDto(trendId = DummyTrends.trend1.id, percentWatched = 0.75), // +4
-                WatchTimeDto(trendId = DummyTrends.trend1.id, percentWatched = 0.55), // +3
-                WatchTimeDto(trendId = DummyTrends.trend1.id, percentWatched = 0.35), // +2
-                WatchTimeDto(trendId = DummyTrends.trend1.id, percentWatched = 0.18)  // +1
+                getWatchTimeDto(trendId = DummyTrends.trend1.id, percentWatched = 0.95), // +5
+                getWatchTimeDto(trendId = DummyTrends.trend1.id, percentWatched = 0.75), // +4
+                getWatchTimeDto(trendId = DummyTrends.trend1.id, percentWatched = 0.55), // +3
+                getWatchTimeDto(trendId = DummyTrends.trend1.id, percentWatched = 0.35), // +2
+                getWatchTimeDto(trendId = DummyTrends.trend1.id, percentWatched = 0.18)  // +1
             )
         )
 
@@ -390,7 +390,7 @@ class TrendUserServiceTest {
         // Test 0.899 -> score 4
         val request = SubmitWatchTimeRequest(
             userId = userId,
-            watchTimes = listOf(WatchTimeDto(trendId = DummyTrends.trend1.id, percentWatched = 0.899))
+            watchTimes = listOf(getWatchTimeDto(trendId = DummyTrends.trend1.id, percentWatched = 0.899))
         )
         trendUserService.updateUserAffinities(userId, request)
         assertThat(inMemoryUserCategories.first().affinity).isEqualTo(4)
@@ -403,7 +403,7 @@ class TrendUserServiceTest {
         // Test 0.900 -> score 5
         val request = SubmitWatchTimeRequest(
             userId = userId,
-            watchTimes = listOf(WatchTimeDto(trendId = DummyTrends.trend1.id, percentWatched = 0.900))
+            watchTimes = listOf(getWatchTimeDto(trendId = DummyTrends.trend1.id, percentWatched = 0.900))
         )
         trendUserService.updateUserAffinities(userId, request)
         assertThat(inMemoryUserCategories.first().affinity).isEqualTo(5)
@@ -417,7 +417,7 @@ class TrendUserServiceTest {
         val request = SubmitWatchTimeRequest(
             userId = requestUserId,
             watchTimes = listOf(
-                WatchTimeDto(trendId = DummyTrends.trend1.id, percentWatched = 0.95)
+                getWatchTimeDto(trendId = DummyTrends.trend1.id, percentWatched = 0.95)
             )
         )
 
@@ -459,7 +459,7 @@ class TrendUserServiceTest {
         val request = SubmitWatchTimeRequest(
             userId = userId,
             watchTimes = listOf(
-                WatchTimeDto(trendId = DummyTrends.trend3.id, percentWatched = 0.95) // tech, sports, nature
+                getWatchTimeDto(trendId = DummyTrends.trend3.id, percentWatched = 0.95) // tech, sports, nature
             )
         )
 

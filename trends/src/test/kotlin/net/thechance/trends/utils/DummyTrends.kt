@@ -1,6 +1,9 @@
 package net.thechance.trends.utils
 
+import net.thechance.trends.api.dto.analytics.WatchTimeDto
 import net.thechance.trends.entity.Trend
+import java.time.LocalDate
+import java.time.LocalDateTime
 import java.util.UUID
 
 object DummyTrends {
@@ -38,5 +41,21 @@ object DummyTrends {
         description = "Fashion and science trend",
         categories = mutableSetOf(DummyCategories.fashion, DummyCategories.science),
         isPublished = true
+    )
+}
+
+fun getWatchTimeDto(
+    trendId: UUID,
+    percentWatched: Double,
+    watchStartTimeStamp: LocalDateTime = LocalDateTime.now(),
+    watchEndTimeStamp: LocalDateTime = LocalDateTime.now(),
+    videoDuration: Long = 1L,
+): WatchTimeDto {
+    return WatchTimeDto(
+        trendId = trendId,
+        percentWatched = percentWatched,
+        watchStartTimeStamp = watchStartTimeStamp,
+        watchEndTimeStamp = watchEndTimeStamp,
+        videoDuration = videoDuration,
     )
 }
