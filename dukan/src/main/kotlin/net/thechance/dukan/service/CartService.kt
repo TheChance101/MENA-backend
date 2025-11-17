@@ -99,7 +99,6 @@ class CartService(
             .orElseThrow { DukanNotFoundException() }
 
         val transactionId = UUID.randomUUID()
-        println("THIS IS THE CART SERVICE TRANSACTION ID: $transactionId")
 
         createTransactionEvent(transactionId, cart, dukan)
 
