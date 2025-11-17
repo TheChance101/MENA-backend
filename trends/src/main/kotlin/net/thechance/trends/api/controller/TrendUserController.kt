@@ -1,5 +1,6 @@
 package net.thechance.trends.api.controller
 
+import jakarta.validation.Valid
 import net.thechance.trends.api.dto.analytics.SubmitWatchTimeRequest
 import net.thechance.trends.api.dto.base.PagingResponse
 import net.thechance.trends.api.dto.trend.TrendResponse
@@ -39,7 +40,7 @@ class TrendUserController(
 
     @PostMapping("watch-time")
     fun submitUserWatchTime(
-        @RequestBody submitWatchTimeRequest: SubmitWatchTimeRequest,
+        @RequestBody @Valid submitWatchTimeRequest: SubmitWatchTimeRequest,
         @AuthenticationPrincipal currentUserId: UUID,
     ): ResponseEntity<Unit> {
         trendUserService.updateUserAffinities(currentUserId = currentUserId, submitWatchTimeRequest)

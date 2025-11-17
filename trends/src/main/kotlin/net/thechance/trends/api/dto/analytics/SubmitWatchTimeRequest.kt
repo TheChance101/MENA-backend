@@ -1,14 +1,16 @@
 package net.thechance.trends.api.dto.analytics
 
+import jakarta.validation.constraints.Min
+import jakarta.validation.constraints.NotEmpty
 import java.time.LocalDateTime
 import java.util.UUID
 
 data class SubmitWatchTimeRequest(
     val userId: UUID,
-    val watchTimes: List<WatchTimeDto>,
+    @field:NotEmpty val watchTimes: List<WatchTimeDto>,
 )
 
 data class WatchTimeDto(
     val trendId: UUID,
-    val percentWatched: Double,
+    @field:Min(0) val percentWatched: Double,
 )
