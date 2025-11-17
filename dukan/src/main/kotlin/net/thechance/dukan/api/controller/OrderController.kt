@@ -16,11 +16,11 @@ class OrderController(
     val orderService: OrderService
 ) {
     @GetMapping("/{orderId}")
-    fun getOrderByIdAndDukanId(
+    fun getOrderByIdAndUserId(
         @AuthenticationPrincipal userId: UUID,
         @PathVariable orderId: UUID
     ): OrderResponse {
-        return orderService.getOrderByIdAndDukanId(
+        return orderService.getOrderByIdAndUserId(
             userId = userId,
             orderId = orderId
         )
