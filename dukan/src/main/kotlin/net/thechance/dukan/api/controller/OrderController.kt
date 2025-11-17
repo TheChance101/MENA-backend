@@ -25,6 +25,6 @@ class OrderController(
             userId = userId,
             orderId = orderId
         )
-        return response.first.toResponse(response.second)
+        return response.order.toResponse(response.isDukanOwner)
     }
 }
