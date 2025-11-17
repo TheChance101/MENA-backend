@@ -1,6 +1,7 @@
 package net.thechance.identity.service
 
-import jakarta.transaction.Transactional
+import org.springframework.transaction.annotation.Transactional
+import net.thechance.events.identity.UserDeletedEvent
 import net.thechance.events.identity.UserStatusUpdatedEvent
 import net.thechance.events.publisher.MenaEventPublisher
 import net.thechance.identity.entity.User
@@ -32,7 +33,7 @@ class UserService(
 ) {
 
     fun findByPhoneNumber(phoneNumber: String): User {
-        return userRepository.findByPhoneNumber(phoneNumber) ?: throw UserNotFoundException("User not found")
+        return userRepository.findByPhoneNumberAndIsDeletedFalse(phoneNumber) ?: throw UserNotFoundException("User not found")
     }
 
     fun findById(userId: UUID): User {
@@ -102,7 +103,7 @@ class UserService(
     }
 
     fun userExistsByPhoneNumber(phoneNumber: String): Boolean {
-        return userRepository.existsByPhoneNumber(phoneNumber)
+        return userRepository.existsByPhoneNumberAndIsDeletedFalse(phoneNumber)
     }
 
     fun saveUser(user: User): User {
@@ -132,5 +133,18 @@ class UserService(
         eventPublisher.publish(findById(userId = userId).toUserUpdatedEvent())
         eventPublisher.publish(UserStatusUpdatedEvent(userId, status.toEventStatus()))
         if (status == User.Status.BLOCKED) authenticationService.logout(userId)
+    }
+
+    @Transactional
+    fun deleteUser(userId: UUID) {
+        checkUserIsNotDeleted(userId)
+        val user = findById(userId)
+        userRepository.save(user.copy(isDeleted = true, deletedAt = LocalDateTime.now()))
+        authenticationService.logout(user.id)
+        eventPublisher.publish(UserDeletedEvent(id = user.id))
+    }
+
+    fun checkUserIsNotDeleted(userId: UUID){
+        if (userRepository.existsByIdAndIsDeletedFalse(userId).not()) throw UserNotFoundException("User with id: $userId not found")
     }
 }

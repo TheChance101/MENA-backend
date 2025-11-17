@@ -15,8 +15,8 @@ data class TrendResponse(
     val viewsCount: Int,
     val isLiked: Boolean,
     val isCurrentUserOwner: Boolean,
-    val username: String = "The Chance",
-    val profilePictureUrl: String = "",
+    val username: String,
+    val profilePictureUrl: String?
 )
 
 fun Trend.toResponse(isLiked: Boolean = false): TrendResponse {
@@ -29,7 +29,9 @@ fun Trend.toResponse(isLiked: Boolean = false): TrendResponse {
         likesCount = likesCount,
         viewsCount = viewsCount,
         isCurrentUserOwner = false,
-        isLiked = isLiked
+        isLiked = isLiked,
+        username = owner?.username ?: "Unknown",
+        profilePictureUrl = owner?.imageUrl
     )
 }
 
@@ -43,6 +45,8 @@ fun TrendWithOwnerShipAndLikeStatus.toResponse(): TrendResponse {
         likesCount = likesCount,
         viewsCount = viewsCount,
         isCurrentUserOwner = isCurrentUserOwner,
-        isLiked = isLiked
+        isLiked = isLiked,
+        username = username,
+        profilePictureUrl = profileImageUrl
     )
 }

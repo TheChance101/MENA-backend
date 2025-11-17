@@ -1,5 +1,6 @@
 package net.thechance.dukan.api.controller
 
+import net.thechance.dukan.api.dto.dukan.DeactivateDukanRequest
 import net.thechance.dukan.api.dto.dukan.DukanAdminResponse
 import net.thechance.dukan.api.dto.dukan.UpdateDukanStatusRequest
 import net.thechance.dukan.api.dto.product.DukanProductAdminResponse
@@ -88,6 +89,31 @@ class DukanAdminController(
             reason = updateStatusRequest.reason
         )
 
+        return ResponseEntity.ok().build()
+    }
+
+    @PatchMapping("{dukanId}/deactivate")
+    fun deactivateDukan(
+        @PathVariable("dukanId") dukanId: UUID,
+        @RequestBody request: DeactivateDukanRequest
+    ): ResponseEntity<Unit> {
+        dukanService.updateDukanActivationStatus(
+            dukanId = dukanId,
+            reason = request.reason,
+            activationStatus = Dukan.ActivationStatus.DEACTIVATED
+        )
+        return ResponseEntity.ok().build()
+    }
+
+    @PatchMapping("{dukanId}/activate")
+    fun activateDukan(
+        @PathVariable("dukanId") dukanId: UUID
+    ): ResponseEntity<Unit> {
+        dukanService.updateDukanActivationStatus(
+            dukanId = dukanId,
+            reason = null,
+            activationStatus = Dukan.ActivationStatus.ACTIVATED
+        )
         return ResponseEntity.ok().build()
     }
 }

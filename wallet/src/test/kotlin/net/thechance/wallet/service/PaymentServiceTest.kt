@@ -35,14 +35,16 @@ class PaymentServiceTest {
         firstName = "Sender",
         lastName = "User",
         imageUrl = null,
-        status = WalletUser.Status.ACTIVE
+        status = WalletUser.Status.ACTIVE,
+        phoneNumber = "01012345678"
     )
     private val receiver = WalletUser(
         userId = receiverId,
         firstName = "Receiver",
         lastName = "User",
         imageUrl = null,
-        status = WalletUser.Status.ACTIVE
+        status = WalletUser.Status.ACTIVE,
+        phoneNumber = "01012345678"
     )
     private val pendingTransaction = PendingTransaction(
         id = transactionId,
@@ -98,7 +100,15 @@ class PaymentServiceTest {
         every { transactionRepository.existsById(transactionId) } returns false
         every { pendingTransactionRepository.findById(transactionId) } returns Optional.of(
             pendingTransaction.copy(
-                sender = WalletUser(UUID.randomUUID(), "other", "Other", "User", null, WalletUser.Status.ACTIVE)
+                sender = WalletUser(
+                    userId = UUID.randomUUID(),
+                    firstName = "other",
+                    lastName = "Other",
+                    imageUrl = "User",
+                    phoneNumber = "01012345678",
+                    dukan = null,
+                    status = WalletUser.Status.ACTIVE
+                )
             )
         )
         val ex = assertThrows(IllegalArgumentException::class.java) {
@@ -109,7 +119,15 @@ class PaymentServiceTest {
 
     @Test
     fun `pay throws if sender and receiver are the same`() {
-        val sameUser = WalletUser(userId, "same", "Same", "User", null, WalletUser.Status.ACTIVE)
+        val sameUser = WalletUser(
+            userId = userId,
+            firstName = "same",
+            lastName = "Same",
+            imageUrl = "User",
+            dukan = null,
+            phoneNumber = "01012345678",
+            status = WalletUser.Status.ACTIVE
+        )
         val pt = pendingTransaction.copy(sender = sameUser, receiver = sameUser)
         every { transactionRepository.existsById(transactionId) } returns false
         every { pendingTransactionRepository.findById(transactionId) } returns Optional.of(pt)

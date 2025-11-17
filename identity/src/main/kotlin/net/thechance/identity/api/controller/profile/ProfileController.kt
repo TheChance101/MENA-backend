@@ -3,6 +3,7 @@ package net.thechance.identity.api.controller.profile
 import jakarta.validation.Valid
 import net.thechance.identity.api.dto.password.ChangePasswordRequest
 import net.thechance.identity.api.dto.password.ChangePasswordResponse
+import net.thechance.identity.api.dto.profile.DeleteAccountResponse
 import net.thechance.identity.api.dto.profile.ProfileResponse
 import net.thechance.identity.api.dto.profile.UpdateImageResponse
 import net.thechance.identity.api.dto.profile.UpdateProfileRequest
@@ -81,6 +82,15 @@ class ProfileController(
             confirmPassword = request.confirmPassword
         )
         val response = ChangePasswordResponse("Password changed successfully")
+        return ResponseEntity.ok(response)
+    }
+
+    @PostMapping("/delete-account")
+    fun deleteAccount(
+        @AuthenticationPrincipal userId: UUID
+    ): ResponseEntity<DeleteAccountResponse> {
+        userService.deleteUser(userId)
+        val response = DeleteAccountResponse("Account deleted successfully")
         return ResponseEntity.ok(response)
     }
 }

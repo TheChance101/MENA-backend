@@ -15,7 +15,6 @@ import java.util.*
 class BalanceController(
     private val balanceService: BalanceService
 ) {
-
     @GetMapping("/balance")
     fun getUserBalance(@AuthenticationPrincipal userId: UUID): ResponseEntity<BalanceResponse> {
         val response = balanceService.getUserBalance(userId).toBalanceResponse()
