@@ -28,6 +28,7 @@ fun Chat.toSummary(userId: UUID, chatName: String, imageUrl:String, lastMessage:
                 is MessageContent.Text -> msg.content.text
                 is MessageContent.Image -> "Photo"
                 is MessageContent.Audio -> "Audio"
+                is MessageContent.Ayah -> "Ayah"
                 is MessageContent.Money -> "Money"
             }
 

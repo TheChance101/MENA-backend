@@ -33,6 +33,19 @@ class ChatController(
         sendToChatParticipants(chatId = chatMessage.chatId) { message.toResponse(it) }
     }
 
+    @MessageMapping("/chat.privateAyahMessage")
+    fun sendAyahMessage(
+        @Payload ayahMessage: AyahMessageRequestDto,
+        principal: Principal
+    ){
+        val senderId = UUID.fromString(principal.name)
+        val message = chatService.saveAyahMessage(ayahMessage.toRequestArgs(senderId))
+        sendToChatParticipants(
+            chatId = ayahMessage.chatId,
+        ){
+            message.toResponse(senderId)
+        }
+    }
 
     @GetMapping
     @ResponseBody
@@ -188,6 +201,7 @@ class ChatController(
     ) {
         messageSender.sendMessageToChat(chatId, destination, payload)
     }
+
 
     companion object {
         const val PRIVATE_MESSAGES = "/private/messages"

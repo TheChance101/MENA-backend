@@ -41,6 +41,7 @@ data class Message(
         TEXT,
         IMAGE,
         AUDIO,
-        MONEY
+        MONEY,
+        AYAH
     }
 }
