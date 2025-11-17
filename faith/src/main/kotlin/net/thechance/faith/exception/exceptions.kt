@@ -4,6 +4,10 @@ class AyahBookmarkNotFoundException(
     message: String = "Bookmark not found"
 ) : RuntimeException(message)
 
+class FailedToCreateBookmarkException(
+    message: String = "failed to create bookmark"
+) : RuntimeException(message)
+
 class FailedToGetPrayerTimesException(
     message: String = "failed to get prayer times"
 ) : RuntimeException(message)

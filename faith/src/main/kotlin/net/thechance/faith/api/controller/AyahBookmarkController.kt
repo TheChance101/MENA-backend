@@ -25,10 +25,9 @@ class AyahBookmarkController(
     fun saveAyahBookmark(
         @Valid @RequestBody ayahBookmarkRequest: AyahBookmarkRequest,
         @AuthenticationPrincipal userId: UUID
-    ): ResponseEntity<AyahBookmarkResponse> {
-        val savedBookmark = ayahBookmarkService.saveBookmark(ayahBookmarkRequest.toBookmark(userId))
-        val response = savedBookmark.toBookmarkResponse()
-        return ResponseEntity.ok(response)
+    ): ResponseEntity<Void> {
+        ayahBookmarkService.saveBookmark(ayahBookmarkRequest.toBookmark(userId))
+        return ResponseEntity.ok().build()
     }
 
     @DeleteMapping("/{id}")
