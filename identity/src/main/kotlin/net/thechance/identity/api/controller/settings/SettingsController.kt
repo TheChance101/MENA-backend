@@ -19,8 +19,8 @@ class SettingsController(
 ) {
     @GetMapping("/privacy-and-policy")
     fun getPrivacyAndPolicy(): ResponseEntity<PrivacyAndPolicyResponse> {
-        val language = LocaleContextHolder.getLocale().language
-        val privacyAndPolicy = privacyAndPolicyService.getPrivacyAndPolicy(language)
+        val locale = LocaleContextHolder.getLocale()
+        val privacyAndPolicy = privacyAndPolicyService.getPrivacyAndPolicy(locale)
         return ResponseEntity.ok(privacyAndPolicy.toResponse())
     }
 
