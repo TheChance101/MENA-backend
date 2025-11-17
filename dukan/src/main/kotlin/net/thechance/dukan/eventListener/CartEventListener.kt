@@ -8,6 +8,8 @@ import net.thechance.dukan.service.exception.CartNotFoundException
 import net.thechance.dukan.service.exception.DukanNotFoundException
 import net.thechance.events.publisher.MenaEventPublisher
 import net.thechance.events.wallet.TransactionCompletedEvent
+import org.springframework.context.event.EventListener
+import org.springframework.scheduling.annotation.Async
 import org.springframework.stereotype.Component
 import java.time.Instant
 import java.util.*
@@ -19,7 +21,9 @@ class CartEventListener(
     private val eventPublisher: MenaEventPublisher
 ) {
 
+    @EventListener
     @Transactional
+    @Async
     fun handle(
         transactionCompletedEvent: TransactionCompletedEvent
     ) {
