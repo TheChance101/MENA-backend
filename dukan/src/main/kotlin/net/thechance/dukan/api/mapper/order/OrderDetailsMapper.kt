@@ -8,6 +8,8 @@ import java.time.format.DateTimeFormatter
 
 fun Order.toResponse(isDukanOwner: Boolean): OrderResponse {
     return OrderResponse(
+        orderId = id,
+        orderNumber = orderNumber,
         time = createdAt.toDateAsString(),
         orderItemResponse = items.map { it.toResponse() },
         discount = discountPercentage,

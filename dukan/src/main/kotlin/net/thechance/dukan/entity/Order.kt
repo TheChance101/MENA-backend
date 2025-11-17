@@ -15,6 +15,9 @@ class Order(
     @GeneratedValue(strategy = GenerationType.UUID)
     val id: UUID = UUID.randomUUID(),
 
+    @Column(name = "order_number", nullable = false, unique = true)
+    val orderNumber: Long = System.currentTimeMillis() % 1_000_000_000,
+
     @Column(name = "user_id", nullable = false)
     val userId: UUID,
 

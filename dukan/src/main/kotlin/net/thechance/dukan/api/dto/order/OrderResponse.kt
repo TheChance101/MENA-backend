@@ -1,8 +1,11 @@
 package net.thechance.dukan.api.dto.order
 
 import java.math.BigDecimal
+import java.util.*
 
 class OrderResponse(
+    val orderId: UUID,
+    val orderNumber: Long,
     val time: String,
     val orderItemResponse: List<OrderItemResponse>,
     val discount: BigDecimal,
