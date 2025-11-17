@@ -40,27 +40,17 @@ class WalletEventListener(
 
     @EventListener
     @Async
-    fun onDukanCreated(event: DukanCreationEvent){
+    fun onDukanCreated(event: DukanCreationEvent) {
         dukanService.addDukan(event.toEntityDukan())
     }
 
     @EventListener
     @Async
-    fun onDukanStatusChanged(event: DukanStatusChangedEvent){
+    fun onDukanStatusChanged(event: DukanStatusChangedEvent) {
         dukanService.updateDukanStatus(
             dukanId = event.dukanId,
-            status = event.status.toEntityStatus()
+            status = event.status.toEntityStatus(),
+            activationStatus = event.activationStatus?.toEntityActivationStatus()
         )
-    }
-
-    @EventListener
-    @Async
-    fun onDukanActivationStatusUpdated(event: DukanStatusChangedEvent){
-        event.activationStatus?.let {
-            dukanService.updateDukanActivationStatus(
-                dukanId = event.dukanId,
-                activationStatus = it.toEntityActivationStatus()
-            )
-        }
     }
 }

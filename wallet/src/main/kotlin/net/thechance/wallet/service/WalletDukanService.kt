@@ -10,19 +10,22 @@ import java.util.UUID
 class WalletDukanService(
     private val walletDukanRepository: WalletDukanRepository
 ) {
-    fun addDukan(dukan: WalletDukan){
+    fun addDukan(dukan: WalletDukan) {
         walletDukanRepository.save(dukan)
     }
 
     @Transactional
-    fun updateDukanStatus(dukanId: UUID, status: WalletDukan.Status){
-        val isUpdated = walletDukanRepository.updateStatus(dukanId, status) > 0
-        if (!isUpdated) throw IllegalArgumentException("Dukan with id $dukanId not found")
-    }
+    fun updateDukanStatus(
+        dukanId: UUID,
+        status: WalletDukan.Status,
+        activationStatus: WalletDukan.ActivationStatus?
+    ) {
+        val isUpdated = walletDukanRepository.updateStatuses(
+            dukanId = dukanId,
+            status = status,
+            activationStatus = activationStatus
+        ) > 0
 
-    @Transactional
-    fun updateDukanActivationStatus(dukanId: UUID, activationStatus: WalletDukan.ActivationStatus){
-        val isUpdated = walletDukanRepository.updateActivationStatus(dukanId, activationStatus) > 0
         if (!isUpdated) throw IllegalArgumentException("Dukan with id $dukanId not found")
     }
 }
