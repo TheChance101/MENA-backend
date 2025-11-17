@@ -10,8 +10,5 @@ data class SubmitWatchTimeRequest(
 
 data class WatchTimeDto(
     val trendId: UUID,
-    val watchStartTime: LocalDateTime,
-    val watchEndTime: LocalDateTime,
-    val videoDuration: Long,
     val percentWatched: Double,
 )

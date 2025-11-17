@@ -6,6 +6,7 @@ import jakarta.persistence.Id
 import jakarta.persistence.IdClass
 import jakarta.persistence.Table
 import jakarta.persistence.UniqueConstraint
+import org.hibernate.annotations.Check
 import java.io.Serializable
 import java.time.LocalDateTime
 import java.util.UUID
@@ -14,9 +15,10 @@ import java.util.UUID
 @Table(
     name = "user_categories",
     schema = "trends",
-    uniqueConstraints = [UniqueConstraint(columnNames = ["user_id", "category_id"])]
+    uniqueConstraints = [UniqueConstraint(columnNames = ["user_id", "category_id"])],
 )
 @Entity
+@Check(name = "affinity_range", constraints = "affinity >= 0 AND affinity <= 100")
 @IdClass(UserCategoryId::class)
 data class UserCategories(
     @Id
