@@ -1,9 +1,7 @@
 package net.thechance.chat.eventListener
 
-import net.thechance.chat.eventListener.mapper.toOrderMessage
 import net.thechance.chat.eventListener.mapper.toUser
 import net.thechance.chat.repository.ContactUserRepository
-import net.thechance.chat.repository.MessageRepository
 import net.thechance.chat.service.ChatService
 import net.thechance.events.dukan.OrderCreationEvent
 import net.thechance.events.identity.UserCreatedEvent
@@ -15,7 +13,6 @@ import org.springframework.stereotype.Component
 @Component
 class ChatEventListener(
     private val userRepository: ContactUserRepository,
-    private val messageRepository: MessageRepository,
     private val chatService: ChatService,
 
     ) {
@@ -36,8 +33,7 @@ class ChatEventListener(
     @EventListener
     @Async
     fun onOrderCreated(event: OrderCreationEvent) {
-        val message = messageRepository.save(event.toOrderMessage())
-        chatService.sendMessageToChatParticipants(message)
+        chatService.handleOrderCreated(event)
     }
 
 }

@@ -3,6 +3,7 @@ package net.thechance.chat.service
 import net.thechance.chat.api.controller.ChatController
 import net.thechance.chat.api.dto.toResponse
 import net.thechance.chat.entity.*
+import net.thechance.chat.eventListener.mapper.toOrderMessage
 import net.thechance.chat.repository.ChatRepository
 import net.thechance.chat.repository.DeletedChatRepository
 import net.thechance.chat.repository.MessageReactionRepository
@@ -10,6 +11,7 @@ import net.thechance.chat.repository.MessageRepository
 import net.thechance.chat.service.exception.InvalidTimeFormatException
 import net.thechance.chat.service.exception.NotFoundException
 import net.thechance.chat.service.model.*
+import net.thechance.events.dukan.OrderCreationEvent
 import org.springframework.data.domain.Page
 import org.springframework.data.domain.Pageable
 import org.springframework.data.repository.findByIdOrNull
@@ -231,6 +233,10 @@ class ChatService(
             )
         }
         deletedChatRepository.saveAll(deletedChats)
+    }
+    fun handleOrderCreated(event: OrderCreationEvent) {
+        val message = messageRepository.save(event.toOrderMessage())
+        sendMessageToChatParticipants(message)
     }
 
     fun sendMessageToChatParticipants(message: Message) {
