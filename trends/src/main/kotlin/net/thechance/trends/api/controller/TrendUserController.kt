@@ -41,7 +41,9 @@ class TrendUserController(
     fun submitUserWatchTime(
         @RequestBody submitWatchTimeRequest: SubmitWatchTimeRequest,
         @AuthenticationPrincipal currentUserId: UUID,
-    ){
+    ): ResponseEntity<Unit> {
         trendUserService.updateUserAffinities(currentUserId = currentUserId, submitWatchTimeRequest)
+
+        return ResponseEntity.ok().build()
     }
 }
