@@ -42,6 +42,6 @@ class TrendUserController(
         @RequestBody submitWatchTimeRequest: SubmitWatchTimeRequest,
         @AuthenticationPrincipal currentUserId: UUID,
     ){
-        trendUserService.updateUserAffinities(userId = currentUserId, submitWatchTimeRequest)
+        trendUserService.updateUserAffinities(currentUserId = currentUserId, submitWatchTimeRequest)
     }
 }

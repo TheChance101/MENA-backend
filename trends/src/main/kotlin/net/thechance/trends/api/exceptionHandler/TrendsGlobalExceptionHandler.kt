@@ -77,4 +77,11 @@ class TrendsGlobalExceptionHandler {
     fun handleTrendUrlSigningException(exception: TrendUrlSigningException): ResponseEntity<String> {
         return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("Something went wrong")
     }
+
+    @ExceptionHandler(TrendUserUnauthorizedException::class)
+    fun handleTrendUserUnauthorizedExceptionException(exception: TrendUserUnauthorizedException): ResponseEntity<String> {
+        val message = exception.localizedMessage
+
+        return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(message)
+    }
 }

@@ -6,6 +6,7 @@ import net.thechance.trends.api.dto.category.toUserSelectedCategories
 import net.thechance.trends.entity.UserCategories
 import net.thechance.trends.exception.InvalidTrendInputException
 import net.thechance.trends.exception.TrendCategoryNotFoundException
+import net.thechance.trends.exception.TrendUserUnauthorizedException
 import net.thechance.trends.models.UserSelectedCategories
 import net.thechance.trends.repository.CategoryRepository
 import net.thechance.trends.repository.TrendsRepository
@@ -87,14 +88,16 @@ class TrendUserService(
         }
     }
 
-    fun updateUserAffinities(userId: UUID, watchTimeRequest: SubmitWatchTimeRequest) {
+    fun updateUserAffinities(currentUserId: UUID, watchTimeRequest: SubmitWatchTimeRequest) {
+        if (currentUserId != watchTimeRequest.userId) throw TrendUserUnauthorizedException()
+
         val trendIds = watchTimeRequest.watchTimes.map { it.trendId }
         val trends = trendsRepository.findAllById(trendIds)
         val trendsMap = trends.associateBy { it.id }
 
         val categoryIds = trends.flatMap { it.categories.map { category -> category.id } }.toMutableSet()
 
-        val existingUserCategories = userCategoryRepository.findAllByUserIdAndCategoryIdIn(userId, categoryIds)
+        val existingUserCategories = userCategoryRepository.findAllByUserIdAndCategoryIdIn(currentUserId, categoryIds)
         val userCategoryMap = existingUserCategories.associateBy { it.categoryId }.toMutableMap()
 
         val categoryEngagementScores = mutableMapOf<UUID, MutableList<Int>>()
@@ -125,7 +128,7 @@ class TrendUserService(
                 affinity = newAffinity,
                 lastUpdated = now
             ) ?: UserCategories(
-                userId = userId,
+                userId = currentUserId,
                 categoryId = categoryId,
                 isSelected = false,
                 affinity = newAffinity,
