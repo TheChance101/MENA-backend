@@ -51,9 +51,30 @@ class TrendUserService(
             return PatchMetadata(addedCount = 0, removedCount = 0)
         }
 
-        val now = LocalDateTime.now()
 
-        val updatedUserCategories = currentCategories.map { userCategory ->
+
+        val updatedUserCategories = getCategoriesToUpdate(
+            currentUserId = userId,
+            currentCategories = currentCategories,
+            changedToSelected = changedToSelected,
+            actualRemoved = actualRemoved,
+            actualAdded = actualAdded
+        )
+
+        userCategoryRepository.saveAll(updatedUserCategories)
+
+        return PatchMetadata(addedCount = actualAdded.size + changedToSelected.size, removedCount = actualRemoved.size)
+    }
+
+    private fun getCategoriesToUpdate(
+        currentUserId: UUID,
+        currentCategories: List<UserCategories>,
+        changedToSelected: List<UUID>,
+        actualRemoved: List<UUID>,
+        actualAdded: List<UUID>
+    ): List<UserCategories> {
+        val now = LocalDateTime.now()
+        return currentCategories.map { userCategory ->
             when (userCategory.categoryId) {
                 in changedToSelected -> userCategory.copy(isSelected = true, lastUpdated = now)
                 in actualRemoved -> userCategory.copy(isSelected = false, lastUpdated = now)
@@ -62,17 +83,13 @@ class TrendUserService(
         }.plus (
             actualAdded.map { categoryId ->
                 UserCategories(
-                    userId = userId,
+                    userId = currentUserId,
                     categoryId = categoryId,
                     isSelected = true,
                     lastUpdated = now
                 )
             }
         )
-
-        userCategoryRepository.saveAll(updatedUserCategories)
-
-        return PatchMetadata(addedCount = actualAdded.size + changedToSelected.size, removedCount = actualRemoved.size)
     }
 
     fun getUserSelectedCategories(userId: UUID): List<UserSelectedCategories> {
@@ -107,7 +124,7 @@ class TrendUserService(
         userCategoryRepository.saveAll(categoriesToSave)
     }
 
-    fun calculateCategoryEngagementScores(
+    private fun calculateCategoryEngagementScores(
         watchTimeRequest: SubmitWatchTimeRequest,
         trends: List<Trend>,
     ): MutableMap<UUID, MutableList<Int>> {
