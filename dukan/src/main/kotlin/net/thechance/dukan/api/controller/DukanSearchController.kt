@@ -1,5 +1,6 @@
 package net.thechance.dukan.api.controller
 
+import jakarta.validation.constraints.NotBlank
 import net.thechance.dukan.api.utils.EndPoints.DUKAN_PATH
 import net.thechance.dukan.service.DukanSearchService
 import net.thechance.dukan.service.model.DukanPreview
@@ -23,6 +24,27 @@ class DukanSearchController (
         @RequestParam query:String,
         pageable: Pageable
     ):ResponseEntity<Page<DukanPreview>>{
-        return ResponseEntity.ok(searchService.search(userId,query,pageable))
+        return ResponseEntity.ok(searchService.search(
+            userId = userId,
+            query = query,
+            pageable = pageable
+        ))
+    }
+
+    @GetMapping("/categories/{categoryId}")
+    fun searchByNameInCategory(
+        @AuthenticationPrincipal userId: UUID,
+        @RequestParam  query: String,
+        @PathVariable("categoryId") categoryId: String,
+        pageable: Pageable
+    ): ResponseEntity<Page<DukanPreview>> {
+        return ResponseEntity.ok(
+            searchService.searchByNameInCategory(
+                userId = userId,
+                query = query.trim(),
+                categoryId = categoryId,
+                pageable = pageable
+            )
+        )
     }
 }
