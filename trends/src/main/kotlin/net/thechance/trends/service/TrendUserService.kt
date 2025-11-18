@@ -44,9 +44,7 @@ class TrendUserService(
         val currentCategoryIds = currentCategories.map { it.categoryId }
 
         val actualRemoved = categoriesToRemove.filterTo(mutableListOf()) { it in currentCategoryIds }
-
         val changedToSelected = categoriesToAdd.filterTo(mutableListOf()) { it in currentCategoryIds }
-
         val actualAdded = categoriesToAdd.filterTo(mutableListOf()) { it !in currentCategoryIds }
 
         if (actualAdded.isEmpty() && actualRemoved.isEmpty() && changedToSelected.isEmpty()) {
