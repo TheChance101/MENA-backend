@@ -37,7 +37,7 @@ fun Page<Transaction>.toResponsePage(currentUserId: UUID): PageResponse<Transact
 private fun Transaction.toResponse(currentUserId: UUID): TransactionResponse {
     return TransactionResponse(
         id = id,
-        sender = sender.toPartyInfo(),
+        sender = getSenderInfo(type, sender),
         receiver = getReceiverInfo(
             type = type,
             senderUserId = sender.userId,
@@ -54,7 +54,7 @@ private fun Transaction.toResponse(currentUserId: UUID): TransactionResponse {
 fun TransactionDetailsModel.toResponse(currentUserId: UUID): TransactionResponse {
     return TransactionResponse(
         id = id,
-        sender = sender.toPartyInfo(),
+        sender = getSenderInfo(type, sender),
         receiver = getReceiverInfo(
             type = type,
             senderUserId = sender.userId,
@@ -68,12 +68,6 @@ fun TransactionDetailsModel.toResponse(currentUserId: UUID): TransactionResponse
     )
 }
 
-private fun WalletUser.toPartyInfo(): TransactionPartyInfo {
-    return TransactionPartyInfo(
-        name = userName,
-        imageUrl = imageUrl
-    )
-}
 
 private fun getUserType(
     type: Transaction.Type,
@@ -83,8 +77,23 @@ private fun getUserType(
     return when {
         type == Transaction.Type.P2P && senderUserId == currentUserId -> UserTransactionType.SENT
         type == Transaction.Type.ONLINE_PURCHASE && senderUserId == currentUserId -> UserTransactionType.ONLINE_PURCHASE
+        type == Transaction.Type.DEPOSIT -> UserTransactionType.DEPOSIT
         else -> UserTransactionType.RECEIVED
     }
+}
+
+private fun getSenderInfo(
+    type: Transaction.Type,
+    sender: WalletUser
+): TransactionPartyInfo {
+    val isDeposit = type == Transaction.Type.DEPOSIT
+    val name = if (isDeposit) "MENA" else sender.userName
+    val imageUrl = if (isDeposit) null else sender.imageUrl
+
+    return TransactionPartyInfo(
+        name = name,
+        imageUrl = imageUrl
+    )
 }
 
 private fun getReceiverInfo(

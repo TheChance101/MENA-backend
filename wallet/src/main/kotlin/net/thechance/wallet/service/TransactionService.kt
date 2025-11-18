@@ -16,6 +16,7 @@ import org.springframework.data.domain.Page
 import org.springframework.data.domain.Pageable
 import org.springframework.data.repository.findByIdOrNull
 import org.springframework.stereotype.Service
+import org.springframework.transaction.annotation.Transactional
 import java.time.LocalDateTime
 import java.util.*
 
@@ -68,14 +69,20 @@ class TransactionService(
         val receiver = walletUserService.getUserById(initiateTransactionParams.receiverId)
 
         validateUsersStatus(sender, receiver)
-        
+
         return pendingTransactionRepository.save(initiateTransactionParams.toPendingTransaction(sender, receiver))
+    }
+
+    @Transactional
+    fun clearExpiredPendingTransactions(expirationTime: LocalDateTime) {
+        pendingTransactionRepository.deleteAllByCreatedAtBefore(expirationTime)
     }
 
     private fun validateUsersStatus(sender: WalletUser, receiver: WalletUser) {
         when {
             sender.isBlocked() -> throw IllegalArgumentException("Sender is blocked.")
             receiver.isBlocked() -> throw IllegalArgumentException("Receiver is blocked.")
+            receiver.isDeleted -> throw IllegalArgumentException("Receiver account is deleted.")
         }
     }
 }
