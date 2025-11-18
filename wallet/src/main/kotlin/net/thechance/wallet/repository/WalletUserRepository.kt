@@ -17,4 +17,11 @@ interface WalletUserRepository : JpaRepository<WalletUser, UUID> {
     ): Int
 
     fun findByPhoneNumber(phoneNumber: String): WalletUser?
+
+    @Modifying
+    @Query("UPDATE WalletUser u SET u.isDeleted = :isDeleted WHERE u.userId = :userId")
+    fun updateIsDeleted(
+        @Param("userId") userId: UUID,
+        @Param("isDeleted") isDeleted: Boolean
+    ): Int
 }
