@@ -21,6 +21,9 @@ data class WalletUser(
     @Column(nullable = false, unique = true)
     val phoneNumber: String,
 
+    @Column(nullable = false)
+    val isDeleted: Boolean,
+
     @OneToOne(cascade = [CascadeType.ALL], fetch = FetchType.EAGER)
     @JoinColumn(name = "dukan_id", referencedColumnName = "dukanId")
     val dukan: WalletDukan? = null,
