@@ -4,10 +4,12 @@ import net.thechance.dukan.entity.Cart
 import net.thechance.dukan.entity.CartItem
 import net.thechance.dukan.entity.Dukan
 import net.thechance.dukan.entity.DukanProduct
+import net.thechance.dukan.entity.DukanUser
 import net.thechance.dukan.repository.CartItemRepository
 import net.thechance.dukan.repository.CartRepository
 import net.thechance.dukan.repository.DukanProductRepository
 import net.thechance.dukan.repository.DukanRepository
+import net.thechance.dukan.repository.DukanUserRepository
 import net.thechance.dukan.service.exception.*
 import net.thechance.dukan.service.model.AddOrUpdateCartItemParams
 import net.thechance.dukan.service.model.CartCheckoutParams
@@ -26,6 +28,7 @@ class CartService(
     private val productRepository: DukanProductRepository,
     private val cartItemRepository: CartItemRepository,
     private val dukanRepository: DukanRepository,
+    private val userRepository: DukanUserRepository,
     private val eventPublisher: MenaEventPublisher
 ) {
 
@@ -90,6 +93,9 @@ class CartService(
 
     @Transactional
     fun checkout(userId: UUID, checkoutParams: CartCheckoutParams): CartCheckoutPreview {
+        val user = userRepository.findById(userId)
+            .orElseThrow { DukanUserNotFoundException() }
+
         val cart = cartRepository.findById(checkoutParams.cartId)
             .orElseThrow { CartNotFoundException() }
 
@@ -97,6 +103,8 @@ class CartService(
 
         val dukan = dukanRepository.findById(cart.dukanId)
             .orElseThrow { DukanNotFoundException() }
+
+        updateUserLocation(user, checkoutParams)
 
         val transactionId = UUID.randomUUID()
 
@@ -106,6 +114,16 @@ class CartService(
             transactionId = transactionId,
             totalAmount = cart.price.final.toDouble()
         )
+    }
+
+    private fun updateUserLocation(
+        user: DukanUser,
+        checkoutParams: CartCheckoutParams
+    ) {
+        user.address = checkoutParams.address
+        user.latitude = checkoutParams.latitude
+        user.longitude = checkoutParams.longitude
+        userRepository.save(user)
     }
 
     private fun isCartValid(cart: Cart, userId: UUID) {
