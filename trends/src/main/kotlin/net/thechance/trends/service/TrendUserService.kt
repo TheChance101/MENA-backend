@@ -3,6 +3,7 @@ package net.thechance.trends.service
 import net.thechance.trends.api.dto.analytics.SubmitWatchTimeRequest
 import net.thechance.trends.api.dto.base.PatchMetadata
 import net.thechance.trends.api.dto.category.toUserSelectedCategories
+import net.thechance.trends.entity.Trend
 import net.thechance.trends.entity.UserCategories
 import net.thechance.trends.exception.InvalidTrendInputException
 import net.thechance.trends.exception.TrendCategoryNotFoundException
@@ -16,6 +17,8 @@ import org.springframework.transaction.annotation.Transactional
 import java.time.LocalDateTime
 import java.time.temporal.ChronoUnit
 import java.util.*
+import kotlin.collections.component1
+import kotlin.collections.component2
 import kotlin.math.pow
 
 @Service
@@ -93,28 +96,45 @@ class TrendUserService(
 
         val trendIds = watchTimeRequest.watchTimes.map { it.trendId }
         val trends = trendsRepository.findAllById(trendIds)
-        val trendsMap = trends.associateBy { it.id }
 
         val categoryIds = trends.flatMap { it.categories.map { category -> category.id } }.toMutableSet()
 
         val existingUserCategories = userCategoryRepository.findAllByUserIdAndCategoryIdIn(currentUserId, categoryIds)
         val userCategoryMap = existingUserCategories.associateBy { it.categoryId }.toMutableMap()
 
+        val categoryEngagementScores = calculateCategoryEngagementScores(watchTimeRequest, trends)
+
+        val categoriesToSave = getCategoriesToSave(categoryEngagementScores, userCategoryMap, currentUserId)
+
+        userCategoryRepository.saveAll(categoriesToSave)
+    }
+
+    fun calculateCategoryEngagementScores(
+        watchTimeRequest: SubmitWatchTimeRequest,
+        trends: List<Trend>,
+    ): MutableMap<UUID, MutableList<Int>> {
         val categoryEngagementScores = mutableMapOf<UUID, MutableList<Int>>()
 
         watchTimeRequest.watchTimes.forEach { watchTime ->
-            val trend = trendsMap[watchTime.trendId] ?: return@forEach
+            val trend = trends.find { it.id == watchTime.trendId } ?: return@forEach
             val engagementScore = calculateEngagementScore(watchTime.percentWatched)
 
             trend.categories.forEach { category ->
                 categoryEngagementScores.getOrPut(category.id) { mutableListOf() }.add(engagementScore)
             }
         }
+        return categoryEngagementScores
+    }
 
+    private fun getCategoriesToSave(
+        categoryEngagementScores: Map<UUID, List<Int>>,
+        userCategoryMap: Map<UUID, UserCategories>,
+        currentUserId: UUID
+    ): List<UserCategories> {
         val categoriesToSave = mutableListOf<UserCategories>()
         val now = LocalDateTime.now()
 
-        categoryEngagementScores.forEach { (categoryId, scores) ->
+         categoryEngagementScores.forEach { (categoryId, scores) ->
             val totalEngagementScore = scores.sum()
             val existingCategory = userCategoryMap[categoryId]
 
@@ -137,8 +157,7 @@ class TrendUserService(
 
             categoriesToSave.add(updatedCategory)
         }
-
-        userCategoryRepository.saveAll(categoriesToSave)
+        return categoriesToSave
     }
 
     private fun calculateEngagementScore(percentWatched: Double): Int {
