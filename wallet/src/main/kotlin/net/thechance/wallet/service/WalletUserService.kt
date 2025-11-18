@@ -7,7 +7,7 @@ import org.springframework.stereotype.Service
 import java.util.*
 
 @Service
-class WalletUserService (
+class WalletUserService(
     private val userRepository: WalletUserRepository
 ) {
     fun getUserById(userId: UUID): WalletUser {
@@ -22,12 +22,31 @@ class WalletUserService (
     }
 
     @Transactional
-    fun updateUserStatus(userId: UUID, status: WalletUser.Status){
+    fun updateUserStatus(userId: UUID, status: WalletUser.Status) {
         val updatedRowsCount = userRepository.updateStatus(userId, status)
         if (updatedRowsCount == 0) throw IllegalArgumentException("User with id $userId not found")
     }
 
     fun getReferenceById(userId: UUID): WalletUser {
         return userRepository.getReferenceById(userId)
+    }
+
+    @Transactional
+    fun addUser(user: WalletUser) {
+        userRepository.save(user)
+    }
+
+    @Transactional
+    fun updateUser(user: WalletUser) {
+        if (!userRepository.existsById(user.userId)) {
+            throw IllegalArgumentException("User with id ${user.userId} not found")
+        }
+        userRepository.save(user)
+    }
+
+    @Transactional
+    fun deleteUser(userId: UUID) {
+        val updated = userRepository.updateIsDeleted(userId, isDeleted = true)
+        if (updated == 0) throw IllegalArgumentException("User with id $userId not found")
     }
 }

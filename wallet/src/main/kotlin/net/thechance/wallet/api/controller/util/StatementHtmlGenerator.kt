@@ -63,6 +63,7 @@ class StatementHtmlGenerator(
 
     private fun getCounterParty(transaction: Transaction, currentUserId: UUID): String {
         return when {
+            transaction.type == Transaction.Type.DEPOSIT -> "MENA"
             currentUserId == transaction.receiver.userId -> transaction.sender.userName
             transaction.type == Transaction.Type.P2P -> transaction.receiver.userName
             transaction.type == Transaction.Type.ONLINE_PURCHASE -> transaction.receiver.dukan?.name ?: ""

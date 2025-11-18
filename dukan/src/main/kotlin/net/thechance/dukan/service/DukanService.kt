@@ -7,22 +7,22 @@ import net.thechance.dukan.entity.Dukan
 import net.thechance.dukan.entity.DukanCategory
 import net.thechance.dukan.entity.DukanColor
 import net.thechance.dukan.entity.StatusChangelog
-import net.thechance.dukan.service.model.DukanWithFavorite
-import net.thechance.dukan.repository.DukanCategoryRepository
-import net.thechance.dukan.repository.DukanColorRepository
-import net.thechance.dukan.repository.DukanRepository
-import net.thechance.dukan.repository.StatusChangelogRepository
+import net.thechance.dukan.repository.*
 import net.thechance.dukan.service.exception.DukanCreationFailedException
 import net.thechance.dukan.service.exception.DukanNotFoundException
-import net.thechance.dukan.service.mapper.toDukanStatusChangedEvent
+import net.thechance.dukan.service.exception.DukanUserNotFoundException
+import net.thechance.dukan.service.mapper.toDukanCreationEvent
+import net.thechance.dukan.service.mapper.toDukanUpdateEvent
 import net.thechance.dukan.service.model.DukanCreationParams
 import net.thechance.dukan.service.model.DukanWithDiscount
+import net.thechance.dukan.service.model.DukanWithFavorite
 import net.thechance.events.publisher.MenaEventPublisher
 import org.springframework.data.domain.Page
 import org.springframework.data.domain.Pageable
 import org.springframework.data.repository.findByIdOrNull
 import org.springframework.stereotype.Service
 import org.springframework.web.multipart.MultipartFile
+import java.time.Instant
 import java.util.*
 import kotlin.enums.EnumEntries
 
@@ -33,6 +33,7 @@ class DukanService(
     private val imageStorageService: ImageStorageService,
     private val dukanCategoryRepository: DukanCategoryRepository,
     private val statusChangeLogRepository: StatusChangelogRepository,
+    private val userRepository: DukanUserRepository,
     private val eventPublisher: MenaEventPublisher
 ) {
     fun getAllStyles(): EnumEntries<Dukan.Style> = Dukan.Style.entries
@@ -49,6 +50,8 @@ class DukanService(
 
     fun createDukan(params: DukanCreationParams): Dukan {
         try {
+            val user = userRepository.findById(params.ownerId).orElseThrow { DukanUserNotFoundException() }
+
             validateDukanCreation(params)
 
             val categories = params.categoryIds.map { id -> dukanCategoryRepository.getReferenceById(id) }
@@ -61,7 +64,15 @@ class DukanService(
                 color = color,
                 categories = categories
             )
-            return dukanRepository.save(dukan)
+
+            val updatedUser = user.copy(dukan = dukan, updatedAt = Instant.now())
+            userRepository.save(updatedUser)
+
+            val savedDukan = dukanRepository.save(dukan)
+
+            eventPublisher.publish(savedDukan.toDukanCreationEvent())
+
+            return savedDukan
         } catch (_: EntityNotFoundException) {
             throw DukanCreationFailedException()
         }
@@ -76,7 +87,11 @@ class DukanService(
                 fileName = "${dukan.name}-${file.originalFilename}",
                 folderName = DUKAN_FOLDER_NAME
             )
-        dukanRepository.save(dukan.copy(imageUrl = imageUrl))
+
+        val savedDukan = dukanRepository.save(dukan.copy(imageUrl = imageUrl))
+
+        eventPublisher.publish(savedDukan.toDukanUpdateEvent())
+
         return imageUrl
     }
 
@@ -147,7 +162,7 @@ class DukanService(
         }
 
         val dukan = getDukanDetailsById(dukanId)
-        eventPublisher.publish(dukan.toDukanStatusChangedEvent())
+        eventPublisher.publish(dukan.toDukanUpdateEvent())
     }
 
     @Transactional
@@ -168,7 +183,7 @@ class DukanService(
             )
         }
         val dukan = getDukanDetailsById(dukanId)
-        eventPublisher.publish(dukan.toDukanStatusChangedEvent())
+        eventPublisher.publish(dukan.toDukanUpdateEvent())
     }
 
     private fun insertDeactivationChangelog(dukanId: UUID, reason: String?) {

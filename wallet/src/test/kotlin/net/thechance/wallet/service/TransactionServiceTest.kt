@@ -102,7 +102,8 @@ class TransactionServiceTest {
                 lastName = "Last",
                 imageUrl = null,
                 status = WalletUser.Status.ACTIVE,
-                phoneNumber = "01012345678"
+                phoneNumber = "01012345678",
+                isDeleted = false
             ),
             receiver = WalletUser(
                 userId = OTHER_USER_ID,
@@ -110,7 +111,8 @@ class TransactionServiceTest {
                 lastName = "User",
                 imageUrl = null,
                 status = WalletUser.Status.ACTIVE,
-                phoneNumber = "01012345678"
+                phoneNumber = "01012345678",
+                isDeleted = false
             ),
             amount = BigDecimal.TEN,
             createdAt = LocalDateTime.now().minusDays(5),
