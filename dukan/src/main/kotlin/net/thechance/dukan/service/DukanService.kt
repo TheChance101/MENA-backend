@@ -11,9 +11,12 @@ import net.thechance.dukan.service.model.DukanWithFavorite
 import net.thechance.dukan.repository.DukanCategoryRepository
 import net.thechance.dukan.repository.DukanColorRepository
 import net.thechance.dukan.repository.DukanRepository
+import net.thechance.dukan.repository.DukanUserRepository
 import net.thechance.dukan.repository.StatusChangelogRepository
 import net.thechance.dukan.service.exception.DukanCreationFailedException
 import net.thechance.dukan.service.exception.DukanNotFoundException
+import net.thechance.dukan.service.exception.DukanUserNotFoundException
+import net.thechance.dukan.service.mapper.toDukanStatusChangedEvent
 import net.thechance.dukan.service.mapper.toDukanCreationEvent
 import net.thechance.dukan.service.mapper.toDukanUpdateEvent
 import net.thechance.dukan.service.model.DukanCreationParams
@@ -24,6 +27,7 @@ import org.springframework.data.domain.Pageable
 import org.springframework.data.repository.findByIdOrNull
 import org.springframework.stereotype.Service
 import org.springframework.web.multipart.MultipartFile
+import java.time.Instant
 import java.util.*
 import kotlin.enums.EnumEntries
 
@@ -34,6 +38,7 @@ class DukanService(
     private val imageStorageService: ImageStorageService,
     private val dukanCategoryRepository: DukanCategoryRepository,
     private val statusChangeLogRepository: StatusChangelogRepository,
+    private val userRepository: DukanUserRepository,
     private val eventPublisher: MenaEventPublisher
 ) {
     fun getAllStyles(): EnumEntries<Dukan.Style> = Dukan.Style.entries
@@ -50,6 +55,8 @@ class DukanService(
 
     fun createDukan(params: DukanCreationParams): Dukan {
         try {
+            val user = userRepository.findById(params.ownerId).orElseThrow { DukanUserNotFoundException() }
+
             validateDukanCreation(params)
 
             val categories = params.categoryIds.map { id -> dukanCategoryRepository.getReferenceById(id) }
@@ -62,6 +69,9 @@ class DukanService(
                 color = color,
                 categories = categories
             )
+
+            val updatedUser = user.copy(dukan = dukan, updatedAt = Instant.now())
+            userRepository.save(updatedUser)
 
             val savedDukan = dukanRepository.save(dukan)
 

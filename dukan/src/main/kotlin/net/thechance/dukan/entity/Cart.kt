@@ -8,10 +8,7 @@ import java.util.*
 
 @Table(
     name = "carts",
-    schema = "dukan",
-    uniqueConstraints = [
-        UniqueConstraint(columnNames = ["user_id", "dukan_id"])
-    ]
+    schema = "dukan"
 )
 @Entity
 data class Cart(
@@ -30,6 +27,12 @@ data class Cart(
 
     @Embedded
     var price: Price = Price(BigDecimal.ZERO, BigDecimal.ZERO),
+
+    @Column(name = "is_order_purchased", nullable = false)
+    var isOrderPurchased: Boolean = false,
+
+    @Column(name = "platform_fees", nullable = false, precision = 18, scale = 2)
+    var platformFees: BigDecimal = BigDecimal.ZERO,
 
     @Column(name = "created_at", nullable = false)
     val createdAt: Instant = Instant.now(),
@@ -65,6 +68,21 @@ data class Cart(
 
         updatedAt = Instant.now()
     }
+
+    fun applyPlatformFees() {
+        val feePercentage = BigDecimal("0.02") // 2%
+
+        val fee = price.final.multiply(feePercentage)
+            .setScale(2, RoundingMode.HALF_UP)
+
+        platformFees = fee
+
+        price = Price(
+            base = price.base.add(fee),
+            final = price.final.add(fee)
+        )
+    }
+
     fun getDiscountPercentage(): BigDecimal {
         return if (price.base > BigDecimal.ZERO) {
             price.base.subtract(price.final)
@@ -73,7 +91,11 @@ data class Cart(
                 .setScale(2, RoundingMode.HALF_UP)
         } else BigDecimal.ZERO
     }
+
     @PrePersist
     @PreUpdate
-    fun beforeSave() = calculateTotalPrice()
+    fun beforeSave() {
+        calculateTotalPrice()
+        applyPlatformFees()
+    }
 }
