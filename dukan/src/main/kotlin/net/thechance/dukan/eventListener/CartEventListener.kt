@@ -1,17 +1,8 @@
 package net.thechance.dukan.eventListener
 
 import jakarta.transaction.Transactional
-import net.thechance.dukan.entity.Cart
-import net.thechance.dukan.entity.Dukan
-import net.thechance.dukan.entity.DukanUser
-import net.thechance.dukan.entity.Order
-import net.thechance.dukan.entity.OrderItem
-import net.thechance.dukan.entity.SoldProduct
-import net.thechance.dukan.repository.CartRepository
-import net.thechance.dukan.repository.DukanRepository
-import net.thechance.dukan.repository.DukanUserRepository
-import net.thechance.dukan.repository.OrderRepository
-import net.thechance.dukan.repository.SoldProductRepository
+import net.thechance.dukan.entity.*
+import net.thechance.dukan.repository.*
 import net.thechance.dukan.service.exception.CartNotFoundException
 import net.thechance.dukan.service.exception.DukanNotFoundException
 import net.thechance.events.publisher.MenaEventPublisher
@@ -19,7 +10,6 @@ import net.thechance.events.wallet.TransactionCompletedEvent
 import org.springframework.context.event.EventListener
 import org.springframework.scheduling.annotation.Async
 import org.springframework.stereotype.Component
-import java.math.BigDecimal
 import java.time.Instant
 import java.util.*
 
@@ -46,7 +36,7 @@ class CartEventListener(
         processSoldProducts(cart)
         createOrderFromCart(cart, user, dukan, event.transactionId)
         finalizeCartPurchase(cart)
-
+        // TODO: PUBLISH THE ORDER CREATION EVENT
         createNewCart(event.senderId, dukan.id)
     }
 
@@ -100,9 +90,7 @@ class CartEventListener(
         transactionId: UUID
     ) {
 
-        val discount = cart.getDiscountPercentage()
-
-        val order = createOrder(cart, transactionId, discount, user, dukan)
+        val order = createOrder(cart, transactionId, user, dukan)
 
         orderRepository.save(order)
     }
@@ -110,7 +98,6 @@ class CartEventListener(
     private fun createOrder(
         cart: Cart,
         transactionId: UUID,
-        discount: BigDecimal,
         user: DukanUser,
         dukan: Dukan
     ): Order {
@@ -119,15 +106,15 @@ class CartEventListener(
             dukanId = cart.dukanId,
             transactionId = transactionId,
             totalBeforeDiscount = cart.price.base,
-            discountPercentage = discount,
+            discountPercentage = cart.getDiscountPercentage(),
             totalAfterDiscount = cart.price.final,
             platformFees = cart.platformFees,
             customerName = user.userName,
             customerPhone = user.phoneNumber,
             customerImage = user.imageUrl ?: "",
-            deliveryAddress = "",
-            deliveryLat = 0.0,
-            deliveryLng = 0.0,
+            deliveryAddress = user.address,
+            deliveryLat = user.latitude,
+            deliveryLng = user.longitude,
             dukanLongitude = dukan.longitude,
             dukanLatitude = dukan.latitude
         )
