@@ -1,14 +1,19 @@
 package net.thechance.wallet.eventListener
 
+import net.thechance.events.dukan.DukanCreationEvent
+import net.thechance.events.dukan.DukanUpdateEvent
 import net.thechance.events.identity.UserCreatedEvent
 import net.thechance.events.identity.UserDeletedEvent
 import net.thechance.events.identity.UserStatusUpdatedEvent
 import net.thechance.events.identity.UserUpdatedEvent
 import net.thechance.events.wallet.InitiateTransactionEvent
+import net.thechance.wallet.eventListener.mapper.toEntityDukan
 import net.thechance.wallet.eventListener.mapper.toEntityStatus
 import net.thechance.wallet.eventListener.mapper.toInitiateTransactionParams
+import net.thechance.wallet.eventListener.mapper.toWalletDukanEntity
 import net.thechance.wallet.eventListener.mapper.toWalletUserEntity
 import net.thechance.wallet.service.TransactionService
+import net.thechance.wallet.service.WalletDukanService
 import net.thechance.wallet.service.WalletUserService
 import org.springframework.context.event.EventListener
 import org.springframework.scheduling.annotation.Async
@@ -17,7 +22,8 @@ import org.springframework.stereotype.Component
 @Component
 class WalletEventListener(
     private val transactionService: TransactionService,
-    private val userService: WalletUserService
+    private val userService: WalletUserService,
+    private val dukanService: WalletDukanService
 ) {
 
     @EventListener
@@ -51,5 +57,17 @@ class WalletEventListener(
     @Async
     fun onUserUpdated(event: UserUpdatedEvent) {
         userService.updateUser(event.toWalletUserEntity())
+    }
+
+    @EventListener
+    @Async
+    fun onDukanCreated(event: DukanCreationEvent) {
+        dukanService.addDukan(event.toEntityDukan())
+    }
+
+    @EventListener
+    @Async
+    fun onDukanUpdated(event: DukanUpdateEvent) {
+        dukanService.updateDukan(event.toWalletDukanEntity())
     }
 }
