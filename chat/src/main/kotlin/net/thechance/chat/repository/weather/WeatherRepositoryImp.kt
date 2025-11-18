@@ -24,7 +24,7 @@ class WeatherRepositoryImp(
                 "?latitude=$lat&longitude=$lng" +
                 "&daily=temperature_2m_max,temperature_2m_min" +
                 "&current=temperature_2m,weather_code" +
-                "&timezone=asfd" +
+                "&timezone=auto" +
                 "&forecast_days=1"
             )
 
