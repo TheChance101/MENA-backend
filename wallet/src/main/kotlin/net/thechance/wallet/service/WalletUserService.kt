@@ -45,8 +45,8 @@ class WalletUserService(
     }
 
     @Transactional
-    fun deleteUser(userId: UUID, isDeleted: Boolean) {
-        val updated = userRepository.updateIsDeleted(userId, isDeleted)
+    fun deleteUser(userId: UUID) {
+        val updated = userRepository.updateIsDeleted(userId, isDeleted = true)
         if (updated == 0) throw IllegalArgumentException("User with id $userId not found")
     }
 }

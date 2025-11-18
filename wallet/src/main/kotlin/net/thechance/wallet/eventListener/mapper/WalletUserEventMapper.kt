@@ -15,7 +15,6 @@ fun UserCreatedEvent.toWalletUserEntity(): WalletUser {
         isDeleted = false,
         dukan = null,
         status = status.toEntityStatus()
-
     )
 }
 
@@ -29,11 +28,10 @@ fun UserUpdatedEvent.toWalletUserEntity(): WalletUser {
         isDeleted = false,
         dukan = null,
         status = status.toEntityStatus()
-
     )
 }
 
-fun Status.toEntityStatus(): WalletUser.Status {
+private fun Status.toEntityStatus(): WalletUser.Status {
     return when (this) {
         Status.ACTIVE -> WalletUser.Status.ACTIVE
         Status.BLOCKED -> WalletUser.Status.BLOCKED

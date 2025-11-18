@@ -39,16 +39,12 @@ class WalletEventListener(
     @Async
     fun onNewUserAdded(event: UserCreatedEvent) {
         userService.addUser(event.toWalletUserEntity())
-
     }
 
     @EventListener
     @Async
     fun onUserDeleted(event: UserDeletedEvent) {
-        userService.deleteUser(
-            userId = event.id,
-            isDeleted = true
-        )
+        userService.deleteUser(userId = event.id)
     }
 
     @EventListener
