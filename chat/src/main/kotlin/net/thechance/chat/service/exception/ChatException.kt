@@ -21,4 +21,4 @@ class InvalidAudioFormatException(message: String = "Invalid audio format") : Ch
 
 class AudioUploadFailedException(message: String) :  ChatException(message = message)
 
-class FetchWeatherException(message: String, cause: Exception? = null) : RuntimeException(message)
+class FetchWeatherException(message: String, val causedBy: Exception? = null) : ChatException(message)
