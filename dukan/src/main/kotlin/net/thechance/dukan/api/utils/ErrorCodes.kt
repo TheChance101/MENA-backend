@@ -23,4 +23,5 @@ internal object ErrorCodes {
     const val PRODUCT_ALREADY_IN_CART = 1503
     const val FORBIDDEN_ORDER_ACCESS = 1601
     const val ORDER_NOT_FOUND = 1602
+    const val USER_NOT_FOUND = 404
 }

@@ -66,9 +66,6 @@ class Order(
     @Column(name = "created_at", nullable = false)
     val createdAt: Instant = Instant.now(),
 
-    @Column(name = "finished_at", nullable = true)
-    var finishedAt: Instant? = null,
-
     @OneToMany(mappedBy = "order", cascade = [CascadeType.ALL])
     val items: MutableList<OrderItem> = mutableListOf()
 )
