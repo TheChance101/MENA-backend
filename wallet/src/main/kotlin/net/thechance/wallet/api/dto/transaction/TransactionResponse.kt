@@ -77,6 +77,7 @@ private fun getUserType(
     return when {
         type == Transaction.Type.P2P && senderUserId == currentUserId -> UserTransactionType.SENT
         type == Transaction.Type.ONLINE_PURCHASE && senderUserId == currentUserId -> UserTransactionType.ONLINE_PURCHASE
+        type == Transaction.Type.DEPOSIT -> UserTransactionType.DEPOSIT
         else -> UserTransactionType.RECEIVED
     }
 }
