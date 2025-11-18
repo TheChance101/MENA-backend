@@ -6,8 +6,6 @@ import org.springframework.boot.web.client.RestTemplateBuilder
 import org.springframework.stereotype.Repository
 import org.springframework.web.client.RestClientResponseException
 import org.springframework.web.client.getForEntity
-import java.net.URLEncoder
-import java.nio.charset.StandardCharsets
 
 @Repository
 class WeatherRepositoryImp(
@@ -17,11 +15,9 @@ class WeatherRepositoryImp(
     private val restTemplate = restTemplateBuilder.build()
 
     override fun getCurrentWeather(latitude: Double, longitude: Double): WeatherResponse {
-        val lat = URLEncoder.encode(latitude.toString(), StandardCharsets.UTF_8)
-        val lng = URLEncoder.encode(longitude.toString(), StandardCharsets.UTF_8)
         val url = (
             "https://api.open-meteo.com/v1/forecast" +
-                "?latitude=$lat&longitude=$lng" +
+                "?latitude=$latitude&longitude=$longitude" +
                 "&daily=temperature_2m_max,temperature_2m_min" +
                 "&current=temperature_2m,weather_code" +
                 "&timezone=auto" +
