@@ -15,19 +15,10 @@ class WalletDukanService(
     }
 
     @Transactional
-    fun updateDukan(
-        dukanId: UUID,
-        imageUrl:String?,
-        status: WalletDukan.Status,
-        activationStatus: WalletDukan.ActivationStatus?
-    ) {
-        val isUpdated = walletDukanRepository.updateDukan(
-            dukanId = dukanId,
-            imageUrl = imageUrl,
-            status = status,
-            activationStatus = activationStatus
-        ) > 0
-
-        if (!isUpdated) throw IllegalArgumentException("Dukan with id $dukanId not found")
+    fun updateDukan(dukan: WalletDukan) {
+        if (!walletDukanRepository.existsById(dukan.dukanId)) {
+            throw IllegalArgumentException("Dukan with id ${dukan.dukanId} not found")
+        }
+        walletDukanRepository.save(dukan)
     }
 }

@@ -4,10 +4,10 @@ import net.thechance.events.dukan.DukanCreationEvent
 import net.thechance.events.dukan.DukanUpdateEvent
 import net.thechance.events.identity.UserStatusUpdatedEvent
 import net.thechance.events.wallet.InitiateTransactionEvent
-import net.thechance.wallet.eventListener.mapper.toEntityActivationStatus
 import net.thechance.wallet.eventListener.mapper.toEntityDukan
 import net.thechance.wallet.eventListener.mapper.toEntityStatus
 import net.thechance.wallet.eventListener.mapper.toInitiateTransactionParams
+import net.thechance.wallet.eventListener.mapper.toWalletDukanEntity
 import net.thechance.wallet.service.TransactionService
 import net.thechance.wallet.service.WalletDukanService
 import net.thechance.wallet.service.WalletUserService
@@ -46,11 +46,6 @@ class WalletEventListener(
     @EventListener
     @Async
     fun onDukanUpdated(event: DukanUpdateEvent) {
-        dukanService.updateDukan(
-            dukanId = event.dukanId,
-            imageUrl = event.imageUrl,
-            status = event.status.toEntityStatus(),
-            activationStatus = event.activationStatus?.toEntityActivationStatus()
-        )
+        dukanService.updateDukan(event.toWalletDukanEntity())
     }
 }
