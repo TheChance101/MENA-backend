@@ -1,9 +1,10 @@
 package net.thechance.dukan.entity
 
 import jakarta.persistence.*
+import java.math.BigDecimal
 import java.time.Instant
-import java.time.LocalDateTime
 import java.util.*
+import java.util.Collections.emptySet
 
 @Table(
     name = "dukan_products",
@@ -27,11 +28,17 @@ data class DukanProduct(
     @JoinColumn(name = "dukan_id", nullable = false)
     val dukan: Dukan,
 
-    @Column(name = "price", nullable = false)
-    val price: Double,
+    @Embedded
+    val price: Price,
+
+    @Column(name = "discount", precision = 5, scale = 2)
+    val discount: BigDecimal = BigDecimal.ZERO,
 
     @Column(name = "description", nullable = false, columnDefinition = "TEXT")
     val description: String,
+
+    @Column(name = "is_deleted")
+    val isDeleted: Boolean= false,
 
     @ElementCollection
     @CollectionTable(
@@ -42,6 +49,14 @@ data class DukanProduct(
     @Column(name = "image_url", nullable = false)
     val imageUrls: List<String>,
 
+    @Transient
+    var tempQuantity: Int = 0,
+
     @Column(name = "created_at", nullable = false)
-    val createdAt:Instant = Instant.now()
+    val createdAt: Instant = Instant.now(),
+
+    @OneToMany(mappedBy = "product", fetch = FetchType.LAZY)
+    val favorites: MutableSet<FavoriteProduct> = emptySet(),
+    @Column(name = "is_out_of_stock", nullable = false)
+    val isOutOfStock: Boolean = false,
 )

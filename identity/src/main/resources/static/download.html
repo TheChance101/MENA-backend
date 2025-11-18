@@ -1,0 +1,135 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Welcome to Mena</title>
+
+    <meta property="og:title" content="MENA app-download app">
+    <meta property="og:description" content="Start by downloading our app.">
+    <meta property="og:image" content="https://mena-dev.the-chance.net/images/mena_preview_logo.png">
+    <meta property="og:url" content="https://mena-dev.the-chance.net/download.html">
+    <meta property="og:type" content="website">
+
+
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600&display=swap" rel="stylesheet">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Poppins', sans-serif;
+            background-color: #F2F4F7;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 80vh;
+            padding: 20px;
+        }
+
+        .container {
+            text-align: center;
+            max-width: 400px;
+            width: 100%;
+        }
+
+        .logo {
+            width: 140px;
+            height: 140px;
+            margin: 0 auto 16px;
+        }
+
+        .logo img {
+            width: 100%;
+            height: 100%;
+            object-fit: contain;
+        }
+
+        h1 {
+            color: #3d4f5f;
+            font-size: 24px;
+            font-weight: 600;
+        }
+
+        .subtitle {
+            color: #7a8895;
+            font-size: 15px;
+            font-weight: 400;
+            margin-bottom: 16px;
+        }
+
+        .button {
+            display: block;
+            width: 100%;
+            padding: 12px;
+            margin-bottom: 8px;
+            background-color: #000000;
+            color: #ffffff;
+            font-family: 'Poppins', sans-serif;
+            font-size: 14px;
+            border: none;
+            border-radius: 20px;
+            cursor: pointer;
+            transition: background-color 0.3s ease;
+            -webkit-tap-highlight-color: transparent;
+            -webkit-appearance: none;
+            text-decoration: none;
+        }
+
+        .button:hover {
+            background-color: #1a1a1a;
+            border-radius: 20px;
+        }
+
+        .button:active {
+            transform: scale(0.98);
+        }
+
+        .button:last-child {
+            margin-bottom: 0;
+        }
+
+        .dev-message {
+            display: block;
+            width: 100%;
+            padding: 12px;
+            margin-bottom: 8px;
+            color: #7a8895;
+            font-family: 'Poppins', sans-serif;
+            font-size: 13px;
+            font-weight: 400;
+            text-align: center;
+        }
+    </style>
+</head>
+<body>
+<div class="container">
+    <div class="logo">
+        <img src="images/mena_logo.png" alt="Mena Logo">
+    </div>
+
+    <h1>Welcome to Mena</h1>
+    <p class="subtitle">Start by download our app</p>
+
+    <a class="button" href="downloads/android_app_latest.apk" id="androidButton">Download for Android</a>
+    <div class="dev-message" id="devMessage" style="display: none;">Sorry, iOS app is still under development ...</div>
+</div>
+
+<script>
+    function isIOS() {
+        const userAgent = navigator.userAgent;
+        const isIOS = /iPad|iPhone|iPod/.test(userAgent) && !window.MSStream;
+
+        return isIOS;
+    }
+
+    if (isIOS()) {
+        document.getElementById('androidButton').style.display = 'none';
+        document.getElementById('devMessage').style.display = 'block';
+    }
+</script>
+</body>
+</html>

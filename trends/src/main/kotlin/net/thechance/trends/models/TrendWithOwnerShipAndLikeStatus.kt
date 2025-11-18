@@ -13,11 +13,15 @@ data class TrendWithOwnerShipAndLikeStatus(
     val viewsCount: Int,
     val isLiked: Boolean,
     val isCurrentUserOwner: Boolean,
+    val username: String,
+    val profileImageUrl: String?
 )
 
 fun TrendWithLikeStatus.withOwnership(currentUserId: UUID): TrendWithOwnerShipAndLikeStatus {
     val trend = getTrend()
+    val owner = trend.owner
     val isLiked = getIsLiked()
+
     return TrendWithOwnerShipAndLikeStatus(
         trendId = trend.id,
         thumbnailUrl = trend.thumbnailUrl,
@@ -27,6 +31,8 @@ fun TrendWithLikeStatus.withOwnership(currentUserId: UUID): TrendWithOwnerShipAn
         likesCount = trend.likesCount,
         viewsCount = trend.viewsCount,
         isLiked = isLiked,
-        isCurrentUserOwner = currentUserId == trend.ownerId
+        isCurrentUserOwner = currentUserId == trend.ownerId,
+        username = owner?.username?: "Unknown" ,
+        profileImageUrl = owner?.imageUrl
     )
 }

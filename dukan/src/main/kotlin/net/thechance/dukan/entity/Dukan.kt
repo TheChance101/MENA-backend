@@ -3,6 +3,7 @@ package net.thechance.dukan.entity
 import jakarta.persistence.*
 import java.time.Instant
 import java.util.*
+import java.util.Collections.emptySet
 
 @Table(name = "dukans", schema = "dukan")
 @Entity
@@ -39,15 +40,25 @@ data class Dukan(
     @Enumerated(EnumType.STRING)
     @Column(name = "status", nullable = false)
     val status: Status = Status.PENDING,
+    @Enumerated(EnumType.STRING)
+    @Column(name = "activation_status", nullable = true)
+    val activationStatus: ActivationStatus? = null,
     @OneToMany(mappedBy = "dukan", cascade = [CascadeType.ALL])
     val shelves: Set<DukanShelf> = emptySet(),
     @Column(name = "createdAt")
-    val createdAt: Instant = Instant.now()
+    val createdAt: Instant = Instant.now(),
+    @OneToMany(mappedBy = "dukan", fetch = FetchType.LAZY)
+    val favorites: Set<FavoriteDukan> = emptySet()
 ) {
     enum class Status {
         APPROVED,
         REJECTED,
         PENDING,
+    }
+
+    enum class ActivationStatus {
+        ACTIVATED,
+        DEACTIVATED,
     }
 
     enum class Style {

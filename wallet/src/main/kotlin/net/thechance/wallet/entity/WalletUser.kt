@@ -18,10 +18,27 @@ data class WalletUser(
     @Column(nullable = true)
     val imageUrl: String?,
 
+    @Column(nullable = false, unique = true)
+    val phoneNumber: String,
+
+    @Column(nullable = false)
+    val isDeleted: Boolean,
+
     @OneToOne(cascade = [CascadeType.ALL], fetch = FetchType.EAGER)
     @JoinColumn(name = "dukan_id", referencedColumnName = "dukanId")
-    val dukan: WalletDukan? = null
+    val dukan: WalletDukan? = null,
+
+    @Enumerated(EnumType.STRING)
+    @Column(nullable = false)
+    val status: Status
 ) {
     val userName: String
         get() = "$firstName $lastName"
+
+    enum class Status {
+        ACTIVE,
+        BLOCKED
+    }
+
+    fun isBlocked(): Boolean = status == Status.BLOCKED
 }

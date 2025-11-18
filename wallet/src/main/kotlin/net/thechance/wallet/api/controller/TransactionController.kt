@@ -9,8 +9,6 @@ import net.thechance.wallet.entity.Transaction
 import net.thechance.wallet.service.TransactionService
 import net.thechance.wallet.service.model.input.TransactionFilterParams
 import net.thechance.wallet.service.model.input.UserTransactionType
-import net.thechance.wallet.service.model.output.ReceiverDetails
-import net.thechance.wallet.service.model.output.toReceiverDetails
 import org.springframework.data.domain.PageRequest
 import org.springframework.data.domain.Pageable
 import org.springframework.data.domain.Sort
@@ -18,7 +16,6 @@ import org.springframework.http.ResponseEntity
 import org.springframework.security.core.annotation.AuthenticationPrincipal
 import org.springframework.web.bind.annotation.*
 import java.io.ByteArrayOutputStream
-import java.time.LocalDate
 import java.time.LocalDateTime
 import java.util.*
 
@@ -34,13 +31,13 @@ class TransactionController(
         @AuthenticationPrincipal userId: UUID,
         @RequestParam(name = "type", required = false) types: List<UserTransactionType>?,
         @RequestParam(required = false) status: Transaction.Status?,
-        @RequestParam(required = false) startDate: LocalDate?,
-        @RequestParam(required = false) endDate: LocalDate?,
+        @RequestParam(name = "from", required = false) startDateTime: LocalDateTime?,
+        @RequestParam(name = "to", required = false) endDateTime: LocalDateTime?,
         pageable: Pageable
     ): ResponseEntity<PageResponse<TransactionResponse>> {
 
         val response = transactionService.getFilteredTransactions(
-            transactionFilterParams = TransactionFilterParams(types, status, startDate, endDate),
+            transactionFilterParams = TransactionFilterParams(types, status, startDateTime, endDateTime),
             pageable = PageRequest.of(
                 pageable.pageNumber,
                 pageable.pageSize,
@@ -77,12 +74,12 @@ class TransactionController(
         response: HttpServletResponse,
         @AuthenticationPrincipal userId: UUID,
         @RequestParam(name = "type", required = false) types: List<UserTransactionType>?,
-        @RequestParam(required = false) startDate: LocalDate?,
-        @RequestParam(required = false) endDate: LocalDate?,
+        @RequestParam(name = "from", required = false) startDateTime: LocalDateTime?,
+        @RequestParam(name = "to", required = false) endDateTime: LocalDateTime?,
     ) {
         val buffer = ByteArrayOutputStream()
 
-        val metadata = statementPdfWriter.writePdfToStream(userId, types, startDate, endDate, outputStream = buffer)
+        val metadata = statementPdfWriter.writePdfToStream(userId, types, startDateTime, endDateTime, outputStream = buffer)
 
         response.contentType = "application/pdf"
         response.setHeader(
@@ -105,17 +102,6 @@ class TransactionController(
         )
 
         return ResponseEntity.ok(transaction.id)
-    }
-
-    @GetMapping("/{transactionId}/receiver-details")
-    fun getReceiverDetails(
-        @PathVariable transactionId: UUID,
-    ): ResponseEntity<ReceiverDetails> {
-        val response = transactionService.getTransactionDetails(transactionId).let{
-            it.receiver.toReceiverDetails(it.type)
-        }
-
-        return ResponseEntity.ok(response)
     }
 
     private fun setStatementMetadataHeaders(

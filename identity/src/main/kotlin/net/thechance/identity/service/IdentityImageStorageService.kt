@@ -17,30 +17,31 @@ import java.time.LocalDateTime
 @EnableConfigurationProperties(IdentityStorageProperties::class)
 class IdentityImageStorageService(
     private val menaS3Client: S3Client,
-    private val identityStorageProperties: IdentityStorageProperties,
+    private val identityStorageProperties: IdentityStorageProperties
 ) {
     fun uploadImage(
         file: MultipartFile,
         fileName: String,
-        folderName: String = "profile"
+        folderName: String
     ): String {
         val mimeType = file.contentType ?: throw InvalidImageException("null")
         val extension = allowedMimeTypes[mimeType] ?: throw InvalidImageException(mimeType)
         try {
             val fileName = "${fileName}.$extension"
             val randomParameter = LocalDateTime.now().toString()
-            val key = "images/identity/$folderName/$fileName?time=$randomParameter"
+            val key = "$folderName/$fileName"
             val putReq = createObjectRequest(key, mimeType)
             menaS3Client.putObject(putReq, RequestBody.fromBytes(file.bytes))
-            return "/$key"
+            val imageUri = "$fileName?time=$randomParameter"
+            return imageUri
         } catch (e: Exception) {
             throw UnknownErrorException(e.message ?: "Unknown error occurred")
         }
     }
 
-    fun deleteImage(imageUrl: String) {
+    fun deleteImage(folderName: String, fileName: String) {
         try {
-            val deleteRequest = deleteObjectRequest(imageUrl)
+            val deleteRequest = deleteObjectRequest("$folderName/$fileName")
             menaS3Client.deleteObject(deleteRequest)
         } catch (e: Exception) {
             throw UnknownErrorException(e.message ?: "Unknown error occurred")

@@ -1,12 +1,10 @@
 package net.thechance.identity.entity
 
 import com.fasterxml.jackson.annotation.JsonFormat
-import jakarta.persistence.Column
-import jakarta.persistence.Entity
-import jakarta.persistence.Id
-import jakarta.persistence.Table
+import jakarta.persistence.*
 import org.hibernate.validator.constraints.Range
 import java.time.LocalDate
+import java.time.LocalDateTime
 import java.util.*
 
 @Entity
@@ -16,7 +14,7 @@ data class User(
     @Column(columnDefinition = "uuid", updatable = false, nullable = false)
     val id: UUID = UUID.randomUUID(),
 
-    @Column(name = "phone_number", nullable = false, unique = true)
+    @Column(name = "phone_number", nullable = false)
     val phoneNumber: String,
 
     @Column(name = "password", nullable = false)
@@ -41,9 +39,30 @@ data class User(
     @field:Range(min = Gender.MALE, max = Gender.FEMALE)
     @Column(name = "gender",  nullable = false)
     val gender: Int,
+
+    @Column(name = "last_login_at", nullable = false)
+    val lastLoginAt: LocalDateTime = LocalDateTime.now(),
+
+    @Column(name = "last_visit_at", nullable = false)
+    val lastVisitAt: LocalDateTime = LocalDateTime.now(),
+
+    @Enumerated(EnumType.STRING)
+    @Column(name="status", nullable = false)
+    val status: Status,
+
+    @Column(name = "is_deleted", nullable = false)
+    val isDeleted: Boolean = false,
+
+    @Column(name = "deleted_at", nullable = true)
+    val deletedAt: LocalDateTime? = null,
 ) {
     object Gender {
         const val MALE = 1L
         const val FEMALE = 2L
+    }
+
+    enum class Status {
+        ACTIVE,
+        BLOCKED
     }
 }

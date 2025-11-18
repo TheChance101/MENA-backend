@@ -1,20 +1,16 @@
 package net.thechance.chat.api.controller
 
 import com.google.common.truth.Truth.assertThat
-import io.mockk.every
-import io.mockk.justRun
-import io.mockk.mockk
-import io.mockk.verify
+import io.mockk.*
+import net.thechance.chat.api.controller.ChatController.Companion.MARK_AS_READ
 import net.thechance.chat.api.controller.ChatController.Companion.PRIVATE_MESSAGES
 import net.thechance.chat.api.dto.*
 import net.thechance.chat.entity.Chat
-import net.thechance.chat.entity.Contact
-import net.thechance.chat.entity.ContactUser
 import net.thechance.chat.entity.Message
 import net.thechance.chat.service.ChatService
-import net.thechance.chat.service.ContactService
 import net.thechance.chat.service.exception.NotFoundException
 import net.thechance.chat.service.model.ChatModel
+import net.thechance.chat.service.model.MessageContent
 import net.thechance.chat.service.model.MessageImageRequestArgs
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.assertThrows
@@ -32,13 +28,11 @@ class ChatControllerTest {
 
     private val messagingTemplate: SimpMessagingTemplate = mockk(relaxed = true)
     private val chatService: ChatService = mockk()
-    private val contactService: ContactService = mockk()
 
     private val controller by lazy {
         ChatController(
             messagingTemplate,
             chatService,
-            contactService,
         )
     }
 
@@ -46,7 +40,7 @@ class ChatControllerTest {
     fun `sendPrivateMessage should save message and send to user`() {
         val chatId = UUID.randomUUID()
         val senderId = UUID.randomUUID()
-        val dto = MessageRequestDto(chatId, "message1")
+        val dto = TextMessageRequestDto(UUID.randomUUID(), chatId, "message1")
 
         val principal = mockk<Principal>()
         every { principal.name } returns senderId.toString()
@@ -57,14 +51,14 @@ class ChatControllerTest {
             text = "message1",
         )
 
-        every { chatService.saveMessage(any()) } returns savedMessage
+        every { chatService.saveTextMessage(any()) } returns savedMessage
         every { chatService.getChatUsersIds(chatId) } returns listOf(userId)
         justRun { messagingTemplate.convertAndSendToUser(any(), any(), any()) }
 
         controller.sendPrivateMessage(dto, principal)
 
         verify {
-            chatService.saveMessage(
+            chatService.saveTextMessage(
                 match { it.senderId == senderId && it.text == "message1" && it.chatId == chatId },
             )
         }
@@ -86,42 +80,77 @@ class ChatControllerTest {
         val savedMessage = testMessage(senderId = senderId, chat = dummyChat)
 
         every { chatService.saveMessageImage(any()) } returns savedMessage
-        every { chatService.saveMessage(any()) } returns savedMessage
+        every { chatService.saveTextMessage(any()) } returns savedMessage
         every { chatService.getChatUsersIds(chatId) } returns listOf(userId)
         justRun { messagingTemplate.convertAndSendToUser(any(), any(), any()) }
 
-        val messageImageArgs = MessageImageRequest(chatId, image)
+        val messageImageArgs = MessageImageRequest(chatId, image, UUID.randomUUID())
         controller.sendMessageImage(messageImageArgs, principal)
 
         verify {
-            chatService.saveMessageImage(match { it == MessageImageRequestArgs(chatId, senderId, image) })
+            chatService.saveMessageImage(match {
+                it == MessageImageRequestArgs(
+                    UUID.randomUUID(),
+                    chatId,
+                    senderId,
+                    image
+                )
+            })
         }
     }
 
     @Test
-    fun `getOrCreateConversation should return conversation`() {
-        val userId = UUID.randomUUID()
-        val receiverId = UUID.randomUUID()
+    fun `sendMessageAudio should upload audio and send to user`() {
         val chatId = UUID.randomUUID()
+        val senderId = UUID.randomUUID()
+        val principal = mockk<Principal>()
+        every { principal.name } returns senderId.toString()
 
-        every { contactService.getContactByOwnerIdAndContactUserId(userId, receiverId) } returns Contact(
+        val audio = mockk<MultipartFile>(relaxed = true)
+
+        val savedMessage = Message(
             id = UUID.randomUUID(),
-            firstName = "Ali",
-            lastName = "Ahmed",
-            phoneNumber = "777777777",
-            contactOwnerId = userId
+            chatId = chatId,
+            senderId = senderId,
+            type = Message.MessageType.AUDIO,
+            content = MessageContent.Audio("https://cdn.example.com/audio/test.m4a", 1000),
+            sentAt = Instant.now(),
+            isRead = false
         )
 
-        val chat = Chat(
-            id = chatId,
-            users = mutableSetOf(
-                ContactUser(id = userId, firstName = "User1", lastName = "Test", phoneNumber = "123456789"),
-                ContactUser(id = receiverId, firstName = "User2", lastName = "Test", phoneNumber = "777777777")
+        every { chatService.saveMessageAudio(any()) } returns savedMessage
+        every { chatService.getChatUsersIds(chatId) } returns listOf(senderId, userId)
+        justRun { messagingTemplate.convertAndSendToUser(any(), any(), any()) }
+
+        val request = MessageAudioRequest(UUID.randomUUID(), chatId = chatId, audio = audio, 1000L)
+
+        val response = controller.sendMessageAudio(request, senderId)
+
+        assertThat(response.statusCode).isEqualTo(HttpStatus.OK)
+        assertThat(response.body?.content).isEqualTo(
+            MessageContent.Audio(
+                "https://cdn.example.com/audio/test.m4a",
+                1000
             )
         )
-        every { chatService.getOrCreateConversationByParticipants(userId, receiverId) } returns chat
 
-        val response = controller.getOrCreateConversation(userId, receiverId)
+        verify {
+            chatService.saveMessageAudio(
+                match { it.chatId == chatId && it.senderId == senderId && it.audio == audio }
+            )
+        }
+        verify(exactly = 2) {
+            messagingTemplate.convertAndSendToUser(any(), PRIVATE_MESSAGES, any())
+        }
+    }
+
+    @Test
+    fun `getChatByUserIds should return conversation`() {
+        val requester = userId
+        val receiverId = userId2
+        every { chatService.getChatByUserIds(requester, receiverId) } returns chatModel
+
+        val response = controller.getChatByUserIds(requester, receiverId)
 
         assertThat(response.statusCode).isEqualTo(HttpStatus.OK)
         assertThat(response.body?.id).isEqualTo(chatId)
@@ -131,7 +160,6 @@ class ChatControllerTest {
     @Test
     fun `getChatHistory should return paged messages`() {
         val chatId = UUID.randomUUID()
-        val chat = Chat(id = chatId, users = mutableSetOf())
         val pageable: Pageable = PageRequest.of(0, 10)
 
         val messages = listOf(
@@ -139,7 +167,9 @@ class ChatControllerTest {
                 id = UUID.randomUUID(),
                 chatId = chatId,
                 senderId = UUID.randomUUID(),
-                text = "Hi",
+                type = Message.MessageType.TEXT,
+                reactions = emptyList(),
+                content = MessageContent.Text("hi"),
                 sentAt = Instant.now(),
                 isRead = false
             )
@@ -147,7 +177,7 @@ class ChatControllerTest {
 
         val page = PageImpl(messages, pageable, messages.size.toLong())
 
-        every { chatService.getAllChatMessages(chatId, pageable) } returns page
+        every { chatService.getAllChatMessagesByChatId(chatId, pageable) } returns page
 
         val response = controller.getChatHistory(chatId, UUID.randomUUID(), pageable)
 
@@ -165,15 +195,16 @@ class ChatControllerTest {
 
         every { principal.name } returns userId.toString()
         justRun { messagingTemplate.convertAndSendToUser(any(), any(), any()) }
-        every { chatService.markChatMessagesAsRead(chatId, userId) } returns 1
+        every { chatService.markChatMessagesAsRead(chatId, userId) } returns Unit
         every { chatService.getChatUsersIds(chatId) } returns listOf(userId)
+        every { chatService.markChatMessagesAsRead(chatId, userId) } just runs
 
         controller.markMessagesAsRead(markAsReadRequest, principal)
 
         verify {
             messagingTemplate.convertAndSendToUser(
                 userId.toString(),
-                PRIVATE_MESSAGES,
+                MARK_AS_READ,
                 MarkAsReadResponse(userId, chatId, true)
             )
         }
@@ -199,6 +230,7 @@ class ChatControllerTest {
     private companion object {
         val chatId = UUID.fromString("825265f7-7e30-4ac3-b9fb-16ba3869610e")
         val userId = UUID.fromString("451e4d6c-0380-41ed-95e6-275793c404c6")
+        val userId2 = UUID.fromString("451e4d6c-0380-41ed-95e6-275793c40986")
 
         val chatModel = ChatModel(
             name = "Raouf kamel",
@@ -218,7 +250,8 @@ class ChatControllerTest {
             id = UUID.randomUUID(),
             senderId = senderId,
             chatId = chatId,
-            text = text,
+            type = Message.MessageType.TEXT,
+            content = MessageContent.Text(text.orEmpty()),
             sentAt = Instant.now()
         )
     }

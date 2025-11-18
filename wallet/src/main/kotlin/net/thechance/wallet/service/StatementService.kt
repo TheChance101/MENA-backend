@@ -2,18 +2,15 @@ package net.thechance.wallet.service
 
 import net.thechance.wallet.entity.Transaction
 import net.thechance.wallet.exception.NoTransactionsFoundException
-import net.thechance.wallet.repository.WalletUserRepository
 import net.thechance.wallet.service.model.input.TransactionFilterParams
 import net.thechance.wallet.service.model.input.UserTransactionType
 import net.thechance.wallet.service.model.output.StatementData
-import net.thechance.wallet.service.utils.atEndOfDay
 import net.thechance.wallet.service.utils.orNow
 import org.springframework.data.domain.Page
 import org.springframework.data.domain.PageRequest
 import org.springframework.data.domain.Sort
 import org.springframework.stereotype.Service
 import java.math.BigDecimal
-import java.time.LocalDate
 import java.time.LocalDateTime
 import java.util.*
 
@@ -21,16 +18,16 @@ import java.util.*
 class StatementService(
     private val balanceService: BalanceService,
     private val transactionService: TransactionService,
-    private val walletUserRepository: WalletUserRepository,
+    private val walletUserService: WalletUserService,
 ) {
     fun getStatementData(
         userId: UUID,
         types: List<UserTransactionType>?,
-        startDate: LocalDate?,
-        endDate: LocalDate?
+        startDateTime: LocalDateTime?,
+        endDateTime: LocalDateTime?
     ): StatementData {
-        val startDateTime = getStartDateTime(startDate, userId)
-        val endDateTime = getEndDateTime(endDate)
+        val startDateTime = getStartDateTime(startDateTime, userId)
+        val endDateTime = getEndDateTime(endDateTime)
 
         return StatementData(
             userId = userId,
@@ -38,38 +35,35 @@ class StatementService(
             types = types,
             startDateTime = startDateTime,
             endDateTime = endDateTime,
-            openingBalance = getOpeningBalance(userId, startDate),
-            closingBalance = getClosingBalance(userId, endDate)
+            openingBalance = getOpeningBalance(userId, startDateTime),
+            closingBalance = getClosingBalance(userId, endDateTime)
         )
     }
 
-    private fun getStartDateTime(startDate: LocalDate?, userId: UUID): LocalDateTime {
-        return startDate?.atStartOfDay() ?: transactionService.getUserFirstTransactionDate(userId).orNow()
+    private fun getStartDateTime(startDateTime: LocalDateTime?, userId: UUID): LocalDateTime {
+        return startDateTime ?: transactionService.getUserFirstTransactionDate(userId)
+                .orNow().toLocalDate().atStartOfDay()
     }
 
-    private fun getEndDateTime(endDate: LocalDate?): LocalDateTime {
-        return endDate?.atEndOfDay().orNow()
+    private fun getEndDateTime(endDateTime: LocalDateTime?): LocalDateTime {
+        return endDateTime.orNow()
     }
 
     private fun getUserName(userId: UUID): String {
-        return walletUserRepository.findById(userId)
-            .orElseThrow { IllegalArgumentException("User not found") }
-            .userName
+        return walletUserService.getUserById(userId).userName
     }
 
-    private fun getOpeningBalance(userId: UUID, startDate: LocalDate?): Double {
-        val startDateTime = startDate?.atStartOfDay()
+    private fun getOpeningBalance(userId: UUID, startDate: LocalDateTime): Double {
         return balanceService.getUserBalance(
             userId = userId,
-            startDate = startDateTime
+            endDate = startDate
         )
     }
 
-    private fun getClosingBalance(userId: UUID, endDate: LocalDate?): Double {
-        val endDateTime = endDate?.plusDays(1)?.atStartOfDay()
+    private fun getClosingBalance(userId: UUID, endDate: LocalDateTime): Double {
         return balanceService.getUserBalance(
             userId = userId,
-            endDate = endDateTime
+            endDate = endDate
         )
     }
 
@@ -84,8 +78,8 @@ class StatementService(
             transactionFilterParams = TransactionFilterParams(
                 status = Transaction.Status.SUCCESS,
                 types = types,
-                startDate = startDateTime.toLocalDate(),
-                endDate = endDateTime.toLocalDate()
+                startDateTime = startDateTime,
+                endDateTime = endDateTime
             ),
             currentUserId = userId,
             pageable = PageRequest.of(

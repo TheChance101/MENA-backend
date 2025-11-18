@@ -10,7 +10,6 @@ import java.util.*
 class BalanceService(
     private val transactionRepository: TransactionRepository
 ) {
-
     fun getUserBalance(userId: UUID, startDate: LocalDateTime? = null, endDate: LocalDateTime? = null): Double {
         val totalReceived = transactionRepository.sumAmountByReceiverId(userId, startDate, endDate).orZero()
         val totalSent = transactionRepository.sumAmountBySenderId(userId, startDate, endDate).orZero()

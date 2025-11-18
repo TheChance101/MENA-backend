@@ -5,17 +5,17 @@ import io.mockk.every
 import io.mockk.mockk
 import io.mockk.verify
 import jakarta.persistence.EntityManager
-import net.thechance.chat.api.dto.MessageRequestDto
+import net.thechance.chat.api.dto.TextMessageRequestDto
 import net.thechance.chat.entity.Chat
 import net.thechance.chat.entity.Contact
 import net.thechance.chat.entity.ContactUser
 import net.thechance.chat.entity.Message
 import net.thechance.chat.repository.ChatRepository
+import net.thechance.chat.repository.DeletedChatRepository
+import net.thechance.chat.repository.MessageReactionRepository
 import net.thechance.chat.repository.MessageRepository
 import net.thechance.chat.service.exception.NotFoundException
-import net.thechance.chat.service.model.ChatModel
-import net.thechance.chat.service.model.MessageImageRequestArgs
-import net.thechance.chat.service.model.MessageRequestArgs
+import net.thechance.chat.service.model.*
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.assertThrows
@@ -30,7 +30,9 @@ class ChatServiceTest {
 
     private lateinit var messageRepository: MessageRepository
     private lateinit var chatRepository: ChatRepository
+    private lateinit var messageReactionRepository: MessageReactionRepository
     private lateinit var attachmentStorageService: AttachmentStorageService
+    private lateinit var deletedChatRepository: DeletedChatRepository
     private lateinit var contactUserService: ContactUserService
     private lateinit var contactService: ContactService
     private lateinit var entityManager: EntityManager
@@ -62,14 +64,19 @@ class ChatServiceTest {
     fun setUp() {
         messageRepository = mockk(relaxed = true)
         chatRepository = mockk(relaxed = true)
+        messageReactionRepository = mockk(relaxed = true)
+        deletedChatRepository = mockk(relaxed = true)
         contactUserService = mockk(relaxed = true)
         attachmentStorageService = mockk(relaxed = true)
         entityManager = mockk(relaxed = true)
         contactService = mockk(relaxed = true)
+        otherUser = testUser()
 
         service = ChatService(
             messageRepository,
+            messageReactionRepository,
             chatRepository,
+            deletedChatRepository,
             contactUserService,
             attachmentStorageService,
             contactService
@@ -77,45 +84,56 @@ class ChatServiceTest {
     }
 
     @Test
-    fun `getOrCreateConversationByParticipants returns existing chat if found`() {
-        val requester = testUser()
-        val theOtherUser = testUser()
-        val chat = testChat().apply { users.addAll(listOf(requester, theOtherUser)) }
+    fun `getChatByUserIds returns existing chat if found`() {
+        val requester = testUser2
+        val theOtherUser = testUser1
+        val chat = Chat(chatId, mutableSetOf(requester, theOtherUser))
 
-        every { entityManager.getReference(ContactUser::class.java, requester.id) } returns requester
-        every { entityManager.getReference(ContactUser::class.java, theOtherUser.id) } returns theOtherUser
+
+        every { contactUserService.getUserById(requester.id) } returns requester
+        every { contactUserService.getUserById(theOtherUser.id) } returns theOtherUser
+        every { contactService.getContactByOwnerIdAndContactUserId(requester.id, theOtherUser.id) } returns testContact
         every { chatRepository.findByUsersIds(setOf(requester.id, theOtherUser.id)) } returns chat
+        val result = service.getChatByUserIds(requester.id, theOtherUser.id)
 
-        val result = service.getOrCreateConversationByParticipants(requester.id, theOtherUser.id)
-
-        assertThat(chat).isEqualTo(result)
-        verify { chatRepository.findByUsersIds(setOf(requester.id, theOtherUser.id)) }
-        verify(exactly = 0) { chatRepository.save(any()) }
+        assertThat(
+            chat.toModel(
+                chatName = "${testContact.firstName} ${testContact.lastName}",
+                imageUrl = theOtherUser.imageUrl.orEmpty(),
+                requesterId = requester.id
+            )
+        ).isEqualTo(result)
     }
 
     @Test
-    fun `getOrCreateConversationByParticipants creates and returns new chat if not found`() {
-        val requester = testUser()
-        val theOtherUser = testUser()
-        val newChat = testChat().apply { users.addAll(listOf(requester, theOtherUser)) }
+    fun `getChatByUserIds creates and returns new chat if not found`() {
+        val requester = testUser2
+        val theOtherUser = testUser1
+        val newChat = Chat(chatId, mutableSetOf(testUser1, testUser2))
 
-        every { entityManager.getReference(ContactUser::class.java, requester.id) } returns requester
-        every { entityManager.getReference(ContactUser::class.java, theOtherUser.id) } returns theOtherUser
         every { chatRepository.findByUsersIds(setOf(requester.id, theOtherUser.id)) } returns null
         every { contactUserService.getUserById(requester.id) } returns requester
         every { contactUserService.getUserById(theOtherUser.id) } returns theOtherUser
         every { chatRepository.save(any()) } returns newChat
+        every { contactService.getContactByOwnerIdAndContactUserId(requester.id, theOtherUser.id) } returns testContact
 
-        val result = service.getOrCreateConversationByParticipants(requester.id, theOtherUser.id)
+        val result = service.getChatByUserIds(requester.id, theOtherUser.id)
 
-        assertThat(newChat).isEqualTo(result)
+        assertThat(
+            newChat.toModel(
+                chatName = "${testContact.firstName} ${testContact.lastName}",
+                imageUrl = theOtherUser.imageUrl.orEmpty(),
+                requesterId = requester.id
+            )
+        ).isEqualTo(result)
         verify { chatRepository.save(any()) }
     }
 
     @Test
     fun `saveMessage saves message when chat exists`() {
         val chat = testChat()
-        val messageDto = MessageRequestDto(
+        val messageDto = TextMessageRequestDto(
+            UUID.randomUUID(),
             chatId = chat.id,
             text = "message 1"
         )
@@ -123,13 +141,13 @@ class ChatServiceTest {
         every { messageRepository.findById(any()) } answers { Optional.empty() }
         every { messageRepository.save(any()) } answers { firstArg<Message>() }
 
-        service.saveMessage(MessageRequestArgs(chat.id, UUID.randomUUID(), messageDto.text))
+        service.saveTextMessage(MessageRequestArgs(UUID.randomUUID(), chat.id, UUID.randomUUID(), messageDto.text))
 
         verify {
             messageRepository.save(
                 withArg {
                     assertThat(it.chatId).isEqualTo(chat.id)
-                    assertThat(it.text).isEqualTo("message 1")
+                    assertThat(it.content).isEqualTo(MessageContent.Text("message 1"))
                 }
             )
         }
@@ -147,7 +165,8 @@ class ChatServiceTest {
             MessageImageRequestArgs(
                 chatId = chat.id,
                 senderId = senderId,
-                image = image
+                image = image,
+                messageId = UUID.randomUUID()
             )
         )
 
@@ -155,7 +174,6 @@ class ChatServiceTest {
             messageRepository.save(
                 withArg {
                     assertThat(it.chatId).isEqualTo(chat.id)
-                    assertThat(it.text).isEqualTo(null)
                     assertThat(it.senderId).isEqualTo(senderId)
                 }
             )
@@ -177,18 +195,18 @@ class ChatServiceTest {
     @Test
     fun `getChatById should get chatModel correctly when specific chat exist`() {
         every { chatRepository.findByIdOrNull(testChat.id) } returns testChat
-        every { contactService.getContactByOwnerIdAndContactUserId(meUser.id, testOtherUser.id) } returns testContact
+        every { contactService.getContactByOwnerIdAndContactUserId(testUser2.id, testUser1.id) } returns testContact
 
-        val result = service.getChatById(testChat.id, meUser.id)
+        val result = service.getChatById(testChat.id, testUser2.id)
 
-        assertThat(result).isEqualTo(chatModel)
+        assertThat(result).isEqualTo(testChatModel)
     }
 
 
     @Test
     fun `getChatById should return chat name equal to other contact names when the other user is in our contact list`() {
         every { chatRepository.findByIdOrNull(chatId) } returns testChat
-        every { contactService.getContactByOwnerIdAndContactUserId(userId, testOtherUser.id) } returns testContact
+        every { contactService.getContactByOwnerIdAndContactUserId(userId, testUser1.id) } returns testContact
         val result = service.getChatById(chatId, userId)
 
         assertThat(result.name).isEqualTo("${testContact.firstName} ${testContact.lastName}")
@@ -197,16 +215,16 @@ class ChatServiceTest {
     @Test
     fun `getChatById should return chat name equal to other mina user names when the other user is not in our contact list`() {
         every { chatRepository.findByIdOrNull(chatId) } returns testChat
-        every { contactService.getContactByOwnerIdAndContactUserId(userId, testOtherUser.id) } returns null
+        every { contactService.getContactByOwnerIdAndContactUserId(userId, testUser1.id) } returns null
         val result = service.getChatById(chatId, userId)
 
-        assertThat(result.name).isEqualTo("${testOtherUser.firstName} ${testOtherUser.lastName}")
+        assertThat(result.name).isEqualTo("${testUser1.firstName} ${testUser1.lastName}")
     }
 
     @Test
     fun `getChatById should throw NotFoundException when there is no chat available with specific chat id `() {
         every { chatRepository.findByIdOrNull(notAvailableChatId) } returns null
-        every { contactService.getContactByOwnerIdAndContactUserId(userId, testOtherUser.id) } returns null
+        every { contactService.getContactByOwnerIdAndContactUserId(userId, testUser1.id) } returns null
 
         assertThrows<NotFoundException> {
             service.getChatById(notAvailableChatId, userId)
@@ -231,7 +249,8 @@ class ChatServiceTest {
     ) {
         message = Message(
             id = UUID.randomUUID(),
-            text = lastMessageText,
+            type = Message.MessageType.TEXT,
+            content = MessageContent.Text(lastMessageText),
             sentAt = Instant.now(),
             senderId = otherUser.id,
             chatId = chat.id,
@@ -256,11 +275,54 @@ class ChatServiceTest {
     }
 
     @Test
+    fun `saveMessageAudio should upload audio and return message with audio url`() {
+        val chat = testChat()
+        val senderId = UUID.randomUUID()
+        val audio = mockk<MultipartFile>(relaxed = true)
+        val uploadedAudioUrl = "https://www.example.com/audio/test.m4a"
+
+        every { entityManager.getReference(Chat::class.java, chat.id) } returns chat
+        every { attachmentStorageService.uploadAudio(audio, any(), any()) } returns uploadedAudioUrl
+        every { messageRepository.save(any()) } answers { firstArg() }
+
+        val result = service.saveMessageAudio(
+            net.thechance.chat.service.model.MessageAudioRequestArgs(UUID.randomUUID(), chat.id, senderId, audio, 1000L)
+        )
+
+        assertThat(result.content).isEqualTo(MessageContent.Audio(uploadedAudioUrl, 1000L))
+
+    }
+
+
+    @Test
+    fun `saveMessageAudio should throw exception when upload fails`() {
+        val chat = testChat()
+        val senderId = UUID.randomUUID()
+        val audio = mockk<MultipartFile>(relaxed = true)
+
+        every { entityManager.getReference(Chat::class.java, chat.id) } returns chat
+        every { attachmentStorageService.uploadAudio(audio, any(), any()) } throws RuntimeException("Upload failed")
+
+        assertThrows<RuntimeException> {
+            service.saveMessageAudio(
+                net.thechance.chat.service.model.MessageAudioRequestArgs(
+                    UUID.randomUUID(),
+                    chat.id,
+                    senderId,
+                    audio,
+                    1000L
+                )
+            )
+        }
+    }
+
+    @Test
     fun `getUserChats marks chat as mine when last message is from current user`() {
         setupChatEnvironment()
         val myMessage = Message(
             id = UUID.randomUUID(),
-            text = "My message",
+            type = Message.MessageType.TEXT,
+            content = MessageContent.Text("My message"),
             sentAt = Instant.now(),
             senderId = userId,
             chatId = chat.id,
@@ -311,14 +373,14 @@ class ChatServiceTest {
             phoneNumber = "+967775074564",
             contactOwnerId = userId
         )
-        val testOtherUser = ContactUser(
+        val testUser1 = ContactUser(
             id = UUID.fromString("1804d9db-c870-421d-934b-b00528cb5b93"),
             firstName = "osama",
             lastName = "kamel",
             phoneNumber = "+967775074564",
             imageUrl = null
         )
-        val meUser = ContactUser(
+        val testUser2 = ContactUser(
             id = userId,
             firstName = "omer",
             lastName = "faris",
@@ -326,7 +388,7 @@ class ChatServiceTest {
             imageUrl = null
         )
 
-        val chatModel = ChatModel(
+        val testChatModel = ChatModel(
             name = "Raouf kamel",
             imageUrl = null,
             requesterId = userId,
@@ -335,7 +397,7 @@ class ChatServiceTest {
 
         val testChat = Chat(
             id = chatId,
-            users = mutableSetOf(meUser, testOtherUser),
+            users = mutableSetOf(testUser2, testUser1),
         )
     }
 }

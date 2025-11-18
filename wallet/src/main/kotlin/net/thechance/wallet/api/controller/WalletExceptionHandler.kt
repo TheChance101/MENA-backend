@@ -1,6 +1,7 @@
 package net.thechance.wallet.api.controller
 
 import net.thechance.wallet.api.dto.error.ErrorResponse
+import net.thechance.wallet.exception.BlockedWalletUserException
 import net.thechance.wallet.exception.NoTransactionsFoundException
 import org.springframework.core.Ordered
 import org.springframework.core.annotation.Order
@@ -22,6 +23,18 @@ class WalletExceptionHandler {
 
         return ResponseEntity
             .status(HttpStatus.NO_CONTENT)
+            .body(errorBody)
+    }
+
+    @ExceptionHandler(BlockedWalletUserException::class)
+    fun handleBlockedWalletUser(ex: BlockedWalletUserException): ResponseEntity<ErrorResponse> {
+        val errorBody = ErrorResponse(
+            status = HttpStatus.FORBIDDEN.value(),
+            message = ex.message ?: "Wallet user is blocked"
+        )
+
+        return ResponseEntity
+            .status(HttpStatus.FORBIDDEN)
             .body(errorBody)
     }
 }

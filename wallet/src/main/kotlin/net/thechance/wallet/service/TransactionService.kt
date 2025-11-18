@@ -3,20 +3,20 @@ package net.thechance.wallet.service
 import jakarta.persistence.EntityNotFoundException
 import net.thechance.wallet.entity.PendingTransaction
 import net.thechance.wallet.entity.Transaction
+import net.thechance.wallet.entity.WalletUser
 import net.thechance.wallet.repository.PendingTransactionRepository
 import net.thechance.wallet.repository.TransactionRepository
-import net.thechance.wallet.repository.WalletUserRepository
 import net.thechance.wallet.service.model.input.InitiateTransactionParams
 import net.thechance.wallet.service.model.input.TransactionFilterParams
 import net.thechance.wallet.service.model.input.toPendingTransaction
 import net.thechance.wallet.service.model.output.TransactionDetailsModel
 import net.thechance.wallet.service.model.output.toTransactionDetailsModel
-import net.thechance.wallet.service.utils.atEndOfDay
 import net.thechance.wallet.service.utils.orNow
 import org.springframework.data.domain.Page
 import org.springframework.data.domain.Pageable
 import org.springframework.data.repository.findByIdOrNull
 import org.springframework.stereotype.Service
+import org.springframework.transaction.annotation.Transactional
 import java.time.LocalDateTime
 import java.util.*
 
@@ -25,7 +25,7 @@ import java.util.*
 class TransactionService(
     private val transactionRepository: TransactionRepository,
     private val pendingTransactionRepository: PendingTransactionRepository,
-    private val walletUserRepository: WalletUserRepository,
+    private val walletUserService: WalletUserService,
 ) {
     fun getFilteredTransactions(
         transactionFilterParams: TransactionFilterParams,
@@ -33,10 +33,10 @@ class TransactionService(
         pageable: Pageable,
     ): Page<Transaction> {
 
-        val startDate = transactionFilterParams.startDate?.atStartOfDay()
-                ?: getUserFirstTransactionDate(currentUserId = currentUserId).orNow()
+        val startDate = transactionFilterParams.startDateTime
+            ?: getUserFirstTransactionDate(currentUserId = currentUserId).orNow()
 
-        val endDate = transactionFilterParams.endDate?.atEndOfDay().orNow()
+        val endDate = transactionFilterParams.endDateTime.orNow()
 
         return transactionRepository.findFilteredTransactions(
             status = transactionFilterParams.status,
@@ -65,8 +65,24 @@ class TransactionService(
         if (initiateTransactionParams.receiverId == initiateTransactionParams.senderId)
             throw IllegalArgumentException("Sender and receiver cannot be the same.")
 
-        val sender = walletUserRepository.getReferenceById(initiateTransactionParams.senderId)
-        val receiver = walletUserRepository.getReferenceById(initiateTransactionParams.receiverId)
+        val sender = walletUserService.getUserById(initiateTransactionParams.senderId)
+        val receiver = walletUserService.getUserById(initiateTransactionParams.receiverId)
+
+        validateUsersStatus(sender, receiver)
+
         return pendingTransactionRepository.save(initiateTransactionParams.toPendingTransaction(sender, receiver))
+    }
+
+    @Transactional
+    fun clearExpiredPendingTransactions(expirationTime: LocalDateTime) {
+        pendingTransactionRepository.deleteAllByCreatedAtBefore(expirationTime)
+    }
+
+    private fun validateUsersStatus(sender: WalletUser, receiver: WalletUser) {
+        when {
+            sender.isBlocked() -> throw IllegalArgumentException("Sender is blocked.")
+            receiver.isBlocked() -> throw IllegalArgumentException("Receiver is blocked.")
+            receiver.isDeleted -> throw IllegalArgumentException("Receiver account is deleted.")
+        }
     }
 }

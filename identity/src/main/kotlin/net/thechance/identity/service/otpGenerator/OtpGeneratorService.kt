@@ -1,5 +1,13 @@
 package net.thechance.identity.service.otpGenerator
 
-interface OtpGeneratorService {
-    fun generateOtp(): String
+import org.springframework.context.annotation.Profile
+import org.springframework.stereotype.Service
+import kotlin.random.Random
+
+@Service
+@Profile("prod")
+class OtpGeneratorService : OtpGenerator {
+    override fun generateOtp(): String {
+        return Random.nextInt(100000, 1000000).toString()
+    }
 }
