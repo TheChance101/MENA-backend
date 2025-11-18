@@ -69,19 +69,20 @@ class TransactionService(
         val receiver = walletUserService.getUserById(initiateTransactionParams.receiverId)
 
         validateUsersStatus(sender, receiver)
-        
+
         return pendingTransactionRepository.save(initiateTransactionParams.toPendingTransaction(sender, receiver))
     }
 
     @Transactional
     fun clearExpiredPendingTransactions(expirationTime: LocalDateTime) {
-        val expiredTransactions = pendingTransactionRepository.deleteAllByCreatedAtBefore(expirationTime)
+        pendingTransactionRepository.deleteAllByCreatedAtBefore(expirationTime)
     }
 
     private fun validateUsersStatus(sender: WalletUser, receiver: WalletUser) {
         when {
             sender.isBlocked() -> throw IllegalArgumentException("Sender is blocked.")
             receiver.isBlocked() -> throw IllegalArgumentException("Receiver is blocked.")
+            receiver.isDeleted -> throw IllegalArgumentException("Receiver account is deleted.")
         }
     }
 }
