@@ -51,8 +51,6 @@ class TrendUserService(
             return PatchMetadata(addedCount = 0, removedCount = 0)
         }
 
-
-
         val updatedUserCategories = getCategoriesToUpdate(
             currentUserId = userId,
             currentCategories = currentCategories,
