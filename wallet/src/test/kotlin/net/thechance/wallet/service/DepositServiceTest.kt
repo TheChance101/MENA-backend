@@ -99,7 +99,8 @@ class DepositServiceTest {
             lastName = "User",
             phoneNumber = "01000000002",
             imageUrl = null,
-            status = WalletUser.Status.ACTIVE
+            status = WalletUser.Status.ACTIVE,
+            isDeleted = false
         )
 
         val block = Block(
@@ -114,7 +115,8 @@ class DepositServiceTest {
             lastName = "User",
             phoneNumber = "01000000001",
             imageUrl = null,
-            status = WalletUser.Status.ACTIVE
+            status = WalletUser.Status.ACTIVE,
+            isDeleted = false
         )
     }
 }
