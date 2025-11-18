@@ -221,7 +221,8 @@ class ChatService(
             name = getChatName(contact, otherUser),
             imageUrl = otherUser.imageUrl,
             requesterId = userId,
-            id = chatId
+            id = chatId,
+            receiverId = otherUser.id,
         )
     }
 

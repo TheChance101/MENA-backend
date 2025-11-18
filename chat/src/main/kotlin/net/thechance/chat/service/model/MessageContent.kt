@@ -21,4 +21,8 @@ sealed class MessageContent {
     @Serializable
     @SerialName("AYAH")
     data class Ayah(val ayahNumber: Int, val suraNumber:Int, val ayahText: String): MessageContent()
+
+    @Serializable
+    @SerialName("MONEY")
+    data class Money(val amount: Double) : MessageContent()
 }

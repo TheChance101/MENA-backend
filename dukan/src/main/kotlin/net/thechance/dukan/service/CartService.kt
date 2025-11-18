@@ -2,16 +2,20 @@ package net.thechance.dukan.service
 
 import net.thechance.dukan.entity.Cart
 import net.thechance.dukan.entity.CartItem
+import net.thechance.dukan.entity.Dukan
 import net.thechance.dukan.entity.DukanProduct
+import net.thechance.dukan.entity.DukanUser
 import net.thechance.dukan.repository.CartItemRepository
 import net.thechance.dukan.repository.CartRepository
 import net.thechance.dukan.repository.DukanProductRepository
-import net.thechance.dukan.service.exception.CartNotFoundException
-import net.thechance.dukan.service.exception.ProductAlreadyInCartException
-import net.thechance.dukan.service.exception.ProductNotFoundException
-import net.thechance.dukan.service.exception.ProductNotInCartException
-import net.thechance.dukan.service.exception.ProductOutOfStockException
+import net.thechance.dukan.repository.DukanRepository
+import net.thechance.dukan.repository.DukanUserRepository
+import net.thechance.dukan.service.exception.*
 import net.thechance.dukan.service.model.AddOrUpdateCartItemParams
+import net.thechance.dukan.service.model.CartCheckoutParams
+import net.thechance.dukan.service.model.CartCheckoutPreview
+import net.thechance.events.publisher.MenaEventPublisher
+import net.thechance.events.wallet.InitiateTransactionEvent
 import org.springframework.data.domain.Page
 import org.springframework.data.domain.Pageable
 import org.springframework.stereotype.Service
@@ -23,13 +27,14 @@ class CartService(
     private val cartRepository: CartRepository,
     private val productRepository: DukanProductRepository,
     private val cartItemRepository: CartItemRepository,
+    private val dukanRepository: DukanRepository,
+    private val userRepository: DukanUserRepository,
+    private val eventPublisher: MenaEventPublisher
 ) {
 
     @Transactional
     fun addItem(params: AddOrUpdateCartItemParams): Cart {
-        val cart = getCartByUserAndDukan(params.userId, params.dukanId)
-            ?: createCart(params.userId, params.dukanId)
-
+        val cart = getOrCreateActiveCart(params.userId, params.dukanId)
         val product = getProduct(params.productId)
 
         if (product.isOutOfStock) throw ProductOutOfStockException()
@@ -76,7 +81,7 @@ class CartService(
 
     @Transactional(readOnly = true)
     fun getCartOrThrow(userId: UUID, dukanId: UUID): Cart {
-        return cartRepository.findByUserIdAndDukanIdWithItemsAndProducts(userId, dukanId)
+        return cartRepository.findActiveCartByUserIdAndDukanId(userId, dukanId)
             ?: throw CartNotFoundException()
     }
 
@@ -86,8 +91,74 @@ class CartService(
         return cartItemRepository.findAllByCartId(cart.id, pageable)
     }
 
+    @Transactional
+    fun checkout(userId: UUID, checkoutParams: CartCheckoutParams): CartCheckoutPreview {
+        val user = userRepository.findById(userId)
+            .orElseThrow { DukanUserNotFoundException() }
+
+        val cart = cartRepository.findById(checkoutParams.cartId)
+            .orElseThrow { CartNotFoundException() }
+
+        isCartValid(cart, userId)
+
+        val dukan = dukanRepository.findById(cart.dukanId)
+            .orElseThrow { DukanNotFoundException() }
+
+        updateUserLocation(user, checkoutParams)
+
+        val transactionId = UUID.randomUUID()
+
+        createTransactionEvent(transactionId, cart, dukan)
+
+        return CartCheckoutPreview(
+            transactionId = transactionId,
+            totalAmount = cart.price.final.toDouble()
+        )
+    }
+
+    private fun updateUserLocation(
+        user: DukanUser,
+        checkoutParams: CartCheckoutParams
+    ) {
+        user.address = checkoutParams.address
+        user.latitude = checkoutParams.latitude
+        user.longitude = checkoutParams.longitude
+        userRepository.save(user)
+    }
+
+    private fun isCartValid(cart: Cart, userId: UUID) {
+        if (cart.userId != userId) {
+            throw IllegalAccessException("Cart does not belong to this user")
+        }
+
+        if (cart.isOrderPurchased) {
+            throw IllegalStateException("Cart is already purchased")
+        }
+    }
+
+    private fun createTransactionEvent(
+        transactionId: UUID,
+        cart: Cart,
+        dukan: Dukan
+    ) {
+        val transactionEvent = InitiateTransactionEvent(
+            transactionId = transactionId,
+            type = InitiateTransactionEvent.TransactionType.ONLINE_PURCHASE,
+            senderId = cart.userId,
+            receiverId = dukan.ownerId,
+            amount = cart.price.final.toDouble()
+        )
+
+        eventPublisher.publish(transactionEvent)
+    }
+
     private fun getCartByUserAndDukan(userId: UUID, dukanId: UUID): Cart? {
-        return cartRepository.findByUserIdAndDukanIdWithItemsAndProducts(userId, dukanId)
+        return cartRepository.findActiveCartByUserIdAndDukanId(userId, dukanId)
+    }
+
+    private fun getOrCreateActiveCart(userId: UUID, dukanId: UUID): Cart {
+        return cartRepository.findActiveCartByUserIdAndDukanId(userId, dukanId)
+            ?: createCart(userId, dukanId)
     }
 
     private fun createCart(userId: UUID, dukanId: UUID): Cart {
