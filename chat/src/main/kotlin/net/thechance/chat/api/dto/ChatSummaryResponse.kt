@@ -9,36 +9,24 @@ data class ChatSummaryResponse(
     val id: UUID,
     val name: String,
     val imageUrl: String?,
-    val lastMessage: Message?,
+    val lastMessage: MessageResponse?,
     val unReadMessagesCount: Int
-) {
-    data class Message(
-        val text: String,
-        val sentAt: Instant,
-        val isMine: Boolean
-    )
-}
+)
 
-fun ChatSummary.toResponse(): ChatSummaryResponse {
+fun ChatSummary.toResponse(requesterId: UUID): ChatSummaryResponse {
     return ChatSummaryResponse(
         id = id,
         name = name,
         imageUrl = imageUrl,
-        lastMessage = lastMessage?.let {
-            ChatSummaryResponse.Message(
-                text = it.text,
-                sentAt = it.sentAt,
-                isMine = it.isMine
-            )
-        },
+        lastMessage = lastMessage?.toResponse(requesterId),
         unReadMessagesCount = unReadMessagesCount
     )
 }
 
 
-fun Page<ChatSummary>.toPagedResponse(): PagedResponse<ChatSummaryResponse> {
+fun Page<ChatSummary>.toPagedResponse(requesterId: UUID): PagedResponse<ChatSummaryResponse> {
     return PagedResponse(
-        data = this.content.map { it.toResponse() },
+        data = this.content.map { it.toResponse(requesterId) },
         pageNumber = this.number,
         pageSize = this.size,
         totalItems = this.totalElements,
