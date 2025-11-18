@@ -9,7 +9,8 @@ sealed class DukanEvent : MenaEvent {
         val status: Status,
         val imageUrl:String?,
         val lat:Double,
-        val lng:Double
+        val lng:Double,
+        val categoryIds:Set<String>
     ):DukanEvent() {
         enum class Status {
             APPROVED,

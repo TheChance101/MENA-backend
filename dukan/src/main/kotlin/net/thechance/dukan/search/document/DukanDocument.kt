@@ -22,5 +22,8 @@ data class DukanDocument(
     val imageUrl:String?,
 
     @GeoPointField
-    val location: GeoPoint
+    val location: GeoPoint,
+
+    @Field(type = FieldType.Keyword)
+    val categoryIds: Set<String>
 )

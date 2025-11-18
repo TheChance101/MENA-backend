@@ -79,7 +79,8 @@ class DukanProductService(
         imageUrl = this.imageUrl,
         status = DukanEvent.Save.Status.APPROVED,
         lat = this.latitude,
-        lng = this.longitude
+        lng = this.longitude,
+        categoryIds = this.categories.map { it.id.toString() }.toSet()
     )
 
     private fun DukanProduct.toProductSaveEvent() = ProductEvent.Save(
