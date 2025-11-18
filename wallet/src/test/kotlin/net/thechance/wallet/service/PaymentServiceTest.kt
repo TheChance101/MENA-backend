@@ -36,7 +36,8 @@ class PaymentServiceTest {
         lastName = "User",
         imageUrl = null,
         status = WalletUser.Status.ACTIVE,
-        phoneNumber = "01012345678"
+        phoneNumber = "01012345678",
+        isDeleted = false
     )
     private val receiver = WalletUser(
         userId = receiverId,
@@ -44,7 +45,8 @@ class PaymentServiceTest {
         lastName = "User",
         imageUrl = null,
         status = WalletUser.Status.ACTIVE,
-        phoneNumber = "01012345678"
+        phoneNumber = "01012345678",
+        isDeleted = false
     )
     private val pendingTransaction = PendingTransaction(
         id = transactionId,
@@ -107,7 +109,8 @@ class PaymentServiceTest {
                     imageUrl = "User",
                     phoneNumber = "01012345678",
                     dukan = null,
-                    status = WalletUser.Status.ACTIVE
+                    status = WalletUser.Status.ACTIVE,
+                    isDeleted = false
                 )
             )
         )
@@ -126,7 +129,8 @@ class PaymentServiceTest {
             imageUrl = "User",
             dukan = null,
             phoneNumber = "01012345678",
-            status = WalletUser.Status.ACTIVE
+            status = WalletUser.Status.ACTIVE,
+            isDeleted = false
         )
         val pt = pendingTransaction.copy(sender = sameUser, receiver = sameUser)
         every { transactionRepository.existsById(transactionId) } returns false

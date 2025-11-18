@@ -6,6 +6,7 @@ import net.thechance.dukan.entity.*
 import net.thechance.dukan.repository.DukanProductRepository
 import net.thechance.dukan.repository.DukanShelfRepository
 import net.thechance.dukan.repository.FavoriteProductRepository
+import net.thechance.dukan.repository.SoldProductRepository
 import net.thechance.dukan.service.exception.DukanProductCreationFailedException
 import net.thechance.dukan.service.exception.InvalidDiscountException
 import net.thechance.dukan.service.exception.ProductNameAlreadyTakenException
@@ -30,6 +31,7 @@ class DukanProductService(
     private val favoriteProductRepository: FavoriteProductRepository,
     private val dukanShelfRepository: DukanShelfRepository,
     private val dukanService: DukanService,
+    private val soldProductRepository: SoldProductRepository,
     private val imageStorageService: ImageStorageService,
     private val eventPublisher: MenaEventPublisher
 ) {
@@ -170,6 +172,14 @@ class DukanProductService(
         deleteUnusedProductImages(product.imageUrls, updateParams.imageUrls)
         val updatedProduct = buildUpdatedProduct(product, updateParams, shelf)
         return dukanProductRepository.save(updatedProduct).id
+    }
+
+    fun getBestSellingProducts(
+        userId: UUID,
+        dukanId: UUID,
+        pageable: Pageable
+    ): Page<DukanProductWithFavoriteAndQuantity> {
+        return soldProductRepository.findTopSellingProducts(dukanId, userId, pageable)
     }
 
     @Transactional

@@ -2,8 +2,11 @@ package net.thechance.dukan.api.controller
 
 import jakarta.validation.Valid
 import net.thechance.dukan.api.dto.cart.AddToCartRequest
+import net.thechance.dukan.api.dto.cart.CartCheckoutRequest
+import net.thechance.dukan.api.dto.cart.CartCheckoutResponse
 import net.thechance.dukan.api.dto.cart.CartItemResponse
 import net.thechance.dukan.api.dto.cart.CartResponse
+import net.thechance.dukan.api.mapper.cart.toParams
 import net.thechance.dukan.api.mapper.cart.toResponse
 import net.thechance.dukan.api.utils.EndPoints.DUKAN_PATH
 import net.thechance.dukan.service.CartService
@@ -75,5 +78,14 @@ class CartController(
     ): ResponseEntity<Unit> {
         cartService.removeItem(userId, dukanId, productId)
         return ResponseEntity.noContent().build()
+    }
+
+    @PostMapping("/checkout")
+    fun checkout(
+        @AuthenticationPrincipal userId: UUID,
+        @Valid @RequestBody checkoutRequest: CartCheckoutRequest
+    ): ResponseEntity<CartCheckoutResponse> {
+        val cartCheckout = cartService.checkout(userId, checkoutRequest.toParams())
+        return ResponseEntity.ok(cartCheckout.toResponse())
     }
 }
