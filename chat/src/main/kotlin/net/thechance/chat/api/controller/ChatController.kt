@@ -18,8 +18,8 @@ import java.util.UUID
 @RequestMapping("/chat")
 @Controller
 class ChatController(
-    private val messagingTemplate: SimpMessagingTemplate,
     private val chatService: ChatService,
+    private val messageSender: MessageSender
 ) {
 
     @MessageMapping("/chat.privateMessage")
@@ -33,6 +33,19 @@ class ChatController(
         sendToChatParticipants(chatId = chatMessage.chatId) { message.toResponse(it) }
     }
 
+    @MessageMapping("/chat.privateAyahMessage")
+    fun sendAyahMessage(
+        @Payload ayahMessage: AyahMessageRequestDto,
+        principal: Principal
+    ){
+        val senderId = UUID.fromString(principal.name)
+        val message = chatService.saveAyahMessage(ayahMessage.toRequestArgs(senderId))
+        sendToChatParticipants(
+            chatId = ayahMessage.chatId,
+        ){
+            message.toResponse(senderId)
+        }
+    }
 
     @GetMapping
     @ResponseBody
@@ -186,16 +199,9 @@ class ChatController(
         destination: String = PRIVATE_MESSAGES,
         payload: (userId: UUID) -> Any
     ) {
-        chatService
-            .getChatUsersIds(chatId = chatId)
-            .forEach { chatParticipantId ->
-                messagingTemplate.convertAndSendToUser(
-                    chatParticipantId.toString(),
-                    destination,
-                    payload(chatParticipantId)
-                )
-            }
+        messageSender.sendMessageToChat(chatId, destination, payload)
     }
+
 
     companion object {
         const val PRIVATE_MESSAGES = "/private/messages"

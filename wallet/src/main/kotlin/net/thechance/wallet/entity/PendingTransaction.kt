@@ -9,8 +9,7 @@ import java.util.*
 @Table(name = "pending_transactions", schema = "wallet")
 data class PendingTransaction(
     @Id
-    @GeneratedValue(strategy = GenerationType.UUID)
-    val id: UUID = UUID.randomUUID(),
+    val id: UUID,
 
     @Column(nullable = false, updatable = false)
     val createdAt: LocalDateTime = LocalDateTime.now(),

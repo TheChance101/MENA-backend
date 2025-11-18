@@ -107,4 +107,17 @@ class DukanProductController(
     ): ResponseEntity<Boolean> {
         return ResponseEntity.ok(dukanProductService.toggleFavoriteStatus(userId, productId))
     }
+
+    @GetMapping("{dukanId}/best_selling")
+    fun getBestSelling(
+        @AuthenticationPrincipal userId: UUID,
+        @PathVariable dukanId: UUID,
+        @PageableDefault(size = 10, page = 0)
+        pageable: Pageable
+    ): ResponseEntity<Page<DukanProductResponse>> {
+        val products = dukanProductService.getBestSellingProducts(userId, dukanId, pageable)
+        val productsResponse = products.map { it.toResponse() }
+
+        return ResponseEntity.ok(productsResponse)
+    }
 }
