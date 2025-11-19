@@ -40,10 +40,10 @@ class CartEventListener(
         processSoldProducts(cart)
         val order = createOrderFromCart(cart, user, dukan, event.transactionId)
         finalizeCartPurchase(cart)
-        // TODO: PUBLISH THE ORDER CREATION EVENT
         val orderCreationEvent = createOrderEvent(order,dukan.ownerId)
-        eventPublisher.publish(orderCreationEvent)
-        createNewCart(event.senderId, dukan.id)
+        createNewCart(event.senderId, dukan.id).also {
+            eventPublisher.publish(orderCreationEvent)
+        }
     }
 
     private fun createOrderEvent(order: Order, ownerId: UUID): OrderCreationEvent {
