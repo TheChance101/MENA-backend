@@ -1,7 +1,7 @@
 package net.thechance.chat.repository.weather
 
-import net.thechance.chat.api.dto.WeatherResponse
 import net.thechance.chat.service.exception.FetchWeatherException
+import net.thechance.chat.service.model.WeatherModel
 import org.springframework.boot.web.client.RestTemplateBuilder
 import org.springframework.stereotype.Repository
 import org.springframework.web.client.RestClientResponseException
@@ -14,7 +14,7 @@ class WeatherRepositoryImp(
 
     private val restTemplate = restTemplateBuilder.build()
 
-    override fun getCurrentWeather(latitude: Double, longitude: Double): WeatherResponse {
+    override fun getCurrentWeather(latitude: Double, longitude: Double): WeatherModel {
         val url = (
             "https://api.open-meteo.com/v1/forecast" +
                 "?latitude=$latitude&longitude=$longitude" +
@@ -24,7 +24,7 @@ class WeatherRepositoryImp(
                 "&forecast_days=1"
             )
 
-        return makeRequest(url).toResponse()
+        return makeRequest(url).toEntity()
     }
 
     private fun makeRequest(url: String): WeatherDTO {
@@ -42,10 +42,3 @@ class WeatherRepositoryImp(
         }
     }
 }
-
-private fun WeatherDTO.toResponse(): WeatherResponse = WeatherResponse(
-    currentTemperature = current?.temperature ?: 0.0,
-    minTemperature = daily?.minTemperature?.firstOrNull() ?: 0.0,
-    maxTemperature = daily?.maxTemperature?.firstOrNull() ?: 0.0,
-    weatherCode = current?.weatherCode ?: 0
-)

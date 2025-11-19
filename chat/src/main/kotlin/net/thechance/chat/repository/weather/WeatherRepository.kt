@@ -1,7 +1,7 @@
 package net.thechance.chat.repository.weather
 
-import net.thechance.chat.api.dto.WeatherResponse
+import net.thechance.chat.service.model.WeatherModel
 
 interface WeatherRepository {
-    fun getCurrentWeather(latitude: Double, longitude: Double): WeatherResponse
+    fun getCurrentWeather(latitude: Double, longitude: Double): WeatherModel
 }
