@@ -105,10 +105,10 @@ class TrendsService(
             val list = mutableListOf<TrendWithLikeStatus>()
             val trend = trendsRepository.findByIdAndIsPublishedWithLikeStatus(trendId, currentUserId, true)
             trend?.let { list.add(it) }
-            (list + topTrends + bottomTrends)
+            (list + (topTrends + bottomTrends).shuffled())
                 .map { generatePresignedUrlsForTrend(it).withOwnership(currentUserId) }
         } else {
-            (topTrends + bottomTrends)
+            (topTrends + bottomTrends).shuffled()
                 .map { generatePresignedUrlsForTrend(it).withOwnership(currentUserId) }
         }
 
