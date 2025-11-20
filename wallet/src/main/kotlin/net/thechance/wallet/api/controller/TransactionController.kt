@@ -3,13 +3,13 @@ package net.thechance.wallet.api.controller
 import jakarta.servlet.http.HttpServletResponse
 import net.thechance.wallet.api.controller.util.StatementMetadata
 import net.thechance.wallet.api.controller.util.StatementPdfWriter
+import net.thechance.wallet.api.controller.util.UserImageUrlBuilder
 import net.thechance.wallet.api.dto.PageResponse
 import net.thechance.wallet.api.dto.transaction.*
 import net.thechance.wallet.entity.Transaction
 import net.thechance.wallet.service.TransactionService
 import net.thechance.wallet.service.model.input.TransactionFilterParams
 import net.thechance.wallet.service.model.input.UserTransactionType
-import org.springframework.beans.factory.annotation.Value
 import org.springframework.data.domain.PageRequest
 import org.springframework.data.domain.Pageable
 import org.springframework.data.domain.Sort
@@ -24,13 +24,10 @@ import java.util.*
 @RestController
 @RequestMapping("/wallet/transactions")
 class TransactionController(
-    @Value("\${storage.mena.cdn-endpoint}") cdnEndpoint: String,
-    @Value("\${identity.resources.profile-image-directory}") profileImageDirectory: String,
     private val transactionService: TransactionService,
     private val statementPdfWriter: StatementPdfWriter,
+    private val userImageUrlBuilder: UserImageUrlBuilder
 ) {
-    private val imageBaseUrl: String = "$cdnEndpoint$profileImageDirectory"
-
     @GetMapping
     fun getFilteredTransactions(
         @AuthenticationPrincipal userId: UUID,
@@ -49,7 +46,7 @@ class TransactionController(
                 Sort.by(Sort.Direction.DESC, Transaction::createdAt.name)
             ),
             currentUserId = userId
-        ).toResponsePage(currentUserId = userId, imageBaseUrl = imageBaseUrl)
+        ).toResponsePage(currentUserId = userId, userImageUrlBuilder = userImageUrlBuilder)
 
         return ResponseEntity.ok(response)
     }
@@ -71,7 +68,7 @@ class TransactionController(
     ): ResponseEntity<TransactionResponse> {
         val response = transactionService
             .getTransactionDetails(transactionId)
-            .toResponse(currentUserId = userId, imageBaseUrl = imageBaseUrl)
+            .toResponse(currentUserId = userId, userImageUrlBuilder = userImageUrlBuilder)
 
         return ResponseEntity.ok(response)
     }

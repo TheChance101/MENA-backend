@@ -1,5 +1,6 @@
 package net.thechance.wallet.api.dto.transaction
 
+import net.thechance.wallet.api.controller.util.UserImageUrlBuilder
 import net.thechance.wallet.api.dto.PageResponse
 import net.thechance.wallet.entity.Transaction
 import net.thechance.wallet.entity.WalletUser
@@ -24,9 +25,9 @@ data class TransactionPartyInfo(
     val imageUrl: String?
 )
 
-fun Page<Transaction>.toResponsePage(currentUserId: UUID, imageBaseUrl: String): PageResponse<TransactionResponse> {
+fun Page<Transaction>.toResponsePage(currentUserId: UUID, userImageUrlBuilder: UserImageUrlBuilder): PageResponse<TransactionResponse> {
     return PageResponse(
-        items = this.content.map { it.toResponse(currentUserId, imageBaseUrl) },
+        items = this.content.map { it.toResponse(currentUserId, userImageUrlBuilder) },
         page = this.number,
         pageSize = this.size,
         totalElements = this.totalElements,
@@ -34,16 +35,16 @@ fun Page<Transaction>.toResponsePage(currentUserId: UUID, imageBaseUrl: String):
     )
 }
 
-private fun Transaction.toResponse(currentUserId: UUID, imageBaseUrl: String): TransactionResponse {
+private fun Transaction.toResponse(currentUserId: UUID, userImageUrlBuilder: UserImageUrlBuilder): TransactionResponse {
     return TransactionResponse(
         id = id,
-        sender = getSenderInfo(type, sender, imageBaseUrl),
+        sender = getSenderInfo(type, sender, userImageUrlBuilder),
         receiver = getReceiverInfo(
             type = type,
             senderUserId = sender.userId,
             currentUserId = currentUserId,
             receiver = receiver,
-            imageBaseUrl = imageBaseUrl
+            userImageUrlBuilder = userImageUrlBuilder
         ),
         status = status,
         type = getUserType(type, sender.userId, currentUserId),
@@ -52,16 +53,16 @@ private fun Transaction.toResponse(currentUserId: UUID, imageBaseUrl: String): T
     )
 }
 
-fun TransactionDetailsModel.toResponse(currentUserId: UUID, imageBaseUrl: String): TransactionResponse {
+fun TransactionDetailsModel.toResponse(currentUserId: UUID, userImageUrlBuilder: UserImageUrlBuilder): TransactionResponse {
     return TransactionResponse(
         id = id,
-        sender = getSenderInfo(type, sender, imageBaseUrl),
+        sender = getSenderInfo(type, sender, userImageUrlBuilder),
         receiver = getReceiverInfo(
             type = type,
             senderUserId = sender.userId,
             currentUserId = currentUserId,
             receiver = receiver,
-            imageBaseUrl = imageBaseUrl
+            userImageUrlBuilder = userImageUrlBuilder
         ),
         status = status,
         type = getUserType(type, sender.userId, currentUserId),
@@ -87,7 +88,7 @@ private fun getUserType(
 private fun getSenderInfo(
     type: Transaction.Type,
     sender: WalletUser,
-    imageBaseUrl: String
+    userImageUrlBuilder: UserImageUrlBuilder
 ): TransactionPartyInfo {
     val isDeposit = type == Transaction.Type.DEPOSIT
     val name = if (isDeposit) "MENA" else sender.userName
@@ -95,7 +96,7 @@ private fun getSenderInfo(
 
     return TransactionPartyInfo(
         name = name,
-        imageUrl = imageUrl?.let { "$imageBaseUrl/$it" }
+        imageUrl = userImageUrlBuilder.buildImageUrl(imageUrl)
     )
 }
 
@@ -104,7 +105,7 @@ private fun getReceiverInfo(
     senderUserId: UUID,
     currentUserId: UUID,
     receiver: WalletUser,
-    imageBaseUrl: String
+    userImageUrlBuilder: UserImageUrlBuilder
 ): TransactionPartyInfo {
     val isPurchaseFromCurrentUser = type == Transaction.Type.ONLINE_PURCHASE && senderUserId == currentUserId
 
@@ -118,5 +119,5 @@ private fun getReceiverInfo(
         else -> receiver.imageUrl
     }
 
-    return TransactionPartyInfo(name = name, imageUrl = imageUrl?.let { "$imageBaseUrl/$it" })
+    return TransactionPartyInfo(name = name, imageUrl = userImageUrlBuilder.buildImageUrl(imageUrl))
 }
