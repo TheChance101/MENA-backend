@@ -67,16 +67,10 @@ fun MessageContent.toResponse() = when(this) {
     is MessageContent.Audio -> MessageResponse.MessageContent.Audio(url, durationMs)
     is MessageContent.Ayah -> MessageResponse.MessageContent.Ayah(ayahNumber, suraNumber, ayahText)
     is MessageContent.Money -> MessageResponse.MessageContent.Money(amount)
-    is MessageContent.Ayah -> MessageResponse.MessageContent.Ayah(
-        ayahNumber = ayahNumber,
-        suraNumber = suraNumber,
-        ayahText = ayahText
-    )
     is MessageContent.Order -> MessageResponse.MessageContent.Order(
         orderId, totalProducts, totalPrice, deliverToAddress, dukanId, dukanOwnerId
     )
 }
-
 
 
 fun Message.toResponse(requesterId: UUID): MessageResponse {
