@@ -81,7 +81,7 @@ class CartService(
 
     @Transactional(readOnly = true)
     fun getCartOrThrow(userId: UUID, dukanId: UUID): Cart {
-        return cartRepository.findActiveCartByUserIdAndDukanId(userId, dukanId)
+        return cartRepository.findByUserIdAndDukanIdAndIsOrderPurchasedFalse(userId, dukanId)
             ?: throw CartNotFoundException()
     }
 
@@ -153,7 +153,7 @@ class CartService(
     }
 
     private fun getCartByUserAndDukan(userId: UUID, dukanId: UUID): Cart? {
-        return cartRepository.findActiveCartByUserIdAndDukanId(userId, dukanId)
+        return cartRepository.findByUserIdAndDukanIdAndIsOrderPurchasedFalse(userId, dukanId)
     }
 
     private fun getOrCreateActiveCart(userId: UUID, dukanId: UUID): Cart {

@@ -18,7 +18,5 @@ interface CartRepository : JpaRepository<Cart, UUID> {
         AND product.isDeleted = false
         """
     )
-    fun findActiveCartByUserIdAndDukanId(userId: UUID, dukanId: UUID): Cart?
-
     fun findByUserIdAndDukanIdAndIsOrderPurchasedFalse(userId: UUID, dukanId: UUID): Cart?
 }
