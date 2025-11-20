@@ -66,122 +66,86 @@ class TrendsService(
         currentUserId: UUID,
         trendId: UUID? = null,
     ): Page<TrendWithOwnerShipAndLikeStatus> {
-
-        val sortOrder = pageable.getSortOr(Sort.by(Sort.Direction.DESC, "createdAt"))
-
         val userCategories = userCategoryRepository.findAllByUserIdAndIsSelectedOrderByAffinityDesc(currentUserId, true)
 
-        if (userCategories.isEmpty()) {
-            return Page.empty(pageable)
-        }
+        if (userCategories.isEmpty()) return Page.empty(pageable)
 
-        val buckets = userCategories.bucketByValue { it.affinity }
+        val sortOrder = pageable.getSortOr(Sort.by(Sort.Direction.DESC, "createdAt"))
+        val (topCategories, bottomCategories) = splitCategoriesByAffinity(userCategories)
 
-        val topCategories = selectTopBucketCategories(buckets, pageable.pageNumber)
-        val randomCategories = selectRandomBucketCategories(buckets, pageable.pageNumber)
+        val topTrends = fetchTopAffinityTrends(currentUserId, pageable.pageNumber, sortOrder, topCategories)
+        val bottomTrends = fetchDiversityTrends(
+            currentUserId = currentUserId,
+            pageNumber = pageable.pageNumber,
+            sortOrder = sortOrder,
+            excludedTrendIds = topTrends.map { it.getTrend().id },
+            categories = bottomCategories.ifEmpty { topCategories },
+            count = calculateBottomTrendsCount(trendId, topTrends.size)
+        )
 
-        val topTrendsPageable = PageRequest.of(pageable.pageNumber, 7, sortOrder)
-        val topTrends = trendsRepository.getTrendFeedForCategories(
-            currentUserId,
-            topTrendsPageable,
-            emptyList(),
-            topCategories
+        val feedTrends = buildFeedWithOptionalTrend(trendId, currentUserId, topTrends + bottomTrends)
+
+        return PageImpl(feedTrends, pageable, feedTrends.size.toLong())
+    }
+
+    private fun splitCategoriesByAffinity(userCategories: List<UserCategories>): Pair<List<UUID>, List<UUID>> {
+        val splitPoint = (userCategories.size * 2.0 / 3.0).toInt().coerceAtLeast(1)
+        return userCategories.take(splitPoint).map { it.categoryId } to
+                userCategories.drop(splitPoint).map { it.categoryId }
+    }
+
+    private fun fetchTopAffinityTrends(
+        currentUserId: UUID,
+        pageNumber: Int,
+        sortOrder: Sort,
+        categories: List<UUID>
+    ): List<TrendWithLikeStatus> {
+        val pageable = PageRequest.of(pageNumber, 7, sortOrder)
+        return trendsRepository.getTrendFeedForCategories(
+            userId = currentUserId,
+            pageable = pageable,
+            trendIds = emptyList(),
+            categories = categories
         ).content
+    }
 
-        val topTrendIds = topTrends.map { it.getTrend().id }
-
-        val bottomTrendsPageable = if(trendId != null) {
-            PageRequest.of(pageable.pageNumber, 2,sortOrder)
-        } else PageRequest.of(pageable.pageNumber, 3, sortOrder)
-
-        val bottomTrends = trendsRepository.getTrendFeedForCategories(
-            currentUserId,
-            bottomTrendsPageable,
-            topTrendIds,
-            randomCategories
+    private fun fetchDiversityTrends(
+        currentUserId: UUID,
+        pageNumber: Int,
+        sortOrder: Sort,
+        excludedTrendIds: List<UUID>,
+        categories: List<UUID>,
+        count: Int
+    ): List<TrendWithLikeStatus> {
+        val pageable = PageRequest.of(pageNumber, count, sortOrder)
+        return trendsRepository.getTrendFeedForCategories(
+            userId = currentUserId,
+            pageable = pageable,
+            trendIds = excludedTrendIds,
+            categories = categories
         ).content
-
-        val finalTrends = if(trendId != null) {
-            val list = mutableListOf<TrendWithLikeStatus>()
-            val trend = trendsRepository.findByIdAndIsPublishedWithLikeStatus(trendId, currentUserId, true)
-            trend?.let { list.add(it) }
-            (list + (topTrends + bottomTrends).shuffled())
-                .map { generatePresignedUrlsForTrend(it).withOwnership(currentUserId) }
-        } else {
-            (topTrends + bottomTrends).shuffled()
-                .map { generatePresignedUrlsForTrend(it).withOwnership(currentUserId) }
-        }
-
-
-        return PageImpl(finalTrends, pageable, finalTrends.size.toLong())
     }
 
-    private fun selectTopBucketCategories(
-        buckets: List<List<UserCategories>>,
-        pageNumber: Int
-    ): List<UUID> {
-        if (buckets.isEmpty()) return emptyList()
+    private fun calculateBottomTrendsCount(trendId: UUID?, topTrendsSize: Int): Int =
+        if (trendId != null) 9 - topTrendsSize else 10 - topTrendsSize
 
-        val random = Random(pageNumber)
+    private fun buildFeedWithOptionalTrend(
+        trendId: UUID?,
+        currentUserId: UUID,
+        trends: List<TrendWithLikeStatus>
+    ): List<TrendWithOwnerShipAndLikeStatus> {
+        val shuffledTrends = trends.shuffled()
 
-        if (buckets.size == 1) {
-            return buckets[0].map { it.categoryId }
+        val trendsWithLikeStatus = trendId?.let {
+            trendsRepository.findByIdAndIsPublishedWithLikeStatus(it, currentUserId, true)
+                ?.let { trend -> listOf(trend) + shuffledTrends }
+                ?: shuffledTrends
+        } ?: shuffledTrends
+
+        return trendsWithLikeStatus.map {
+            generatePresignedUrlsForTrend(it).withOwnership(currentUserId)
         }
-
-        val selected = mutableListOf<UUID>()
-        val probabilityDecay = 1.0 / buckets.size
-
-        buckets.forEachIndexed { bucketIndex, bucket ->
-            val probability = 1.0 - (bucketIndex * probabilityDecay)
-
-            bucket.forEach { category ->
-                if (random.nextDouble() < probability) {
-                        selected.add(category.categoryId)
-                }
-            }
-        }
-
-        if (selected.isEmpty()) {
-            selected.addAll(buckets.first().map { it.categoryId })
-        }
-
-        return selected
     }
-
-    private fun selectRandomBucketCategories(
-        buckets: List<List<UserCategories>>,
-        pageNumber: Int
-    ): List<UUID> {
-        if (buckets.isEmpty()) return emptyList()
-
-        val random = Random(pageNumber * 31)
-        val allCategories = buckets.flatten()
-
-        val count = minOf((2..4).random(random), allCategories.size)
-        return allCategories
-            .shuffled(random)
-            .take(count)
-            .map { it.categoryId }
-    }
-
-    private fun <T> List<T>.bucketByValue(
-        range: Int = 10,
-        valueSelector: (T) -> Int
-    ): List<List<T>> =
-        this.fold(emptyList()) { groups, item ->
-            if (groups.isEmpty()) {
-                listOf(listOf(item))
-            } else {
-                val lastGroup = groups.last()
-                val pivotValue = valueSelector(lastGroup.first())
-
-                if (valueSelector(item) in (pivotValue - range)..(pivotValue + range)) {
-                    groups.dropLast(1) + listOf(lastGroup + item)
-                } else {
-                    groups + listOf(listOf(item))
-                }
-            }
-        }
 
     fun getUserFavoriteTrends(
         pageable: Pageable,
