@@ -3,19 +3,22 @@ package net.thechance.events.dukan
 import net.thechance.events.MenaEvent
 import java.util.*
 
-data class DukanStatusChangedEvent(
+data class DukanUpdateEvent(
     val dukanId: UUID,
-    val status: DukanEventStatus,
-    val activationStatus: DukanEventActivationStatus?,
+    val name: String,
+    val imageUrl: String?,
+    val status: Status,
+    val address: String,
+    val activationStatus: ActivationStatus?
 ) : MenaEvent {
 
-    enum class DukanEventStatus {
+    enum class Status {
         APPROVED,
         REJECTED,
         PENDING
     }
 
-    enum class DukanEventActivationStatus {
+    enum class ActivationStatus {
         ACTIVATED,
         DEACTIVATED
     }
