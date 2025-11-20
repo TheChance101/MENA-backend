@@ -22,6 +22,15 @@ class FaithExceptionHandler {
         )
     }
 
+    @ExceptionHandler(FailedToCreateBookmarkException::class)
+    fun onFailedToCreateBookmarkError(exception: FailedToCreateBookmarkException): ResponseEntity<ApiErrorResponse> {
+        return createErrorResponse(
+            message = "failed to create bookmark",
+            exception = exception,
+            status = HttpStatus.INTERNAL_SERVER_ERROR,
+        )
+    }
+
     @ExceptionHandler(FailedToGetPrayerTimesException::class)
     fun onCannotGetPrayerTimesError(exception: FailedToGetPrayerTimesException): ResponseEntity<ApiErrorResponse> {
         return createErrorResponse(
@@ -75,6 +84,16 @@ class FaithExceptionHandler {
             status = HttpStatus.BAD_REQUEST
         )
     }
+
+    @ExceptionHandler(FailedToCreateMosqueException::class)
+    fun onFailedToCreateMosqueError(exception: FailedToCreateMosqueException): ResponseEntity<ApiErrorResponse> {
+        return createErrorResponse(
+            message = "Failed to create mosque",
+            exception = exception,
+            status = HttpStatus.BAD_REQUEST,
+        )
+    }
+
     private fun createErrorResponse(
         message: String,
         exception: Exception,
@@ -84,4 +103,5 @@ class FaithExceptionHandler {
         val apiError = ApiErrorResponse(status = status.value(), message = message)
         return ResponseEntity(apiError, status)
     }
+
 }

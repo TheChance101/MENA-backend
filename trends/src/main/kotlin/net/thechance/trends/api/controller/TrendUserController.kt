@@ -1,23 +1,29 @@
 package net.thechance.trends.api.controller
 
+import jakarta.validation.Valid
+import net.thechance.trends.api.dto.analytics.SubmitWatchTimeRequest
 import net.thechance.trends.api.dto.base.PagingResponse
 import net.thechance.trends.api.dto.trend.TrendResponse
 import net.thechance.trends.api.dto.trend.toResponse
+import net.thechance.trends.service.TrendUserService
 import net.thechance.trends.service.TrendsService
+import org.springframework.beans.factory.annotation.Value
 import org.springframework.data.domain.Pageable
 import org.springframework.http.ResponseEntity
 import org.springframework.security.core.annotation.AuthenticationPrincipal
-import org.springframework.web.bind.annotation.GetMapping
-import org.springframework.web.bind.annotation.PathVariable
-import org.springframework.web.bind.annotation.RequestMapping
-import org.springframework.web.bind.annotation.RestController
+import org.springframework.web.bind.annotation.*
 import java.util.*
 
 @RestController
 @RequestMapping("/trends/user")
 class TrendUserController(
-    private val trendsService: TrendsService
+    @Value("\${storage.mena.cdn-endpoint}") cdnEndpoint: String,
+    @Value("\${identity.resources.profile-image-directory}") profileImageDirectory: String,
+    private val trendsService: TrendsService,
+    private val trendUserService: TrendUserService,
 ) {
+
+    private val imagesBaseUrl: String = "$cdnEndpoint$profileImageDirectory"
 
     @GetMapping("/{trendId}", "")
     fun getAllTrendsByUserId(
@@ -26,7 +32,7 @@ class TrendUserController(
         @AuthenticationPrincipal currentUserId: UUID
     ): ResponseEntity<PagingResponse<TrendResponse>> {
 
-        val trends = trendsService.getAllTrendsByUserId(pageable, currentUserId, trendId).content.map { it.toResponse() }
+        val trends = trendsService.getAllTrendsByUserId(pageable, currentUserId, trendId).content.map { it.toResponse(imagesBaseUrl) }
 
         val result = PagingResponse(
             pageNumber = pageable.pageNumber,
@@ -35,5 +41,15 @@ class TrendUserController(
         )
 
         return ResponseEntity.ok(result)
+    }
+
+    @PostMapping("watch-time")
+    fun submitUserWatchTime(
+        @RequestBody @Valid submitWatchTimeRequest: SubmitWatchTimeRequest,
+        @AuthenticationPrincipal currentUserId: UUID,
+    ): ResponseEntity<Unit> {
+        trendUserService.updateUserAffinities(currentUserId = currentUserId, submitWatchTimeRequest)
+
+        return ResponseEntity.ok().build()
     }
 }

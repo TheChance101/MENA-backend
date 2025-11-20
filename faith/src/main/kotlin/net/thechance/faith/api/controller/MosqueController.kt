@@ -1,22 +1,26 @@
 package net.thechance.faith.api.controller
 
+import net.thechance.faith.api.dto.nearestMosque.MosqueRequest
 import net.thechance.faith.api.dto.nearestMosque.MosqueResponse
 import net.thechance.faith.api.dto.nearestMosque.toMosqueResponse
-import net.thechance.faith.service.MosqueService
+import net.thechance.faith.service.mosque.FaithImageStorageService
+import net.thechance.faith.service.mosque.MosqueService
 import org.springframework.data.domain.Page
 import org.springframework.data.domain.Pageable
 import org.springframework.data.domain.Sort.Direction
 import org.springframework.data.web.PageableDefault
+import org.springframework.http.HttpStatus
 import org.springframework.http.ResponseEntity
-import org.springframework.web.bind.annotation.GetMapping
-import org.springframework.web.bind.annotation.RequestMapping
-import org.springframework.web.bind.annotation.RequestParam
-import org.springframework.web.bind.annotation.RestController
+import org.springframework.security.core.annotation.AuthenticationPrincipal
+import org.springframework.web.bind.annotation.*
+import org.springframework.web.multipart.MultipartFile
+import java.util.*
 
 @RestController
 @RequestMapping("faith/mosques")
 class NearbyMosqueController(
-    private val mosqueService: MosqueService
+    private val mosqueService: MosqueService,
+    private val imageStorageService: FaithImageStorageService
 ) {
 
     @GetMapping("/search")
@@ -42,4 +46,31 @@ class NearbyMosqueController(
 
         return ResponseEntity.ok(response)
     }
+
+    @PostMapping(consumes = ["multipart/form-data"])
+    fun createMosque(
+        @RequestPart("mosque") mosqueRequest: MosqueRequest,
+        @AuthenticationPrincipal userId: UUID
+    ): ResponseEntity<MosqueResponse> {
+        val mosque = mosqueService.createNearestMosque(userId = userId, mosqueRequest = mosqueRequest)
+        return ResponseEntity.status(HttpStatus.CREATED).body(mosque)
+    }
+
+    @PutMapping("/{id}/image", consumes = ["multipart/form-data"])
+    fun updateMosqueImage(
+        @PathVariable id: UUID,
+        @RequestPart("image") image: MultipartFile,
+        @AuthenticationPrincipal userId: UUID
+    ): ResponseEntity<MosqueResponse> {
+        val newImageUrl = imageStorageService.uploadImage(
+            file = image,
+            fileName = "mosque-$id",
+            folderName = "mosques"
+        )
+
+        val updatedMosque = mosqueService.updateMosqueImage(id, newImageUrl)
+
+        return ResponseEntity.ok(updatedMosque.toMosqueResponse())
+    }
 }
+

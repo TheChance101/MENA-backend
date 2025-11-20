@@ -27,7 +27,17 @@ class SecurityConfig(
         http
             .csrf { it.disable() }
             .authorizeHttpRequests {
-                it.requestMatchers("/identity/authentication/**", "/identity/admin/authentication/**").permitAll()
+                it.requestMatchers("/identity/authentication/logout").authenticated()
+                it.requestMatchers(
+                    "/identity/authentication/**",
+                    "/identity/admin/authentication/**",
+                    "/identity/settings/**",
+                    "download.html",
+                    "/images/**",
+                    "/apple-app-site-association",
+                    "downloads/android_app_latest.apk",
+                    "/.well-known/**"
+                ).permitAll()
                 it.anyRequest().authenticated()
             }
             .sessionManagement { it.sessionCreationPolicy(SessionCreationPolicy.STATELESS) }

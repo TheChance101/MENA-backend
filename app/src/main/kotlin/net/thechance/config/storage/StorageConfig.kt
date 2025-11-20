@@ -8,6 +8,7 @@ import software.amazon.awssdk.auth.credentials.StaticCredentialsProvider
 import software.amazon.awssdk.regions.Region
 import software.amazon.awssdk.services.s3.S3Client
 import software.amazon.awssdk.services.s3.S3Configuration
+import software.amazon.awssdk.services.s3.presigner.S3Presigner
 import java.net.URI
 
 @Configuration
@@ -48,6 +49,23 @@ class StorageConfig(
     @Bean
     fun walletCreds(): StaticCredentialsProvider {
         return StaticCredentialsProvider.create(AwsBasicCredentials.create(props.wallet.key, props.wallet.secret))
+    }
+
+    @Bean
+    fun trendsS3Presigner(trendCreds: StaticCredentialsProvider): S3Presigner {
+        return buildPresigner(props.trends.endpoint, trendCreds)
+    }
+
+    private fun buildPresigner(
+        endpoint: String,
+        creds: StaticCredentialsProvider
+    ): S3Presigner {
+        return S3Presigner.builder()
+            .region(Region.US_EAST_1)
+            .endpointOverride(URI.create(endpoint))
+            .credentialsProvider(creds)
+            .serviceConfiguration(pathStyleStorageConfiguration())
+            .build()
     }
 
     private fun buildClient(

@@ -1,12 +1,18 @@
 package net.thechance.identity.service
 
-import jakarta.transaction.Transactional
+import org.springframework.transaction.annotation.Transactional
+import net.thechance.events.identity.UserDeletedEvent
+import net.thechance.events.identity.UserStatusUpdatedEvent
+import net.thechance.events.publisher.MenaEventPublisher
 import net.thechance.identity.entity.User
 import net.thechance.identity.exception.PasswordNotUpdatedException
 import net.thechance.identity.exception.UserNotFoundException
 import net.thechance.identity.repository.UserRepository
+import net.thechance.identity.service.mapper.toEventStatus
+import net.thechance.identity.service.mapper.toUserUpdatedEvent
 import net.thechance.identity.service.model.UserServiceModel
 import org.springframework.beans.factory.annotation.Value
+import org.springframework.context.annotation.Lazy
 import org.springframework.data.domain.Page
 import org.springframework.data.domain.Pageable
 import org.springframework.data.repository.findByIdOrNull
@@ -21,11 +27,13 @@ private typealias ImageUri = String
 class UserService(
     private val userRepository: UserRepository,
     private val identityImageStorageService: IdentityImageStorageService,
-    @param:Value("\${identity.resources.profile-image-directory}") private val profileImageDirectory: String
+    @param:Value("\${identity.resources.profile-image-directory}") private val profileImageDirectory: String,
+    private val eventPublisher: MenaEventPublisher,
+    @param:Lazy private val authenticationService: AuthenticationService,
 ) {
 
     fun findByPhoneNumber(phoneNumber: String): User {
-        return userRepository.findByPhoneNumber(phoneNumber) ?: throw UserNotFoundException("User not found")
+        return userRepository.findByPhoneNumberAndIsDeletedFalse(phoneNumber) ?: throw UserNotFoundException("User not found")
     }
 
     fun findById(userId: UUID): User {
@@ -41,6 +49,7 @@ class UserService(
         val userWithNewPassword = getUserWithNewPassword(phoneNumber, newPassword)
         val savedUser = userRepository.save(userWithNewPassword)
         if (savedUser.password != newPassword) throw PasswordNotUpdatedException()
+        eventPublisher.publish(savedUser.toUserUpdatedEvent())
     }
 
     private fun getUserWithNewPassword(phoneNumber: String, newPassword: String): User {
@@ -57,13 +66,14 @@ class UserService(
             birthDate = user.birthDate,
             gender = user.gender
         )
-
-        return userRepository.save(updatedUser)
+        val savedUser = userRepository.save(updatedUser)
+        eventPublisher.publish(savedUser.toUserUpdatedEvent())
+        return savedUser
     }
 
     fun updateUserImage(
         userId: UUID,
-        imageFile: MultipartFile
+        imageFile: MultipartFile,
     ): ImageUri {
         val user = findById(userId)
         val newImageUrl = identityImageStorageService.uploadImage(
@@ -71,8 +81,8 @@ class UserService(
             fileName = "${user.id}",
             folderName = profileImageDirectory
         )
-        val updatedUser = user.copy(imageUrl = newImageUrl)
-        userRepository.save(updatedUser)
+        val savedUser = userRepository.save(user.copy(imageUrl = newImageUrl))
+        eventPublisher.publish(savedUser.toUserUpdatedEvent())
         return newImageUrl
     }
 
@@ -83,7 +93,8 @@ class UserService(
                 fileName = imageUrl,
                 folderName = profileImageDirectory
             )
-            userRepository.save(user.copy(imageUrl = null))
+            val savedUser = userRepository.save(user.copy(imageUrl = null))
+            eventPublisher.publish(savedUser.toUserUpdatedEvent())
         }
     }
 
@@ -92,7 +103,7 @@ class UserService(
     }
 
     fun userExistsByPhoneNumber(phoneNumber: String): Boolean {
-        return userRepository.existsByPhoneNumber(phoneNumber)
+        return userRepository.existsByPhoneNumberAndIsDeletedFalse(phoneNumber)
     }
 
     fun saveUser(user: User): User {
@@ -119,9 +130,21 @@ class UserService(
     fun updateUserStatus(userId: UUID, status: User.Status) {
         val updatedUserCount = userRepository.updateStatus(userId, status)
         if (updatedUserCount == 0) throw UserNotFoundException("User with id: $userId not found")
-        /*
-        todo: should send event to notify other modules about user status change
-         and if the user is blocked call logout function to invalidate his access token
-         */
+        eventPublisher.publish(findById(userId = userId).toUserUpdatedEvent())
+        eventPublisher.publish(UserStatusUpdatedEvent(userId, status.toEventStatus()))
+        if (status == User.Status.BLOCKED) authenticationService.logout(userId)
+    }
+
+    @Transactional
+    fun deleteUser(userId: UUID) {
+        checkUserIsNotDeleted(userId)
+        val user = findById(userId)
+        userRepository.save(user.copy(isDeleted = true, deletedAt = LocalDateTime.now()))
+        authenticationService.logout(user.id)
+        eventPublisher.publish(UserDeletedEvent(id = user.id))
+    }
+
+    fun checkUserIsNotDeleted(userId: UUID){
+        if (userRepository.existsByIdAndIsDeletedFalse(userId).not()) throw UserNotFoundException("User with id: $userId not found")
     }
 }

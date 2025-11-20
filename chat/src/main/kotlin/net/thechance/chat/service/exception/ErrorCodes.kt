@@ -6,4 +6,9 @@ object ErrorCodes {
 
     const val INVALID_AUDIO_FORMAT = 1203
     const val AUDIO_UPLOAD_FAILED = 1204
+
+    const val INVALID_TIME_FORMAT = 1205
+    const val MALFORMED_MESSAGE_CONTENT = 1206
+
+    const val INVALID_PHONE_NUMBER = 1207
 }

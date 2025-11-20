@@ -8,15 +8,16 @@ data class ChatResponse(
     val name: String,
     val requesterId: UUID,
     val imageUrl: String?,
+    val receiverId: UUID,
 )
-
 
 fun ChatModel.toResponse(): ChatResponse{
     return ChatResponse(
         id = id,
         name = name,
         requesterId = requesterId,
-        imageUrl = imageUrl
+        imageUrl = imageUrl,
+        receiverId = receiverId,
     )
 }
 

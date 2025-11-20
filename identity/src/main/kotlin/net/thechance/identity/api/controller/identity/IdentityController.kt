@@ -1,9 +1,9 @@
 package net.thechance.identity.api.controller.identity
 
-import jakarta.servlet.http.HttpServletRequest
 import jakarta.validation.Valid
 import net.thechance.identity.api.dto.auth.AuthRequest
 import net.thechance.identity.api.dto.auth.AuthResponse
+import net.thechance.identity.api.dto.auth.CountryResponse
 import net.thechance.identity.api.dto.auth.RefreshTokenRequest
 import net.thechance.identity.api.dto.otp.RequestOtpRequest
 import net.thechance.identity.api.dto.otp.RequestOtpResponse
@@ -11,13 +11,14 @@ import net.thechance.identity.api.dto.otp.VerifyOtpRequest
 import net.thechance.identity.api.dto.password.ResetPasswordRequest
 import net.thechance.identity.api.dto.register.CheckUserExistenceRequest
 import net.thechance.identity.api.dto.register.RegisterUserRequest
+import net.thechance.identity.api.mapper.toCountryResponses
 import net.thechance.identity.api.mapper.toRegisterUserModel
-import net.thechance.identity.exception.InvalidIpException
 import net.thechance.identity.service.AuthenticationService
 import net.thechance.identity.service.RegisterService
 import net.thechance.identity.service.ResetPasswordService
 import net.thechance.identity.service.UserService
 import org.springframework.http.ResponseEntity
+import org.springframework.security.core.annotation.AuthenticationPrincipal
 import org.springframework.web.bind.annotation.*
 import java.util.*
 
@@ -31,14 +32,11 @@ class IdentityController(
 ) {
     @PostMapping("/login")
     fun login(
-        @RequestBody @Valid request: AuthRequest,
-        httpRequest: HttpServletRequest
+        @RequestBody @Valid request: AuthRequest
     ): ResponseEntity<AuthResponse> {
-        val ipAddress = httpRequest.remoteAddr ?: throw InvalidIpException("Invalid IP")
         val authResponse = authenticationService.login(
             phoneNumber = request.phoneNumber,
-            password = request.password,
-            ipAddress = ipAddress
+            password = request.password
         )
         return ResponseEntity.ok(authResponse)
     }
@@ -121,5 +119,17 @@ class IdentityController(
     ): ResponseEntity<AuthResponse> {
         val authResponse = registerService.registerUser(registerUserRequest.toRegisterUserModel())
         return ResponseEntity.ok(authResponse)
+    }
+
+    @GetMapping("/countries")
+    fun getSupportedCountries(): ResponseEntity<List<CountryResponse>> {
+        val response = authenticationService.getCountries().toCountryResponses()
+        return ResponseEntity.ok(response)
+    }
+
+    @PostMapping("/logout")
+    fun logout(@AuthenticationPrincipal userId: UUID): ResponseEntity<Unit> {
+        authenticationService.logout(userId)
+        return ResponseEntity.ok().build()
     }
 }

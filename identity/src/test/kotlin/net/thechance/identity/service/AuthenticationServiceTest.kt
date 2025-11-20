@@ -3,42 +3,45 @@ package net.thechance.identity.service
 import com.google.common.truth.Truth.assertThat
 import io.mockk.every
 import io.mockk.mockk
+import io.mockk.mockkStatic
 import io.mockk.verify
+import junit.framework.TestCase.assertEquals
 import net.thechance.identity.entity.RefreshToken
 import net.thechance.identity.exception.InvalidCredentialsException
-import net.thechance.identity.exception.UserIsBlockedException
 import net.thechance.identity.repository.RefreshTokenRepository
 import net.thechance.identity.security.JwtService
-import net.thechance.identity.utils.DummyIpAddresses
+import net.thechance.identity.service.model.Country
 import net.thechance.identity.utils.DummyUsers
 import org.junit.Assert.assertThrows
 import org.junit.Test
+import org.springframework.context.MessageSource
+import org.springframework.context.i18n.LocaleContextHolder
 import org.springframework.security.crypto.password.PasswordEncoder
+import java.util.*
 
 class AuthenticationServiceTest {
     private val userService: UserService = mockk(relaxed = true)
     private val refreshTokenRepository: RefreshTokenRepository = mockk(relaxed = true)
     private val refreshTokenService: RefreshTokenService = mockk(relaxed = true)
-    private val loginLogService: LoginLogService = mockk(relaxed = true)
     private val passwordEncoder: PasswordEncoder = mockk(relaxed = true)
     private val jwtService: JwtService = mockk(relaxed = true)
+    private val messageSource: MessageSource = mockk(relaxed = true)
     private val authenticationService = AuthenticationService(
         userService = userService,
         jwtService = jwtService,
         refreshTokenService = refreshTokenService,
-        loginLogService = loginLogService,
         passwordEncoder = passwordEncoder,
-        refreshRepo = refreshTokenRepository
+        refreshRepo = refreshTokenRepository,
+        messageSource = messageSource
     )
 
     @Test
     fun `should return response when user is trying to login with exist phone number and correct password`() {
         val user = DummyUsers.validUser1
-        val ipAddress = DummyIpAddresses.validIpAddress1
         every { userService.findByPhoneNumber(user.phoneNumber) } returns user
         every { passwordEncoder.matches(any(), any()) } returns true
 
-        val response = authenticationService.login(user.phoneNumber, user.password, ipAddress)
+        val response = authenticationService.login(user.phoneNumber, user.password)
 
         assertThat(response).isNotNull()
     }
@@ -46,11 +49,10 @@ class AuthenticationServiceTest {
     @Test
     fun `should update last login time when user is trying to login with exist phone number and correct password`() {
         val user = DummyUsers.validUser1
-        val ipAddress = DummyIpAddresses.validIpAddress1
         every { userService.findByPhoneNumber(user.phoneNumber) } returns user
         every { passwordEncoder.matches(any(), any()) } returns true
 
-        authenticationService.login(user.phoneNumber, user.password, ipAddress)
+        authenticationService.login(user.phoneNumber, user.password)
 
         verify(exactly = 1) { userService.updateUserLastLoginTime(user.id, any()) }
     }
@@ -58,11 +60,10 @@ class AuthenticationServiceTest {
     @Test
     fun `should update last visit time when user is trying to login with exist phone number and correct password`() {
         val user = DummyUsers.validUser1
-        val ipAddress = DummyIpAddresses.validIpAddress1
         every { userService.findByPhoneNumber(user.phoneNumber) } returns user
         every { passwordEncoder.matches(any(), any()) } returns true
 
-        authenticationService.login(user.phoneNumber, user.password, ipAddress)
+        authenticationService.login(user.phoneNumber, user.password)
 
         verify(exactly = 1) { userService.updateUserLastVisitTime(user.id, any()) }
     }
@@ -82,22 +83,55 @@ class AuthenticationServiceTest {
     @Test
     fun `should throw InvalidCredentialsException when user is trying to login with exist phone number and wrong password`() {
         val user = DummyUsers.userWithInvalidPassword
-        val ipAddress = DummyIpAddresses.validIpAddress1
         every { userService.findByPhoneNumber(user.phoneNumber) } returns user
 
         assertThrows(InvalidCredentialsException::class.java) {
-            authenticationService.login(user.phoneNumber, user.password, ipAddress)
+            authenticationService.login(user.phoneNumber, user.password)
         }
     }
 
     @Test
     fun `should throw InvalidCredentialsException when user is trying to login with phone number not exist`() {
         val user = DummyUsers.userWithInvalidPhoneNumber
-        val ipAddress = DummyIpAddresses.validIpAddress1
         every { userService.findByPhoneNumber(user.phoneNumber) } returns user
 
         assertThrows(InvalidCredentialsException::class.java) {
-            authenticationService.login(user.phoneNumber, user.password, ipAddress)
+            authenticationService.login(user.phoneNumber, user.password)
+        }
+    }
+
+    @Test
+    fun `should delete user refresh tokens successfully when user logs out`() {
+        val userId = UUID.randomUUID()
+
+        authenticationService.logout(userId)
+
+        verify(exactly = 1) { refreshTokenService.deleteUserRefreshTokens(userId) }
+    }
+
+    @Test
+    fun `should throw exception when deleting user refresh tokens fails during logout`() {
+        val userId = UUID.randomUUID()
+
+        every { refreshTokenService.deleteUserRefreshTokens(userId) } throws RuntimeException("Database error")
+
+        assertThrows(RuntimeException::class.java) {
+            authenticationService.logout(userId)
+        }
+    }
+
+    @Test
+    fun `should return all countries when getCountries is called`() {
+        val locale = Locale.ENGLISH
+        mockkStatic(LocaleContextHolder::class)
+        every { LocaleContextHolder.getLocale() } returns locale
+        every { messageSource.getMessage(any(), any(), locale) } returns "Country Name"
+
+        val result = authenticationService.getCountries()
+
+        assertEquals(Country.entries.size, result.size)
+        verify(exactly = Country.entries.size) {
+            messageSource.getMessage(any(), any(), locale)
         }
     }
 }

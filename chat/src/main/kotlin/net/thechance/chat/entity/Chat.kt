@@ -16,5 +16,5 @@ data class Chat(
         joinColumns = [JoinColumn(name = "chat_id", referencedColumnName = "id")],
         inverseJoinColumns = [JoinColumn(name = "user_id", referencedColumnName = "id")]
     )
-    val users: MutableSet<ContactUser> = mutableSetOf(),
+    val users: MutableSet<ContactUser> = mutableSetOf()
 )
