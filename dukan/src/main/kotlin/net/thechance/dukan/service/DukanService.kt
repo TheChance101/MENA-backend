@@ -16,7 +16,6 @@ import net.thechance.dukan.service.mapper.toDukanUpdateEvent
 import net.thechance.dukan.service.model.DukanCreationParams
 import net.thechance.dukan.service.model.DukanWithDiscount
 import net.thechance.dukan.service.model.DukanWithFavorite
-import net.thechance.events.dukan.DukanStatusChangedEvent
 import net.thechance.events.publisher.MenaEventPublisher
 import org.springframework.data.domain.Page
 import org.springframework.data.domain.Pageable
@@ -134,7 +133,7 @@ class DukanService(
         pageable: Pageable
     ): Page<Dukan> =
         dukanRepository.findByNameOrAddressAndStatus(query = query, status = status, pageable = pageable)
-//todo add publish update status event
+
     @Transactional
     fun updateDukanStatus(dukanId: UUID, status: Dukan.Status, reason: String?) {
         val isUpdated = dukanRepository.updateStatus(dukanId, status) > 0
@@ -163,24 +162,9 @@ class DukanService(
         }
 
         val dukan = getDukanDetailsById(dukanId)
-        publishDukanStatusChangedEvent(dukanId, status)
         eventPublisher.publish(dukan.toDukanUpdateEvent())
     }
 
-    private fun publishDukanStatusChangedEvent(dukanId: UUID, status: Dukan.Status) {
-        eventPublisher.publish(
-            DukanStatusChangedEvent(
-                dukanId = dukanId,
-                dukanStatus = when (status) {
-                    Dukan.Status.APPROVED -> DukanStatusChangedEvent.Status.APPROVED
-                    Dukan.Status.REJECTED -> DukanStatusChangedEvent.Status.APPROVED
-                    Dukan.Status.PENDING -> DukanStatusChangedEvent.Status.APPROVED
-                }
-            )
-        )
-    }
-
-    //todo publish activation update event
     @Transactional
     fun updateDukanActivationStatus(
         dukanId: UUID,
