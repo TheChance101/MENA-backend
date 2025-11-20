@@ -9,6 +9,7 @@ import net.thechance.wallet.entity.Transaction
 import net.thechance.wallet.service.TransactionService
 import net.thechance.wallet.service.model.input.TransactionFilterParams
 import net.thechance.wallet.service.model.input.UserTransactionType
+import org.springframework.beans.factory.annotation.Value
 import org.springframework.data.domain.PageRequest
 import org.springframework.data.domain.Pageable
 import org.springframework.data.domain.Sort
@@ -23,9 +24,13 @@ import java.util.*
 @RestController
 @RequestMapping("/wallet/transactions")
 class TransactionController(
+    @Value("\${storage.mena.cdn-endpoint}") cdnEndpoint: String,
+    @Value("\${identity.resources.profile-image-directory}") profileImageDirectory: String,
     private val transactionService: TransactionService,
     private val statementPdfWriter: StatementPdfWriter,
 ) {
+    private val imageBaseUrl: String = "$cdnEndpoint$profileImageDirectory"
+
     @GetMapping
     fun getFilteredTransactions(
         @AuthenticationPrincipal userId: UUID,
@@ -44,7 +49,7 @@ class TransactionController(
                 Sort.by(Sort.Direction.DESC, Transaction::createdAt.name)
             ),
             currentUserId = userId
-        ).toResponsePage(userId)
+        ).toResponsePage(currentUserId = userId, imageBaseUrl = imageBaseUrl)
 
         return ResponseEntity.ok(response)
     }
@@ -64,7 +69,9 @@ class TransactionController(
         @AuthenticationPrincipal userId: UUID,
         @PathVariable transactionId: UUID
     ): ResponseEntity<TransactionResponse> {
-        val response = transactionService.getTransactionDetails(transactionId).toResponse(userId)
+        val response = transactionService
+            .getTransactionDetails(transactionId)
+            .toResponse(currentUserId = userId, imageBaseUrl = imageBaseUrl)
 
         return ResponseEntity.ok(response)
     }

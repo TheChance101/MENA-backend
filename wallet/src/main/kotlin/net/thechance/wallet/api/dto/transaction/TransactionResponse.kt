@@ -24,9 +24,9 @@ data class TransactionPartyInfo(
     val imageUrl: String?
 )
 
-fun Page<Transaction>.toResponsePage(currentUserId: UUID): PageResponse<TransactionResponse> {
+fun Page<Transaction>.toResponsePage(currentUserId: UUID, imageBaseUrl: String): PageResponse<TransactionResponse> {
     return PageResponse(
-        items = this.content.map { it.toResponse(currentUserId) },
+        items = this.content.map { it.toResponse(currentUserId, imageBaseUrl) },
         page = this.number,
         pageSize = this.size,
         totalElements = this.totalElements,
@@ -34,15 +34,16 @@ fun Page<Transaction>.toResponsePage(currentUserId: UUID): PageResponse<Transact
     )
 }
 
-private fun Transaction.toResponse(currentUserId: UUID): TransactionResponse {
+private fun Transaction.toResponse(currentUserId: UUID, imageBaseUrl: String): TransactionResponse {
     return TransactionResponse(
         id = id,
-        sender = getSenderInfo(type, sender),
+        sender = getSenderInfo(type, sender, imageBaseUrl),
         receiver = getReceiverInfo(
             type = type,
             senderUserId = sender.userId,
             currentUserId = currentUserId,
-            receiver = receiver
+            receiver = receiver,
+            imageBaseUrl = imageBaseUrl
         ),
         status = status,
         type = getUserType(type, sender.userId, currentUserId),
@@ -51,15 +52,16 @@ private fun Transaction.toResponse(currentUserId: UUID): TransactionResponse {
     )
 }
 
-fun TransactionDetailsModel.toResponse(currentUserId: UUID): TransactionResponse {
+fun TransactionDetailsModel.toResponse(currentUserId: UUID, imageBaseUrl: String): TransactionResponse {
     return TransactionResponse(
         id = id,
-        sender = getSenderInfo(type, sender),
+        sender = getSenderInfo(type, sender, imageBaseUrl),
         receiver = getReceiverInfo(
             type = type,
             senderUserId = sender.userId,
             currentUserId = currentUserId,
-            receiver = receiver
+            receiver = receiver,
+            imageBaseUrl = imageBaseUrl
         ),
         status = status,
         type = getUserType(type, sender.userId, currentUserId),
@@ -84,7 +86,8 @@ private fun getUserType(
 
 private fun getSenderInfo(
     type: Transaction.Type,
-    sender: WalletUser
+    sender: WalletUser,
+    imageBaseUrl: String
 ): TransactionPartyInfo {
     val isDeposit = type == Transaction.Type.DEPOSIT
     val name = if (isDeposit) "MENA" else sender.userName
@@ -92,7 +95,7 @@ private fun getSenderInfo(
 
     return TransactionPartyInfo(
         name = name,
-        imageUrl = imageUrl
+        imageUrl = imageUrl?.let { "$imageBaseUrl/$it" }
     )
 }
 
@@ -101,6 +104,7 @@ private fun getReceiverInfo(
     senderUserId: UUID,
     currentUserId: UUID,
     receiver: WalletUser,
+    imageBaseUrl: String
 ): TransactionPartyInfo {
     val isPurchaseFromCurrentUser = type == Transaction.Type.ONLINE_PURCHASE && senderUserId == currentUserId
 
@@ -114,5 +118,5 @@ private fun getReceiverInfo(
         else -> receiver.imageUrl
     }
 
-    return TransactionPartyInfo(name = name, imageUrl = imageUrl)
+    return TransactionPartyInfo(name = name, imageUrl = imageUrl?.let { "$imageBaseUrl/$it" })
 }
