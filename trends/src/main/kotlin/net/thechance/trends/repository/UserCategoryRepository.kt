@@ -8,4 +8,5 @@ interface UserCategoryRepository: JpaRepository<UserCategories, UUID>{
     fun findByUserIdAndCategoryId(userId: UUID, categoryId: UUID): UserCategories?
     fun findUserCategoriesByUserId(userId: UUID): MutableList<UserCategories>
     fun findAllByUserIdAndCategoryIdIn(userId: UUID, categoryIds: MutableCollection<UUID>): MutableList<UserCategories>
+    fun findAllByUserIdAndIsSelectedOrderByAffinityDesc(userId: UUID, isSelected: Boolean): List<UserCategories>
 }

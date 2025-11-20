@@ -3,6 +3,7 @@ package net.thechance.trends.service
 import net.thechance.trends.entity.Trend
 import net.thechance.trends.entity.TrendLike
 import net.thechance.trends.entity.TrendView
+import net.thechance.trends.entity.UserCategories
 import net.thechance.trends.exception.TrendCategoryNotFoundException
 import net.thechance.trends.exception.TrendNotFoundException
 import net.thechance.trends.models.TrendSignedUrls
@@ -13,6 +14,7 @@ import net.thechance.trends.repository.CategoryRepository
 import net.thechance.trends.repository.TrendLikeRepository
 import net.thechance.trends.repository.TrendViewRepository
 import net.thechance.trends.repository.TrendsRepository
+import net.thechance.trends.repository.UserCategoryRepository
 import net.thechance.trends.service.config.TrendsExpirationProperties
 import org.springframework.boot.context.properties.EnableConfigurationProperties
 import org.springframework.data.domain.Page
@@ -33,7 +35,8 @@ class TrendsService(
     private val fileStorageService: FileStorageService,
     private val trendViewRepository: TrendViewRepository,
     private val trendLikeRepository: TrendLikeRepository,
-    private val trendsExpirationProperties: TrendsExpirationProperties
+    private val trendsExpirationProperties: TrendsExpirationProperties,
+    private val userCategoryRepository: UserCategoryRepository
 ) {
     fun getAllTrendsByUserId(
         pageable: Pageable,
@@ -55,6 +58,46 @@ class TrendsService(
         }
         return body
     }
+
+    fun getFeed(
+        pageable: Pageable,
+        currentUserId: UUID,
+        trendId: UUID? = null,
+    ): Page<TrendWithOwnerShipAndLikeStatus> {
+
+        val adjustedPageable = PageRequest.of(
+            pageable.pageNumber,
+            10,
+            pageable.getSortOr(Sort.by(Sort.Direction.DESC, "createdAt"))
+        )
+
+        val userCategories = userCategoryRepository.findAllByUserIdAndIsSelectedOrderByAffinityDesc(currentUserId, true)
+
+        if (userCategories.isEmpty()) {
+            return Page.empty(adjustedPageable)
+        }
+
+        val buckets = userCategories.bucketByValue{ it.affinity }
+    }
+
+    private fun <T> List<T>.bucketByValue(
+        range: Int = 10,
+        valueSelector: (T) -> Int
+    ): List<List<T>> =
+        this.fold(emptyList()) { groups, item ->
+            if (groups.isEmpty()) {
+                listOf(listOf(item))
+            } else {
+                val lastGroup = groups.last()
+                val pivotValue = valueSelector(lastGroup.first())
+
+                if (valueSelector(item) in (pivotValue - range)..(pivotValue + range)) {
+                    groups.dropLast(1) + listOf(lastGroup + item)
+                } else {
+                    groups + listOf(listOf(item))
+                }
+            }
+        }
 
     fun getAllTrendsForFeed(
         pageable: Pageable,

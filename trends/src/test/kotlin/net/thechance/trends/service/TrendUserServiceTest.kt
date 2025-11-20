@@ -51,6 +51,12 @@ class TrendUserServiceTest {
             )
         )
 
+        val list = listOf(
+            DummyUserCategories.user1TechnologySelected,
+            DummyUserCategories.user1SportsNotSelected,
+            DummyUserCategories.user2TechnologyDecayed,
+            DummyUserCategories.user2ProductivitySelected,
+        )
         inMemoryUserCategories.clear()
 
         TrendRepositoryMockBehaviour.mockFindAllById(trendsRepository, inMemoryTrends)
