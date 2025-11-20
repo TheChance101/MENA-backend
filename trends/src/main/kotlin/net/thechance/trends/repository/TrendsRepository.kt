@@ -93,8 +93,7 @@ interface TrendsRepository : JpaRepository<Trend, UUID> {
         AND EXISTS (
             SELECT 1 FROM t.categories tc
             WHERE tc.id IN (
-                SELECT uc.id FROM TrendUser u
-                JOIN u.categories uc
+                SELECT u.categoryId FROM UserCategories u
                 WHERE u.userId = :userId
             )
         )
@@ -109,9 +108,8 @@ interface TrendsRepository : JpaRepository<Trend, UUID> {
     AND EXISTS (
         SELECT 1 FROM t.categories tc
         WHERE tc.id IN (
-            SELECT uc.id FROM TrendUser u
-            JOIN u.categories uc
-            WHERE u.userId = :userId
+            SELECT uc.categoryId FROM UserCategories uc
+            WHERE uc.userId = :userId
         )
     )
     AND (:trendId IS NULL OR t.createdAt <= (
