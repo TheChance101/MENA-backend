@@ -157,7 +157,7 @@ class CartService(
     }
 
     private fun getOrCreateActiveCart(userId: UUID, dukanId: UUID): Cart {
-        return cartRepository.findActiveCartByUserIdAndDukanId(userId, dukanId)
+        return cartRepository.findByUserIdAndDukanIdAndIsOrderPurchasedFalse(userId, dukanId)
             ?: createCart(userId, dukanId)
     }
 
