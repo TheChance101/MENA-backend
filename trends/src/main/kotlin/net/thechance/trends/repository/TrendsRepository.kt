@@ -130,19 +130,23 @@ interface TrendsRepository : JpaRepository<Trend, UUID> {
                CASE WHEN tl IS NOT NULL THEN true ELSE false END AS isLiked
         FROM Trend t
         LEFT JOIN FETCH t.owner
-        JOIN t.categories tc
         LEFT JOIN TrendLike tl ON tl.trendId = t.id AND tl.userId = :userId
         WHERE t.isPublished = true
         AND t.owner.status = 'ACTIVE'
-        AND tc.id IN :categoryIds
+        AND EXISTS (
+            SELECT 1 FROM t.categories tc
+            WHERE tc.id IN :categories
+        )
         AND t.id NOT IN :trendIds
         """,
         countQuery = """
     SELECT COUNT(DISTINCT t.id)
     FROM Trend t
-    JOIN t.categories tc
     WHERE t.isPublished = true
-    AND tc.id IN :categoryIds
+    AND EXISTS (
+        SELECT 1 FROM t.categories tc
+        WHERE tc.id IN :categories
+    )
     AND t.id NOT IN :trendIds
     """
     )
@@ -150,7 +154,7 @@ interface TrendsRepository : JpaRepository<Trend, UUID> {
         userId: UUID,
         pageable: Pageable,
         trendIds: List<UUID>,
-        categoryIds: List<UUID>
+        categories: List<UUID>
     ): Page<TrendWithLikeStatus>
 
     @Query(
