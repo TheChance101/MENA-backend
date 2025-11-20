@@ -3,6 +3,7 @@ package net.thechance.trends.service
 import net.thechance.trends.entity.Trend
 import net.thechance.trends.entity.TrendLike
 import net.thechance.trends.entity.TrendView
+import net.thechance.trends.entity.UserCategories
 import net.thechance.trends.exception.TrendCategoryNotFoundException
 import net.thechance.trends.exception.TrendNotFoundException
 import net.thechance.trends.models.TrendSignedUrls
@@ -13,9 +14,11 @@ import net.thechance.trends.repository.CategoryRepository
 import net.thechance.trends.repository.TrendLikeRepository
 import net.thechance.trends.repository.TrendViewRepository
 import net.thechance.trends.repository.TrendsRepository
+import net.thechance.trends.repository.UserCategoryRepository
 import net.thechance.trends.service.config.TrendsExpirationProperties
 import org.springframework.boot.context.properties.EnableConfigurationProperties
 import org.springframework.data.domain.Page
+import org.springframework.data.domain.PageImpl
 import org.springframework.data.domain.PageRequest
 import org.springframework.data.domain.Pageable
 import org.springframework.data.domain.Sort
@@ -23,6 +26,7 @@ import org.springframework.stereotype.Service
 import org.springframework.transaction.annotation.Transactional
 import org.springframework.web.multipart.MultipartFile
 import java.util.*
+import kotlin.random.Random
 
 
 @Service
@@ -33,7 +37,8 @@ class TrendsService(
     private val fileStorageService: FileStorageService,
     private val trendViewRepository: TrendViewRepository,
     private val trendLikeRepository: TrendLikeRepository,
-    private val trendsExpirationProperties: TrendsExpirationProperties
+    private val trendsExpirationProperties: TrendsExpirationProperties,
+    private val userCategoryRepository: UserCategoryRepository
 ) {
     fun getAllTrendsByUserId(
         pageable: Pageable,
@@ -61,18 +66,122 @@ class TrendsService(
         currentUserId: UUID,
         trendId: UUID? = null,
     ): Page<TrendWithOwnerShipAndLikeStatus> {
-        val adjustedPageable = PageRequest.of(
-            pageable.pageNumber,
-            10,
-            pageable.getSortOr(Sort.by(Sort.Direction.DESC, "createdAt"))
-        )
 
-        val trends = trendsRepository.getTrendFeedForUser(currentUserId, trendId, adjustedPageable).map {
-            generatePresignedUrlsForTrend(it).withOwnership(currentUserId)
+        val sortOrder = pageable.getSortOr(Sort.by(Sort.Direction.DESC, "createdAt"))
+
+        val userCategories = userCategoryRepository.findAllByUserIdAndIsSelectedOrderByAffinityDesc(currentUserId, true)
+
+        if (userCategories.isEmpty()) {
+            return Page.empty(pageable)
         }
 
-        return trends
+        val buckets = userCategories.bucketByValue { it.affinity }
+
+        val topCategories = selectTopBucketCategories(buckets, pageable.pageNumber)
+        val randomCategories = selectRandomBucketCategories(buckets, pageable.pageNumber)
+
+        val topTrendsPageable = PageRequest.of(pageable.pageNumber, 7, sortOrder)
+        val topTrends = trendsRepository.getTrendFeedForCategories(
+            currentUserId,
+            topTrendsPageable,
+            emptyList(),
+            topCategories
+        ).content
+
+        val topTrendIds = topTrends.map { it.getTrend().id }
+
+        val bottomTrendsPageable = if(trendId != null) {
+            PageRequest.of(pageable.pageNumber, 2,sortOrder)
+        } else PageRequest.of(pageable.pageNumber, 3, sortOrder)
+
+        val bottomTrends = trendsRepository.getTrendFeedForCategories(
+            currentUserId,
+            bottomTrendsPageable,
+            topTrendIds,
+            randomCategories
+        ).content
+
+        val finalTrends = if(trendId != null) {
+            val list = mutableListOf<TrendWithLikeStatus>()
+            val trend = trendsRepository.findByIdAndIsPublishedWithLikeStatus(trendId, currentUserId, true)
+            trend?.let { list.add(it) }
+            (list + topTrends + bottomTrends)
+                .map { generatePresignedUrlsForTrend(it).withOwnership(currentUserId) }
+        } else {
+            (topTrends + bottomTrends)
+                .map { generatePresignedUrlsForTrend(it).withOwnership(currentUserId) }
+        }
+
+
+        return PageImpl(finalTrends, pageable, finalTrends.size.toLong())
     }
+
+    private fun selectTopBucketCategories(
+        buckets: List<List<UserCategories>>,
+        pageNumber: Int
+    ): List<UUID> {
+        if (buckets.isEmpty()) return emptyList()
+
+        val random = Random(pageNumber)
+
+        if (buckets.size == 1) {
+            return buckets[0].map { it.categoryId }
+        }
+
+        val selected = mutableListOf<UUID>()
+        val probabilityDecay = 1.0 / buckets.size
+
+        buckets.forEachIndexed { bucketIndex, bucket ->
+            val probability = 1.0 - (bucketIndex * probabilityDecay)
+
+            bucket.forEach { category ->
+                if (random.nextDouble() < probability) {
+                        selected.add(category.categoryId)
+                }
+            }
+        }
+
+        if (selected.isEmpty()) {
+            selected.addAll(buckets.first().map { it.categoryId })
+        }
+
+        return selected
+    }
+
+    private fun selectRandomBucketCategories(
+        buckets: List<List<UserCategories>>,
+        pageNumber: Int
+    ): List<UUID> {
+        if (buckets.isEmpty()) return emptyList()
+
+        val random = Random(pageNumber * 31)
+        val allCategories = buckets.flatten()
+
+        val count = minOf((2..4).random(random), allCategories.size)
+        return allCategories
+            .shuffled(random)
+            .take(count)
+            .map { it.categoryId }
+    }
+
+    private fun <T> List<T>.bucketByValue(
+        range: Int = 10,
+        valueSelector: (T) -> Int
+    ): List<List<T>> =
+        this.fold(emptyList()) { groups, item ->
+            if (groups.isEmpty()) {
+                listOf(listOf(item))
+            } else {
+                val lastGroup = groups.last()
+                val pivotValue = valueSelector(lastGroup.first())
+
+                if (valueSelector(item) in (pivotValue - range)..(pivotValue + range)) {
+                    groups.dropLast(1) + listOf(lastGroup + item)
+                } else {
+                    groups + listOf(listOf(item))
+                }
+            }
+        }
 
     fun getUserFavoriteTrends(
         pageable: Pageable,

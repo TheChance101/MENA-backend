@@ -1,5 +1,6 @@
 package net.thechance.trends.repository
 
+import net.thechance.trends.entity.Category
 import net.thechance.trends.entity.Trend
 import net.thechance.trends.models.TrendUrls
 import net.thechance.trends.models.TrendWithLikeStatus
@@ -121,6 +122,35 @@ interface TrendsRepository : JpaRepository<Trend, UUID> {
         userId: UUID,
         trendId: UUID?,
         pageable: Pageable
+    ): Page<TrendWithLikeStatus>
+
+    @Query(
+        """
+        SELECT DISTINCT t AS trend, 
+               CASE WHEN tl IS NOT NULL THEN true ELSE false END AS isLiked
+        FROM Trend t
+        LEFT JOIN FETCH t.owner
+        JOIN t.categories tc
+        LEFT JOIN TrendLike tl ON tl.trendId = t.id AND tl.userId = :userId
+        WHERE t.isPublished = true
+        AND t.owner.status = 'ACTIVE'
+        AND tc.id IN :categoryIds
+        AND t.id NOT IN :trendIds
+        """,
+        countQuery = """
+    SELECT COUNT(DISTINCT t.id)
+    FROM Trend t
+    JOIN t.categories tc
+    WHERE t.isPublished = true
+    AND tc.id IN :categoryIds
+    AND t.id NOT IN :trendIds
+    """
+    )
+    fun getTrendFeedForCategories(
+        userId: UUID,
+        pageable: Pageable,
+        trendIds: List<UUID>,
+        categoryIds: List<UUID>
     ): Page<TrendWithLikeStatus>
 
     @Query(
