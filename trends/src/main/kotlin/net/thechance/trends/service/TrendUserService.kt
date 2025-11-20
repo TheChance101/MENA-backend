@@ -43,25 +43,25 @@ class TrendUserService(
         val currentCategories = userCategoryRepository.findUserCategoriesByUserId(userId)
         val currentCategoryIds = currentCategories.map { it.categoryId }
 
-        val actualRemoved = categoriesToRemove.filterTo(mutableListOf()) { it in currentCategoryIds }
-        val changedToSelected = categoriesToAdd.filterTo(mutableListOf()) { it in currentCategoryIds }
-        val actualAdded = categoriesToAdd.filterTo(mutableListOf()) { it !in currentCategoryIds }
+        val existingCategoriesToDeselect = categoriesToRemove.filterTo(mutableListOf()) { it in currentCategoryIds }
+        val existingCategoriesToReselect = categoriesToAdd.filterTo(mutableListOf()) { it in currentCategoryIds }
+        val newCategoriesToAdd = categoriesToAdd.filterTo(mutableListOf()) { it !in currentCategoryIds }
 
-        if (actualAdded.isEmpty() && actualRemoved.isEmpty() && changedToSelected.isEmpty()) {
+        if (newCategoriesToAdd.isEmpty() && existingCategoriesToDeselect.isEmpty() && existingCategoriesToReselect.isEmpty()) {
             return PatchMetadata(addedCount = 0, removedCount = 0)
         }
 
         val updatedUserCategories = getCategoriesToUpdate(
             currentUserId = userId,
             currentCategories = currentCategories,
-            changedToSelected = changedToSelected,
-            actualRemoved = actualRemoved,
-            actualAdded = actualAdded
+            changedToSelected = existingCategoriesToReselect,
+            actualRemoved = existingCategoriesToDeselect,
+            actualAdded = newCategoriesToAdd
         )
 
         userCategoryRepository.saveAll(updatedUserCategories)
 
-        return PatchMetadata(addedCount = actualAdded.size + changedToSelected.size, removedCount = actualRemoved.size)
+        return PatchMetadata(addedCount = newCategoriesToAdd.size + existingCategoriesToReselect.size, removedCount = existingCategoriesToDeselect.size)
     }
 
     private fun getCategoriesToUpdate(
