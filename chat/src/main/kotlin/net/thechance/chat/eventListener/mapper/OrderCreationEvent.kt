@@ -5,19 +5,18 @@ import net.thechance.chat.service.model.MessageContent
 import net.thechance.events.dukan.OrderCreationEvent
 import java.util.UUID
 
-fun OrderCreationEvent.toOrderMessage(): Message {
+fun OrderCreationEvent.toOrderMessage(chatId: UUID): Message {
     return Message(
-        id = UUID.randomUUID(),
-        senderId = this.userId,
-        chatId = this.dukanId,
-        type = Message.MessageType.TEXT,
+        chatId = chatId,
+        senderId = dukanOwnerId,
+        type = Message.MessageType.ORDER,
         content = MessageContent.Order(
-            orderId = this.orderId.toString(),
-            totalProducts = this.totalProducts,
-            totalPrice = this.totalPrice.toPlainString(),
-            deliverToAddress = this.deliverToAddress,
-            dukanId = this.dukanId.toString(),
-            dukanOwnerId = this.dukanOwnerId.toString()
+            orderId = orderId.toString(),
+            totalProducts = totalProducts,
+            totalPrice = totalPrice.toString(),
+            deliverToAddress = deliverToAddress,
+            dukanId = dukanId.toString(),
+            dukanOwnerId = dukanOwnerId.toString()
         )
     )
 }

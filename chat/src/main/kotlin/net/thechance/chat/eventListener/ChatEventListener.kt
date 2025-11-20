@@ -3,6 +3,7 @@ package net.thechance.chat.eventListener
 import net.thechance.chat.api.controller.MessageSender
 import net.thechance.chat.api.dto.toResponse
 import net.thechance.chat.eventListener.mapper.toMessage
+import net.thechance.chat.eventListener.mapper.toOrderMessage
 import net.thechance.chat.eventListener.mapper.toUser
 import net.thechance.chat.repository.ContactUserRepository
 import net.thechance.chat.repository.MessageRepository
@@ -23,7 +24,6 @@ class ChatEventListener(
     private val messageSender: MessageSender,
 ) {
 
-
     @EventListener
     @Async
     fun onUserCreatedEvent(event: UserCreatedEvent) {
@@ -34,6 +34,14 @@ class ChatEventListener(
     @Async
     fun onUserUpdatedEvent(event: UserUpdatedEvent){
         userRepository.save(event.toUser())
+    }
+
+    @EventListener
+    @Async
+    fun onOrderCreated(event: OrderCreationEvent) {
+        val chat = chatService.getChatByUserIds(event.dukanOwnerId, event.userId)
+        val message = messageRepository.save(event.toOrderMessage(chat.id))
+        messageSender.sendMessageToChat(chat.id, PRIVATE_MESSAGES, { message.toResponse(it) })
     }
 
     @EventListener
@@ -57,12 +65,4 @@ class ChatEventListener(
     companion object {
         const val PRIVATE_MESSAGES = "/private/messages"
     }
-
-
-    @EventListener
-    @Async
-    fun onOrderCreated(event: OrderCreationEvent) {
-        chatService.handleOrderCreated(event)
-    }
-
 }
