@@ -4,13 +4,13 @@ import org.springframework.beans.factory.annotation.Value
 import org.springframework.stereotype.Component
 
 @Component
-class UserImageUrlBuilder(
+class ImageUrlBuilder(
     @Value("\${storage.mena.cdn-endpoint}") cdnEndpoint: String,
     @Value("\${identity.resources.profile-image-directory}") profileImageDirectory: String,
 ) {
-    private val imageBaseUrl: String = "$cdnEndpoint$profileImageDirectory"
+    private val userImageBaseUrl: String = "$cdnEndpoint$profileImageDirectory"
 
-    fun buildImageUrl(imageKey: String?): String? {
-        return imageKey?.let { "$imageBaseUrl/$it" }
+    fun buildUserImageUrl(imageKey: String?): String? {
+        return imageKey?.let { "$userImageBaseUrl/$it" }
     }
 }
