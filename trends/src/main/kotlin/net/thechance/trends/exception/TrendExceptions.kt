@@ -24,3 +24,5 @@ class ThumbnailUploadFailedException: TrendExceptions("Thumbnail upload failed")
 class VideoDeleteFailedException: TrendExceptions("Failed to delete video from storage")
 
 class TrendUrlSigningException(message: String): TrendExceptions(message)
+
+class TrendUserUnauthorizedException: TrendExceptions("Unauthorized to do this action user")
