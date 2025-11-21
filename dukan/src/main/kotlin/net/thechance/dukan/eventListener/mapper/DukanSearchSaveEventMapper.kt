@@ -20,7 +20,7 @@ import net.thechance.events.dukan.ProductSearchEvent
     activationStatus = when(this.activationStatus){
        Dukan.ActivationStatus.ACTIVATED -> DukanSearchEvent.Save.ActivationStatus.ACTIVATED
        Dukan.ActivationStatus.DEACTIVATED -> DukanSearchEvent.Save.ActivationStatus.DEACTIVATED
-       null -> DukanSearchEvent.Save.ActivationStatus.DEACTIVATED
+        Dukan.ActivationStatus.ONHOLD -> DukanSearchEvent.Save.ActivationStatus.ONHOLD
     }
 )
 

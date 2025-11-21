@@ -14,7 +14,6 @@ fun Dukan.toDocument():DukanDocument{
         categoryIds = categories.map { it.id.toString() }.toSet(),
         activationStatus = activationStatus,
         location = GeoPoint(latitude,longitude),
-        activationStatus = activationStatus
     )
 }
 

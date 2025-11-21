@@ -13,12 +13,5 @@ fun DukanSearchEvent.Save.Status.toDukanStatus(): Dukan.Status = when (this) {
 fun DukanSearchEvent.Save.ActivationStatus.toDukanActivationStatus():Dukan.ActivationStatus = when(this){
     DukanSearchEvent.Save.ActivationStatus.ACTIVATED -> Dukan.ActivationStatus.ACTIVATED
     DukanSearchEvent.Save.ActivationStatus.DEACTIVATED -> Dukan.ActivationStatus.DEACTIVATED
-}
-
-fun DukanEvent.Save.ActivationStatus.toDukanStatus(): Dukan.ActivationStatus {
-    return when (this) {
-        DukanEvent.Save.ActivationStatus.ACTIVATED -> Dukan.ActivationStatus.ACTIVATED
-        DukanEvent.Save.ActivationStatus.DEACTIVATED -> Dukan.ActivationStatus.DEACTIVATED
-        DukanEvent.Save.ActivationStatus.ONHOLD -> Dukan.ActivationStatus.ONHOLD
-    }
+    DukanSearchEvent.Save.ActivationStatus.ONHOLD -> Dukan.ActivationStatus.ONHOLD
 }

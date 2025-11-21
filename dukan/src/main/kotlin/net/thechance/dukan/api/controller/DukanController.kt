@@ -149,7 +149,7 @@ class DukanController(
         return ResponseEntity.ok(topDukans.map { it.toResponse() })
     }
 
-    @GetMapping("/activation_status")
+    @GetMapping("/activation-status")
     fun getDukanActivationStatus(
         @AuthenticationPrincipal userId: UUID,
     ): ResponseEntity<DukanActivationStatusResponse> {

@@ -21,6 +21,7 @@ sealed class DukanSearchEvent : MenaEvent {
         enum class ActivationStatus {
             ACTIVATED,
             DEACTIVATED,
+            ONHOLD
         }
     }
     data class Delete(val id:String):DukanSearchEvent()

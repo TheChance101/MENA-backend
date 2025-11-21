@@ -33,9 +33,8 @@ class WalletDukanUpdateEventListenerForSearchSyncing (
             activationStatus = when(event.activationStatus){
                 DukanUpdateEvent.ActivationStatus.ACTIVATED -> Dukan.ActivationStatus.ACTIVATED
                 DukanUpdateEvent.ActivationStatus.DEACTIVATED -> Dukan.ActivationStatus.DEACTIVATED
-                null -> Dukan.ActivationStatus.DEACTIVATED
+                DukanUpdateEvent.ActivationStatus.ONHOLD -> Dukan.ActivationStatus.ONHOLD
             }
         )
     }
-
 }

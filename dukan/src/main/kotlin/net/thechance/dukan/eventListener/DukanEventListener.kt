@@ -29,9 +29,9 @@ class DukanEventListener(
             status = event.status.toDukanStatus(),
             imageUrl = event.imageUrl,
             categoryIds = event.categoryIds,
-            activationStatus =  event.activationStatus.toDukanActivationStatus(),
             location = GeoPoint(event.lat,event.lng),
-            activationStatus = event.activationStatus.toDukanStatus()
+            activationStatus = event.activationStatus.toDukanActivationStatus(),
+
         )
          dukanSearchRepository.save(dukanDocument)
     }

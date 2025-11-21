@@ -16,7 +16,6 @@ import net.thechance.dukan.service.exception.ProductNotFoundException
 import net.thechance.dukan.service.model.DukanProductCreationParams
 import net.thechance.dukan.service.model.DukanProductUpdateParams
 import net.thechance.dukan.service.model.DukanProductWithFavoriteAndQuantity
-import net.thechance.events.dukan.DukanSearchEvent
 import net.thechance.events.dukan.ProductSearchEvent
 import net.thechance.events.publisher.MenaEventPublisher
 import org.springframework.data.domain.Page
@@ -77,25 +76,6 @@ class DukanProductService(
         return imageUrls
     }
 
-    private fun Dukan.toDukanSaveEvent() = DukanEvent.Save(
-        id = this.id.toString(),
-        name = this.name,
-        imageUrl = this.imageUrl,
-        status = DukanEvent.Save.Status.APPROVED,
-        lat = this.latitude,
-        lng = this.longitude,
-        activationStatus = DukanEvent.Save.ActivationStatus.ACTIVATED
-    )
-
-    private fun DukanProduct.toProductSaveEvent() = ProductEvent.Save(
-        id = this.id.toString(),
-        name = this.name,
-        dukanName = this.description,
-        dukanId = this.dukan.id.toString(),
-        mainImageUrl = this.imageUrls.firstOrNull().orEmpty(),
-        price = this.price.final,
-        shelfName = this.shelf.title
-    )
 
     fun createProduct(params: DukanProductCreationParams): UUID {
         try {
