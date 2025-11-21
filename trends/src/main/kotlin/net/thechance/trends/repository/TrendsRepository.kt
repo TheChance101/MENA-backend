@@ -93,48 +93,6 @@ interface TrendsRepository : JpaRepository<Trend, UUID> {
         AND t.owner.status = 'ACTIVE'
         AND EXISTS (
             SELECT 1 FROM t.categories tc
-            WHERE tc.id IN (
-                SELECT u.categoryId FROM UserCategories u
-                WHERE u.userId = :userId
-            )
-        )
-        AND (:trendId IS NULL OR t.createdAt <= (
-            SELECT t2.createdAt FROM Trend t2 WHERE t2.id = :trendId
-        ))
-        """,
-        countQuery = """
-    SELECT COUNT(DISTINCT t.id)
-    FROM Trend t
-    WHERE t.isPublished = true
-    AND EXISTS (
-        SELECT 1 FROM t.categories tc
-        WHERE tc.id IN (
-            SELECT uc.categoryId FROM UserCategories uc
-            WHERE uc.userId = :userId
-        )
-    )
-    AND (:trendId IS NULL OR t.createdAt <= (
-        SELECT t2.createdAt FROM Trend t2 WHERE t2.id = :trendId
-    ))
-    """
-    )
-    fun getTrendFeedForUser(
-        userId: UUID,
-        trendId: UUID?,
-        pageable: Pageable
-    ): Page<TrendWithLikeStatus>
-
-    @Query(
-        """
-        SELECT DISTINCT t AS trend, 
-               CASE WHEN tl IS NOT NULL THEN true ELSE false END AS isLiked
-        FROM Trend t
-        LEFT JOIN FETCH t.owner
-        LEFT JOIN TrendLike tl ON tl.trendId = t.id AND tl.userId = :userId
-        WHERE t.isPublished = true
-        AND t.owner.status = 'ACTIVE'
-        AND EXISTS (
-            SELECT 1 FROM t.categories tc
             WHERE tc.id IN :categories
         )
         AND t.id NOT IN :trendIds
