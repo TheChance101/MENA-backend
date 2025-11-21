@@ -9,7 +9,7 @@ data class DukanUpdateEvent(
     val imageUrl: String?,
     val status: Status,
     val address: String,
-    val activationStatus: ActivationStatus?
+    val activationStatus: ActivationStatus
 ) : MenaEvent {
 
     enum class Status {
@@ -20,6 +20,7 @@ data class DukanUpdateEvent(
 
     enum class ActivationStatus {
         ACTIVATED,
-        DEACTIVATED
+        DEACTIVATED,
+        ONHOLD
     }
 }

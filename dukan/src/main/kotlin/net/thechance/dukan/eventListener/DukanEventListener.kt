@@ -31,7 +31,7 @@ class DukanEventListener(
             categoryIds = event.categoryIds,
             activationStatus =  event.activationStatus.toDukanActivationStatus(),
             location = GeoPoint(event.lat,event.lng),
-            activationStatus = event.activationStatus?.toDukanStatus()
+            activationStatus = event.activationStatus.toDukanStatus()
         )
          dukanSearchRepository.save(dukanDocument)
     }

@@ -1,11 +1,6 @@
 package net.thechance.wallet.entity
 
-import jakarta.persistence.Column
-import jakarta.persistence.Entity
-import jakarta.persistence.EnumType
-import jakarta.persistence.Enumerated
-import jakarta.persistence.Id
-import jakarta.persistence.Table
+import jakarta.persistence.*
 import java.util.*
 
 @Entity
@@ -26,7 +21,7 @@ data class WalletDukan(
 
     @Enumerated(EnumType.STRING)
     @Column(name = "activation_status", nullable = true)
-    val activationStatus: ActivationStatus? = null,
+    val activationStatus: ActivationStatus,
 ){
     enum class Status {
         APPROVED,
@@ -37,5 +32,6 @@ data class WalletDukan(
     enum class ActivationStatus {
         ACTIVATED,
         DEACTIVATED,
+        ONHOLD
     }
 }

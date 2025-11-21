@@ -8,7 +8,7 @@ fun DukanUpdateEvent.toWalletDukanEntity() = WalletDukan(
     name = name,
     imageUrl = imageUrl,
     status = status.toEntityStatus(),
-    activationStatus = activationStatus?.toEntityActivationStatus(),
+    activationStatus = activationStatus.toEntityActivationStatus(),
 )
 
 private fun DukanUpdateEvent.Status.toEntityStatus(): WalletDukan.Status {
@@ -23,5 +23,6 @@ private fun DukanUpdateEvent.ActivationStatus.toEntityActivationStatus(): Wallet
     return when (this) {
         DukanUpdateEvent.ActivationStatus.ACTIVATED -> WalletDukan.ActivationStatus.ACTIVATED
         DukanUpdateEvent.ActivationStatus.DEACTIVATED -> WalletDukan.ActivationStatus.DEACTIVATED
+        DukanUpdateEvent.ActivationStatus.ONHOLD -> WalletDukan.ActivationStatus.ONHOLD
     }
 }

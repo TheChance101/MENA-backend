@@ -19,5 +19,6 @@ fun DukanEvent.Save.ActivationStatus.toDukanStatus(): Dukan.ActivationStatus {
     return when (this) {
         DukanEvent.Save.ActivationStatus.ACTIVATED -> Dukan.ActivationStatus.ACTIVATED
         DukanEvent.Save.ActivationStatus.DEACTIVATED -> Dukan.ActivationStatus.DEACTIVATED
+        DukanEvent.Save.ActivationStatus.ONHOLD -> Dukan.ActivationStatus.ONHOLD
     }
 }

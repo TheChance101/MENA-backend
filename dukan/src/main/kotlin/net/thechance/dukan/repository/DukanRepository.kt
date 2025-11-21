@@ -163,9 +163,6 @@ interface DukanRepository : JpaRepository<Dukan, UUID> {
         @Param("status") status: Dukan.Status
     ): Int
 
-    @Query("SELECT d.activationStatus FROM Dukan d WHERE d.id = :dukanId")
-    fun getDukanActivationStatus(@Param("dukanId") dukanId: UUID): Dukan.ActivationStatus?
-
     @Query("UPDATE Dukan d SET d.activationStatus = :activationStatus WHERE d.id = :dukanId")
     fun updateActivationStatus(
         @Param("dukanId") dukanId: UUID,
