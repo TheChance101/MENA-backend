@@ -7,7 +7,7 @@ import net.thechance.dukan.entity.Price
 fun OrderItem.toResponse(): OrderItemResponse {
     return OrderItemResponse(
         productId = productId,
-        productName = productImage,
+        productName = productName,
         quantity = quantity,
         price = Price(priceBeforeDiscount, priceAfterDiscount),
         imageUrl = productImage

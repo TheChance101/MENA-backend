@@ -5,6 +5,7 @@ import net.thechance.dukan.entity.*
 import net.thechance.dukan.repository.*
 import net.thechance.dukan.service.exception.CartNotFoundException
 import net.thechance.dukan.service.exception.DukanNotFoundException
+import net.thechance.events.dukan.OrderCreationEvent
 import net.thechance.events.publisher.MenaEventPublisher
 import net.thechance.events.wallet.TransactionCompletedEvent
 import org.springframework.context.event.EventListener
@@ -28,16 +29,33 @@ class CartEventListener(
     @Async
     fun handle(event: TransactionCompletedEvent) {
         if (event.status != TransactionCompletedEvent.TransactionStatus.SUCCESS) return
+        if (orderRepository.existsByTransactionId(event.transactionId)) {
+            return // event already processed
+        }
 
         val dukan = findDukan(event.receiverId)
         val cart = findActiveCart(event.senderId, dukan.id)
         val user = dukanUserRepository.findById(event.senderId).orElseThrow()
 
         processSoldProducts(cart)
-        createOrderFromCart(cart, user, dukan, event.transactionId)
+        val order = createOrderFromCart(cart, user, dukan, event.transactionId)
         finalizeCartPurchase(cart)
-        // TODO: PUBLISH THE ORDER CREATION EVENT
-        createNewCart(event.senderId, dukan.id)
+        val orderCreationEvent = createOrderEvent(order,dukan.ownerId)
+        createNewCart(event.senderId, dukan.id).also {
+            eventPublisher.publish(orderCreationEvent)
+        }
+    }
+
+    private fun createOrderEvent(order: Order, ownerId: UUID): OrderCreationEvent {
+        return OrderCreationEvent(
+            orderId = order.id,
+            userId = order.userId,
+            dukanId = order.dukanId,
+            dukanOwnerId = ownerId,
+            totalProducts = order.items.size,
+            totalPrice =order.totalAfterDiscount,
+            deliverToAddress = order.deliveryAddress
+        )
     }
 
     private fun findDukan(ownerId: UUID): Dukan {
@@ -88,11 +106,12 @@ class CartEventListener(
         user: DukanUser,
         dukan: Dukan,
         transactionId: UUID
-    ) {
+    ): Order {
 
         val order = createOrder(cart, transactionId, user, dukan)
 
         orderRepository.save(order)
+        return order
     }
 
     private fun createOrder(
