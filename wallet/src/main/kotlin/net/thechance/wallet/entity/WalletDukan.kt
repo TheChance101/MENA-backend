@@ -20,7 +20,7 @@ data class WalletDukan(
     val status: Status = Status.PENDING,
 
     @Enumerated(EnumType.STRING)
-    @Column(name = "activation_status", nullable = true)
+    @Column(name = "activation_status", nullable = false)
     val activationStatus: ActivationStatus,
 ){
     enum class Status {
