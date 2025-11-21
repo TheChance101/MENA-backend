@@ -16,7 +16,6 @@ import net.thechance.dukan.service.exception.ProductNotFoundException
 import net.thechance.dukan.service.model.DukanProductCreationParams
 import net.thechance.dukan.service.model.DukanProductUpdateParams
 import net.thechance.dukan.service.model.DukanProductWithFavoriteAndQuantity
-import net.thechance.events.dukan.DukanSearchEvent
 import net.thechance.events.dukan.ProductSearchEvent
 import net.thechance.events.publisher.MenaEventPublisher
 import org.springframework.data.domain.Page

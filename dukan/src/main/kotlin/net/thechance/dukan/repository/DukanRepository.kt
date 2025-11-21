@@ -59,6 +59,7 @@ interface DukanRepository : JpaRepository<Dukan, UUID> {
           FROM DukanProduct dukanProduct
           WHERE dukanProduct.dukan = dukan
       )
+      AND dukan.activationStatus != net.thechance.dukan.entity.Dukan.ActivationStatus.DEACTIVATED
     ORDER BY dukan.createdAt DESC
     """
     )
@@ -97,6 +98,7 @@ interface DukanRepository : JpaRepository<Dukan, UUID> {
                 WHERE d.status = 'APPROVED'
                   AND EXISTS (SELECT 1 FROM dukan.dukan_shelves s WHERE s.dukan_id = d.id)
                   AND EXISTS (SELECT 1 FROM dukan.dukan_products p WHERE p.dukan_id = d.id)
+                  AND d.activation_status != 'DEACTIVATED'
             )
             SELECT COUNT(*) FROM filtered WHERE distance <= :range
             """,
@@ -122,6 +124,7 @@ interface DukanRepository : JpaRepository<Dukan, UUID> {
     WHERE category.id = :categoryId
     AND dukan.ownerId != :userId
     AND dukan.status = net.thechance.dukan.entity.Dukan.Status.APPROVED
+    AND dukan.activationStatus != net.thechance.dukan.entity.Dukan.ActivationStatus.DEACTIVATED
     AND EXISTS (
           SELECT 1
           FROM DukanProduct product
@@ -177,6 +180,7 @@ interface DukanRepository : JpaRepository<Dukan, UUID> {
         JOIN product.dukan dukan
         WHERE dukan.ownerId != :userId
           AND product.discount IS NOT NULL
+          AND dukan.activationStatus != net.thechance.dukan.entity.Dukan.ActivationStatus.DEACTIVATED
         GROUP BY dukan.id
         ORDER BY MAX(product.discount) DESC
     """

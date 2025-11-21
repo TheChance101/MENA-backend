@@ -1,7 +1,7 @@
 package net.thechance.events.dukan
 
 import net.thechance.events.MenaEvent
-import java.util.UUID
+import java.util.*
 
 data class DukanCreationEvent(
     val id: UUID,
@@ -9,7 +9,7 @@ data class DukanCreationEvent(
     val name: String,
     val imageUrl: String?,
     val status: Status = Status.PENDING,
-    val activationStatus: ActivationStatus?
+    val activationStatus: ActivationStatus
 ) : MenaEvent {
     enum class Status {
         APPROVED,
@@ -19,6 +19,7 @@ data class DukanCreationEvent(
 
     enum class ActivationStatus {
         ACTIVATED,
-        DEACTIVATED
+        DEACTIVATED,
+        ONHOLD
     }
 }

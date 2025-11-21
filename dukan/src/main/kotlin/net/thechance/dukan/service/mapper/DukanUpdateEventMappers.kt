@@ -10,7 +10,7 @@ fun Dukan.toDukanUpdateEvent(): DukanUpdateEvent {
         imageUrl = this.imageUrl,
         address = this.address,
         status = this.status.toEventStatus(),
-        activationStatus = this.activationStatus?.toEventActivationStatus()
+        activationStatus = this.activationStatus.toEventActivationStatus()
     )
 }
 
@@ -24,4 +24,6 @@ private fun Dukan.ActivationStatus.toEventActivationStatus(): DukanUpdateEvent.A
     when (this) {
         Dukan.ActivationStatus.ACTIVATED -> DukanUpdateEvent.ActivationStatus.ACTIVATED
         Dukan.ActivationStatus.DEACTIVATED -> DukanUpdateEvent.ActivationStatus.DEACTIVATED
+        Dukan.ActivationStatus.ONHOLD -> DukanUpdateEvent.ActivationStatus.DEACTIVATED
+
     }

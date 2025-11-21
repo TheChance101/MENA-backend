@@ -8,7 +8,7 @@ fun Dukan.toDukanCreationEvent(): DukanCreationEvent {
         id = this.id,
         name = this.name,
         imageUrl = this.imageUrl,
-        activationStatus = this.activationStatus?.toEventActivationStatus(),
+        activationStatus = this.activationStatus.toEventActivationStatus(),
         status = this.status.toEventStatus(),
         ownerId = this.ownerId,
     )
@@ -24,4 +24,5 @@ private fun Dukan.ActivationStatus.toEventActivationStatus(): DukanCreationEvent
     when (this) {
         Dukan.ActivationStatus.ACTIVATED -> DukanCreationEvent.ActivationStatus.ACTIVATED
         Dukan.ActivationStatus.DEACTIVATED -> DukanCreationEvent.ActivationStatus.DEACTIVATED
+        Dukan.ActivationStatus.ONHOLD -> DukanCreationEvent.ActivationStatus.ONHOLD
     }
