@@ -8,8 +8,7 @@ import java.util.UUID
 data class DukanProductCreationRequest(
     @field:NotBlank(message = "product name must not be blank")
     val name: String,
-    @field:Size(min = 100, max = 3000, message = "description must be between 100 and 3000 characters")
-    @field:NotBlank(message = "description must not be blank")
+    @field:Size(max = 3000, message = "description must not exceed 3000 characters")
     val description: String,
     @field:NotNull(message = "price is required")
     val price: PriceRequest,

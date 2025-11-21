@@ -18,6 +18,7 @@ import net.thechance.wallet.service.WalletUserService
 import org.springframework.context.event.EventListener
 import org.springframework.scheduling.annotation.Async
 import org.springframework.stereotype.Component
+import java.util.UUID
 
 @Component
 class WalletEventListener(
@@ -62,7 +63,7 @@ class WalletEventListener(
     @EventListener
     @Async
     fun onDukanCreated(event: DukanCreationEvent) {
-        dukanService.addDukan(event.toEntityDukan())
+        dukanService.addDukan(event.toEntityDukan(), event.ownerId)
     }
 
     @EventListener

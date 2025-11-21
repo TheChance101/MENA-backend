@@ -5,6 +5,7 @@ import net.thechance.chat.entity.Contact
 import net.thechance.chat.repository.ContactRepository
 import net.thechance.chat.service.exception.InvalidPhoneNumberException
 import net.thechance.chat.service.model.ContactModel
+import net.thechance.chat.service.model.SearchContactsArgs
 import net.thechance.chat.service.phone_number.PhoneNumberParses
 import org.springframework.data.domain.Page
 import org.springframework.data.domain.PageRequest
@@ -52,9 +53,18 @@ class ContactService(
             }
     }
 
-
     fun getContactByOwnerIdAndContactUserId(ownerId: UUID, contactUserId: UUID): Contact? {
         val userPhone = contactUserService.getPhoneNumberByUserId(contactUserId) ?: return null
         return contactRepository.findByContactOwnerIdAndPhoneNumber(ownerId, userPhone)
     }
+
+    fun searchContacts(args: SearchContactsArgs): Page<ContactModel> {
+        return contactRepository.searchContacts(
+            contactOwnerId = args.userId,
+            query = args.query.trim(),
+            onlyMenaUsers = args.onlyMenaUsers,
+            pageable = args.pageable
+        )
+    }
+
 }
