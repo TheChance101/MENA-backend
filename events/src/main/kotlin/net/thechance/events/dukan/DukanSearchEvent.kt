@@ -2,7 +2,7 @@ package net.thechance.events.dukan
 
 import net.thechance.events.MenaEvent
 
-sealed class DukanEvent : MenaEvent {
+sealed class DukanSearchEvent : MenaEvent {
     data class Save(
         val id: String,
         val name: String,
@@ -10,8 +10,9 @@ sealed class DukanEvent : MenaEvent {
         val imageUrl:String?,
         val lat:Double,
         val lng:Double,
-        val activationStatus: ActivationStatus?,
-    ):DukanEvent() {
+        val categoryIds:Set<String>,
+        val activationStatus: ActivationStatus
+    ):DukanSearchEvent() {
         enum class Status {
             APPROVED,
             REJECTED,
@@ -22,6 +23,6 @@ sealed class DukanEvent : MenaEvent {
             DEACTIVATED,
         }
     }
-    data class Delete(val id:String):DukanEvent()
+    data class Delete(val id:String):DukanSearchEvent()
 }
 

@@ -11,6 +11,8 @@ fun Dukan.toDocument():DukanDocument{
         name = name,
         status = status,
         imageUrl = imageUrl,
+        categoryIds = categories.map { it.id.toString() }.toSet(),
+        activationStatus = activationStatus,
         location = GeoPoint(latitude,longitude),
         activationStatus = activationStatus
     )

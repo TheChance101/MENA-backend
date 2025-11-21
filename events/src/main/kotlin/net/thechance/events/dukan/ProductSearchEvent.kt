@@ -3,7 +3,7 @@ package net.thechance.events.dukan
 import net.thechance.events.MenaEvent
 import java.math.BigDecimal
 
-sealed class ProductEvent: MenaEvent {
+sealed class ProductSearchEvent: MenaEvent {
     data class Save(
         val id: String,
         val name: String,
@@ -12,7 +12,7 @@ sealed class ProductEvent: MenaEvent {
         val dukanId:String,
         val mainImageUrl: String,
         val shelfName: String
-    ):ProductEvent()
+    ):ProductSearchEvent()
 
-    data class Delete(val id:String):ProductEvent()
+    data class Delete(val id:String):ProductSearchEvent()
 }

@@ -3,6 +3,7 @@ package net.thechance.trends.service
 import net.thechance.trends.entity.Trend
 import net.thechance.trends.entity.TrendLike
 import net.thechance.trends.entity.TrendView
+import net.thechance.trends.entity.UserCategories
 import net.thechance.trends.exception.TrendCategoryNotFoundException
 import net.thechance.trends.exception.TrendNotFoundException
 import net.thechance.trends.models.TrendSignedUrls
@@ -13,9 +14,11 @@ import net.thechance.trends.repository.CategoryRepository
 import net.thechance.trends.repository.TrendLikeRepository
 import net.thechance.trends.repository.TrendViewRepository
 import net.thechance.trends.repository.TrendsRepository
+import net.thechance.trends.repository.UserCategoryRepository
 import net.thechance.trends.service.config.TrendsExpirationProperties
 import org.springframework.boot.context.properties.EnableConfigurationProperties
 import org.springframework.data.domain.Page
+import org.springframework.data.domain.PageImpl
 import org.springframework.data.domain.PageRequest
 import org.springframework.data.domain.Pageable
 import org.springframework.data.domain.Sort
@@ -33,7 +36,8 @@ class TrendsService(
     private val fileStorageService: FileStorageService,
     private val trendViewRepository: TrendViewRepository,
     private val trendLikeRepository: TrendLikeRepository,
-    private val trendsExpirationProperties: TrendsExpirationProperties
+    private val trendsExpirationProperties: TrendsExpirationProperties,
+    private val userCategoryRepository: UserCategoryRepository
 ) {
     fun getAllTrendsByUserId(
         pageable: Pageable,
@@ -61,17 +65,90 @@ class TrendsService(
         currentUserId: UUID,
         trendId: UUID? = null,
     ): Page<TrendWithOwnerShipAndLikeStatus> {
-        val adjustedPageable = PageRequest.of(
-            pageable.pageNumber,
-            10,
-            pageable.getSortOr(Sort.by(Sort.Direction.DESC, "createdAt"))
+        val userCategories = userCategoryRepository.findAllByUserIdAndIsSelectedOrderByAffinityDesc(currentUserId, true)
+
+        if (userCategories.isEmpty()) return Page.empty(pageable)
+
+        val sortOrder = pageable.getSortOr(Sort.by(Sort.Direction.DESC, "createdAt"))
+        val (topCategories, bottomCategories) = splitCategoriesByAffinity(userCategories)
+
+        val bottomTrendsNeeded = calculateBottomTrendsCount(trendId)
+
+        val topTrends = fetchTopAffinityTrends(
+            currentUserId = currentUserId,
+            pageNumber = pageable.pageNumber,
+            sortOrder = sortOrder,
+            categories = topCategories
         )
 
-        val trends = trendsRepository.getTrendFeedForUser(currentUserId, trendId, adjustedPageable).map {
+        val bottomTrends = fetchDiversityTrends(
+            currentUserId = currentUserId,
+            pageNumber = pageable.pageNumber,
+            sortOrder = sortOrder,
+            categories = bottomCategories.ifEmpty { topCategories },
+            count = bottomTrendsNeeded
+        )
+
+        val feedTrends = buildFeedWithOptionalTrend(trendId, currentUserId, topTrends + bottomTrends)
+
+
+        return PageImpl(feedTrends, pageable, feedTrends.size.toLong())
+    }
+
+    private fun splitCategoriesByAffinity(userCategories: List<UserCategories>): Pair<List<UUID>, List<UUID>> {
+        val splitPoint = (userCategories.size * RECOMMENDATION_TO_EXPLORATION_RATIO).toInt().coerceAtLeast(1)
+        return userCategories.take(splitPoint).map { it.categoryId } to
+                userCategories.drop(splitPoint).map { it.categoryId }
+    }
+
+    private fun fetchTopAffinityTrends(
+        currentUserId: UUID,
+        pageNumber: Int,
+        sortOrder: Sort,
+        categories: List<UUID>
+    ): List<TrendWithLikeStatus> {
+        val pageable = PageRequest.of(pageNumber, 7, sortOrder)
+        return trendsRepository.getTrendFeedForCategories(
+            userId = currentUserId,
+            pageable = pageable,
+            categories = categories
+        ).content
+    }
+
+    private fun fetchDiversityTrends(
+        currentUserId: UUID,
+        pageNumber: Int,
+        sortOrder: Sort,
+        categories: List<UUID>,
+        count: Int
+    ): List<TrendWithLikeStatus> {
+        val pageable = PageRequest.of(pageNumber, count, sortOrder)
+        return trendsRepository.getTrendFeedForCategories(
+            userId = currentUserId,
+            pageable = pageable,
+            categories = categories
+        ).content
+    }
+
+    private fun calculateBottomTrendsCount(trendId: UUID?): Int =
+        if (trendId != null) PAGE_SIZE_WITH_TREND_ID - RECOMMENDATION_PAGE_SIZE else PAGE_SIZE - RECOMMENDATION_PAGE_SIZE
+
+    private fun buildFeedWithOptionalTrend(
+        trendId: UUID?,
+        currentUserId: UUID,
+        trends: List<TrendWithLikeStatus>
+    ): List<TrendWithOwnerShipAndLikeStatus> {
+        val shuffledTrends = trends.shuffled()
+
+        val trendsWithLikeStatus = trendId?.let {
+            trendsRepository.findByIdAndIsPublishedWithLikeStatus(it, currentUserId, true)
+                ?.let { trend -> listOf(trend) + shuffledTrends }
+                ?: shuffledTrends
+        } ?: shuffledTrends
+
+        return trendsWithLikeStatus.map {
             generatePresignedUrlsForTrend(it).withOwnership(currentUserId)
         }
-
-        return trends
     }
 
     fun getUserFavoriteTrends(
@@ -219,5 +296,12 @@ class TrendsService(
             fileStorageService.generatePresignedUrl(it, trendsExpirationProperties.thumbnailUrlMinutes)
         }
         return TrendSignedUrls(videoUrl = signedVideoUrl, thumbnailUrl = signedThumbnailUrl)
+    }
+
+    companion object{
+        const val PAGE_SIZE = 10
+        const val PAGE_SIZE_WITH_TREND_ID = PAGE_SIZE - 1
+        const val RECOMMENDATION_TO_EXPLORATION_RATIO = 2.0 / 3.0
+        const val RECOMMENDATION_PAGE_SIZE = 7
     }
 }

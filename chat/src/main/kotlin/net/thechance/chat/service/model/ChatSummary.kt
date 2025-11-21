@@ -30,6 +30,7 @@ fun Chat.toSummary(userId: UUID, chatName: String, imageUrl:String, lastMessage:
                 is MessageContent.Audio -> "Audio"
                 is MessageContent.Ayah -> "Ayah"
                 is MessageContent.Money -> "Money"
+                is MessageContent.Order -> "Order"
             }
 
             ChatSummary.Message(

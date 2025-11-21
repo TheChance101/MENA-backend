@@ -47,6 +47,17 @@ data class MessageResponse(
         data class Money(val amount: Double) : MessageContent() {
             override val type = Message.MessageType.MONEY.name
         }
+
+        data class Order(
+            val orderId: String,
+            val totalProducts: Int,
+            val totalPrice: String,
+            val deliverToAddress: String,
+            val dukanId: String,
+            val dukanOwnerId: String
+        ) : MessageContent() {
+            override val type = Message.MessageType.ORDER.name
+        }
     }
 }
 
@@ -56,7 +67,11 @@ fun MessageContent.toResponse() = when(this) {
     is MessageContent.Audio -> MessageResponse.MessageContent.Audio(url, durationMs)
     is MessageContent.Ayah -> MessageResponse.MessageContent.Ayah(ayahNumber, suraNumber, ayahText)
     is MessageContent.Money -> MessageResponse.MessageContent.Money(amount)
+    is MessageContent.Order -> MessageResponse.MessageContent.Order(
+        orderId, totalProducts, totalPrice, deliverToAddress, dukanId, dukanOwnerId
+    )
 }
+
 
 fun Message.toResponse(requesterId: UUID): MessageResponse {
     return MessageResponse(

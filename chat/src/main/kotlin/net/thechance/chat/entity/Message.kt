@@ -42,6 +42,7 @@ data class Message(
         IMAGE,
         AUDIO,
         MONEY,
-        AYAH
+        AYAH,
+        ORDER,
     }
 }
