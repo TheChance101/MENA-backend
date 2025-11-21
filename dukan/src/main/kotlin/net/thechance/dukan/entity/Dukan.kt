@@ -40,7 +40,7 @@ data class Dukan(
     @Column(name = "status", nullable = false)
     val status: Status = Status.PENDING,
     @Enumerated(EnumType.STRING)
-    @Column(name = "activation_status", nullable = true)
+    @Column(name = "activation_status", nullable = false)
     val activationStatus: ActivationStatus,
     @OneToMany(mappedBy = "dukan", cascade = [CascadeType.ALL])
     val shelves: Set<DukanShelf> = emptySet(),
