@@ -9,7 +9,6 @@ import java.util.Collections.emptySet
 @Entity
 data class Dukan(
     @Id
-    @GeneratedValue(strategy = GenerationType.UUID)
     val id: UUID = UUID.randomUUID(),
     @Column(name = "owner_id", nullable = false, unique = true)
     val ownerId: UUID,
