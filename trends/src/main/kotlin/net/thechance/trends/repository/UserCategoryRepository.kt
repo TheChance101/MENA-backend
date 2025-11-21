@@ -5,7 +5,7 @@ import org.springframework.data.jpa.repository.JpaRepository
 import java.util.*
 
 interface UserCategoryRepository: JpaRepository<UserCategories, UUID>{
-    fun findByUserIdAndCategoryId(userId: UUID, categoryId: UUID): UserCategories?
+    fun findAllByUserIdAndIsSelectedOrderByAffinityDesc(userId: UUID, isSelected: Boolean): List<UserCategories>
     fun findUserCategoriesByUserId(userId: UUID): MutableList<UserCategories>
     fun findAllByUserIdAndCategoryIdIn(userId: UUID, categoryIds: MutableCollection<UUID>): MutableList<UserCategories>
 }
