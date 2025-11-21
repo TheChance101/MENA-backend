@@ -1,6 +1,7 @@
 package net.thechance.wallet.api.controller
 
 import jakarta.servlet.http.HttpServletResponse
+import net.thechance.wallet.api.controller.util.ImageUrlBuilder
 import net.thechance.wallet.api.controller.util.StatementMetadata
 import net.thechance.wallet.api.controller.util.StatementPdfWriter
 import net.thechance.wallet.api.dto.PageResponse
@@ -25,6 +26,7 @@ import java.util.*
 class TransactionController(
     private val transactionService: TransactionService,
     private val statementPdfWriter: StatementPdfWriter,
+    private val imageUrlBuilder: ImageUrlBuilder
 ) {
     @GetMapping
     fun getFilteredTransactions(
@@ -44,7 +46,7 @@ class TransactionController(
                 Sort.by(Sort.Direction.DESC, Transaction::createdAt.name)
             ),
             currentUserId = userId
-        ).toResponsePage(userId)
+        ).toResponsePage(currentUserId = userId, imageUrlBuilder = imageUrlBuilder)
 
         return ResponseEntity.ok(response)
     }
@@ -64,7 +66,9 @@ class TransactionController(
         @AuthenticationPrincipal userId: UUID,
         @PathVariable transactionId: UUID
     ): ResponseEntity<TransactionResponse> {
-        val response = transactionService.getTransactionDetails(transactionId).toResponse(userId)
+        val response = transactionService
+            .getTransactionDetails(transactionId)
+            .toResponse(currentUserId = userId, imageUrlBuilder = imageUrlBuilder)
 
         return ResponseEntity.ok(response)
     }

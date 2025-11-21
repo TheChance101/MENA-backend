@@ -20,3 +20,5 @@ class ImageUploadFailedException(message: String) : ChatException(message = mess
 class InvalidAudioFormatException(message: String = "Invalid audio format") : ChatException(message = message)
 
 class AudioUploadFailedException(message: String) :  ChatException(message = message)
+
+class FetchWeatherException(message: String, val causedBy: Exception? = null) : ChatException(message)
