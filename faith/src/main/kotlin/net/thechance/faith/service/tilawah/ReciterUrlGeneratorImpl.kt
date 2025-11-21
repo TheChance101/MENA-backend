@@ -11,6 +11,16 @@ class ReciterUrlGeneratorImpl : ReciterUrlGenerator {
         return "${reciter.serverUrl}${surahNumber.padWithThreeDigits()}${ayahNumber.padWithThreeDigits()}.mp3"
     }
 
+    override fun generateAyatSoundUrl(
+        surahNumber: Int,
+        ayatNumber: Int,
+        reciter: Reciter
+    ): List<String> {
+        return (1..ayatNumber).map {
+            "${reciter.serverUrl}${surahNumber.padWithThreeDigits()}${it.padWithThreeDigits()}.mp3"
+        }
+    }
+
     override fun generateSurahSoundsUrl(surahNumber: Int, reciter: Reciter): String {
         return "${reciter.serverUrl}zips/${surahNumber.padWithThreeDigits()}.zip"
     }
