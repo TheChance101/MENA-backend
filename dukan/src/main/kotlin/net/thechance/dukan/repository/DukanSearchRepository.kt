@@ -10,15 +10,28 @@ import org.springframework.data.repository.query.Param
 interface DukanSearchRepository : ElasticsearchRepository<DukanDocument, String> {
     @Query(
         """
-    {
-      "wildcard": {
-        "name": {
-          "value": "*?0*",
-          "case_insensitive": true
+{
+  "bool": {
+    "must": [
+      {
+        "wildcard": {
+          "name": {
+            "value": "*?0*",
+            "case_insensitive": true
+          }
         }
       }
-    }
-    """
+    ],
+    "filter": [
+      {
+        "term": {
+          "activationStatus.keyword": "ACTIVATED"
+        }
+      }
+    ]
+  }
+}
+"""
     )
     fun searchByNameLike(@Param("query") query: String, pageable: Pageable): Page<DukanDocument>
 }

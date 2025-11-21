@@ -142,6 +142,12 @@ class DukanService(
         handleUpdatingStatusActions(dukanId, status, reason)
     }
 
+    fun getDukanActivationStatus(dukanId: UUID): Dukan.ActivationStatus {
+        val activationStatus = dukanRepository.getDukanActivationStatus(dukanId)
+            ?: throw DukanNotFoundException()
+        return activationStatus
+    }
+
     fun findTopDukansWithDiscounts(
         userId: UUID,
         pageable: Pageable

@@ -9,12 +9,17 @@ sealed class DukanEvent : MenaEvent {
         val status: Status,
         val imageUrl:String?,
         val lat:Double,
-        val lng:Double
+        val lng:Double,
+        val activationStatus: ActivationStatus?,
     ):DukanEvent() {
         enum class Status {
             APPROVED,
             REJECTED,
             PENDING,
+        }
+        enum class ActivationStatus {
+            ACTIVATED,
+            DEACTIVATED,
         }
     }
     data class Delete(val id:String):DukanEvent()

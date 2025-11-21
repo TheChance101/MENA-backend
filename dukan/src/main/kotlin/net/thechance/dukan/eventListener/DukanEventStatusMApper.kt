@@ -4,8 +4,15 @@ import net.thechance.dukan.entity.Dukan
 import net.thechance.events.dukan.DukanEvent
 
 
-fun DukanEvent.Save.Status.toDukanStatus():Dukan.Status = when(this){
+fun DukanEvent.Save.Status.toDukanStatus(): Dukan.Status = when (this) {
     DukanEvent.Save.Status.APPROVED -> Dukan.Status.APPROVED
     DukanEvent.Save.Status.REJECTED -> Dukan.Status.REJECTED
     DukanEvent.Save.Status.PENDING -> Dukan.Status.PENDING
+}
+
+fun DukanEvent.Save.ActivationStatus.toDukanStatus(): Dukan.ActivationStatus {
+    return when (this) {
+        DukanEvent.Save.ActivationStatus.ACTIVATED -> Dukan.ActivationStatus.ACTIVATED
+        DukanEvent.Save.ActivationStatus.DEACTIVATED -> Dukan.ActivationStatus.DEACTIVATED
+    }
 }

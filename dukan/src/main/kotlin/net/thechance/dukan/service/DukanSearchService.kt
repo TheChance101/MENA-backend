@@ -54,5 +54,4 @@ class DukanSearchService(
             doc.toSearchResultPreviewItem(isFavorite = favoriteIds.contains(UUID.fromString(doc.id)))
         }
     }
-
 }

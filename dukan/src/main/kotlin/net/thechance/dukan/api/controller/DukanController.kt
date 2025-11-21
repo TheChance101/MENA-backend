@@ -148,4 +148,12 @@ class DukanController(
         val topDukans = dukanService.findTopDukansWithDiscounts(userId, pageable)
         return ResponseEntity.ok(topDukans.map { it.toResponse() })
     }
+
+    @GetMapping("/{dukanId}/activation_status")
+    fun getDukanActivationStatus(
+        @PathVariable dukanId: UUID
+    ): ResponseEntity<DukanActivationStatusResponse> {
+        val activationStatus = dukanService.getDukanActivationStatus(dukanId)
+        return ResponseEntity.ok(DukanActivationStatusResponse(activationStatus))
+    }
 }

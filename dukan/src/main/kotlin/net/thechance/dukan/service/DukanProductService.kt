@@ -81,7 +81,8 @@ class DukanProductService(
         imageUrl = this.imageUrl,
         status = DukanEvent.Save.Status.APPROVED,
         lat = this.latitude,
-        lng = this.longitude
+        lng = this.longitude,
+        activationStatus = DukanEvent.Save.ActivationStatus.ACTIVATED
     )
 
     private fun DukanProduct.toProductSaveEvent() = ProductEvent.Save(

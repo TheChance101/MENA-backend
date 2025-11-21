@@ -28,7 +28,8 @@ class DukanEventListener(
             name = event.name,
             status = event.status.toDukanStatus(),
             imageUrl = event.imageUrl,
-            location = GeoPoint(event.lat,event.lng)
+            location = GeoPoint(event.lat,event.lng),
+            activationStatus = event.activationStatus?.toDukanStatus()
         )
          dukanSearchRepository.save(dukanDocument)
     }
