@@ -72,23 +72,30 @@ class TrendsService(
         val sortOrder = pageable.getSortOr(Sort.by(Sort.Direction.DESC, "createdAt"))
         val (topCategories, bottomCategories) = splitCategoriesByAffinity(userCategories)
 
-        val topTrends = fetchTopAffinityTrends(currentUserId, pageable.pageNumber, sortOrder, topCategories)
+        val bottomTrendsNeeded = calculateBottomTrendsCount(trendId)
+
+        val topTrends = fetchTopAffinityTrends(
+            currentUserId = currentUserId,
+            pageNumber = pageable.pageNumber,
+            sortOrder = sortOrder,
+            categories = topCategories
+        )
+
         val bottomTrends = fetchDiversityTrends(
             currentUserId = currentUserId,
             pageNumber = pageable.pageNumber,
             sortOrder = sortOrder,
-            excludedTrendIds = topTrends.map { it.getTrend().id },
             categories = bottomCategories.ifEmpty { topCategories },
-            count = calculateBottomTrendsCount(trendId, topTrends.size)
+            count = bottomTrendsNeeded
         )
 
         val feedTrends = buildFeedWithOptionalTrend(trendId, currentUserId, topTrends + bottomTrends)
+
 
         return PageImpl(feedTrends, pageable, feedTrends.size.toLong())
     }
 
     private fun splitCategoriesByAffinity(userCategories: List<UserCategories>): Pair<List<UUID>, List<UUID>> {
-
         val splitPoint = (userCategories.size * RECOMMENDATION_TO_EXPLORATION_RATIO).toInt().coerceAtLeast(1)
         return userCategories.take(splitPoint).map { it.categoryId } to
                 userCategories.drop(splitPoint).map { it.categoryId }
@@ -100,11 +107,10 @@ class TrendsService(
         sortOrder: Sort,
         categories: List<UUID>
     ): List<TrendWithLikeStatus> {
-        val pageable = PageRequest.of(pageNumber, RECOMMENDATION_PAGE_SIZE, sortOrder)
+        val pageable = PageRequest.of(pageNumber, 7, sortOrder)
         return trendsRepository.getTrendFeedForCategories(
             userId = currentUserId,
             pageable = pageable,
-            trendIds = emptyList(),
             categories = categories
         ).content
     }
@@ -113,7 +119,6 @@ class TrendsService(
         currentUserId: UUID,
         pageNumber: Int,
         sortOrder: Sort,
-        excludedTrendIds: List<UUID>,
         categories: List<UUID>,
         count: Int
     ): List<TrendWithLikeStatus> {
@@ -121,14 +126,12 @@ class TrendsService(
         return trendsRepository.getTrendFeedForCategories(
             userId = currentUserId,
             pageable = pageable,
-            trendIds = excludedTrendIds,
             categories = categories
         ).content
     }
 
-    private fun calculateBottomTrendsCount(trendId: UUID?, topTrendsSize: Int): Int =
-        if (trendId != null) PAGE_SIZE_WITH_TREND_ID - topTrendsSize else PAGE_SIZE - topTrendsSize
-
+    private fun calculateBottomTrendsCount(trendId: UUID?): Int =
+        if (trendId != null) PAGE_SIZE_WITH_TREND_ID - RECOMMENDATION_PAGE_SIZE else PAGE_SIZE - RECOMMENDATION_PAGE_SIZE
 
     private fun buildFeedWithOptionalTrend(
         trendId: UUID?,

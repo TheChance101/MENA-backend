@@ -84,19 +84,18 @@ interface TrendsRepository : JpaRepository<Trend, UUID> {
 
     @Query(
         """
-        SELECT DISTINCT t AS trend, 
-               CASE WHEN tl IS NOT NULL THEN true ELSE false END AS isLiked
-        FROM Trend t
-        LEFT JOIN FETCH t.owner
-        LEFT JOIN TrendLike tl ON tl.trendId = t.id AND tl.userId = :userId
-        WHERE t.isPublished = true
-        AND t.owner.status = 'ACTIVE'
-        AND EXISTS (
-            SELECT 1 FROM t.categories tc
-            WHERE tc.id IN :categories
-        )
-        AND t.id NOT IN :trendIds
-        """,
+    SELECT DISTINCT t AS trend, 
+           CASE WHEN tl IS NOT NULL THEN true ELSE false END AS isLiked
+    FROM Trend t
+    LEFT JOIN FETCH t.owner
+    LEFT JOIN TrendLike tl ON tl.trendId = t.id AND tl.userId = :userId
+    WHERE t.isPublished = true
+    AND t.owner.status = 'ACTIVE'
+    AND EXISTS (
+        SELECT 1 FROM t.categories tc
+        WHERE tc.id IN :categories
+    )
+    """,
         countQuery = """
     SELECT COUNT(DISTINCT t.id)
     FROM Trend t
@@ -105,13 +104,11 @@ interface TrendsRepository : JpaRepository<Trend, UUID> {
         SELECT 1 FROM t.categories tc
         WHERE tc.id IN :categories
     )
-    AND t.id NOT IN :trendIds
-    """
+         """
     )
     fun getTrendFeedForCategories(
         userId: UUID,
         pageable: Pageable,
-        trendIds: List<UUID>,
         categories: List<UUID>
     ): Page<TrendWithLikeStatus>
 
