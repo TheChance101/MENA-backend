@@ -22,7 +22,7 @@ fun DukanCreationEvent.Status.toDukanStatus() = when (this) {
 fun DukanCreationEvent.ActivationStatus.toDukanActivationStatus() = when (this) {
     DukanCreationEvent.ActivationStatus.ACTIVATED -> WalletDukan.ActivationStatus.ACTIVATED
     DukanCreationEvent.ActivationStatus.DEACTIVATED -> WalletDukan.ActivationStatus.DEACTIVATED
-    DukanCreationEvent.ActivationStatus.ONHOLD -> WalletDukan.ActivationStatus.DEACTIVATED
+    DukanCreationEvent.ActivationStatus.ONHOLD -> WalletDukan.ActivationStatus.ONHOLD
 }
 
 

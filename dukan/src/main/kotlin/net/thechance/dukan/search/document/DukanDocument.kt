@@ -28,5 +28,5 @@ data class DukanDocument(
     val categoryIds: Set<String>,
 
     @Field(type = FieldType.Keyword)
-    val activationStatus: Dukan.ActivationStatus?,
+    val activationStatus: Dukan.ActivationStatus,
 )
