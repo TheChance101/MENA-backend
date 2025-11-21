@@ -25,4 +25,15 @@ sealed class MessageContent {
     @Serializable
     @SerialName("MONEY")
     data class Money(val amount: Double) : MessageContent()
+
+    @Serializable
+    @SerialName("ORDER")
+    data class Order(
+        val orderId: String,
+        val totalProducts: Int,
+        val totalPrice: String,
+        val deliverToAddress: String,
+        val dukanId: String,
+        val dukanOwnerId: String
+    ) : MessageContent()
 }

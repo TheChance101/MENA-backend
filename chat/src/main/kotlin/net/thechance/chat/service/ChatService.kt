@@ -24,7 +24,7 @@ class ChatService(
     private val deletedChatRepository: DeletedChatRepository,
     private val contactUserService: ContactUserService,
     private val attachmentStorageService: AttachmentStorageService,
-    private val contactService: ContactService
+    private val contactService: ContactService,
 ) {
 
     @Transactional
