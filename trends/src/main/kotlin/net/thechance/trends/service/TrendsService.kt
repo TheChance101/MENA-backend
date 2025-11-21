@@ -26,7 +26,6 @@ import org.springframework.stereotype.Service
 import org.springframework.transaction.annotation.Transactional
 import org.springframework.web.multipart.MultipartFile
 import java.util.*
-import kotlin.random.Random
 
 
 @Service
@@ -89,7 +88,8 @@ class TrendsService(
     }
 
     private fun splitCategoriesByAffinity(userCategories: List<UserCategories>): Pair<List<UUID>, List<UUID>> {
-        val splitPoint = (userCategories.size * 2.0 / 3.0).toInt().coerceAtLeast(1)
+
+        val splitPoint = (userCategories.size * RECOMMENDATION_TO_EXPLORATION_RATIO).toInt().coerceAtLeast(1)
         return userCategories.take(splitPoint).map { it.categoryId } to
                 userCategories.drop(splitPoint).map { it.categoryId }
     }
@@ -100,7 +100,7 @@ class TrendsService(
         sortOrder: Sort,
         categories: List<UUID>
     ): List<TrendWithLikeStatus> {
-        val pageable = PageRequest.of(pageNumber, 7, sortOrder)
+        val pageable = PageRequest.of(pageNumber, RECOMMENDATION_PAGE_SIZE, sortOrder)
         return trendsRepository.getTrendFeedForCategories(
             userId = currentUserId,
             pageable = pageable,
@@ -127,7 +127,8 @@ class TrendsService(
     }
 
     private fun calculateBottomTrendsCount(trendId: UUID?, topTrendsSize: Int): Int =
-        if (trendId != null) 9 - topTrendsSize else 10 - topTrendsSize
+        if (trendId != null) PAGE_SIZE_WITH_TREND_ID - topTrendsSize else PAGE_SIZE - topTrendsSize
+
 
     private fun buildFeedWithOptionalTrend(
         trendId: UUID?,
@@ -292,5 +293,12 @@ class TrendsService(
             fileStorageService.generatePresignedUrl(it, trendsExpirationProperties.thumbnailUrlMinutes)
         }
         return TrendSignedUrls(videoUrl = signedVideoUrl, thumbnailUrl = signedThumbnailUrl)
+    }
+
+    companion object{
+        const val PAGE_SIZE = 10
+        const val PAGE_SIZE_WITH_TREND_ID = PAGE_SIZE - 1
+        const val RECOMMENDATION_TO_EXPLORATION_RATIO = 2.0 / 3.0
+        const val RECOMMENDATION_PAGE_SIZE = 7
     }
 }
