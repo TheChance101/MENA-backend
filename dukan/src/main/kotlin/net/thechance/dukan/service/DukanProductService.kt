@@ -3,6 +3,8 @@ package net.thechance.dukan.service
 import jakarta.persistence.EntityNotFoundException
 import jakarta.transaction.Transactional
 import net.thechance.dukan.entity.*
+import net.thechance.dukan.eventListener.mapper.toDukanSaveEvent
+import net.thechance.dukan.eventListener.mapper.toProductSaveEvent
 import net.thechance.dukan.repository.DukanProductRepository
 import net.thechance.dukan.repository.DukanShelfRepository
 import net.thechance.dukan.repository.FavoriteProductRepository
@@ -14,8 +16,8 @@ import net.thechance.dukan.service.exception.ProductNotFoundException
 import net.thechance.dukan.service.model.DukanProductCreationParams
 import net.thechance.dukan.service.model.DukanProductUpdateParams
 import net.thechance.dukan.service.model.DukanProductWithFavoriteAndQuantity
-import net.thechance.events.dukan.DukanEvent
-import net.thechance.events.dukan.ProductEvent
+import net.thechance.events.dukan.DukanSearchEvent
+import net.thechance.events.dukan.ProductSearchEvent
 import net.thechance.events.publisher.MenaEventPublisher
 import org.springframework.data.domain.Page
 import org.springframework.data.domain.Pageable
@@ -56,7 +58,7 @@ class DukanProductService(
             //We need to delete the product from the database.
             dukanProductRepository.delete(product).also {
                 eventPublisher.publish(
-                    ProductEvent.Delete(product.id.toString())
+                    ProductSearchEvent.Delete(product.id.toString())
                 )
             }
 
@@ -75,24 +77,6 @@ class DukanProductService(
         return imageUrls
     }
 
-    private fun Dukan.toDukanSaveEvent() = DukanEvent.Save(
-        id = this.id.toString(),
-        name = this.name,
-        imageUrl = this.imageUrl,
-        status = DukanEvent.Save.Status.APPROVED,
-        lat = this.latitude,
-        lng = this.longitude
-    )
-
-    private fun DukanProduct.toProductSaveEvent() = ProductEvent.Save(
-        id = this.id.toString(),
-        name = this.name,
-        dukanName = this.description,
-        dukanId = this.dukan.id.toString(),
-        mainImageUrl = this.imageUrls.firstOrNull().orEmpty(),
-        price = this.price.final,
-        shelfName = this.shelf.title
-    )
 
     fun createProduct(params: DukanProductCreationParams): UUID {
         try {
@@ -211,7 +195,7 @@ class DukanProductService(
         dukanProductRepository.save(deletedProduct)
 
         eventPublisher.publish(
-            ProductEvent.Delete(product.id.toString())
+            ProductSearchEvent.Delete(product.id.toString())
         )
     }
 
