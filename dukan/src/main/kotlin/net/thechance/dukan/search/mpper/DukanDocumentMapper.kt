@@ -13,7 +13,8 @@ fun Dukan.toDocument():DukanDocument{
         status = status,
         imageUrl = imageUrl,
         location = GeoPoint(latitude,longitude),
-        categoryIds = categories.map { it.id.toString() }.toSet()
+        categoryIds = categories.map { it.id.toString() }.toSet(),
+        activationStatus = activationStatus
     )
 }
 
