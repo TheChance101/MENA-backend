@@ -1,6 +1,5 @@
 package net.thechance.trends.repository
 
-import net.thechance.trends.entity.Category
 import net.thechance.trends.entity.Trend
 import net.thechance.trends.models.TrendUrls
 import net.thechance.trends.models.TrendWithLikeStatus
@@ -84,33 +83,38 @@ interface TrendsRepository : JpaRepository<Trend, UUID> {
 
     @Query(
         """
+        SELECT t.id
+        FROM Trend t
+        JOIN t.categories tc
+        LEFT JOIN UserCategories uc ON uc.categoryId = tc.id AND uc.userId = :userId
+        WHERE t.isPublished = true
+        AND tc.id IN :categories
+        GROUP BY t.id
+        ORDER BY COALESCE(MAX(uc.affinity), 0) DESC, MAX(t.createdAt) DESC
+        """
+    )
+    fun getTrendIdsOrderedByAffinity(
+        userId: UUID,
+        categories: List<UUID>,
+        pageable: Pageable
+    ): Page<UUID>
+
+    @Query(
+        """
     SELECT DISTINCT t AS trend, 
            CASE WHEN tl IS NOT NULL THEN true ELSE false END AS isLiked
     FROM Trend t
     LEFT JOIN FETCH t.owner
     LEFT JOIN TrendLike tl ON tl.trendId = t.id AND tl.userId = :userId
-    WHERE t.isPublished = true
+    WHERE t.id IN :trendIds
+    AND t.isPublished = true
     AND t.owner.status = 'ACTIVE'
-    AND EXISTS (
-        SELECT 1 FROM t.categories tc
-        WHERE tc.id IN :categories
-    )
-    """,
-        countQuery = """
-    SELECT COUNT(DISTINCT t.id)
-    FROM Trend t
-    WHERE t.isPublished = true
-    AND EXISTS (
-        SELECT 1 FROM t.categories tc
-        WHERE tc.id IN :categories
-    )
-         """
+    """
     )
     fun getTrendFeedForCategories(
         userId: UUID,
-        pageable: Pageable,
-        categories: List<UUID>
-    ): Page<TrendWithLikeStatus>
+        trendIds: List<UUID>
+    ): List<TrendWithLikeStatus>
 
     @Query(
         """
