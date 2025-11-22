@@ -45,7 +45,7 @@ interface DukanProductRepository : JpaRepository<DukanProduct, UUID> {
 
     @Query(
         """
-        SELECT new net.thechance.dukan.service.model.DukanProductWithFavoriteAndQuantity(
+        SELECT DISTINCT new net.thechance.dukan.service.model.DukanProductWithFavoriteAndQuantity(
             product,
             CASE WHEN favorite.id.productId IS NOT NULL THEN true ELSE false END,
             COALESCE(cartItem.quantity, 0)
@@ -56,11 +56,13 @@ interface DukanProductRepository : JpaRepository<DukanProduct, UUID> {
         LEFT JOIN FavoriteProduct favorite
             ON favorite.id.productId = product.id AND favorite.id.userId = :userId
         LEFT JOIN Cart cart
-            ON cart.userId = :userId AND cart.dukanId = dukan.id
+            ON cart.userId = :userId
+            AND cart.dukanId = dukan.id
+            AND cart.isOrderPurchased = false
         LEFT JOIN cart.items cartItem
             ON cartItem.product.id = product.id
         WHERE shelf.id = :shelfId AND (product.isDeleted = false)
-        """
+    """
     )
     fun findProductsWithFavoriteAndQuantityByShelf(
         @Param("userId") userId: UUID,
