@@ -90,12 +90,22 @@ interface TrendsRepository : JpaRepository<Trend, UUID> {
         WHERE t.isPublished = true
         AND tc.id IN :categories
         GROUP BY t.id
+        HAVING :startTrendId IS NULL 
+        OR (COALESCE(MAX(uc.affinity), 0), MAX(t.createdAt)) <= (
+           SELECT COALESCE(MAX(uc2.affinity), 0), MAX(t2.createdAt)
+           FROM Trend t2
+           JOIN t2.categories tc2
+           LEFT JOIN UserCategories uc2 ON uc2.categoryId = tc2.id AND uc2.userId = :userId
+           WHERE t2.id = :startTrendId
+           GROUP BY t2.id
+        )
         ORDER BY COALESCE(MAX(uc.affinity), 0) DESC, MAX(t.createdAt) DESC
         """
     )
     fun getTrendIdsOrderedByAffinity(
         userId: UUID,
         categories: List<UUID>,
+        startTrendId: UUID? = null,
         pageable: Pageable
     ): Page<UUID>
 

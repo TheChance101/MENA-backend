@@ -62,6 +62,7 @@ class TrendsService(
         val pageSize = if (trendId != null) PAGE_SIZE_WITH_TREND_ID else PAGE_SIZE
         val trendIdsPage = trendsRepository.getTrendIdsOrderedByAffinity(
             userId = currentUserId,
+            startTrendId = trendId,
             categories = userCategories.map { it.categoryId },
             pageable = PageRequest.of(pageable.pageNumber, pageSize)
         )
