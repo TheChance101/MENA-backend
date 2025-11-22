@@ -24,11 +24,7 @@ interface DukanRepository : JpaRepository<Dukan, UUID> {
     SELECT DISTINCT d
     FROM Dukan d
     WHERE d.status = net.thechance.dukan.entity.Dukan.Status.APPROVED
-    AND EXISTS (
-        SELECT 1 
-        FROM DukanShelf s
-        WHERE s.dukan = d
-    )
+    AND d.activationStatus = net.thechance.dukan.entity.Dukan.ActivationStatus.ACTIVATED
     AND EXISTS (
         SELECT 1
         FROM DukanProduct p
@@ -37,7 +33,7 @@ interface DukanRepository : JpaRepository<Dukan, UUID> {
     ORDER BY d.createdAt DESC
     """
     )
-    fun findAllApprovedWithShelvesAndProducts(pageable: Pageable): Page<Dukan>
+    fun findAllApprovedAndActivatedWithProducts(pageable: Pageable): Page<Dukan>
 
     @Query(
         """
