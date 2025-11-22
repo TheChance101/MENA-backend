@@ -31,7 +31,7 @@ class DukanSearchService(
         var totalIndexed = 0
 
         while (true) {
-            val dukansPage = dukanRepository.findAllApprovedWithShelvesAndProducts(PageRequest.of(page, pageSize))
+            val dukansPage = dukanRepository.findAllApprovedAndActivatedWithProducts(PageRequest.of(page, pageSize))
             if (dukansPage.isEmpty) break
 
             val documents = dukansPage.content.map { it.toDocument() }
@@ -50,7 +50,7 @@ class DukanSearchService(
         val favoriteIds: Set<UUID> = favoriteDukanRepository.findByIdUserIdAndIdDukanIdIn(userId, dukansIds)
             .map { it.id.dukanId }
             .toSet()
-
+        println("dukansDoc${ dukanDocs.content }")
         return dukanDocs.map { doc->
             doc.toSearchResultPreviewItem(isFavorite = favoriteIds.contains(UUID.fromString(doc.id)))
         }
