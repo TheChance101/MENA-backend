@@ -120,7 +120,7 @@ interface DukanRepository : JpaRepository<Dukan, UUID> {
     WHERE category.id = :categoryId
     AND dukan.ownerId != :userId
     AND dukan.status = net.thechance.dukan.entity.Dukan.Status.APPROVED
-    AND dukan.activationStatus != net.thechance.dukan.entity.Dukan.ActivationStatus.DEACTIVATED
+    AND dukan.activationStatus = net.thechance.dukan.entity.Dukan.ActivationStatus.ACTIVATED
     AND EXISTS (
           SELECT 1
           FROM DukanProduct product
