@@ -22,11 +22,9 @@ interface DukanSearchRepository : ElasticsearchRepository<DukanDocument, String>
       }
     ],
     "filter": [
-      {
-        "term": {
-          "activationStatus.keyword": "ACTIVATED"
-        }
-      }
+        {"term": {"activationStatus": "ACTIVATED"}},
+        {"term": {"status": "APPROVED"}}
+        
     ]
   }
 }
@@ -34,18 +32,11 @@ interface DukanSearchRepository : ElasticsearchRepository<DukanDocument, String>
     )
     fun searchByNameLike(query: String, pageable: Pageable): Page<DukanDocument>
 
-    @Query("""
+    @Query(
+        """
 {
   "bool": {
-    "should": [
-      {
-        "match": {
-          "name": {
-            "query": "?0",
-            "fuzziness": "AUTO"
-          }
-        }
-      },
+    "must": [
       {
         "wildcard": {
           "name": {
@@ -56,11 +47,14 @@ interface DukanSearchRepository : ElasticsearchRepository<DukanDocument, String>
       }
     ],
     "filter": [
-      { "term": { "categoryIds": "?1" } }
+        {"term": {"activationStatus": "ACTIVATED"}},
+        {"term": {"status": "APPROVED"}},
+        { "term": { "categoryIds": "?1" } }
     ]
   }
 }
-""")
+"""
+    )
     fun searchByNameAndCategory(
         name: String,
         categoryId: String,
