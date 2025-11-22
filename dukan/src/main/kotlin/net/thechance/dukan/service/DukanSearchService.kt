@@ -50,7 +50,6 @@ class DukanSearchService(
         val favoriteIds: Set<UUID> = favoriteDukanRepository.findByIdUserIdAndIdDukanIdIn(userId, dukansIds)
             .map { it.id.dukanId }
             .toSet()
-        println("dukansDoc${ dukanDocs.content }")
         return dukanDocs.map { doc->
             doc.toSearchResultPreviewItem(isFavorite = favoriteIds.contains(UUID.fromString(doc.id)))
         }
