@@ -14,8 +14,8 @@ class PhoneNumberRateLimitService(
         val pageable = PageRequest.of(0, MAX_RETRIES_PER_WINDOW)
         val latestOtpLog = otpLogRepository.findByPhoneNumberOrderByCreatedAtDesc(phoneNumber, pageable)
         if (latestOtpLog.isNotEmpty()) {
-            val isLastRequestIsFrequent =
-                latestOtpLog.first().createdAt > Instant.now().minusSeconds(MIN_OTP_RESEND_GAP_SECONDS)
+            val cutoff = Instant.now().minusSeconds(MIN_OTP_RESEND_GAP_SECONDS)
+            val isLastRequestIsFrequent = latestOtpLog.take(2).all { it.createdAt > cutoff }
             val ifWindowLimitExceeded =
                 latestOtpLog.size == MAX_RETRIES_PER_WINDOW && latestOtpLog.last().createdAt > Instant.now()
                     .minusSeconds(
