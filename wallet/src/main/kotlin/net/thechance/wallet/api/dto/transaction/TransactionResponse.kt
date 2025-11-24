@@ -108,16 +108,14 @@ private fun getReceiverInfo(
     imageUrlBuilder: ImageUrlBuilder
 ): TransactionPartyInfo {
     val isPurchaseFromCurrentUser = type == Transaction.Type.ONLINE_PURCHASE && senderUserId == currentUserId
-
     val name = when {
-        isPurchaseFromCurrentUser -> receiver.dukan?.name?.takeIf { it.isNotBlank() } ?: receiver.userName
+        isPurchaseFromCurrentUser && receiver.dukan?.imageUrl?.isNotBlank() == true -> receiver.dukan.name
         else -> receiver.userName
     }
-
     val imageUrl = when {
-        isPurchaseFromCurrentUser -> receiver.dukan?.imageUrl?.takeIf { it.isNotBlank() } ?: receiver.imageUrl
-        else -> receiver.imageUrl
+        isPurchaseFromCurrentUser && receiver.dukan?.imageUrl?.isNotBlank() == true -> receiver.dukan.imageUrl
+        else -> imageUrlBuilder.buildUserImageUrl(receiver.imageUrl)
     }
 
-    return TransactionPartyInfo(name = name, imageUrl = imageUrlBuilder.buildUserImageUrl(imageUrl))
+    return TransactionPartyInfo(name = name, imageUrl = imageUrl)
 }
