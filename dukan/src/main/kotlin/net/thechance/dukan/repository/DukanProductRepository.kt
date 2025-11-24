@@ -45,23 +45,24 @@ interface DukanProductRepository : JpaRepository<DukanProduct, UUID> {
 
     @Query(
         """
-        SELECT DISTINCT new net.thechance.dukan.service.model.DukanProductWithFavoriteAndQuantity(
-            product,
-            CASE WHEN favorite.id.productId IS NOT NULL THEN true ELSE false END,
-            COALESCE(cartItem.quantity, 0)
-        )
-        FROM DukanProduct product
-        JOIN product.shelf shelf
-        JOIN shelf.dukan dukan
-        LEFT JOIN FavoriteProduct favorite
-            ON favorite.id.productId = product.id AND favorite.id.userId = :userId
-        LEFT JOIN Cart cart
-            ON cart.userId = :userId
-            AND cart.dukanId = dukan.id
-            AND cart.isOrderPurchased = false
-        LEFT JOIN cart.items cartItem
-            ON cartItem.product.id = product.id
-        WHERE shelf.id = :shelfId AND (product.isDeleted = false)
+    SELECT DISTINCT new net.thechance.dukan.service.model.DukanProductWithFavoriteAndQuantity(
+        product,
+        CASE WHEN favorite.id.productId IS NOT NULL THEN true ELSE false END,
+        COALESCE(MAX(cartItem.quantity), 0)
+    )
+    FROM DukanProduct product
+    JOIN product.shelf shelf
+    JOIN shelf.dukan dukan
+    LEFT JOIN FavoriteProduct favorite
+        ON favorite.id.productId = product.id AND favorite.id.userId = :userId
+    LEFT JOIN Cart cart
+        ON cart.userId = :userId
+        AND cart.dukanId = dukan.id
+        AND cart.isOrderPurchased = false
+    LEFT JOIN cart.items cartItem
+        ON cartItem.product.id = product.id
+    WHERE shelf.id = :shelfId AND (product.isDeleted = false)
+    GROUP BY product.id, favorite.id.productId
     """
     )
     fun findProductsWithFavoriteAndQuantityByShelf(
