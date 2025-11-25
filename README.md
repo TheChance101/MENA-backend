@@ -4,7 +4,7 @@
 A super app crafted for the Middle Eastern and North African community - empowering you to do everything you need, all while nurturing a genuine sense of belonging.
 
 <img width="50" alt="MENA" src="https://github.com/user-attachments/assets/f5b90dce-0144-4ec7-ae0d-9c964a50076b" />
- was brought to life through the passion and dedication of [**The Chance**](https://www.linkedin.com/company/thechance101/) Mentorship program, Over eleven weeks, we combined hard work, creativity, and collaboration to bring this vision to life.
+ was brought to life through the passion and dedication of <a href="https://www.linkedin.com/company/thechance101/">The Chance</a> Mentorship program, Over eleven weeks, we combined hard work, creativity, and collaboration to bring this vision to life.
 
 >
 <div>
