@@ -7,6 +7,75 @@ Backend Repository of MENA app
 
 A super app crafted for the Middle Eastern and North African community - empowering you to do everything you need, all while nurturing a genuine sense of belonging.
 
+## Setup
+open `application.properties` file you can find it at `app\src\main\resources\application.properties` and add these configuration.
+
+### Environment
+set active profile to `dev` to `application.properties`
+```
+spring.profiles.active=dev 
+```
+
+### JWT 
+add your `jwt secret key` to `application.properties`
+```
+jwt.secret-key=${JWT_SECRET}
+```
+
+### Database
+1. install `Postgress` database on your machine
+1. add your database configuration paramters to `application.properties`
+```
+spring.datasource.url=${DATABASE_URL}
+spring.datasource.username=${DATABASE_USER_NAME}
+spring.datasource.password=${DATABASE_PASSWORD}
+```
+
+### Elastic Search
+add `Elastic search setup` to `application.properties`
+```
+spring.elasticsearch.uris=${ELASTIC_SEARCH_URIS}
+spring.elasticsearch.password=${ELASTIC_SEARCH_PASSWORD}
+spring.elasticsearch.username=${ELASTIC_SEARCH_USERNAME}
+trends-access.secret-value=${STORAGE_TRENDS_ACCESS_SECRET}
+```
+
+### Storage
+1. we used [`Digital Ocean`](https://www.digitalocean.com) as remote file storage server. Alternative you can use [`LocalStack`](https://app.localstack.cloud/getting-started) for local simulation on your machine.
+1. install [Docker](https://www.docker.com/get-started/)
+1. install [AWS CLI](https://docs.aws.amazon.com/cli/latest/userguide/getting-started-install.html)
+1. install [LocalStack](https://app.localstack.cloud/getting-started)
+1. follow guide on local stack website to create key, secret, endpoint, cdn-enpoint(region) for mena, duckan, trends and wallet
+1. Assign `profile-image-directory` to value `images`
+```
+# Storage
+storage.mena.key=${STORAGE_MENA_KEY}
+storage.mena.secret=${STORAGE_MENA_SECRET}
+storage.mena.bucket=${STORAGE_MENA_BUCKET}
+storage.mena.endpoint=${STORAGE_MENA_ENDPOINT}
+storage.mena.cdn-endpoint=${STORAGE_MENA_CDN_ENDPOINT}
+
+storage.dukan.key=${STORAGE_DUKAN_KEY}
+storage.dukan.secret=${STORAGE_DUKAN_SECRET}
+storage.dukan.bucket=${STORAGE_DUKAN_BUCKET}
+storage.dukan.endpoint=${STORAGE_DUKAN_ENDPOINT}
+storage.dukan.cdn-endpoint=${STORAGE_DUKAN_CDN_ENDPOINT}
+
+storage.trends.key=${STORAGE_TRENDS_KEY}
+storage.trends.secret=${STORAGE_TRENDS_SECRET}
+storage.trends.bucket=${STORAGE_TRENDS_BUCKET}
+storage.trends.endpoint=${STORAGE_TRENDS_ENDPOINT}
+storage.trends.cdn-endpoint=${STORAGE_TRENDS_CDN_ENDPOINT}
+
+storage.wallet.key=${STORAGE_WALLET_KEY}
+storage.wallet.secret=${STORAGE_WALLET_SECRET}
+storage.wallet.bucket=${STORAGE_WALLET_BUCKET}
+storage.wallet.endpoint=${STORAGE_WALLET_ENDPOINT}
+storage.wallet.cdn-endpoint=${STORAGE_WALLET_CDN_ENDPOINT}
+
+identity.resources.profile-image-directory=images
+```
+
 ## Architecture
 ```
 .
