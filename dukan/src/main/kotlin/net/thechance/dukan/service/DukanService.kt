@@ -18,6 +18,7 @@ import net.thechance.dukan.service.model.DukanWithDiscount
 import net.thechance.dukan.service.model.DukanWithFavorite
 import net.thechance.events.publisher.MenaEventPublisher
 import org.springframework.data.domain.Page
+import org.springframework.data.domain.PageRequest
 import org.springframework.data.domain.Pageable
 import org.springframework.data.repository.findByIdOrNull
 import org.springframework.stereotype.Service
@@ -101,8 +102,16 @@ class DukanService(
 
 
     fun getAllEditorPicksDukan(userId: UUID, pageable: Pageable): Page<DukanWithFavorite> {
-        // TODO: Filter by user preferences once data model is ready
-        return dukanRepository.findAllApprovedWithShelvesAndProducts(userId, pageable)
+        val topCategories = dukanRepository.findUserTopCategories(
+            userId,
+            PageRequest.of(0, 5)
+        )
+
+        return if (topCategories.isEmpty()) {
+            dukanRepository.findAllApprovedWithShelvesAndProducts(userId, pageable)
+        } else {
+            dukanRepository.findRecommendedDukansForUser(userId, topCategories, pageable)
+        }
     }
 
     private fun validateDukanCreation(params: DukanCreationParams) {
