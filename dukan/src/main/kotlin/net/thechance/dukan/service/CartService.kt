@@ -20,6 +20,7 @@ import org.springframework.data.domain.Page
 import org.springframework.data.domain.Pageable
 import org.springframework.stereotype.Service
 import org.springframework.transaction.annotation.Transactional
+import java.time.Instant
 import java.util.*
 
 @Service
@@ -159,6 +160,21 @@ class CartService(
     private fun getOrCreateActiveCart(userId: UUID, dukanId: UUID): Cart {
         return cartRepository.findByUserIdAndDukanIdAndIsOrderPurchasedFalse(userId, dukanId)
             ?: createCart(userId, dukanId)
+    }
+
+    fun getActiveCart(userId: UUID, dukanId: UUID): Cart {
+        return cartRepository.findByUserIdAndDukanIdAndIsOrderPurchasedFalse(userId, dukanId)
+            ?: throw CartNotFoundException()
+    }
+
+    fun markCartAsPurchased(cart: Cart) {
+        cart.isOrderPurchased = true
+        cart.updatedAt = Instant.now()
+        cartRepository.save(cart)
+    }
+
+    fun createNewCart(userId: UUID, dukanId: UUID): Cart {
+        return cartRepository.save(Cart(userId = userId, dukanId = dukanId))
     }
 
     private fun createCart(userId: UUID, dukanId: UUID): Cart {
