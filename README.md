@@ -3,8 +3,10 @@
 ## MENA As Brand
 A super app crafted for the Middle Eastern and North African community - empowering you to do everything you need, all while nurturing a genuine sense of belonging.
 
-MENA was brought to life through the passion and dedication of [**The Chance**](https://www.linkedin.com/company/thechance101/) Mentorship program, Over eleven weeks, we combined hard work, creativity, and collaboration to bring this vision to life.
+<img width="50" alt="MENA" src="https://github.com/user-attachments/assets/f5b90dce-0144-4ec7-ae0d-9c964a50076b" />
+ was brought to life through the passion and dedication of [**The Chance**](https://www.linkedin.com/company/thechance101/) Mentorship program, Over eleven weeks, we combined hard work, creativity, and collaboration to bring this vision to life.
 
+>
 <div>
 <img width="200" src="https://github.com/user-attachments/assets/72cb47fb-27a1-45ab-971b-bfef705abded"/>
 </div>
