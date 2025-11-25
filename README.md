@@ -1,11 +1,14 @@
-# MENA project
-Backend Repository of MENA app
+*Backend Repository of [MENA app](https://github.com/TheChance101/MENA-mobile)*
 
-## Branding
-
-<img width="365" height="365" alt="mena_logo" src="https://github.com/user-attachments/assets/72cb47fb-27a1-45ab-971b-bfef705abded" />
-
+## MENA As Brand
 A super app crafted for the Middle Eastern and North African community - empowering you to do everything you need, all while nurturing a genuine sense of belonging.
+
+MENA was brought to life through the passion and dedication of [**The Chance**](https://www.linkedin.com/company/thechance101/) Mentorship program, Over eleven weeks, we combined hard work, creativity, and collaboration to bring this vision to life.
+
+<div>
+<img width="200" src="https://github.com/user-attachments/assets/72cb47fb-27a1-45ab-971b-bfef705abded"/>
+</div>
+
 
 ## Setup
 open `application.properties` file you can find it at `app\src\main\resources\application.properties` and add these configuration.
@@ -99,6 +102,12 @@ identity.resources.profile-image-directory=images
 - **Testing**: [JUnit 5](https://junit.org/junit5/), [MockK](https://mockk.io/), [Spring Boot Test](https://spring.io/guides/gs/testing-web)
 - **Code Coverage**: [Kover](https://github.com/Kotlin/kotlinx-kover)
 - **Dependency Injection**: Spring Framework IoC Container
+
+## Contractors
+
+- **Bareq AlTahma** – The chance instructor ([@iBareq](https://github.com/iBareq))
+- **Falah Hasan** – Mentor ([@devfalah](https://github.com/devfalah))
+- **Karrar Mohammed** – Mentor ([@Karrar-Mohammed](https://github.com/Karrar-Mohammed))
 
 ## Contributors
 
