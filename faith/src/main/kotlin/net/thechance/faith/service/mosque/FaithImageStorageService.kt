@@ -36,7 +36,7 @@ class FaithImageStorageService(
             val key = "images/$folderName/$fileName"
             val putReq = createObjectRequest(key, mimeType)
             menaS3Client.putObject(putReq, RequestBody.fromBytes(file.bytes))
-            return "${props.cdnEndpoint}/$key"
+            return "${props.cdnEndpoint}$key"
         } catch (_: Exception) {
             throw ImageUploadFailedException()
         }
