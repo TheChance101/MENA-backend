@@ -8,6 +8,7 @@ import net.thechance.chat.repository.MessageRepository
 import net.thechance.chat.service.exception.InvalidTimeFormatException
 import net.thechance.chat.service.exception.NotFoundException
 import net.thechance.chat.service.model.*
+import org.springframework.beans.factory.annotation.Value
 import org.springframework.data.domain.Page
 import org.springframework.data.domain.Pageable
 import org.springframework.data.repository.findByIdOrNull
@@ -25,7 +26,11 @@ class ChatService(
     private val contactUserService: ContactUserService,
     private val attachmentStorageService: AttachmentStorageService,
     private val contactService: ContactService,
+    @Value("\${storage.mena.cdn-endpoint}") cdnEndpoint: String,
+    @Value("\${identity.resources.profile-image-directory}") profileImageDirectory: String,
 ) {
+
+    private val imagesBaseUrl: String = "$cdnEndpoint$profileImageDirectory"
 
     @Transactional
     fun getChatByUserIds(userId: UUID, receiverId: UUID): ChatModel {
@@ -35,7 +40,7 @@ class ChatService(
         val contact = contactService.getContactByOwnerIdAndContactUserId(userId, otherUser.id)
 
         val chatName = getChatName(contact, otherUser)
-        val imageUrl = otherUser.imageUrl.orEmpty()
+        val imageUrl = otherUser.imageUrl?.let { "$imagesBaseUrl/$it" }
 
         val chat = findOrCreateChat(
             usersId = usersId,
@@ -179,7 +184,7 @@ class ChatService(
             val otherUser = chat.users.firstOrNull { it.id != userId }
             val contact = otherUser?.let { contactService.getContactByOwnerIdAndContactUserId(userId, it.id) }
             val chatName = getChatName(contact, otherUser)
-            val imageUrl = otherUser?.imageUrl.orEmpty()
+            val imageUrl = otherUser?.imageUrl?.let { "$imagesBaseUrl/$it" }
 
             chat.toSummary(
                 userId = userId,
@@ -200,7 +205,7 @@ class ChatService(
         val unreadCount = chatRepository.findUnreadCountsForChats(listOf(chatId)).firstOrNull()?.unreadCount ?: 0
         val contact = otherUser?.let { contactService.getContactByOwnerIdAndContactUserId(userId, it.id) }
         val chatName = getChatName(contact, otherUser)
-        val imageUrl = otherUser?.imageUrl.orEmpty()
+        val imageUrl = otherUser?.imageUrl?.let { "$imagesBaseUrl/$it" }
         return chat.toSummary(
             userId = userId,
             chatName = chatName,
@@ -219,7 +224,7 @@ class ChatService(
         }
         return ChatModel(
             name = getChatName(contact, otherUser),
-            imageUrl = otherUser.imageUrl,
+            imageUrl = otherUser.imageUrl?.let { "$imagesBaseUrl/$it" },
             requesterId = userId,
             id = chatId,
             receiverId = otherUser.id,

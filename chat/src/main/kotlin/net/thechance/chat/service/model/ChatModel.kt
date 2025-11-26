@@ -11,7 +11,7 @@ data class ChatModel(
     val id: UUID,
 )
 
-fun Chat.toModel(chatName: String, imageUrl:String, requesterId: UUID): ChatModel{
+fun Chat.toModel(chatName: String, imageUrl:String?, requesterId: UUID): ChatModel{
     return ChatModel(
         name = chatName,
         imageUrl = imageUrl,

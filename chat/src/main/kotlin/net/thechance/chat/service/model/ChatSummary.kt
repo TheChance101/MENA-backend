@@ -18,7 +18,7 @@ data class ChatSummary(
         val isMine: Boolean
     )
 }
-fun Chat.toSummary(userId: UUID, chatName: String, imageUrl:String, lastMessage: Message?, unreadCount: Int): ChatSummary {
+fun Chat.toSummary(userId: UUID, chatName: String, imageUrl:String?, lastMessage: Message?, unreadCount: Int): ChatSummary {
     return ChatSummary(
         id = id,
         name = chatName,
