@@ -37,12 +37,13 @@ spring.datasource.password=${DATABASE_PASSWORD}
 ```
 
 ### Elastic Search
-Add `Elastic search setup` to `application.properties`
+1- Create [Elastic](https://www.elastic.co/elasticsearch) account
+2- Get started with Elasticsearch, choose **Create index** option
+2- Add the following Elasticsearch settings to `application.properties` file:
 ```
 spring.elasticsearch.uris=${ELASTIC_SEARCH_URIS}
 spring.elasticsearch.password=${ELASTIC_SEARCH_PASSWORD}
 spring.elasticsearch.username=${ELASTIC_SEARCH_USERNAME}
-trends-access.secret-value=${STORAGE_TRENDS_ACCESS_SECRET}
 ```
 
 ### Storage
