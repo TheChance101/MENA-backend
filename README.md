@@ -22,7 +22,7 @@ spring.profiles.active=dev
 ```
 
 ### JWT 
-Sdd your `jwt secret key` to `application.properties`
+Add your `jwt secret key` to `application.properties`
 ```
 jwt.secret-key=${JWT_SECRET}
 ```
@@ -51,11 +51,11 @@ spring.elasticsearch.username=${ELASTIC_SEARCH_USERNAME}
 ```
 
 ### Storage
-1. we used [`Digital Ocean`](https://www.digitalocean.com) as remote file storage server. Alternative you can use [`LocalStack`](https://app.localstack.cloud/getting-started) for local simulation on your machine.
+1. we used [`Digital Ocean`](https://www.digitalocean.com) as remote file storage server. Alternatively, you can use [`LocalStack`](https://app.localstack.cloud/getting-started) for local simulation on your machine.
 1. install [Docker](https://www.docker.com/get-started/)
 1. install [AWS CLI](https://docs.aws.amazon.com/cli/latest/userguide/getting-started-install.html)
 1. install [LocalStack](https://app.localstack.cloud/getting-started)
-1. Follow the guide on the local stack website to create key, secret, endpoint, cdn-enpoint(region) for MENA, Duckan, Trends, and Wallet
+1. Follow the guide on the local stack website to create a key, secret, endpoint, CDN endpoint (region) for MENA, Duckan, Trends, and Wallet
 1. Assign `profile-image-directory` to the value `images`
 ```
 # Storage
