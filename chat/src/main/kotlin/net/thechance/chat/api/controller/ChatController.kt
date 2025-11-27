@@ -151,7 +151,7 @@ class ChatController(
         pageable: Pageable
     ): ResponseEntity<PagedResponse<ChatSummaryResponse>> {
         val chats = chatService.getUserChatsSummaries(userId, pageable)
-        return ResponseEntity.ok(chats.toPagedResponse())
+        return ResponseEntity.ok(chats.toPagedResponse(userId))
     }
 
     @GetMapping("/{chatId}/summary")
@@ -160,7 +160,7 @@ class ChatController(
         @PathVariable chatId: UUID,
     ): ResponseEntity<ChatSummaryResponse> {
         val chat = chatService.getUserChatSummaryById(chatId, userId)
-        return ResponseEntity.ok(chat.toResponse())
+        return ResponseEntity.ok(chat.toResponse(userId))
     }
 
     @GetMapping("/{chatId}")
