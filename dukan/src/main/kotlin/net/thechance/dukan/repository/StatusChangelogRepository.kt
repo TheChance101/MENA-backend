@@ -6,4 +6,6 @@ import org.springframework.stereotype.Repository
 import java.util.*
 
 @Repository
-interface StatusChangelogRepository: JpaRepository<StatusChangelog, UUID>
+interface StatusChangelogRepository: JpaRepository<StatusChangelog, UUID>{
+    fun findTopByDukanIdOrderByCreatedAtDesc(dukanId: UUID): StatusChangelog?
+}
