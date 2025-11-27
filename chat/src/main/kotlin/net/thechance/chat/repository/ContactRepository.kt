@@ -23,9 +23,11 @@ interface ContactRepository : JpaRepository<Contact, UUID> {
                 CASE WHEN u IS NOT NULL THEN u.imageUrl ELSE null END
             )
             FROM Contact c
-            LEFT JOIN ContactUser u ON u.phoneNumber = c.phoneNumber
+            LEFT JOIN ContactUser u 
+                ON u.phoneNumber = c.phoneNumber 
+                AND u.isDeleted = false
             WHERE c.contactOwnerId = :contactOwnerId
-    """
+        """
     )
     fun findAllContactModelsByContactOwnerId(
         @Param("contactOwnerId") contactOwnerId: UUID,
@@ -41,24 +43,26 @@ interface ContactRepository : JpaRepository<Contact, UUID> {
 
     @Query(
         """
-    SELECT new net.thechance.chat.service.model.ContactModel(
-        c.id,
-        c.firstName,
-        c.lastName,
-        c.phoneNumber,
-        CASE WHEN u IS NOT NULL THEN u.id ELSE null END,
-        CASE WHEN u IS NOT NULL THEN u.imageUrl ELSE null END
-    )
-    FROM Contact c
-    LEFT JOIN ContactUser u ON u.phoneNumber = c.phoneNumber
-    WHERE c.contactOwnerId = :contactOwnerId
-      AND (
-        LOWER(c.firstName) LIKE LOWER(CONCAT('%', :query, '%')) OR
-        LOWER(c.lastName) LIKE LOWER(CONCAT('%', :query, '%')) OR
-        c.phoneNumber LIKE CONCAT('%', :query, '%')
-      )
-      AND (:onlyMenaUsers = false OR u IS NOT NULL)
-    """
+        SELECT new net.thechance.chat.service.model.ContactModel(
+            c.id,
+            c.firstName,
+            c.lastName,
+            c.phoneNumber,
+            CASE WHEN u IS NOT NULL THEN u.id ELSE null END,
+            CASE WHEN u IS NOT NULL THEN u.imageUrl ELSE null END
+        )
+        FROM Contact c
+        LEFT JOIN ContactUser u 
+            ON u.phoneNumber = c.phoneNumber
+            AND u.isDeleted = false
+        WHERE c.contactOwnerId = :contactOwnerId
+          AND (
+            LOWER(c.firstName) LIKE LOWER(CONCAT('%', :query, '%')) OR
+            LOWER(c.lastName) LIKE LOWER(CONCAT('%', :query, '%')) OR
+            c.phoneNumber LIKE CONCAT('%', :query, '%')
+          )
+          AND (:onlyMenaUsers = false OR u IS NOT NULL)
+        """
     )
     fun searchContacts(
         @Param("contactOwnerId") contactOwnerId: UUID,
@@ -66,5 +70,4 @@ interface ContactRepository : JpaRepository<Contact, UUID> {
         @Param("onlyMenaUsers") onlyMenaUsers: Boolean,
         pageable: Pageable
     ): Page<ContactModel>
-
 }

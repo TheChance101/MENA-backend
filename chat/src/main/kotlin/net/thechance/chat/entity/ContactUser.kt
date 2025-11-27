@@ -1,9 +1,6 @@
 package net.thechance.chat.entity
 
-import jakarta.persistence.Column
-import jakarta.persistence.Entity
-import jakarta.persistence.Id
-import jakarta.persistence.Table
+import jakarta.persistence.*
 import java.util.UUID
 
 @Entity
@@ -24,4 +21,7 @@ data class ContactUser(
 
     @Column(nullable = true)
     val imageUrl: String? = null,
+
+    @Column(nullable = false)
+    val isDeleted: Boolean,
 )

@@ -9,6 +9,7 @@ fun UserUpdatedEvent.toUser(): ContactUser{
         firstName = firstName,
         lastName = lastName,
         phoneNumber = phoneNumber,
-        imageUrl = imageUrl
+        imageUrl = imageUrl,
+        isDeleted = false,
     )
 }
