@@ -74,17 +74,16 @@ identity.resources.profile-image-directory=images
 
 ### Elastic Search
 1. **Sign up or log in at [Elasticsearch](https://www.elastic.co/elasticsearch) website**  
-2. **Create an Index**  
-   After logging in, start by creating an index:  
-   - Navigate to **Get started with Elasticsearch**  
-   - Select **Create index** and follow the guided steps
-3. **Configure Application Properties**  
+2. **Configure Application Properties**  
    Add the following Elasticsearch configuration settings to your `application.properties` file.  
 ```
 spring.elasticsearch.uris=${ELASTIC_SEARCH_URIS}
 spring.elasticsearch.password=${ELASTIC_SEARCH_PASSWORD}
 spring.elasticsearch.username=${ELASTIC_SEARCH_USERNAME}
 ```
+- **ELASTIC_SEARCH_URIS** → Address of your Elasticsearch server (example: http://localhost:9200 or your cloud URL)
+- **ELASTIC_SEARCH_USERNAME** → Username for Elasticsearch
+- **ELASTIC_SEARCH_PASSWORD** → Password for Elasticsearch
 
 ## Architecture
 ```
