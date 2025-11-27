@@ -10,6 +10,8 @@ import net.thechance.wallet.entity.Transaction
 import net.thechance.wallet.service.TransactionService
 import net.thechance.wallet.service.model.input.TransactionFilterParams
 import net.thechance.wallet.service.model.input.UserTransactionType
+import net.thechance.wallet.service.utils.atEndOfDay
+import net.thechance.wallet.service.utils.toServerZone
 import org.springframework.data.domain.PageRequest
 import org.springframework.data.domain.Pageable
 import org.springframework.data.domain.Sort
@@ -17,7 +19,9 @@ import org.springframework.http.ResponseEntity
 import org.springframework.security.core.annotation.AuthenticationPrincipal
 import org.springframework.web.bind.annotation.*
 import java.io.ByteArrayOutputStream
+import java.time.LocalDate
 import java.time.LocalDateTime
+import java.time.ZoneId
 import java.util.*
 
 
@@ -33,13 +37,19 @@ class TransactionController(
         @AuthenticationPrincipal userId: UUID,
         @RequestParam(name = "type", required = false) types: List<UserTransactionType>?,
         @RequestParam(required = false) status: Transaction.Status?,
-        @RequestParam(name = "from", required = false) startDateTime: LocalDateTime?,
-        @RequestParam(name = "to", required = false) endDateTime: LocalDateTime?,
+        @RequestParam(name = "from", required = false) startDate: LocalDate?,
+        @RequestParam(name = "to", required = false) endDate: LocalDate?,
+        @RequestParam(name = "timezone", defaultValue = "UTC") timezone: String,
         pageable: Pageable
     ): ResponseEntity<PageResponse<TransactionResponse>> {
-
+        val clientZone = ZoneId.of(timezone)
         val response = transactionService.getFilteredTransactions(
-            transactionFilterParams = TransactionFilterParams(types, status, startDateTime, endDateTime),
+            transactionFilterParams = TransactionFilterParams(
+                types = types,
+                status = status,
+                startDateTime = startDate?.atStartOfDay()?.toServerZone(clientZone),
+                endDateTime = endDate?.atEndOfDay()?.toServerZone(clientZone),
+                ),
             pageable = PageRequest.of(
                 pageable.pageNumber,
                 pageable.pageSize,
@@ -54,9 +64,11 @@ class TransactionController(
     @GetMapping("/first-date")
     fun getUserFirstTransactionDate(
         @AuthenticationPrincipal userId: UUID,
-    ): ResponseEntity<FirstTransactionDateResponse> {
+        @RequestParam(name = "timezone", defaultValue = "UTC") timezone: String,
+        ): ResponseEntity<FirstTransactionDateResponse> {
+        val clientZone = ZoneId.of(timezone)
         val response = transactionService.getUserFirstTransactionDate(currentUserId = userId)
-            .toFirstTransactionDateResponse()
+            .toFirstTransactionDateResponse(clientZone)
 
         return ResponseEntity.ok(response)
     }
@@ -78,12 +90,13 @@ class TransactionController(
         response: HttpServletResponse,
         @AuthenticationPrincipal userId: UUID,
         @RequestParam(name = "type", required = false) types: List<UserTransactionType>?,
-        @RequestParam(name = "from", required = false) startDateTime: LocalDateTime?,
-        @RequestParam(name = "to", required = false) endDateTime: LocalDateTime?,
+        @RequestParam(name = "from", required = false) startDate: LocalDate?,
+        @RequestParam(name = "to", required = false) endDate: LocalDate?,
+        @RequestParam(name = "timezone", defaultValue = "UTC") timezone: String,
     ) {
         val buffer = ByteArrayOutputStream()
 
-        val metadata = statementPdfWriter.writePdfToStream(userId, types, startDateTime, endDateTime, outputStream = buffer)
+        val metadata = statementPdfWriter.writePdfToStream(userId, types, startDate, endDate, timezone, outputStream = buffer)
 
         response.contentType = "application/pdf"
         response.setHeader(

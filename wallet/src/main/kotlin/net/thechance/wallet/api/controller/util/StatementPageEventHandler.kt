@@ -12,14 +12,17 @@ import com.itextpdf.kernel.pdf.event.PdfDocumentEvent
 import com.itextpdf.layout.Document
 import com.itextpdf.svg.converter.SvgConverter
 import net.thechance.wallet.service.model.output.StatementData
+import net.thechance.wallet.service.utils.toClientZone
 import org.springframework.core.io.ResourceLoader
 import java.time.LocalDateTime
+import java.time.ZoneId
 import java.time.format.DateTimeFormatter
 
 
 class StatementPageEventHandler(
     private val resourceLoader: ResourceLoader,
-    private val statementData: StatementData
+    private val statementData: StatementData,
+    private val timezone: ZoneId,
 ) : AbstractPdfDocumentEventHandler() {
     private val poppinsRegular by lazy { getPoppinsRegularFont() }
     private val poppinsSemiBold by lazy { getPoppinsSemiBoldFont() }
@@ -140,5 +143,5 @@ class StatementPageEventHandler(
     }
 
     private fun LocalDateTime.formatHeaderDate(): String =
-        this.format(DateTimeFormatter.ofPattern("MMM dd yyyy"))
+        this.toClientZone(timezone).format(DateTimeFormatter.ofPattern("MMM dd yyyy"))
 }
