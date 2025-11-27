@@ -39,17 +39,16 @@ class TransactionController(
         @RequestParam(required = false) status: Transaction.Status?,
         @RequestParam(name = "from", required = false) startDate: LocalDate?,
         @RequestParam(name = "to", required = false) endDate: LocalDate?,
-        @RequestParam(name = "timezone", defaultValue = "UTC") timezone: String,
+        @RequestHeader(value = "Accept-Timezone", defaultValue = "UTC") timezone: ZoneId,
         pageable: Pageable
     ): ResponseEntity<PageResponse<TransactionResponse>> {
-        val clientZone = ZoneId.of(timezone)
         val response = transactionService.getFilteredTransactions(
             transactionFilterParams = TransactionFilterParams(
                 types = types,
                 status = status,
-                startDateTime = startDate?.atStartOfDay()?.toServerZone(clientZone),
-                endDateTime = endDate?.atEndOfDay()?.toServerZone(clientZone),
-                ),
+                startDateTime = startDate?.atStartOfDay()?.toServerZone(timezone),
+                endDateTime = endDate?.atEndOfDay()?.toServerZone(timezone),
+            ),
             pageable = PageRequest.of(
                 pageable.pageNumber,
                 pageable.pageSize,
@@ -64,11 +63,10 @@ class TransactionController(
     @GetMapping("/first-date")
     fun getUserFirstTransactionDate(
         @AuthenticationPrincipal userId: UUID,
-        @RequestParam(name = "timezone", defaultValue = "UTC") timezone: String,
-        ): ResponseEntity<FirstTransactionDateResponse> {
-        val clientZone = ZoneId.of(timezone)
+        @RequestHeader(value = "Accept-Timezone", defaultValue = "UTC") timezone: ZoneId,
+    ): ResponseEntity<FirstTransactionDateResponse> {
         val response = transactionService.getUserFirstTransactionDate(currentUserId = userId)
-            .toFirstTransactionDateResponse(clientZone)
+            .toFirstTransactionDateResponse(timezone)
 
         return ResponseEntity.ok(response)
     }
@@ -92,11 +90,12 @@ class TransactionController(
         @RequestParam(name = "type", required = false) types: List<UserTransactionType>?,
         @RequestParam(name = "from", required = false) startDate: LocalDate?,
         @RequestParam(name = "to", required = false) endDate: LocalDate?,
-        @RequestParam(name = "timezone", defaultValue = "UTC") timezone: String,
+        @RequestHeader(value = "Accept-Timezone", defaultValue = "UTC") timezone: ZoneId,
     ) {
         val buffer = ByteArrayOutputStream()
 
-        val metadata = statementPdfWriter.writePdfToStream(userId, types, startDate, endDate, timezone, outputStream = buffer)
+        val metadata =
+            statementPdfWriter.writePdfToStream(userId, types, startDate, endDate, timezone, outputStream = buffer)
 
         response.contentType = "application/pdf"
         response.setHeader(

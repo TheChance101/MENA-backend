@@ -35,15 +35,14 @@ class StatementPdfWriter(
         types: List<UserTransactionType>?,
         startDate: LocalDate?,
         endDate: LocalDate?,
-        timezone: String,
+        timezone: ZoneId,
         outputStream: OutputStream
     ): StatementMetadata {
-        val clientZone = ZoneId.of(timezone)
         val statementData = statementService.getStatementData(
             userId = userId,
             types = types,
-            startDateTime = startDate?.atStartOfDay()?.toServerZone(clientZone),
-            endDateTime = endDate?.atEndOfDay()?.toServerZone(clientZone),
+            startDateTime = startDate?.atStartOfDay()?.toServerZone(timezone),
+            endDateTime = endDate?.atEndOfDay()?.toServerZone(timezone),
         )
 
         val writer = PdfWriter(outputStream)
@@ -51,10 +50,10 @@ class StatementPdfWriter(
         val document = Document(pdf)
         val converterProperties = setupConverterProperties()
 
-        pdf.addEventHandler(PdfDocumentEvent.END_PAGE, StatementPageEventHandler(resourceLoader, statementData, clientZone))
+        pdf.addEventHandler(PdfDocumentEvent.END_PAGE, StatementPageEventHandler(resourceLoader, statementData, timezone))
         document.setMargins(100f, 32f, 60f, 32f)
 
-        val metadata = writePages(statementData, clientZone, document, converterProperties)
+        val metadata = writePages(statementData, timezone, document, converterProperties)
 
         pdf.close()
         outputStream.flush()
