@@ -36,20 +36,6 @@ spring.datasource.username=${DATABASE_USER_NAME}
 spring.datasource.password=${DATABASE_PASSWORD}
 ```
 
-### Elastic Search
-1. **Sign up or log in at [Elasticsearch](https://www.elastic.co/elasticsearch) website**  
-2. **Create an Index**  
-   After logging in, start by creating an index:  
-   - Navigate to **Get started with Elasticsearch**  
-   - Select **Create index** and follow the guided steps
-3. **Configure Application Properties**  
-   Add the following Elasticsearch configuration settings to your `application.properties` file.  
-```
-spring.elasticsearch.uris=${ELASTIC_SEARCH_URIS}
-spring.elasticsearch.password=${ELASTIC_SEARCH_PASSWORD}
-spring.elasticsearch.username=${ELASTIC_SEARCH_USERNAME}
-```
-
 ### Storage
 1. we used [`Digital Ocean`](https://www.digitalocean.com) as remote file storage server. Alternatively, you can use [`LocalStack`](https://app.localstack.cloud/getting-started) for local simulation on your machine.
 1. install [Docker](https://www.docker.com/get-started/)
@@ -84,6 +70,20 @@ storage.wallet.endpoint=${STORAGE_WALLET_ENDPOINT}
 storage.wallet.cdn-endpoint=${STORAGE_WALLET_CDN_ENDPOINT}
 
 identity.resources.profile-image-directory=images
+```
+
+### Elastic Search
+1. **Sign up or log in at [Elasticsearch](https://www.elastic.co/elasticsearch) website**  
+2. **Create an Index**  
+   After logging in, start by creating an index:  
+   - Navigate to **Get started with Elasticsearch**  
+   - Select **Create index** and follow the guided steps
+3. **Configure Application Properties**  
+   Add the following Elasticsearch configuration settings to your `application.properties` file.  
+```
+spring.elasticsearch.uris=${ELASTIC_SEARCH_URIS}
+spring.elasticsearch.password=${ELASTIC_SEARCH_PASSWORD}
+spring.elasticsearch.username=${ELASTIC_SEARCH_USERNAME}
 ```
 
 ## Architecture
