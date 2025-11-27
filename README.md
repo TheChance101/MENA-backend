@@ -85,6 +85,30 @@ spring.elasticsearch.username=${ELASTIC_SEARCH_USERNAME}
 - **ELASTIC_SEARCH_USERNAME** → Username for Elasticsearch
 - **ELASTIC_SEARCH_PASSWORD** → Password for Elasticsearch
 
+**Alternative if you need to test it as local simulation you can use docker.**
+1. you need to install docker and [`elastic search docker image`](https://hub.docker.com/_/elasticsearch)
+2. open terminal and run this command with your desired ports for example port1 `8088` and port2 `8089`:
+```
+docker run `
+  --name elastic_search `
+  -p [port1]:9200 `
+  -p [port2]:9300 `
+  --env xpack.security.enabled=false `
+  --env xpack.security.http.ssl.enabled=false `
+  --env discovery.type=single-node `
+  -d elasticsearch:9.2.1
+```
+3. **Configure Application Properties**  
+   Add the following Elasticsearch configuration settings to your `application.properties` file.  
+```
+spring.elasticsearch.uris=${ELASTIC_SEARCH_URIS}
+spring.elasticsearch.password=${ELASTIC_SEARCH_PASSWORD}
+spring.elasticsearch.username=${ELASTIC_SEARCH_USERNAME}
+```
+- **ELASTIC_SEARCH_URIS** → http://localhost:[port1], http://localhost:[port2]
+- **ELASTIC_SEARCH_USERNAME** → empty string
+- **ELASTIC_SEARCH_PASSWORD** → empty string
+
 ## Architecture
 ```
 .
