@@ -157,6 +157,6 @@ class DukanController(
     ): ResponseEntity<DukanActivationStatusResponse> {
         val dukan = dukanService.getDukanByOwnerId(userId)
         val log = dukanService.getLastStatusChangeLog(dukan.id)
-        return ResponseEntity.ok(DukanActivationStatusResponse(dukan.activationStatus , log.reason))
+        return ResponseEntity.ok(DukanActivationStatusResponse(dukan.activationStatus , log?.reason))
     }
 }

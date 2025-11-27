@@ -4,5 +4,5 @@ import net.thechance.dukan.entity.Dukan
 
 data class DukanActivationStatusResponse(
     val activationStatus: Dukan.ActivationStatus,
-    val reason : String
+    val reason : String? = null
 )

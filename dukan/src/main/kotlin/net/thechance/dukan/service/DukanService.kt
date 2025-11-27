@@ -214,9 +214,8 @@ class DukanService(
         statusChangeLogRepository.save(changelog)
     }
 
-    fun getLastStatusChangeLog(dukanId: UUID): StatusChangelog {
+    fun getLastStatusChangeLog(dukanId: UUID): StatusChangelog? {
         return statusChangeLogRepository.findTopByDukanIdOrderByCreatedAtDesc(dukanId)
-            ?: throw DukanStatusChangelogNotFoundException()
     }
     companion object {
         private val DUKAN_FOLDER_NAME = "dukan"
