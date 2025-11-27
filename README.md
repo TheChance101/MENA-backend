@@ -4,7 +4,7 @@
 A super app crafted for the Middle Eastern and North African community - empowering you to do everything you need, all while nurturing a genuine sense of belonging.
 
 <img width="50" alt="MENA" src="https://github.com/user-attachments/assets/f5b90dce-0144-4ec7-ae0d-9c964a50076b" />
- was brought to life through the passion and dedication of <a href="https://www.linkedin.com/company/thechance101/">The Chance</a> Mentorship program, Over eleven weeks, we combined hard work, creativity, and collaboration to bring this vision to life.
+ was brought to life through the passion and dedication of <a href="https://www.linkedin.com/company/thechance101/">The Chance</a> Mentorship program. Over eleven weeks, we combined hard work, creativity, and collaboration to bring this vision to life.
 
 >
 <div>
@@ -13,23 +13,23 @@ A super app crafted for the Middle Eastern and North African community - empower
 
 
 ## Setup
-open `application.properties` file you can find it at `app\src\main\resources\application.properties` and add these configuration.
+Open `application.properties` file you can find at `app\src\main\resources\application.properties`, and add these configurations:
 
 ### Environment
-set active profile to `dev` to `application.properties`
+Set active profile to `dev` in `application.properties`
 ```
 spring.profiles.active=dev 
 ```
 
 ### JWT 
-add your `jwt secret key` to `application.properties`
+Sdd your `jwt secret key` to `application.properties`
 ```
 jwt.secret-key=${JWT_SECRET}
 ```
 
 ### Database
-1. install `Postgress` database on your machine
-1. add your database configuration paramters to `application.properties`
+1. Install `Postgress` database on your machine
+1. Add your database configuration parameters to `application.properties`
 ```
 spring.datasource.url=${DATABASE_URL}
 spring.datasource.username=${DATABASE_USER_NAME}
@@ -37,7 +37,7 @@ spring.datasource.password=${DATABASE_PASSWORD}
 ```
 
 ### Elastic Search
-add `Elastic search setup` to `application.properties`
+Add `Elastic search setup` to `application.properties`
 ```
 spring.elasticsearch.uris=${ELASTIC_SEARCH_URIS}
 spring.elasticsearch.password=${ELASTIC_SEARCH_PASSWORD}
@@ -50,8 +50,8 @@ trends-access.secret-value=${STORAGE_TRENDS_ACCESS_SECRET}
 1. install [Docker](https://www.docker.com/get-started/)
 1. install [AWS CLI](https://docs.aws.amazon.com/cli/latest/userguide/getting-started-install.html)
 1. install [LocalStack](https://app.localstack.cloud/getting-started)
-1. follow guide on local stack website to create key, secret, endpoint, cdn-enpoint(region) for mena, duckan, trends and wallet
-1. Assign `profile-image-directory` to value `images`
+1. Follow the guide on the local stack website to create key, secret, endpoint, cdn-enpoint(region) for MENA, Duckan, Trends, and Wallet
+1. Assign `profile-image-directory` to the value `images`
 ```
 # Storage
 storage.mena.key=${STORAGE_MENA_KEY}
