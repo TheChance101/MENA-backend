@@ -187,7 +187,6 @@ class ChatService(
             val imageUrl = otherUser?.imageUrl?.let { "$imagesBaseUrl/$it" }
 
             chat.toSummary(
-                userId = userId,
                 chatName = chatName,
                 imageUrl = imageUrl,
                 lastMessage = lastMessages.firstOrNull { it.chatId == chat.id },
@@ -207,7 +206,6 @@ class ChatService(
         val chatName = getChatName(contact, otherUser)
         val imageUrl = otherUser?.imageUrl?.let { "$imagesBaseUrl/$it" }
         return chat.toSummary(
-            userId = userId,
             chatName = chatName,
             imageUrl = imageUrl,
             lastMessage = lastMessage,
