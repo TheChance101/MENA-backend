@@ -9,16 +9,10 @@ import net.thechance.trends.models.TrendSignedUrls
 import net.thechance.trends.models.TrendWithLikeStatus
 import net.thechance.trends.models.TrendWithOwnerShipAndLikeStatus
 import net.thechance.trends.models.withOwnership
-import net.thechance.trends.repository.CategoryRepository
-import net.thechance.trends.repository.TrendLikeRepository
-import net.thechance.trends.repository.TrendViewRepository
-import net.thechance.trends.repository.TrendsRepository
+import net.thechance.trends.repository.*
 import net.thechance.trends.service.config.TrendsExpirationProperties
 import org.springframework.boot.context.properties.EnableConfigurationProperties
-import org.springframework.data.domain.Page
-import org.springframework.data.domain.PageRequest
-import org.springframework.data.domain.Pageable
-import org.springframework.data.domain.Sort
+import org.springframework.data.domain.*
 import org.springframework.stereotype.Service
 import org.springframework.transaction.annotation.Transactional
 import org.springframework.web.multipart.MultipartFile
@@ -33,7 +27,8 @@ class TrendsService(
     private val fileStorageService: FileStorageService,
     private val trendViewRepository: TrendViewRepository,
     private val trendLikeRepository: TrendLikeRepository,
-    private val trendsExpirationProperties: TrendsExpirationProperties
+    private val trendsExpirationProperties: TrendsExpirationProperties,
+    private val userCategoryRepository: UserCategoryRepository
 ) {
     fun getAllTrendsByUserId(
         pageable: Pageable,
@@ -61,17 +56,27 @@ class TrendsService(
         currentUserId: UUID,
         trendId: UUID? = null,
     ): Page<TrendWithOwnerShipAndLikeStatus> {
-        val adjustedPageable = PageRequest.of(
-            pageable.pageNumber,
-            10,
-            pageable.getSortOr(Sort.by(Sort.Direction.DESC, "createdAt"))
+        val userCategories = userCategoryRepository.findAllByUserIdAndIsSelectedOrderByAffinityDesc(currentUserId, true)
+        if (userCategories.isEmpty()) return Page.empty(pageable)
+
+        val pageSize = if (trendId != null) PAGE_SIZE_WITH_TREND_ID else PAGE_SIZE
+        val trendIdsPage = trendsRepository.getTrendIdsOrderedByAffinity(
+            userId = currentUserId,
+            startTrendId = trendId,
+            categories = userCategories.map { it.categoryId },
+            pageable = PageRequest.of(pageable.pageNumber, pageSize)
         )
 
-        val trends = trendsRepository.getTrendFeedForUser(currentUserId, trendId, adjustedPageable).map {
-            generatePresignedUrlsForTrend(it).withOwnership(currentUserId)
-        }
+        if (trendIdsPage.isEmpty) return Page.empty(pageable)
 
-        return trends
+        val trendIds = trendIdsPage.content
+        val trendsMap = trendsRepository.getTrendFeedForCategories(currentUserId, trendIds)
+            .associateBy { it.getTrend().id }
+
+        val feedTrends = trendIds.mapNotNull { trendsMap[it] }
+            .map { generatePresignedUrlsForTrend(it).withOwnership(currentUserId) }
+
+        return PageImpl(feedTrends, pageable, trendIdsPage.totalElements)
     }
 
     fun getUserFavoriteTrends(
@@ -219,5 +224,12 @@ class TrendsService(
             fileStorageService.generatePresignedUrl(it, trendsExpirationProperties.thumbnailUrlMinutes)
         }
         return TrendSignedUrls(videoUrl = signedVideoUrl, thumbnailUrl = signedThumbnailUrl)
+    }
+
+    companion object{
+        const val PAGE_SIZE = 10
+        const val PAGE_SIZE_WITH_TREND_ID = PAGE_SIZE - 1
+        const val RECOMMENDATION_TO_EXPLORATION_RATIO = 2.0 / 3.0
+        const val RECOMMENDATION_PAGE_SIZE = 7
     }
 }

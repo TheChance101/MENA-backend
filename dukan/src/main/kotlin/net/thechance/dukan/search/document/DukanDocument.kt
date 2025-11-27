@@ -19,8 +19,14 @@ data class DukanDocument(
     val status: Dukan.Status,
 
     @Field(type = FieldType.Text)
-    val imageUrl:String?,
+    val imageUrl: String?,
 
     @GeoPointField
-    val location: GeoPoint
+    val location: GeoPoint,
+
+    @Field(type = FieldType.Keyword)
+    val categoryIds: Set<String>,
+
+    @Field(type = FieldType.Keyword)
+    val activationStatus: Dukan.ActivationStatus,
 )

@@ -31,5 +31,6 @@ fun DukanCreationParams.toDukan(
         color = color,
         style = style,
         ownerId = ownerId,
+        activationStatus = Dukan.ActivationStatus.ONHOLD,
     )
 }

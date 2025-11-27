@@ -1,0 +1,28 @@
+package net.thechance.wallet.eventListener.mapper
+
+import net.thechance.events.dukan.DukanUpdateEvent
+import net.thechance.wallet.entity.WalletDukan
+
+fun DukanUpdateEvent.toWalletDukanEntity() = WalletDukan(
+    dukanId = dukanId,
+    name = name,
+    imageUrl = imageUrl,
+    status = status.toEntityStatus(),
+    activationStatus = activationStatus.toEntityActivationStatus(),
+)
+
+private fun DukanUpdateEvent.Status.toEntityStatus(): WalletDukan.Status {
+    return when (this) {
+        DukanUpdateEvent.Status.APPROVED -> WalletDukan.Status.APPROVED
+        DukanUpdateEvent.Status.PENDING -> WalletDukan.Status.PENDING
+        DukanUpdateEvent.Status.REJECTED -> WalletDukan.Status.REJECTED
+    }
+}
+
+private fun DukanUpdateEvent.ActivationStatus.toEntityActivationStatus(): WalletDukan.ActivationStatus {
+    return when (this) {
+        DukanUpdateEvent.ActivationStatus.ACTIVATED -> WalletDukan.ActivationStatus.ACTIVATED
+        DukanUpdateEvent.ActivationStatus.DEACTIVATED -> WalletDukan.ActivationStatus.DEACTIVATED
+        DukanUpdateEvent.ActivationStatus.ONHOLD -> WalletDukan.ActivationStatus.ONHOLD
+    }
+}

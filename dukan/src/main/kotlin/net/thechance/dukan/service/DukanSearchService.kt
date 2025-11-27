@@ -7,6 +7,7 @@ import net.thechance.dukan.search.document.DukanDocument
 import net.thechance.dukan.search.mpper.toDocument
 import net.thechance.dukan.search.mpper.toSearchResultPreviewItem
 import net.thechance.dukan.service.model.DukanPreview
+import net.thechance.dukan.service.model.ProductSearchResultPreview
 import org.springframework.data.domain.Page
 import org.springframework.data.domain.PageRequest
 import org.springframework.data.domain.Pageable
@@ -30,7 +31,7 @@ class DukanSearchService(
         var totalIndexed = 0
 
         while (true) {
-            val dukansPage = dukanRepository.findAllApprovedWithShelvesAndProducts(PageRequest.of(page, pageSize))
+            val dukansPage = dukanRepository.findAllApprovedAndActivatedWithProducts(PageRequest.of(page, pageSize))
             if (dukansPage.isEmpty) break
 
             val documents = dukansPage.content.map { it.toDocument() }
@@ -49,10 +50,26 @@ class DukanSearchService(
         val favoriteIds: Set<UUID> = favoriteDukanRepository.findByIdUserIdAndIdDukanIdIn(userId, dukansIds)
             .map { it.id.dukanId }
             .toSet()
-
         return dukanDocs.map { doc->
             doc.toSearchResultPreviewItem(isFavorite = favoriteIds.contains(UUID.fromString(doc.id)))
         }
     }
 
+    fun searchByNameInCategory(
+        userId: UUID,
+        query: String,
+        categoryId:String,
+        pageable: Pageable
+    ): Page<DukanPreview> {
+        val dukanDocs: Page<DukanDocument>  = searchRepository.searchByNameAndCategory(name = query,categoryId = categoryId,pageable = pageable)
+        val dukansIds = dukanDocs.content.map { UUID.fromString(it.id) }
+
+        val favoriteIds: Set<UUID> = favoriteDukanRepository.findByIdUserIdAndIdDukanIdIn(userId, dukansIds)
+            .map { it.id.dukanId }
+            .toSet()
+
+        return dukanDocs.map { doc->
+            doc.toSearchResultPreviewItem(isFavorite = favoriteIds.contains(UUID.fromString(doc.id)))
+        }
+    }
 }

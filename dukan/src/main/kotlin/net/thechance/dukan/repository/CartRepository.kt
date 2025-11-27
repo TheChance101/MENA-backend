@@ -12,13 +12,11 @@ interface CartRepository : JpaRepository<Cart, UUID> {
         FROM Cart cart
         JOIN FETCH cart.items item
         JOIN FETCH item.product product
-        WHERE (cart.isOrderPurchased = false OR cart.isOrderPurchased IS NOT NULL)
+        WHERE (cart.isOrderPurchased = false OR cart.isOrderPurchased IS NULL)
         AND cart.userId = :userId 
         AND cart.dukanId = :dukanId
         AND product.isDeleted = false
         """
     )
-    fun findActiveCartByUserIdAndDukanId(userId: UUID, dukanId: UUID): Cart?
-
     fun findByUserIdAndDukanIdAndIsOrderPurchasedFalse(userId: UUID, dukanId: UUID): Cart?
 }

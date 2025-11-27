@@ -24,11 +24,7 @@ interface DukanRepository : JpaRepository<Dukan, UUID> {
     SELECT DISTINCT d
     FROM Dukan d
     WHERE d.status = net.thechance.dukan.entity.Dukan.Status.APPROVED
-    AND EXISTS (
-        SELECT 1 
-        FROM DukanShelf s
-        WHERE s.dukan = d
-    )
+    AND d.activationStatus = net.thechance.dukan.entity.Dukan.ActivationStatus.ACTIVATED
     AND EXISTS (
         SELECT 1
         FROM DukanProduct p
@@ -37,7 +33,7 @@ interface DukanRepository : JpaRepository<Dukan, UUID> {
     ORDER BY d.createdAt DESC
     """
     )
-    fun findAllApprovedWithShelvesAndProducts(pageable: Pageable): Page<Dukan>
+    fun findAllApprovedAndActivatedWithProducts(pageable: Pageable): Page<Dukan>
 
     @Query(
         """
@@ -59,6 +55,7 @@ interface DukanRepository : JpaRepository<Dukan, UUID> {
           FROM DukanProduct dukanProduct
           WHERE dukanProduct.dukan = dukan
       )
+      AND dukan.activationStatus != net.thechance.dukan.entity.Dukan.ActivationStatus.DEACTIVATED
     ORDER BY dukan.createdAt DESC
     """
     )
@@ -97,6 +94,7 @@ interface DukanRepository : JpaRepository<Dukan, UUID> {
                 WHERE d.status = 'APPROVED'
                   AND EXISTS (SELECT 1 FROM dukan.dukan_shelves s WHERE s.dukan_id = d.id)
                   AND EXISTS (SELECT 1 FROM dukan.dukan_products p WHERE p.dukan_id = d.id)
+                  AND d.activation_status != 'DEACTIVATED'
             )
             SELECT COUNT(*) FROM filtered WHERE distance <= :range
             """,
@@ -122,6 +120,7 @@ interface DukanRepository : JpaRepository<Dukan, UUID> {
     WHERE category.id = :categoryId
     AND dukan.ownerId != :userId
     AND dukan.status = net.thechance.dukan.entity.Dukan.Status.APPROVED
+    AND dukan.activationStatus = net.thechance.dukan.entity.Dukan.ActivationStatus.ACTIVATED
     AND EXISTS (
           SELECT 1
           FROM DukanProduct product
@@ -177,6 +176,7 @@ interface DukanRepository : JpaRepository<Dukan, UUID> {
         JOIN product.dukan dukan
         WHERE dukan.ownerId != :userId
           AND product.discount IS NOT NULL
+          AND dukan.activationStatus != net.thechance.dukan.entity.Dukan.ActivationStatus.DEACTIVATED
         GROUP BY dukan.id
         ORDER BY MAX(product.discount) DESC
     """
@@ -185,4 +185,51 @@ interface DukanRepository : JpaRepository<Dukan, UUID> {
         userId: UUID,
         pageable: Pageable
     ): Page<DukanWithDiscount>
+
+    @Query(
+        """
+    SELECT dukanCategoy.id
+    FROM Order order
+    JOIN Dukan dukan ON dukan.id = order.dukanId
+    JOIN dukan.categories dukanCategoy
+    WHERE order.userId = :userId
+    GROUP BY dukanCategoy.id
+    ORDER BY COUNT(order.id) DESC
+    """
+    )
+    fun findUserTopCategories(@Param("userId") userId: UUID, pageable: Pageable): List<UUID>
+
+    @Query(
+        """
+    SELECT new net.thechance.dukan.service.model.DukanWithFavorite(
+        dukan,
+        CASE WHEN favorite.id.dukanId IS NOT NULL THEN true ELSE false END
+    )
+    FROM Dukan dukan
+    LEFT JOIN FavoriteDukan favorite 
+        ON favorite.id.dukanId = dukan.id 
+        AND favorite.id.userId = :userId
+    WHERE dukan.id IN (
+        SELECT DISTINCT d.id 
+        FROM Dukan d
+        JOIN d.categories c
+        WHERE c.id IN :categoryIds
+            AND d.status = net.thechance.dukan.entity.Dukan.Status.APPROVED
+            AND d.activationStatus = net.thechance.dukan.entity.Dukan.ActivationStatus.ACTIVATED
+    )
+    ORDER BY (
+        SELECT COUNT(c2.id)
+        FROM Dukan d2
+        JOIN d2.categories c2
+        WHERE d2.id = dukan.id 
+            AND c2.id IN :categoryIds
+    ) DESC,
+    dukan.createdAt DESC
+    """
+    )
+    fun findRecommendedDukansForUser(
+        @Param("userId") userId: UUID,
+        @Param("categoryIds") categoryIds: List<UUID>,
+        pageable: Pageable
+    ): Page<DukanWithFavorite>
 }

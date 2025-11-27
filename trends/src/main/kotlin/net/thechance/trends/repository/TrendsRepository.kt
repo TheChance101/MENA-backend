@@ -83,47 +83,48 @@ interface TrendsRepository : JpaRepository<Trend, UUID> {
 
     @Query(
         """
-        SELECT DISTINCT t AS trend, 
-               CASE WHEN tl IS NOT NULL THEN true ELSE false END AS isLiked
+        SELECT t.id
         FROM Trend t
-        LEFT JOIN FETCH t.owner
-        LEFT JOIN TrendLike tl ON tl.trendId = t.id AND tl.userId = :userId
+        JOIN t.categories tc
+        LEFT JOIN UserCategories uc ON uc.categoryId = tc.id AND uc.userId = :userId
         WHERE t.isPublished = true
-        AND t.owner.status = 'ACTIVE'
-        AND EXISTS (
-            SELECT 1 FROM t.categories tc
-            WHERE tc.id IN (
-                SELECT uc.id FROM TrendUser u
-                JOIN u.categories uc
-                WHERE u.userId = :userId
-            )
+        AND tc.id IN :categories
+        GROUP BY t.id
+        HAVING :startTrendId IS NULL 
+        OR (COALESCE(MAX(uc.affinity), 0), MAX(t.createdAt)) <= (
+           SELECT COALESCE(MAX(uc2.affinity), 0), MAX(t2.createdAt)
+           FROM Trend t2
+           JOIN t2.categories tc2
+           LEFT JOIN UserCategories uc2 ON uc2.categoryId = tc2.id AND uc2.userId = :userId
+           WHERE t2.id = :startTrendId
+           GROUP BY t2.id
         )
-        AND (:trendId IS NULL OR t.createdAt <= (
-            SELECT t2.createdAt FROM Trend t2 WHERE t2.id = :trendId
-        ))
-        """,
-        countQuery = """
-    SELECT COUNT(DISTINCT t.id)
-    FROM Trend t
-    WHERE t.isPublished = true
-    AND EXISTS (
-        SELECT 1 FROM t.categories tc
-        WHERE tc.id IN (
-            SELECT uc.id FROM TrendUser u
-            JOIN u.categories uc
-            WHERE u.userId = :userId
-        )
+        ORDER BY COALESCE(MAX(uc.affinity), 0) DESC, MAX(t.createdAt) DESC
+        """
     )
-    AND (:trendId IS NULL OR t.createdAt <= (
-        SELECT t2.createdAt FROM Trend t2 WHERE t2.id = :trendId
-    ))
+    fun getTrendIdsOrderedByAffinity(
+        userId: UUID,
+        categories: List<UUID>,
+        startTrendId: UUID? = null,
+        pageable: Pageable
+    ): Page<UUID>
+
+    @Query(
+        """
+    SELECT DISTINCT t AS trend, 
+           CASE WHEN tl IS NOT NULL THEN true ELSE false END AS isLiked
+    FROM Trend t
+    LEFT JOIN FETCH t.owner
+    LEFT JOIN TrendLike tl ON tl.trendId = t.id AND tl.userId = :userId
+    WHERE t.id IN :trendIds
+    AND t.isPublished = true
+    AND t.owner.status = 'ACTIVE'
     """
     )
-    fun getTrendFeedForUser(
+    fun getTrendFeedForCategories(
         userId: UUID,
-        trendId: UUID?,
-        pageable: Pageable
-    ): Page<TrendWithLikeStatus>
+        trendIds: List<UUID>
+    ): List<TrendWithLikeStatus>
 
     @Query(
         """

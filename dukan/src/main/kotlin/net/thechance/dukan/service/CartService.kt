@@ -20,6 +20,7 @@ import org.springframework.data.domain.Page
 import org.springframework.data.domain.Pageable
 import org.springframework.stereotype.Service
 import org.springframework.transaction.annotation.Transactional
+import java.time.Instant
 import java.util.*
 
 @Service
@@ -81,7 +82,7 @@ class CartService(
 
     @Transactional(readOnly = true)
     fun getCartOrThrow(userId: UUID, dukanId: UUID): Cart {
-        return cartRepository.findActiveCartByUserIdAndDukanId(userId, dukanId)
+        return cartRepository.findByUserIdAndDukanIdAndIsOrderPurchasedFalse(userId, dukanId)
             ?: throw CartNotFoundException()
     }
 
@@ -108,12 +109,14 @@ class CartService(
 
         val transactionId = UUID.randomUUID()
 
-        createTransactionEvent(transactionId, cart, dukan)
+        val initEvent = createTransactionEvent(transactionId, cart, dukan)
 
         return CartCheckoutPreview(
             transactionId = transactionId,
             totalAmount = cart.price.final.toDouble()
-        )
+        ).also {
+            eventPublisher.publish(initEvent)
+        }
     }
 
     private fun updateUserLocation(
@@ -140,25 +143,38 @@ class CartService(
         transactionId: UUID,
         cart: Cart,
         dukan: Dukan
-    ) {
-        val transactionEvent = InitiateTransactionEvent(
+    ) :InitiateTransactionEvent{
+        return InitiateTransactionEvent(
             transactionId = transactionId,
             type = InitiateTransactionEvent.TransactionType.ONLINE_PURCHASE,
             senderId = cart.userId,
             receiverId = dukan.ownerId,
             amount = cart.price.final.toDouble()
         )
-
-        eventPublisher.publish(transactionEvent)
     }
 
     private fun getCartByUserAndDukan(userId: UUID, dukanId: UUID): Cart? {
-        return cartRepository.findActiveCartByUserIdAndDukanId(userId, dukanId)
+        return cartRepository.findByUserIdAndDukanIdAndIsOrderPurchasedFalse(userId, dukanId)
     }
 
     private fun getOrCreateActiveCart(userId: UUID, dukanId: UUID): Cart {
-        return cartRepository.findActiveCartByUserIdAndDukanId(userId, dukanId)
+        return cartRepository.findByUserIdAndDukanIdAndIsOrderPurchasedFalse(userId, dukanId)
             ?: createCart(userId, dukanId)
+    }
+
+    fun getActiveCart(userId: UUID, dukanId: UUID): Cart {
+        return cartRepository.findByUserIdAndDukanIdAndIsOrderPurchasedFalse(userId, dukanId)
+            ?: throw CartNotFoundException()
+    }
+
+    fun markCartAsPurchased(cart: Cart) {
+        cart.isOrderPurchased = true
+        cart.updatedAt = Instant.now()
+        cartRepository.save(cart)
+    }
+
+    fun createNewCart(userId: UUID, dukanId: UUID): Cart {
+        return cartRepository.save(Cart(userId = userId, dukanId = dukanId))
     }
 
     private fun createCart(userId: UUID, dukanId: UUID): Cart {

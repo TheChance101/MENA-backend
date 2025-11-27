@@ -82,4 +82,12 @@ class ChatControllerAdvice : ResponseEntityExceptionHandler() {
         )
         return ResponseEntity.status(HttpStatus.UNPROCESSABLE_ENTITY).body(error)
     }
+
+    @ExceptionHandler(FetchWeatherException::class)
+    fun handleFetchWeatherException(ex: FetchWeatherException): ResponseEntity<ErrorResponse> {
+        val error = ErrorResponse("${ex.message} caused by: ${ex.causedBy}")
+        return ResponseEntity
+            .status(HttpStatus.BAD_REQUEST)
+            .body(error)
+    }
 }

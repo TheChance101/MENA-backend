@@ -17,9 +17,11 @@ interface UserRepository: JpaRepository<User, UUID> {
 
     @Query("""
     SELECT u FROM User u
-    WHERE 
-        LOWER(CONCAT(u.firstName, ' ', u.lastName)) LIKE LOWER(CONCAT('%', :query, '%'))
-        OR u.phoneNumber LIKE CONCAT('%', :query, '%')
+    WHERE u.isDeleted = false
+      AND (
+            LOWER(CONCAT(u.firstName, ' ', u.lastName)) LIKE LOWER(CONCAT('%', :query, '%'))
+         OR u.phoneNumber LIKE CONCAT('%', :query, '%')
+      )
 """)
     fun findByFullNameOrPhoneNumber(
         @Param("query") query: String,

@@ -9,7 +9,6 @@ import java.util.Collections.emptySet
 @Entity
 data class Dukan(
     @Id
-    @GeneratedValue(strategy = GenerationType.UUID)
     val id: UUID = UUID.randomUUID(),
     @Column(name = "owner_id", nullable = false, unique = true)
     val ownerId: UUID,
@@ -41,8 +40,8 @@ data class Dukan(
     @Column(name = "status", nullable = false)
     val status: Status = Status.PENDING,
     @Enumerated(EnumType.STRING)
-    @Column(name = "activation_status", nullable = true)
-    val activationStatus: ActivationStatus? = null,
+    @Column(name = "activation_status", nullable = false)
+    val activationStatus: ActivationStatus,
     @OneToMany(mappedBy = "dukan", cascade = [CascadeType.ALL])
     val shelves: Set<DukanShelf> = emptySet(),
     @Column(name = "createdAt")
@@ -59,6 +58,7 @@ data class Dukan(
     enum class ActivationStatus {
         ACTIVATED,
         DEACTIVATED,
+        ONHOLD
     }
 
     enum class Style {

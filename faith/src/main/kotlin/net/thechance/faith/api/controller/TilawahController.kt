@@ -35,6 +35,17 @@ class TilawahController(
         return ResponseEntity.ok(soundUrl)
     }
 
+    @GetMapping("/ayat/sound")
+    fun getSurahAyatSoundUrl(
+        @Valid request: SurahSoundRequest,
+    ): ResponseEntity<List<String>> {
+        val soundUrl = recitersService.getSurahAyatSoundUrl(
+            reciterId = request.reciterId,
+            surahNumber = request.surahNumber,
+        )
+        return ResponseEntity.ok(soundUrl)
+    }
+
     @GetMapping("/surah/sound")
     fun getSurahSoundUrl(
         @Valid request: SurahSoundRequest,

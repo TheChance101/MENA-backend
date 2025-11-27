@@ -5,20 +5,59 @@ import org.springframework.data.domain.Page
 import org.springframework.data.domain.Pageable
 import org.springframework.data.elasticsearch.annotations.Query
 import org.springframework.data.elasticsearch.repository.ElasticsearchRepository
-import org.springframework.data.repository.query.Param
 
 interface DukanSearchRepository : ElasticsearchRepository<DukanDocument, String> {
     @Query(
         """
-    {
-      "wildcard": {
-        "name": {
-          "value": "*?0*",
-          "case_insensitive": true
+{
+  "bool": {
+    "must": [
+      {
+        "wildcard": {
+          "name": {
+            "value": "*?0*",
+            "case_insensitive": true
+          }
         }
       }
-    }
-    """
+    ],
+    "filter": [
+        {"term": {"activationStatus": "ACTIVATED"}},
+        {"term": {"status": "APPROVED"}}
+        
+    ]
+  }
+}
+"""
     )
-    fun searchByNameLike(@Param("query") query: String, pageable: Pageable): Page<DukanDocument>
+    fun searchByNameLike(query: String, pageable: Pageable): Page<DukanDocument>
+
+    @Query(
+        """
+{
+  "bool": {
+    "must": [
+      {
+        "wildcard": {
+          "name": {
+            "value": "*?0*",
+            "case_insensitive": true
+          }
+        }
+      }
+    ],
+    "filter": [
+        {"term": {"activationStatus": "ACTIVATED"}},
+        {"term": {"status": "APPROVED"}},
+        { "term": { "categoryIds": "?1" } }
+    ]
+  }
+}
+"""
+    )
+    fun searchByNameAndCategory(
+        name: String,
+        categoryId: String,
+        pageable: Pageable
+    ): Page<DukanDocument>
 }

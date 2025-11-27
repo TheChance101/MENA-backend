@@ -49,10 +49,25 @@ class NearbyMosqueController(
 
     @PostMapping(consumes = ["multipart/form-data"])
     fun createMosque(
-        @RequestPart("mosque") mosqueRequest: MosqueRequest,
+        @RequestParam("name") name: String,
+        @RequestParam("address") address: String,
+        @RequestParam("latitude") latitude: Double,
+        @RequestParam("longitude") longitude: Double,
+        @RequestPart("image") image: MultipartFile,
         @AuthenticationPrincipal userId: UUID
     ): ResponseEntity<MosqueResponse> {
-        val mosque = mosqueService.createNearestMosque(userId = userId, mosqueRequest = mosqueRequest)
+        val mosqueRequest = MosqueRequest(
+            name = name,
+            address = address,
+            latitude = latitude,
+            longitude = longitude,
+            image = image
+        )
+
+        val mosque = mosqueService.createNearestMosque(
+            userId = userId,
+            mosqueRequest = mosqueRequest
+        )
         return ResponseEntity.status(HttpStatus.CREATED).body(mosque)
     }
 
