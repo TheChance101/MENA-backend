@@ -99,7 +99,6 @@ docker run `
   -d elasticsearch:9.2.1
 ```
 3. **Configure Application Properties**  
-   Add the following Elasticsearch configuration settings to your `application.properties` file.  
 ```
 spring.elasticsearch.uris=${ELASTIC_SEARCH_URIS}
 spring.elasticsearch.password=${ELASTIC_SEARCH_PASSWORD}
