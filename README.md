@@ -85,9 +85,9 @@ spring.elasticsearch.username=${ELASTIC_SEARCH_USERNAME}
 - **ELASTIC_SEARCH_USERNAME** → Username for Elasticsearch
 - **ELASTIC_SEARCH_PASSWORD** → Password for Elasticsearch
 
-**Alternative if you need to test it as local simulation you can use docker.**
-1. you need to install docker and [`elastic search docker image`](https://hub.docker.com/_/elasticsearch)
-2. open terminal and run this command with your desired ports for example port1 `8088` and port2 `8089`:
+**Alternatively, if you need to test it as a local simulation, you can use Docker.**
+1. You need to install Docker and [`elastic search docker image`](https://hub.docker.com/_/elasticsearch)
+2. Open the terminal and run this command with your desired ports, for example, port1 `8088` and port2 `8089`:
 ```
 docker run `
   --name elastic_search `
