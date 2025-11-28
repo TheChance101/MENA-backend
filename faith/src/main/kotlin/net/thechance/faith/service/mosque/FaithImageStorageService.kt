@@ -2,7 +2,7 @@ package net.thechance.faith.service.mosque
 
 import net.thechance.faith.exception.ImageUploadFailedException
 import net.thechance.faith.exception.InvalidImageFormatException
-import org.springframework.boot.context.properties.ConfigurationProperties
+import net.thechance.faith.service.config.FaithStorageProperties
 import org.springframework.boot.context.properties.EnableConfigurationProperties
 import org.springframework.stereotype.Service
 import org.springframework.web.multipart.MultipartFile
@@ -11,12 +11,6 @@ import software.amazon.awssdk.services.s3.S3Client
 import software.amazon.awssdk.services.s3.model.ObjectCannedACL
 import software.amazon.awssdk.services.s3.model.PutObjectRequest
 import java.time.LocalDateTime
-
-@ConfigurationProperties(prefix = "storage.mena")
-data class FaithStorageProperties(
-    val bucket: String,
-    val cdnEndpoint: String
-)
 
 @Service
 @EnableConfigurationProperties(FaithStorageProperties::class)

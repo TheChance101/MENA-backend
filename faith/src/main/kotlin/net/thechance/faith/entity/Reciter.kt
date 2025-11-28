@@ -16,5 +16,5 @@ data class Reciter(
     @Column(nullable = false)
     val tilawahType: String,
     @Column(nullable = false)
-    val serverUrl: String,
+    var serverUrl: String,
 )
