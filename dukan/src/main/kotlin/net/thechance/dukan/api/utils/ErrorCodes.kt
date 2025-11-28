@@ -24,4 +24,5 @@ internal object ErrorCodes {
     const val FORBIDDEN_ORDER_ACCESS = 1601
     const val ORDER_NOT_FOUND = 1602
     const val USER_NOT_FOUND = 404
+    const val DUKAN_STATUS_CHANGELOG_NOT_FOUND = 1701
 }

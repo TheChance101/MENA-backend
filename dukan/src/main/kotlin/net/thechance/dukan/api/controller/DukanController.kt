@@ -9,6 +9,7 @@ import net.thechance.dukan.api.mapper.category.toDto
 import net.thechance.dukan.api.mapper.dukan.*
 import net.thechance.dukan.api.utils.EndPoints.DUKAN_PATH
 import net.thechance.dukan.entity.Dukan
+import net.thechance.dukan.repository.StatusChangelogRepository
 import net.thechance.dukan.service.DukanService
 import net.thechance.dukan.service.FavouriteDukanService
 import org.springframework.context.i18n.LocaleContextHolder
@@ -27,7 +28,8 @@ import java.util.*
 @RequestMapping(DUKAN_PATH)
 class DukanController(
     private val dukanService: DukanService,
-    private val favouriteDukanService: FavouriteDukanService
+    private val favouriteDukanService: FavouriteDukanService,
+    private val changelogRepository: StatusChangelogRepository
 ) {
     @GetMapping("/styles")
     fun getAllStyles(): ResponseEntity<DukanStyleResponse> {
@@ -153,7 +155,8 @@ class DukanController(
     fun getDukanActivationStatus(
         @AuthenticationPrincipal userId: UUID,
     ): ResponseEntity<DukanActivationStatusResponse> {
-        val activationStatus = dukanService.getDukanByOwnerId(userId).activationStatus
-        return ResponseEntity.ok(DukanActivationStatusResponse(activationStatus))
+        val dukan = dukanService.getDukanByOwnerId(userId)
+        val log = dukanService.getLastStatusChangeLog(dukan.id)
+        return ResponseEntity.ok(DukanActivationStatusResponse(dukan.activationStatus , log?.reason))
     }
 }

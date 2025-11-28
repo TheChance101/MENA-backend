@@ -10,6 +10,7 @@ import net.thechance.dukan.entity.StatusChangelog
 import net.thechance.dukan.repository.*
 import net.thechance.dukan.service.exception.DukanCreationFailedException
 import net.thechance.dukan.service.exception.DukanNotFoundException
+import net.thechance.dukan.service.exception.DukanStatusChangelogNotFoundException
 import net.thechance.dukan.service.exception.DukanUserNotFoundException
 import net.thechance.dukan.service.mapper.toDukanCreationEvent
 import net.thechance.dukan.service.mapper.toDukanUpdateEvent
@@ -213,6 +214,9 @@ class DukanService(
         statusChangeLogRepository.save(changelog)
     }
 
+    fun getLastStatusChangeLog(dukanId: UUID): StatusChangelog? {
+        return statusChangeLogRepository.findTopByDukanIdOrderByCreatedAtDesc(dukanId)
+    }
     companion object {
         private val DUKAN_FOLDER_NAME = "dukan"
     }
