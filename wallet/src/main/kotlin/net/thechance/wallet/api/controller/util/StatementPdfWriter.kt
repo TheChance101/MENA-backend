@@ -13,11 +13,15 @@ import com.itextpdf.layout.properties.AreaBreakType
 import net.thechance.wallet.service.StatementService
 import net.thechance.wallet.service.model.input.UserTransactionType
 import net.thechance.wallet.service.model.output.StatementData
+import net.thechance.wallet.service.utils.atEndOfDay
+import net.thechance.wallet.service.utils.toClientZone
+import net.thechance.wallet.service.utils.toServerZone
 import org.springframework.core.io.ResourceLoader
 import org.springframework.stereotype.Component
 import java.io.OutputStream
 import java.math.BigDecimal
-import java.time.LocalDateTime
+import java.time.LocalDate
+import java.time.ZoneId
 import java.util.*
 
 @Component
@@ -29,21 +33,27 @@ class StatementPdfWriter(
     fun writePdfToStream(
         userId: UUID,
         types: List<UserTransactionType>?,
-        startDateTime: LocalDateTime?,
-        endDateTime: LocalDateTime?,
+        startDate: LocalDate?,
+        endDate: LocalDate?,
+        timezone: ZoneId,
         outputStream: OutputStream
     ): StatementMetadata {
-        val statementData = statementService.getStatementData(userId, types, startDateTime, endDateTime)
+        val statementData = statementService.getStatementData(
+            userId = userId,
+            types = types,
+            startDateTime = startDate?.atStartOfDay()?.toServerZone(timezone),
+            endDateTime = endDate?.atEndOfDay()?.toServerZone(timezone),
+        )
 
         val writer = PdfWriter(outputStream)
         val pdf = PdfDocument(writer)
         val document = Document(pdf)
         val converterProperties = setupConverterProperties()
 
-        pdf.addEventHandler(PdfDocumentEvent.END_PAGE, StatementPageEventHandler(resourceLoader, statementData))
+        pdf.addEventHandler(PdfDocumentEvent.END_PAGE, StatementPageEventHandler(resourceLoader, statementData, timezone))
         document.setMargins(100f, 32f, 60f, 32f)
 
-        val metadata = writePages(statementData, document, converterProperties)
+        val metadata = writePages(statementData, timezone, document, converterProperties)
 
         pdf.close()
         outputStream.flush()
@@ -53,6 +63,7 @@ class StatementPdfWriter(
 
     private fun writePages(
         statementData: StatementData,
+        timezone: ZoneId,
         pdf: Document,
         converterProperties: ConverterProperties
     ): StatementMetadata {
@@ -63,14 +74,14 @@ class StatementPdfWriter(
 
         do {
             val page = statementService.getTransactionsPage(
-                statementData.userId,
-                statementData.startDateTime,
-                statementData.endDateTime,
-                statementData.types,
-                pageNum
+                userId = statementData.userId,
+                startDateTime = statementData.startDateTime,
+                endDateTime = statementData.endDateTime,
+                types = statementData.types,
+                pageNum = pageNum
             )
 
-            val htmlContent = statementHtmlGenerator.generateForPage(statementData, page)
+            val htmlContent = statementHtmlGenerator.generateForPage(statementData, timezone, page)
             val elements = HtmlConverter.convertToElements(htmlContent, converterProperties)
             elements.forEach { element ->
                 pdf.add(element as IBlockElement)
@@ -88,8 +99,8 @@ class StatementPdfWriter(
         } while (pageNum < totalPages)
 
         return StatementMetadata(
-            startDate = statementData.startDateTime.toLocalDate(),
-            endDate = statementData.endDateTime.toLocalDate(),
+            startDate = statementData.startDateTime.toClientZone(timezone).toLocalDate(),
+            endDate = statementData.endDateTime.toClientZone(timezone).toLocalDate(),
             totalInflows = totalInflows,
             totalOutflows = totalOutflows
         )
