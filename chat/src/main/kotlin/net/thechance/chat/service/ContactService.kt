@@ -41,7 +41,7 @@ class ContactService(
     fun parseContacts(contacts: List<Contact>, ownerId: UUID): List<Contact> {
         if (contacts.isEmpty()) return emptyList()
         val ownerPhoneNumber = contactUserService.getPhoneNumberByUserId(ownerId) ?: return emptyList()
-        val ownerRegion = phoneNumberParses.parse(ownerPhoneNumber, "").countryCode
+        val ownerRegion = phoneNumberParses.parse(ownerPhoneNumber, "").regionCode
         return contacts
             .mapNotNull { contact ->
                 try {
