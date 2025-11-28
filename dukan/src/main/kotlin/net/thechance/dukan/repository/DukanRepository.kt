@@ -209,22 +209,29 @@ interface DukanRepository : JpaRepository<Dukan, UUID> {
     LEFT JOIN FavoriteDukan favorite 
         ON favorite.id.dukanId = dukan.id 
         AND favorite.id.userId = :userId
-    WHERE dukan.id IN (
-        SELECT DISTINCT d.id 
-        FROM Dukan d
-        JOIN d.categories c
-        WHERE c.id IN :categoryIds
-            AND d.status = net.thechance.dukan.entity.Dukan.Status.APPROVED
-            AND d.activationStatus = net.thechance.dukan.entity.Dukan.ActivationStatus.ACTIVATED
-    )
+    WHERE dukan.ownerId != :userId
+      AND EXISTS (
+            SELECT 1
+            FROM DukanProduct p
+            WHERE p.dukan.id = dukan.id
+              AND p.isDeleted = false
+              AND p.isOutOfStock = false
+        )
+      AND dukan.id IN (
+            SELECT DISTINCT d.id 
+            FROM Dukan d
+            JOIN d.categories c
+            WHERE c.id IN :categoryIds
+                AND d.status = net.thechance.dukan.entity.Dukan.Status.APPROVED
+                AND d.activationStatus = net.thechance.dukan.entity.Dukan.ActivationStatus.ACTIVATED
+      )
     ORDER BY (
         SELECT COUNT(c2.id)
         FROM Dukan d2
         JOIN d2.categories c2
         WHERE d2.id = dukan.id 
-            AND c2.id IN :categoryIds
-    ) DESC,
-    dukan.createdAt DESC
+          AND c2.id IN :categoryIds
+    ) DESC
     """
     )
     fun findRecommendedDukansForUser(
