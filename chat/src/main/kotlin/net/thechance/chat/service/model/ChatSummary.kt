@@ -13,7 +13,7 @@ data class ChatSummary(
     val unReadMessagesCount: Int
 )
 
-fun Chat.toSummary(chatName: String, imageUrl:String, lastMessage: Message?, unreadCount: Int): ChatSummary {
+fun Chat.toSummary(chatName: String, imageUrl: String?, lastMessage: Message?, unreadCount: Int): ChatSummary {
     return ChatSummary(
         id = id,
         name = chatName,
