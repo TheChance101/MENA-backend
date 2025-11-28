@@ -37,14 +37,13 @@ spring.datasource.password=${DATABASE_PASSWORD}
 ```
 
 ### Storage
-1. We used [`Digital Ocean`](https://www.digitalocean.com) as remote file storage server. Alternatively, you can use [`LocalStack`](https://app.localstack.cloud/getting-started) for local simulation on your machine.
-1. Install [Docker](https://www.docker.com/get-started/)
-1. Install [AWS CLI](https://docs.aws.amazon.com/cli/latest/userguide/getting-started-install.html)
-1. Install [LocalStack](https://app.localstack.cloud/getting-started)
-1. Follow the guide on the local stack website to create a key, secret, endpoint, CDN endpoint (region) for MENA, Duckan, Trends, and Wallet
-1. Assign `profile-image-directory` to the value `images`
+We used [`Digital Ocean`](https://www.digitalocean.com) as a remote file storage server
+1. **Create Digital Ocean account**
+2. **Create a space bucket** \
+   Please follow the guide here ([How to Create a Spaces Bucket](https://docs.digitalocean.com/products/spaces/how-to/create/)), We create a bucket for each feature
+3. **Configure Application Properties** \
+   Add the following bucket configuration settings to your `application.properties` file.  
 ```
-# Storage
 storage.mena.key=${STORAGE_MENA_KEY}
 storage.mena.secret=${STORAGE_MENA_SECRET}
 storage.mena.bucket=${STORAGE_MENA_BUCKET}
@@ -71,6 +70,14 @@ storage.wallet.cdn-endpoint=${STORAGE_WALLET_CDN_ENDPOINT}
 
 identity.resources.profile-image-directory=images
 ```
+
+**Alternatively, you can use [`LocalStack`](https://app.localstack.cloud/getting-started) for local simulation on your machine.**
+1. Install [Docker](https://www.docker.com/get-started/)
+1. Install [AWS CLI](https://docs.aws.amazon.com/cli/latest/userguide/getting-started-install.html)
+1. Install [LocalStack](https://app.localstack.cloud/getting-started)
+1. Follow the guide on the local stack website to create a key, secret, endpoint, CDN endpoint (region) for MENA, Duckan, Trends, and Wallet
+1. Assign `profile-image-directory` to the value `images`
+
 
 ### Elastic Search
 1. **Sign up or log in at [Elasticsearch](https://www.elastic.co/elasticsearch) website**  
