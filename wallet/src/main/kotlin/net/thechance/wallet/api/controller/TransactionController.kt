@@ -1,6 +1,7 @@
 package net.thechance.wallet.api.controller
 
 import jakarta.servlet.http.HttpServletResponse
+import jakarta.validation.Valid
 import net.thechance.wallet.api.controller.util.ImageUrlBuilder
 import net.thechance.wallet.api.controller.util.StatementMetadata
 import net.thechance.wallet.api.controller.util.StatementPdfWriter
@@ -111,7 +112,7 @@ class TransactionController(
     @PostMapping("/p2p/initiate")
     fun initiateTransaction(
         @AuthenticationPrincipal userId: UUID,
-        @RequestBody params: InitiateTransactionRequest,
+        @RequestBody @Valid params: InitiateTransactionRequest,
     ): ResponseEntity<UUID> {
         val transaction = transactionService.initiateTransaction(
             initiateTransactionParams = params.toInitiateTransactionParam(userId, Transaction.Type.P2P)
