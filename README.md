@@ -1,18 +1,24 @@
-*Backend Repository of [MENA app](https://github.com/TheChance101/MENA-mobile)*
 
-## MENA As Brand
-A super app crafted for the Middle Eastern and North African community - empowering you to do everything you need, all while nurturing a genuine sense of belonging.
+<p align="center">
+    <img width="1440" height="744" alt="MENA_COVER" src="https://github.com/user-attachments/assets/6401c4d7-392b-405d-979f-39452775cefe" />
+</p>
+<p>
+    <b>MENA</b> A super-chat application built for the Middle East and North Africa region.
+    <br><br>
+    MENA is a next-generation super-chat platform designed specifically for the culture and needs of the Middle East and North Africa. The app enables seamless text and (voice-messaging) communication, along with the ability to send gifts using a blockchain-based digital currency called Silver.
+In addition to messaging, MENA empowers small businesses by providing a dedicated space to showcase their products directly to users across the region, with in-app purchasing fully supported.
+The platform also includes a comprehensive faith section, allowing users to read and share the Qur’an.
+To complement the social experience, MENA offers a trends hub where users can watch and share short-form videos, creating a dynamic and culturally relevant digital community.
+    <br><br>
+</p>
 
-<img width="50" alt="MENA" src="https://github.com/user-attachments/assets/f5b90dce-0144-4ec7-ae0d-9c964a50076b" />
- was brought to life through the passion and dedication of <a href="https://www.linkedin.com/company/thechance101/">The Chance</a> Mentorship program. Over eleven weeks, we combined hard work, creativity, and collaboration to bring this vision to life.
+## Mobile App Repository
+https://github.com/TheChance101/MENA-mobile)
 
->
-<div>
-<img width="200" src="https://github.com/user-attachments/assets/72cb47fb-27a1-45ab-971b-bfef705abded"/>
-</div>
+---
 
 
-## Setup
+## Setup your backend server
 Open `application.properties` file you can find at `app\src\main\resources\application.properties`, and add these configurations:
 
 ### Environment
