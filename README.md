@@ -139,11 +139,6 @@ spring.elasticsearch.username=${ELASTIC_SEARCH_USERNAME}
 - **Code Coverage**: [Kover](https://github.com/Kotlin/kotlinx-kover)
 - **Dependency Injection**: Spring Framework IoC Container
 
-## Contractors
-
-- **Bareq AlTahma** – The chance instructor ([@iBareq](https://github.com/iBareq))
-- **Falah Hasan** – Mentor ([@devfalah](https://github.com/devfalah))
-- **Karrar Mohammed** – Mentor ([@Karrar-Mohammed](https://github.com/Karrar-Mohammed))
 
 ## Contributors
 
